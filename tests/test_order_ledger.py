@@ -54,7 +54,7 @@ from gzkit.work_package_run import (
     record_work_package_block,
     record_work_package_unblock,
 )
-from tests.test_tag_rows import seat_hang, seat_issue
+from tests.test_tag_rows import seat_clear, seat_hang, seat_issue
 
 
 def _package(wp_id: str, kind: str = "repair") -> WorkPackage:
@@ -782,3 +782,63 @@ class CommencementTagTests(_OrderCase):
         raised = _raised(lambda: self.move("commenced", no_isolation="x"))
         self.assertIsInstance(raised, (OrderLedgerError, TagOutError))
         self.assertEqual(_rows(self.path), before)
+
+
+class AcceptanceTagTests(_OrderCase):
+    """Refusal 6, rulings 129, 135 and 142: acceptance waits on every tag the order hung."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.walk_to("frozen")
+        self.hung = seat_issue(self.ledger, 1)
+        seat_hang(self.ledger, 1)
+        self.move("commenced")
+
+    def stop(self) -> None:
+        block = BlockRequest(
+            work_package="WP-01-stamp", order="ORD-01-import", reason="r", next_action="rule"
+        )
+        record_work_package_block(self.catalog, self.ledger, block, refutations={})
+        unblock = UnblockRequest(
+            work_package="WP-01-stamp", order="ORD-01-import", ruling="stop it", operator="g0",
+            exit_taken="terminate",
+        )  # fmt: skip
+        record_work_package_unblock(self.catalog, self.ledger, unblock)
+
+    def test_a_hung_tag_not_cleared_holds_acceptance_and_is_named(self) -> None:
+        """Refusal 6: an order read ready is still refused while its hung tag is uncleared."""
+        cleared = seat_issue(self.ledger, 2)
+        seat_hang(self.ledger, 2)
+        seat_clear(self.ledger, 2)
+        refusal = self.assert_refused("accepted", acceptance_ready=True)
+        # output-contract: the refusal names the uncleared tag and not the cleared one
+        self.assertIn(self.hung, refusal)
+        self.assertNotIn(cleared, refusal)
+
+    def test_the_refusal_names_the_clears_steps(self) -> None:
+        """Ruling 142: the recovery is the clear, authorized, then run by a Restoration dispatch."""
+        refusal = self.assert_refused("accepted", acceptance_ready=True)
+        # output-contract: the next steps are the authorize, the dispatch and the clear
+        for named in (
+            f"gz wp tag authorize {self.hung}",
+            "--role Restoration",
+            f"gz wp tag clear {self.hung}",
+        ):
+            self.assertIn(named, refusal)
+
+    def test_acceptance_passes_once_every_hung_tag_is_cleared(self) -> None:
+        """Refusal 6: with the tag cleared, the order is accepted."""
+        seat_clear(self.ledger, 1)
+        self.assertEqual(self.move("accepted", acceptance_ready=True).to_state, "accepted")
+
+    def test_a_stopped_order_is_held_by_its_hung_tag(self) -> None:
+        """Rulings 135 and 142: a stopping exit excuses readiness, never a hung tag."""
+        self.stop()
+        self.assertIn(self.hung, self.assert_refused("accepted", acceptance_ready=False))
+
+    def test_another_orders_hung_tag_does_not_hold_it(self) -> None:
+        """Refusal 6 reads the tags the order itself hung."""
+        seat_clear(self.ledger, 1)
+        seat_issue(self.ledger, 2, order="ORD-09-other")
+        seat_hang(self.ledger, 2, order="ORD-09-other")
+        self.assertEqual(self.move("accepted", acceptance_ready=True).to_state, "accepted")

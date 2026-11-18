@@ -17,8 +17,10 @@ naming each head of its chains (rulings 85 and 87), and never on an empty baseli
 the package's planned alterations no earlier order's freeze approved (ruling 63),
 since a repair package never freezes itself (ruling 44). An accepted move books
 `acceptance_ready`, false only on an order a stopping exit stopped (rulings 84 and
-86); a proceed reads that booked fact and is refused when another order's proceed
-already holds one of its REQs at that revision (ruling 82). A blocked order does
+86), and is refused while a tag the order hung is not cleared, a stopped order
+included (refusal 6, ruling 142); a proceed reads that booked fact and is refused
+when another order's proceed already holds one of its REQs at that revision
+(ruling 82). A blocked order does
 not move (ruling 59).
 
 The writer takes the parsed catalog and the ledger as parameters, reads the
@@ -507,13 +509,44 @@ def _check_commenced(ledger: Ledger, order: Order, move: OrderMove) -> None:
         )
 
 
+def hung_tag_refusal(ledger: Ledger, order: Order) -> str | None:
+    """Say why a tag the order hung and nobody cleared holds its acceptance (refusal 6).
+
+    Ruling 142 refuses every hung tag, a stopped order's included (ruling 135), until
+    O4's discrepancy record admits a carry; read by the writer and by `gz wp order
+    accept`, which names it beside its other blockers.
+
+    Returns:
+        The refusal naming each tag and the clear's steps, or None when none is hung.
+
+    """
+    hung = order_tags(ledger, order.id).hung_uncleared
+    if not hung:
+        return None
+    first = hung[0]
+    return (
+        f"Order {order.id} has tag(s) hung and not cleared: {', '.join(hung)}. It is "
+        "accepted only once every tag it hung is cleared, so no surface is left isolated "
+        "past acceptance (refusal 6; RP-12 rulings 129 and 142). For each, the coordinator "
+        f"authorizes the clearance (`uv run gz wp tag authorize {first}`), books a "
+        f"Restoration dispatch (`uv run gz wp dispatch {order.work_package} --order "
+        f"{order.id} --role Restoration --model <tier>`), and its subagent runs `uv run gz "
+        f"wp tag clear {first} --dispatch D-<id> --position-found <position>`; then accept."
+    )
+
+
 def _check_accepted(ledger: Ledger, order: Order, move: OrderMove) -> None:
-    """Refuse an acceptance that books no readiness, or an unstopped one not ready (86)."""
+    """Refuse an acceptance that books no readiness, a hung tag, or an unstopped one not ready.
+
+    Rulings 86 and 142: a hung tag not cleared holds it whatever its stop (refusal 6).
+    """
     if move.acceptance_ready is None:
         _refuse(
             f"Order {order.id}'s acceptance books whether it read ready, `acceptance_ready`, "
             "which its Gate 5 reads (RP-12 rulings 84 and 86)."
         )
+    if refusal := hung_tag_refusal(ledger, order):
+        _refuse(refusal)
     if not move.acceptance_ready and not order_took_stopping_exit(ledger, order.id):
         _refuse(
             f"Order {order.id} took no stopping exit, so it is accepted only once its "

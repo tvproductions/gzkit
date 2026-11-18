@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-18
 metadata:
-  skill-version: "0.23.0"
+  skill-version: "0.24.0"
 model: sonnet
 ---
 
@@ -256,8 +256,9 @@ proofs and reviews under its id; accept refuses until it reads ready and the
 package's sealed footprint holds, the order and requirement stores aside (ruling
 66), and a refusal names every blocker, the footprint among them (ruling 88). A
 stopped order is excused, but whether it read ready is booked, the fact its Gate
-5 reads (rulings 60 and 84), and accept crosses the airlock outward. A freeze
-names at least one REQ (ruling 61):
+5 reads (rulings 60 and 84); a tag the order hung and nobody cleared holds every
+order, stopped or not (refusal 6, ruling 142). Accept crosses the airlock outward.
+A freeze names at least one REQ (ruling 61):
 
 ```bash
 uv run gz wp acceptance <ORD-id> init --author <implementing session>

@@ -28,10 +28,12 @@ from gzkit.acceptance_store import (
 )
 from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV
+from gzkit.ledger import Ledger
 from gzkit.registries import RegistryError
 from tests.commands.test_wp_acceptance import _receipt
 from tests.commands.test_wp_order_run import _ORDER, _PACKAGE, _CommencedOrder
 from tests.test_order_ledger import _raised
+from tests.test_tag_rows import seat_hang, seat_issue
 
 _FOOTPRINT = "gzkit.commands.wp_order.footprint_refusal"
 #: The readiness an `accepted` move books (ruling 84), compared by identity.
@@ -166,18 +168,44 @@ class TestTheOrdersGate(_OrderAcceptance):
         self.assertIn("outside the footprint", output)
         self.assertEqual(self.state(), "commenced")
 
-    def test_a_terminated_order_is_accepted_with_no_proof(self) -> None:
+    def terminate(self) -> None:
         for role in ("Implementer", "SpecReviewer", "Implementer", "Implementer"):
             self.wp("dispatch", _PACKAGE, "--order", _ORDER, "--role", role, "--model", "m",
                     "--req", "REQ-1")  # fmt: skip
         self.wp("block", _PACKAGE, "--order", _ORDER, "--reason", "r", "--next-action", "n")
         self.wp("unblock", _PACKAGE, "--order", _ORDER, "--ruling", "stop", "--operator", "g0",
                 "--exit", "terminate")  # fmt: skip
+
+    def hang_a_tag(self) -> str:
+        """Seat a hung tag on the order, the gate under test the verb's own (refusal 6)."""
+        ledger = Ledger(Path(".gzkit") / "ledger.jsonl")
+        tag = seat_issue(ledger, 1)
+        seat_hang(ledger, 1)
+        return tag
+
+    def test_a_terminated_order_is_accepted_with_no_proof(self) -> None:
+        self.terminate()
         with mock.patch(_FOOTPRINT, return_value="outside"):
             self.accept()
         # Ruling 84: excused, yet its readiness is read and booked: no proof, not ready.
         self.assertEqual(self.state(), "accepted")
         self.assertIs(self.rows("order_transitioned")[-1]["acceptance_ready"], _NOT_READY)
+
+    def test_a_hung_tag_is_named_beside_another_blocker(self) -> None:
+        """Refusal 6 and ruling 88: the hung tag and the clear's steps sit with every blocker."""
+        tag = self.hang_a_tag()
+        output = self.accept(code=3)
+        self.assertIn(f"gz wp acceptance {_ORDER} status", output)
+        self.assertIn(f"gz wp tag clear {tag}", output)
+        self.assertEqual(self.state(), "commenced")
+
+    def test_a_terminated_order_with_a_hung_tag_is_refused(self) -> None:
+        """Rulings 135 and 142: a stopping exit excuses readiness, never a hung tag."""
+        self.terminate()
+        tag = self.hang_a_tag()
+        with mock.patch(_FOOTPRINT, return_value=None):
+            self.assertIn(tag, self.accept(code=3))
+        self.assertEqual(self.state(), "commenced")
 
 
 class TestTheOrdersRoundBound(_OrderAcceptance):

@@ -31,6 +31,7 @@ from gzkit.order_ledger import (
     OrderLedgerError,
     OrderMove,
     booked_order_ids,
+    hung_tag_refusal,
     order_baseline,
     order_holds,
     order_move_refusal,
@@ -348,9 +349,10 @@ def wp_order_accept_cmd(*, order_id: str, evidence: str, as_json: bool) -> None:
     An order stopped by an exit is excused them, and Gate 5 is how it closes; the
     move books whether the order read ready as ``acceptance_ready``, which its
     Gate 5 reads, so a stopped order that read ready may still proceed (rulings
-    80 and 84). The move crosses the
-    airlock outward on the package's slice (ruling 65). An unknown order exits 1;
-    any refusal exits 3 and books nothing.
+    80 and 84). A tag the order hung and nobody cleared holds every order, a
+    stopped one included, named beside the other blockers (refusal 6, ruling
+    142). The move crosses the airlock outward on the package's slice (ruling
+    65). An unknown order exits 1; any refusal exits 3 and books nothing.
 
     Raises:
         PolicyBreachError: The lifecycle or the block refuses the move, acceptance
@@ -374,9 +376,11 @@ def wp_order_accept_cmd(*, order_id: str, evidence: str, as_json: bool) -> None:
     # Ruling 88: the footprint is read on every order, beside any other blocker.
     if outside := footprint_refusal(root, package, ledger):
         blockers.append(outside)
+    # Refusal 6 and ruling 142: a hung tag holds every order, a stopped one included.
+    hung = hung_tag_refusal(ledger, order)
     # Ruling 84: a stopped order is excused, but whether it read ready is booked.
-    if blockers and not order_took_stopping_exit(ledger, order.id):
-        raise PolicyBreachError("\n".join(blockers))
+    if hung or (blockers and not order_took_stopping_exit(ledger, order.id)):
+        raise PolicyBreachError("\n".join([*blockers, *([hung] if hung else [])]))
     ready = not blockers
     move = OrderMove(order=order.id, to_state="accepted", evidence=evidence, acceptance_ready=ready)
     try:

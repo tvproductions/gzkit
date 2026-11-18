@@ -22,9 +22,9 @@ gz wp order accept <ORD-id> --evidence <text> [OPTIONS]
 ## Description
 
 Books the order's `order_transitioned` from `commenced` to `accepted`
-(`docs/governance/harbor-ro12-contractor-kit.md`, RP-12 ruling 60), after two
-gates. Both are read on every order, and a refusal names every blocker it found,
-a file outside the footprint beside the others (ruling 88):
+(`docs/governance/harbor-ro12-contractor-kit.md`, RP-12 ruling 60), after three
+gates. Each is read on every order, and a refusal names every blocker it found,
+a file outside the footprint and a hung tag beside the others (ruling 88):
 
 1. The order's own acceptance reads ready. [`gz wp acceptance <ORD-id>`](wp-acceptance.md)
    runs the acceptance runtime on the order: its obligations are its frozen REQs at
@@ -37,14 +37,21 @@ a file outside the footprint beside the others (ruling 88):
    freeze sealed it (ruling 56). The order and requirement stores, which `gz wp
    order new` and `gz wp req new` write, never count, as the work-package store
    and the ledger do not (ruling 66).
+3. Every tag the order hung is cleared (refusal 6, rulings 129 and 142): a tag
+   hung and not cleared would leave its surface isolated past acceptance, so the
+   refusal names each such tag and the clear's steps, [`gz wp tag
+   authorize`](wp-tag-authorize.md), a `Restoration` dispatch and its subagent's
+   [`gz wp tag clear`](wp-tag-clear.md). Until O4's discrepancy record admits a
+   carry, no order is accepted over a hung tag, whatever its stop.
 
 A move that passes crosses the airlock outward on the repair package's slice: it
 books one `airlock_out` and prints the verdict, as [`gz wp accept`](wp-accept.md)
 does for a package (ruling 65). A stopped order crosses too, and its verdict
 names any file outside the footprint.
 
-An order stopped by a `reopen` or `terminate` exit is excused both gates, as a
-stopped package is, and Gate 5 at the order is how it closes. Its readiness is
+An order stopped by a `reopen` or `terminate` exit is excused the first two
+gates, as a stopped package is, and Gate 5 at the order is how it closes; a hung
+tag holds it as it holds any order (ruling 142). Its readiness is
 still read in full, the acceptance, the round limit and the footprint, and every
 accepted move books whether it read ready as `acceptance_ready`. Gate 5 reads
 that booked fact: a stopped order that read ready here may still close as
@@ -84,6 +91,22 @@ ORD-02-matcher: commenced -> accepted
   airlock out: clean
 ```
 
+Captured in-process from the acceptance wiring fixture
+(`tests/commands/test_wp_order_acceptance.py`), `ORD-01-import` read ready with
+`TAG-01-stamp` hung on it and not cleared:
+
+```console
+$ uv run gz wp order accept ORD-01-import --evidence final-inspection
+Order ORD-01-import has tag(s) hung and not cleared: TAG-01-stamp. It is
+accepted only once every tag it hung is cleared, so no surface is left isolated
+past acceptance (refusal 6; RP-12 rulings 129 and 142). For each, the
+coordinator authorizes the clearance (`uv run gz wp tag authorize
+TAG-01-stamp`), books a Restoration dispatch (`uv run gz wp dispatch WP-01-stamp
+--order ORD-01-import --role Restoration --model <tier>`), and its subagent runs
+`uv run gz wp tag clear TAG-01-stamp --dispatch D-<id> --position-found
+<position>`; then accept.
+```
+
 ## Exit codes
 
 | Code | Meaning |
@@ -91,10 +114,10 @@ ORD-02-matcher: commenced -> accepted
 | 0 | Accepted |
 | 1 | The order, or its work package, is not in the store |
 | 2 | Usage error |
-| 3 | The move is refused: a booked order has lost its record, the lifecycle refuses it, the order is blocked on the operator, the package is not initiated or is closed, acceptance does not read ready, the round limit is used, or a file lies outside the footprint; nothing booked |
+| 3 | The move is refused: a booked order has lost its record, the lifecycle refuses it, the order is blocked on the operator, the package is not initiated or is closed, acceptance does not read ready, the round limit is used, a file lies outside the footprint, or a tag the order hung is not cleared; nothing booked |
 
 ## See also
 
 [`gz wp acceptance`](wp-acceptance.md), [`gz wp order commence`](wp-order-commence.md),
 [`gz wp order close`](wp-order-close.md), [`gz wp order show`](wp-order-show.md),
-[`gz wp accept`](wp-accept.md)
+[`gz wp tag clear`](wp-tag-clear.md), [`gz wp accept`](wp-accept.md)

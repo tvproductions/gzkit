@@ -222,6 +222,21 @@ class _TagCase(unittest.TestCase):
         )
         record_order_transition(self.catalog, self.ledger, request)
 
+    def seat_move(self, from_state: str, to_state: str, **fields: object) -> None:
+        """Seat an order move past the writer, for an order holding a hung tag.
+
+        Refusal 6 holds acceptance while the order's hung tag is uncleared (ruling 142),
+        so a test reading a tag on an order past commencement seats the move by hand.
+        """
+        seated = OrderTransitionedEvent.model_validate(
+            {
+                "event": "order_transitioned", "id": _ORDER, "order": _ORDER,
+                "work_package": _REPAIR, "from_state": from_state, "to_state": to_state,
+                "evidence": "seated", **fields,
+            }
+        )  # fmt: skip
+        self.ledger.append(ledger_row(seated))
+
     def freeze(self) -> None:
         self.move(
             "frozen",
@@ -709,8 +724,11 @@ class HangRefusalTests(_HangCase):
 class HungTagLogTests(_HangCase):
     def close_the_order(self) -> None:
         self.move("commenced")
-        self.move("accepted", acceptance_ready=True)
-        self.move("closed", decision="terminate", attestor="g0", attestation_text="terminate it")
+        self.seat_move("commenced", "accepted", acceptance_ready=True)
+        self.seat_move(
+            "accepted", "closed", decision="terminate", attestor="g0",
+            attestation_text="terminate it",
+        )  # fmt: skip
 
     def test_a_hung_tag_reads_open_after_its_order_closes(self) -> None:
         """Ruling 129: a hung tag stays open until cleared, whatever its order's state."""
@@ -868,7 +886,7 @@ class ClearanceRefusalTests(_ClearanceCase):
 
     def test_an_order_not_commenced_is_refused(self) -> None:
         """Rulings 132 and 135: a clearance is authorized where the Restoration dispatch works."""
-        self.move("accepted", acceptance_ready=True)
+        self.seat_move("commenced", "accepted", acceptance_ready=True)
         self.assert_clearance_refused("a tag's clearance is authorized on a commenced order")
 
     def test_a_blocked_order_is_refused(self) -> None:
@@ -1140,7 +1158,7 @@ class ClearRefusalTests(_ClearCase):
 
     def test_an_order_not_commenced_is_refused(self) -> None:
         """Rulings 132 and 135: a clear is made where the Restoration dispatch works."""
-        self.move("accepted", acceptance_ready=True)
+        self.seat_move("commenced", "accepted", acceptance_ready=True)
         self.assert_clear_refused("a tag's clear is made on a commenced order")
 
     def test_a_blocked_order_is_refused(self) -> None:

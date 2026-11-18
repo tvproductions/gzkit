@@ -1120,7 +1120,9 @@ proofs and reviews are its own, so each order carries its own evidence to its ow
 Gate 5. Accepting it refuses until its acceptance reads ready and every changed
 file lies in the package's sealed footprint, the order and requirement stores
 aside; an order stopped by an exit is excused, but whether it read ready is
-booked, and its Gate 5 proceeds only on that. Accepting crosses the airlock
+booked, and its Gate 5 proceeds only on that. Every tag the order hung must be
+cleared first, a stopped order's too, and the refusal names each tag and the
+clear's steps (refusal 6, RP-12 ruling 142). Accepting crosses the airlock
 outward:
 
 ```bash
