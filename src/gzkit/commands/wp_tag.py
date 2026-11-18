@@ -41,8 +41,10 @@ from gzkit.mx.tag_out import (
     record_tag_issue,
     tag_log,
 )
+from gzkit.work_package_ledger import WorkPackageLedgerError
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from pathlib import Path
 
     from gzkit.mx.tag_out import Tag
@@ -205,21 +207,22 @@ def wp_tag_authorize_cmd(*, tag_id: str, called_by_subagent: bool, as_json: bool
     )
 
 
-def _refutations(root: Path, ledger: Ledger, tag_id: str) -> dict[str, int] | None:
-    """Read the acceptance runtime's refutations for the tag's order, for a block it may owe.
+def _refutations_reader(root: Path) -> Callable[[str], dict[str, int] | None]:
+    """Read the acceptance runtime's refutations for an order, for a block a clear may owe.
 
     Returns:
-        The counts by obligation, empty when the tag names no order the log holds,
-        or None when the acceptance history is unreadable, which the block then says.
+        A reader giving the counts by obligation, or None when the order's acceptance
+        history is unreadable, which the block's reason then says (as `gz wp block`).
 
     """
-    order = next((t.issue.order for t in tag_log(ledger) if t.issue.tag_id == tag_id), None)
-    if order is None:
-        return {}
-    try:
-        return refutation_counts(root, order)
-    except ValueError, KeyError, TypeError, AttributeError:
-        return None
+
+    def read(order: str) -> dict[str, int] | None:
+        try:
+            return refutation_counts(root, order)
+        except ValueError, KeyError, TypeError, AttributeError, OSError:
+            return None
+
+    return read
 
 
 def wp_tag_clear_cmd(
@@ -251,19 +254,18 @@ def wp_tag_clear_cmd(
     config = ensure_initialized()
     root = get_project_root()
     ledger_path = root / config.paths.ledger
-    ledger = Ledger(ledger_path)
     try:
         event = record_tag_clear(
             load_catalog(root),
-            ledger,
+            Ledger(ledger_path),
             tag_id,
             dispatch_id,
             position_found,
             stamped_id=stamped_dispatch_id,
             mx_session_id=_open_session_id(root, ledger_path),
-            refutations=_refutations(root, ledger, tag_id),
+            read_refutations=_refutations_reader(root),
         )
-    except ValueError as exc:
+    except (TagOutError, WorkPackageLedgerError) as exc:
         raise PolicyBreachError(str(exc)) from exc
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     if isinstance(event, TagClearedEvent):

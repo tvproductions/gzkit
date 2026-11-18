@@ -91,6 +91,22 @@ class _Registry:
         return self.held.get((kind, name))
 
 
+class _Refutations:
+    """A hand-written fake of the refutations reader a clear takes: it records each order asked.
+
+    It returns the counts it holds, or None when it stands for an unreadable history.
+    """
+
+    def __init__(self, held: dict[str, int] | None = None, *, unreadable: bool = False) -> None:
+        self.held = held or {}
+        self.unreadable = unreadable
+        self.calls: list[str] = []
+
+    def __call__(self, order: str) -> dict[str, int] | None:
+        self.calls.append(order)
+        return None if self.unreadable else dict(self.held)
+
+
 def _registry() -> _Registry:
     return _Registry(
         {
@@ -882,6 +898,7 @@ class _ClearCase(_ClearanceCase):
         super().setUp()
         self.clearance = self.authorize()
         self.restorer = self.book("Restoration")
+        self.reader = _Refutations()
 
     def clear(
         self,
@@ -901,7 +918,7 @@ class _ClearCase(_ClearanceCase):
             found,
             stamped_id=dispatch_id if stamped == _AS_NAMED else stamped,
             mx_session_id=session,
-            refutations={},
+            read_refutations=self.reader,
         )
 
     def assert_clear_refused(self, failed: str, act: Callable[[], object] | None = None) -> str:
@@ -990,7 +1007,7 @@ class OutOfPositionTests(_ClearCase):
             "on",
             stamped_id=self.restorer,
             mx_session_id=_SESSION,
-            refutations={"REQ-1": 2},
+            read_refutations=_Refutations({"REQ-1": 2}),
         )
         assert isinstance(event, WorkPackageBlockedEvent)
         self.assertEqual(event.refutations, {"REQ-1@1": 2})
@@ -1008,7 +1025,7 @@ class OutOfPositionTests(_ClearCase):
                     "on",
                     stamped_id=self.restorer,
                     mx_session_id=_SESSION,
-                    refutations=None,
+                    read_refutations=_Refutations(unreadable=True),
                 )
             )
         )
@@ -1018,6 +1035,26 @@ class OutOfPositionTests(_ClearCase):
         self.assertEqual(event.refutations, {"REQ-1@1": 0})
         # output-contract: the reason says the refutations were not counted
         self.assertIn("refutations not counted", event.reason)
+
+
+class ClearReviewTests(_ClearCase):
+    def test_a_blocked_orders_refusal_shows_though_the_restorer_has_ended(self) -> None:
+        """Rulings 59 and 137: the order's hold is the cause; a fresh dispatch could not book."""
+        self.clear("on")
+        record_dispatch_end(self.ledger, self.restorer, "a-restorer")
+        refusal = self.assert_clear_refused("is blocked on the operator")
+        self.assertNotIn("is not a live dispatch", refusal)
+
+    def test_the_refutations_are_read_only_when_a_block_is_booked(self) -> None:
+        """Ruling 8: the counts are the block's; a clear or a refusal never reads them."""
+        self.assert_clear_refused("is not one of", lambda: self.clear("open"))
+        self.clear("off")
+        self.assertEqual(self.reader.calls, [])
+
+    def test_an_out_of_position_clear_reads_the_refutations_of_its_order(self) -> None:
+        """Ruling 8: the block's counts are read once, for the tag's order."""
+        self.clear("on")
+        self.assertEqual(self.reader.calls, [_ORDER])
 
 
 class ClearRefusalTests(_ClearCase):
@@ -1115,7 +1152,7 @@ class UnhungClearTests(_HangCase):
                 "off",
                 stamped_id=self.dispatch,
                 mx_session_id=_SESSION,
-                refutations={},
+                read_refutations=_Refutations(),
             )
         )
         self.assertIsInstance(raised, TagOutError)
@@ -1137,7 +1174,7 @@ class UnauthorizedClearTests(_ClearanceCase):
                 "off",
                 stamped_id=restorer,
                 mx_session_id=_SESSION,
-                refutations={},
+                read_refutations=_Refutations(),
             )
         )
         self.assertIsInstance(raised, TagOutError)

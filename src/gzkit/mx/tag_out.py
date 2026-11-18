@@ -49,7 +49,7 @@ from gzkit.work_package_run import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Callable, Mapping
 
     from gzkit.ledger import Ledger
     from gzkit.models.catalog import Catalog, Order, WorkPackage
@@ -729,29 +729,33 @@ def _block_out_of_position(
     ledger: Ledger,
     hang: TagHungEvent,
     found: str,
-    refutations: Mapping[str, int] | None,
+    read_refutations: Callable[[str], Mapping[str, int] | None],
 ) -> WorkPackageBlockedEvent:
     """Book the order block an out-of-position find owes, its words the runtime's (ruling 137).
+
+    The hang carries the issue's line item (ruling 120), so it names the tag, surface
+    and order; the refutations are read here alone, for the order the block holds.
 
     Returns:
         The block booked; the tag stays hung.
 
     """
-    issue, hung = hang, hang.position  # the hang carries the issue's line item (ruling 120)
+    hung = hang.position
+    refutations = read_refutations(hang.order)
     reason = (
-        f"Tag {issue.tag_id} was hung with {issue.surface} {hung}, and its clear found it "
+        f"Tag {hang.tag_id} was hung with {hang.surface} {hung}, and its clear found it "
         f"{found}: out of position, so restoration stops and the discrepancy goes to the "
         "Authorizing Officer (RP-12 ruling 137, TUM 1.8.5.b(2)). The tag stays hung."
     )
     if refutations is None:
         reason += " (acceptance history unreadable, refutations not counted)"
     decision = (
-        f"Rule on how {issue.surface} came to be {found}, not {hung}, and what restores it; "
-        f"then unblock {issue.order} and have a {RESTORATION} dispatch clear {issue.tag_id} "
+        f"Rule on how {hang.surface} came to be {found}, not {hung}, and what restores it; "
+        f"then unblock {hang.order} and have a {RESTORATION} dispatch clear {hang.tag_id} "
         "again."
     )
     request = BlockRequest(
-        work_package=issue.work_package, reason=reason, next_action=decision, order=issue.order
+        work_package=hang.work_package, reason=reason, next_action=decision, order=hang.order
     )
     return record_work_package_block(catalog, ledger, request, refutations=refutations or {})
 
@@ -765,15 +769,16 @@ def record_tag_clear(
     *,
     stamped_id: str | None,
     mx_session_id: str | None,
-    refutations: Mapping[str, int] | None,
+    read_refutations: Callable[[str], Mapping[str, int] | None],
 ) -> TagClearedEvent | WorkPackageBlockedEvent:
     """Book the Restoration dispatch's clear of one hung tag, its block, or refuse and write none.
 
     A position found other than the hung one books one `work_package_blocked` on the
     tag's order instead, its reason and decision written here from the tag and the
-    two positions, and the tag stays hung (ruling 137). `refutations` is the
-    acceptance runtime's own count, which the block carries (ruling 8); None when
-    the caller could not read it, which the block's reason then says.
+    two positions, and the tag stays hung (ruling 137). ``read_refutations`` reads
+    the acceptance runtime's own count for an order, which the block carries (ruling
+    8), or None when the history is unreadable, which the block's reason then says;
+    it is called only when a block is booked, so a clear or a refusal never reads it.
 
     Returns:
         The clear booked, or the block an out-of-position find booked.
@@ -799,10 +804,10 @@ def record_tag_clear(
             "naming the position the surface was found in."
         )
     issue, hang, clearance = _cleared_tag(ledger, tag_id)
-    _check_restorer(ledger, issue, hang.dispatch_id, dispatch_id)
     _check_clearable(ledger, issue, "clear")
+    _check_restorer(ledger, issue, hang.dispatch_id, dispatch_id)
     if position_found != hang.position:
-        return _block_out_of_position(catalog, ledger, hang, position_found, refutations)
+        return _block_out_of_position(catalog, ledger, hang, position_found, read_refutations)
     event = TagClearedEvent.model_validate(
         {
             "event": "tag_cleared",

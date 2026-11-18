@@ -1078,7 +1078,7 @@ def _observe_tag_clear(
             "off",
             stamped_id=restorer,
             mx_session_id=_AUTHOR,
-            refutations={},
+            read_refutations=lambda _order: {},
         )
 
     write()
