@@ -376,16 +376,18 @@ def wp_order_accept_cmd(*, order_id: str, evidence: str, as_json: bool) -> None:
     # Ruling 88: the footprint is read on every order, beside any other blocker.
     if outside := footprint_refusal(root, package, ledger):
         blockers.append(outside)
-    # Refusal 6 and ruling 142: a hung tag holds every order, a stopped one included.
-    hung = hung_tag_refusal(ledger, order)
-    # Ruling 84: a stopped order is excused, but whether it read ready is booked.
-    if hung or (blockers and not order_took_stopping_exit(ledger, order.id)):
-        raise PolicyBreachError("\n".join([*blockers, *([hung] if hung else [])]))
+    # Ruling 84: a stopped order is excused its blockers, so none is named as refusing it,
+    # but whether it read ready is booked.
+    refusing = [] if order_took_stopping_exit(ledger, order.id) else blockers
     ready = not blockers
     move = OrderMove(order=order.id, to_state="accepted", evidence=evidence, acceptance_ready=ready)
     try:
+        # Refusal 6 and ruling 142: a hung tag holds every order, a stopped one included;
+        # a tag row the leaf reader cannot read is refused with its void (ruling 141).
+        if (hung := hung_tag_refusal(ledger, order)) or refusing:
+            raise PolicyBreachError("\n".join([*refusing, *([hung] if hung else [])]))
         event = record_order_transition(catalog, ledger, move)
-    except OrderLedgerError as exc:
+    except (OrderLedgerError, TagOutError) as exc:
         _refuse_move("accepted", str(exc))
     _emit_move(event, cross_airlock(root, ledger, package, event.to_state), as_json=as_json)
 

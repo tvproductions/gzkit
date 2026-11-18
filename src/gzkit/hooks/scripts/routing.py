@@ -220,14 +220,12 @@ def _pipeline_gate_script() -> str:
                 except Exception:
                     sys.exit(0)
 
-                # A frozen order's footprint is held before the MX demotion: tags
-                # exist only while an MX session is open, so a demoted check would
-                # never refuse where it is needed (RP-12 ruling 146).
-                _refuse_if(frozen_order_write_refusal(project_root, rel_path))
-
                 # An open MX marker, the hangar or safe mode, lowers this gate to
                 # advisory with every other guard outside the floor; the hard-gate
                 # exit re-runs it at full strength (operator ruling 2026-10-17, R6).
+                # A frozen order's footprint is held before that demotion: tags
+                # exist only while an MX session is open, so a demoted check would
+                # never refuse where it is needed (RP-12 ruling 146).
                 try:
                     from gzkit.mx import checkpoint as _checkpoint
                 except ImportError:
@@ -235,11 +233,14 @@ def _pipeline_gate_script() -> str:
                 if _checkpoint is not None and _checkpoint.is_advisory(
                     "pipeline-gate", project_root
                 ):
+                    _refuse_if(frozen_order_write_refusal(project_root, rel_path))
                     print(_checkpoint.demote_notice("pipeline-gate"), file=sys.stderr)
                     sys.exit(0)
 
-                # A blocked, accepted or stopped work package fences the tree, so
-                # a write here cannot dodge `gz wp dispatch` (GHI #1206).
+                # A blocked, accepted or stopped work package fences the tree, and
+                # a frozen order its sealed footprint, so a write here cannot dodge
+                # `gz wp dispatch` or commencement (GHI #1206; RP-12 ruling 116). The
+                # fence is read once on either branch.
                 _refuse_if(work_package_write_refusal(project_root, rel_path))
 
                 plans_dir = pipeline_plans_dir(project_root)

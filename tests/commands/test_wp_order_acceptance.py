@@ -199,6 +199,23 @@ class TestTheOrdersGate(_OrderAcceptance):
         self.assertIn(f"gz wp tag clear {tag}", output)
         self.assertEqual(self.state(), "commenced")
 
+    def test_a_malformed_tag_row_refuses_the_accept_and_names_its_void(self) -> None:
+        """Ruling 141: the leaf reader's refusal is the verb's exit 3, never a crash."""
+        row = {"schema": "gzkit.ledger.v1", "event": "tag_hung", "id": "TAG-7-bad"}
+        with (Path(".gzkit") / "ledger.jsonl").open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps({**row, "ts": "2026-11-18T00:00:00+00:00"}) + "\n")
+        self.assertIn("gz ledger correct", self.accept(code=3))
+        self.assertEqual(self.state(), "commenced")
+
+    def test_a_terminated_order_is_refused_for_its_hung_tag_alone(self) -> None:
+        """Rulings 84 and 142: the blockers a stop excuses are not named as refusing it."""
+        self.terminate()
+        self.hang_a_tag()
+        with mock.patch(_FOOTPRINT, return_value="1 changed file outside the footprint"):
+            output = self.accept(code=3)
+        self.assertNotIn("outside the footprint", output)
+        self.assertNotIn(f"gz wp acceptance {_ORDER} status", output)
+
     def test_a_terminated_order_with_a_hung_tag_is_refused(self) -> None:
         """Rulings 135 and 142: a stopping exit excuses readiness, never a hung tag."""
         self.terminate()

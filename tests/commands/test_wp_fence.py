@@ -407,6 +407,15 @@ class TestTheGeneratedHook(_FenceCase):
         self.assertEqual((held.returncode, outside.returncode), (2, 0), msg=held.stderr)
         self.assertIn("ORD-01-fix", held.stderr)
 
+    def test_a_frozen_footprint_refuses_the_write_with_no_marker(self) -> None:
+        # given no MX marker and an order frozen on the source path (ruling 116)
+        _seat_frozen_order([_SOURCE])
+        # when
+        held, outside = self._hook(_SOURCE), self._hook("src/gzkit/elsewhere.py")
+        # then the full fence check refuses the footprint write; one outside passes
+        self.assertEqual((held.returncode, outside.returncode), (2, 0), msg=held.stderr)
+        self.assertIn("ORD-01-fix", held.stderr)
+
     def test_tests_stay_writable_under_a_block(self) -> None:
         self._commence()
         self._block()
