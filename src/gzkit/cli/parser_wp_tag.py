@@ -56,6 +56,21 @@ _AUTHORIZE_EXIT_CODES = """Exit codes
         hung or already authorized, the order not commenced, or blocked, or the
         hanging dispatch still live; nothing is booked
 """
+_CLEAR_EXAMPLES = [
+    "gz wp tag clear TAG-01-stamp-hook --dispatch D-9c41f0e2a7b35d18 --position-found off",
+    "gz wp tag clear TAG-02-hexagon --dispatch D-9c41f0e2a7b35d18 --position-found on --json",
+]
+#: A refusal books nothing; an out-of-position find books the order's block (ruling 137).
+_CLEAR_EXIT_CODES = """Exit codes
+    0   Cleared: the tag_cleared event is booked and the tag reads closed
+    1   User/config error: the project is not initialized
+    2   Usage or System/IO error
+    3   Policy breach: found out of position, the order's block booked and the
+        tag still hung; or refused, nothing booked: no MX session, the call not
+        stamped with the named dispatch, the tag not hung, not authorized or
+        already cleared, the dispatch not a live Restoration on its order, the
+        subagent that hung it, or the order not commenced, or blocked
+"""
 #: `show` writes nothing; it exits 3 only on a ledger row it cannot read.
 _SHOW_EXIT_CODES = """Exit codes
     0   Shown, an empty log included
@@ -66,7 +81,7 @@ _SHOW_EXIT_CODES = """Exit codes
 
 
 def _register_wp_tag(wp_commands: argparse._SubParsersAction) -> None:
-    """Register ``gz wp tag`` and its leaves, ``issue``, ``show``, ``hang`` and ``authorize``."""
+    """Register ``gz wp tag`` and its five leaves, ``issue`` to ``clear``."""
     p_tag = wp_commands.add_parser(
         "tag",
         help="The tag-out log: tags isolating surfaces for a repair",
@@ -202,6 +217,41 @@ def _register_wp_tag(wp_commands: argparse._SubParsersAction) -> None:
         func=lambda a: _lazy("wp_tag_authorize_cmd")(
             tag_id=a.tag,
             called_by_subagent=bool(getattr(a, "called_by_subagent", False)),
+            as_json=a.as_json,
+        )
+    )
+
+    p_tag_clear = tag_commands.add_parser(
+        "clear",
+        help="Clear an authorized tag, as the Restoration dispatch's stamped call",
+        description=(
+            "Book the Restoration dispatch's clear of one hung tag whose clearance\n"
+            "is authorized, recording the position found. Found out of position, it\n"
+            "blocks the order and leaves the tag hung. Only the call stamped with\n"
+            "the dispatch it names may clear (RP-12 rulings 6, 129, 137 to 140)."
+        ),
+        epilog=build_epilog(_CLEAR_EXAMPLES, exit_codes=_CLEAR_EXIT_CODES),
+    )
+    p_tag_clear.add_argument("tag", help="The hung tag's id, TAG-<NN>-<slug>")
+    p_tag_clear.add_argument(
+        "--dispatch",
+        required=True,
+        metavar="D-ID",
+        help="The live Restoration dispatch clearing it, the one this call is stamped with",
+    )
+    p_tag_clear.add_argument(
+        "--position-found",
+        required=True,
+        choices=("off", "advisory", "recording", "on"),
+        help="The position the surface was found in; any but the hung one is out of position",
+    )
+    add_json_flag(p_tag_clear)
+    p_tag_clear.set_defaults(
+        func=lambda a: _lazy("wp_tag_clear_cmd")(
+            tag_id=a.tag,
+            dispatch_id=a.dispatch,
+            position_found=a.position_found,
+            stamped_dispatch_id=getattr(a, "stamped_dispatch_id", None),
             as_json=a.as_json,
         )
     )

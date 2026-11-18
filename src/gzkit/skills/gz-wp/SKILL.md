@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-18
 metadata:
-  skill-version: "0.20.0"
+  skill-version: "0.21.0"
 model: sonnet
 ---
 
@@ -200,33 +200,33 @@ session, and any session may run it (RP-12 rulings 4 and 110):
 uv run gz wp tag show [--all] [--json]
 ```
 
-Once the order is frozen, book a `Repair` dispatch on it; that dispatch's subagent
-hangs each tag. The hang is the call stamped with the dispatch `--dispatch` names,
-a live `Repair` on the tag's own order, so the main session cannot hang; the order
-is frozen and not blocked, the tag issued, open and not yet hung, and the open MX
-session is recorded as the hang's holder. A hung tag reads open until its clear
-(RP-12 rulings 6, 120 and 129 to 133):
+Once the order is frozen, book a `Repair` dispatch on it; its subagent hangs each
+tag, the call stamped with the dispatch `--dispatch` names, so the main session
+cannot hang. A hung tag reads open until its clear (RP-12 rulings 6, 120, 129 to 133):
 
 ```bash
 uv run gz wp tag hang <TAG-id> --dispatch D-<id> [--json]
-```
-
-Once the order is commenced and the work done, authorize each hung tag's clearance
-from the main session; a subagent's call is refused. The order is commenced and not
-blocked, the tag hung and its clearance not yet authorized, and the hanging
-dispatch over: ended (its subagent's `SubagentStop` books it) or voided with
-`gz wp dispatch <WP-id> --void D-<id> --reason "<why>"` when it was killed. A live
-one is refused. The clearance records the repair activity not available and the
-open MX session as the mark (RP-12 rulings 6, 7, 114, 115, 118 and 138):
-
-```bash
-uv run gz wp tag authorize <TAG-id> [--json]
 ```
 
 Once every tag the order needs is hung, record commencement:
 
 ```bash
 uv run gz wp order commence <ORD-id> --evidence "<what justifies it>"
+```
+
+Once the work is done, authorize each hung tag's clearance from the main session.
+The hanging dispatch must be over: ended (its `SubagentStop` books it) or voided
+with `gz wp dispatch <WP-id> --void D-<id> --reason "<why>"` after a kill (RP-12
+rulings 6, 7, 114, 115, 118 and 138). Then book a `Restoration` dispatch; its
+subagent clears each authorized tag, never one that claimed the hanging dispatch,
+naming the position found. Found as hung, the tag reads closed; found otherwise,
+`on` among them, the order is blocked, the verb exits 3 and the tag stays hung:
+put the block to the operator (rulings 129, 137 to 140). Each verb's refusal
+names what failed:
+
+```bash
+uv run gz wp tag authorize <TAG-id> [--json]
+uv run gz wp tag clear <TAG-id> --dispatch D-<id> --position-found <off|advisory|recording|on> [--json]
 ```
 
 The order's run is the package's run with `--order`: dispatch only against a REQ

@@ -13,7 +13,7 @@ gz wp tag show [--all] [OPTIONS]
 | Flag | Description |
 |------|-------------|
 | `--all` | Every tag issued, open and closed, each marked which |
-| `--json` | Output the tags as JSON, each the `tag_issued` event's fields with `is_open`, `state`, `hang` and `clearance` |
+| `--json` | Output the tags as JSON, each the `tag_issued` event's fields with `is_open`, `state`, `hang`, `clearance` and `clear` |
 | `--quiet`, `-q` | Suppress non-error output |
 | `--verbose`, `-v` | Enable verbose output |
 | `--debug` | Enable debug mode with full tracebacks |
@@ -28,19 +28,20 @@ cited here.
 
 - Each tag is a block (ruling 126): its id and order, then who hung it (the
   `Repair` dispatch, or `not hung`), whether its clearance is authorized (`gz wp
-  tag authorize`), its class (Danger or Caution), the surface as
+  tag authorize`), who cleared it and the position found (`gz wp tag clear`), its class (Danger or Caution), the surface as
   written at issue, the position it is to be hung in, the check level, the
   source, the hazard and the removal procedure, one labelled line each, so the
   whole line item reads at any width. Under `--all` the first line marks it
   `(open)` or `(closed)`. An unhung tag reads closed once its order has closed
   (ruling 122); a hung tag stays open until it is cleared, whatever its order's
-  state (ruling 129).
+  state (ruling 129), and a cleared tag reads closed.
 - With no tag open, it prints `No tag is open.`; under `--all` with none issued,
   `No tag has been issued.`
 - `--json` prints a list, oldest first: each tag's `tag_issued` event, as
   [`gz wp tag issue`](wp-tag-issue.md) booked it, with `is_open`, `state`
-  (`issued`, `hung` or `authorized`), `hang`, the `tag_hung` event or `null`, and
-  `clearance`, the `tag_clearance_authorized` event or `null`. An empty log
+  (`issued`, `hung`, `authorized` or `cleared`), `hang`, the `tag_hung` event or
+  `null`, `clearance`, the `tag_clearance_authorized` event or `null`, and `clear`,
+  the `tag_cleared` event or `null`. An empty log
   prints `[]`.
 
 The verb writes nothing and needs no MX session. Unlike `issue`, it is not
@@ -67,6 +68,7 @@ $ uv run gz wp tag show
 TAG-01-hexagon on ORD-01-import
   Hung by:     not hung
   Clearance:   not authorized
+  Cleared by:  not cleared
   Class:       Caution
   Surface:     validator:hexagon-tests
   Position:    advisory
@@ -83,6 +85,7 @@ $ uv run gz wp tag show --all
 TAG-01-hexagon on ORD-01-import (open)
   Hung by:     not hung
   Clearance:   not authorized
+  Cleared by:  not cleared
   Class:       Caution
   Surface:     validator:hexagon-tests
   Position:    advisory
@@ -99,6 +102,7 @@ $ uv run gz wp tag show --all --json
 [
   {
     "check_level": "D",
+    "clear": null,
     "clearance": null,
     "event": "tag_issued",
     "hang": null,
@@ -117,7 +121,7 @@ $ uv run gz wp tag show --all --json
     "surface_name": "hexagon_tests",
     "tag_class": "Caution",
     "tag_id": "TAG-01-hexagon",
-    "ts": "2026-11-18T07:08:17.875820+00:00",
+    "ts": "2026-11-18T08:46:25.478839+00:00",
     "work_package": "WP-01-stamp"
   }
 ]
@@ -128,8 +132,9 @@ In a second project, after the `Repair` dispatch hung `TAG-01-stamp-hook` (rulin
 ```console
 $ uv run gz wp tag show
 TAG-01-stamp-hook on ORD-01-import
-  Hung by:     D-3f9a2394a52623fc
+  Hung by:     D-c978f7bbe77ca6ac
   Clearance:   not authorized
+  Cleared by:  not cleared
   Class:       Danger
   Surface:     validator:hexagon-tests
   Position:    off
@@ -146,11 +151,12 @@ $ uv run gz wp tag show --all --json
 [
   {
     "check_level": "C",
+    "clear": null,
     "clearance": null,
     "event": "tag_issued",
     "hang": {
       "check_level": "C",
-      "dispatch_id": "D-3f9a2394a52623fc",
+      "dispatch_id": "D-c978f7bbe77ca6ac",
       "event": "tag_hung",
       "hazard": "The scope reads a half-built map.",
       "id": "TAG-01-stamp-hook",
@@ -166,7 +172,7 @@ $ uv run gz wp tag show --all --json
       "surface_name": "hexagon_tests",
       "tag_class": "Danger",
       "tag_id": "TAG-01-stamp-hook",
-      "ts": "2026-11-18T07:08:17.897685+00:00",
+      "ts": "2026-11-18T08:46:25.503186+00:00",
       "work_package": "WP-01-stamp"
     },
     "hazard": "The scope reads a half-built map.",
@@ -184,7 +190,7 @@ $ uv run gz wp tag show --all --json
     "surface_name": "hexagon_tests",
     "tag_class": "Danger",
     "tag_id": "TAG-01-stamp-hook",
-    "ts": "2026-11-18T07:08:17.881146+00:00",
+    "ts": "2026-11-18T08:46:25.485440+00:00",
     "work_package": "WP-01-stamp"
   }
 ]
@@ -197,8 +203,34 @@ until its clear:
 ```console
 $ uv run gz wp tag show
 TAG-01-stamp-hook on ORD-01-import
-  Hung by:     D-3f9a2394a52623fc
+  Hung by:     D-c978f7bbe77ca6ac
   Clearance:   authorized
+  Cleared by:  not cleared
+  Class:       Danger
+  Surface:     validator:hexagon-tests
+  Position:    off
+  Check level: C
+  Source:      order-work
+  Hazard:      The scope reads a half-built map.
+  Removal:     Run the scope; it passes.
+```
+
+After a `Restoration` dispatch cleared it, found in the position it was hung in
+(`gz wp tag clear`), the tag reads closed (ruling 129). The default view omits it:
+
+```console
+$ uv run gz wp tag show
+No tag is open.
+```
+
+and `--all` names the clear's dispatch and the position found:
+
+```console
+$ uv run gz wp tag show --all
+TAG-01-stamp-hook on ORD-01-import (closed)
+  Hung by:     D-c978f7bbe77ca6ac
+  Clearance:   authorized
+  Cleared by:  D-7b45765599187c69, found off
   Class:       Danger
   Surface:     validator:hexagon-tests
   Position:    off

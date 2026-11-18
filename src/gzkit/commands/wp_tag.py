@@ -14,14 +14,20 @@ keeps the stamped dispatch id before it consumes the stamp, and the writer,
 `authorize` is the coordinator's act again (ruling 6), refused from a subagent's
 call (ruling 114); its writer, `record_tag_clearance`, reads the hanging
 dispatch's end or void from the ledger and refuses a live one (rulings 7 and 138).
+`clear` is the stamped call of the Restoration dispatch it names, as `hang` is; its
+writer, `record_tag_clear`, books the clear in position, or the order's block when
+the position found is not the hung one, which exits 3 with the tag still hung
+(rulings 137 to 140).
 """
 
 from typing import TYPE_CHECKING
 
+from gzkit.acceptance_store import refutation_counts
 from gzkit.cli.formatters import OutputFormatter
 from gzkit.commands.common import ensure_initialized, get_project_root
 from gzkit.commands.tag_surfaces import ProjectSurfaces
 from gzkit.core.exceptions import PolicyBreachError
+from gzkit.events import TagClearedEvent
 from gzkit.ledger import Ledger
 from gzkit.models.catalog import load_catalog
 from gzkit.mx import marker
@@ -29,6 +35,7 @@ from gzkit.mx.tag_out import (
     TagIssue,
     TagOutError,
     open_tags,
+    record_tag_clear,
     record_tag_clearance,
     record_tag_hang,
     record_tag_issue,
@@ -198,10 +205,88 @@ def wp_tag_authorize_cmd(*, tag_id: str, called_by_subagent: bool, as_json: bool
     )
 
 
+def _refutations(root: Path, ledger: Ledger, tag_id: str) -> dict[str, int] | None:
+    """Read the acceptance runtime's refutations for the tag's order, for a block it may owe.
+
+    Returns:
+        The counts by obligation, empty when the tag names no order the log holds,
+        or None when the acceptance history is unreadable, which the block then says.
+
+    """
+    order = next((t.issue.order for t in tag_log(ledger) if t.issue.tag_id == tag_id), None)
+    if order is None:
+        return {}
+    try:
+        return refutation_counts(root, order)
+    except ValueError, KeyError, TypeError, AttributeError:
+        return None
+
+
+def wp_tag_clear_cmd(
+    *,
+    tag_id: str,
+    dispatch_id: str,
+    position_found: str,
+    stamped_dispatch_id: str | None,
+    as_json: bool,
+) -> None:
+    """Book the Restoration dispatch's clear of one authorized tag (RP-12 rulings 6, 129, 137-140).
+
+    The clear is the stamped call of the dispatch ``--dispatch`` names, as a hang is
+    (ruling 133); the open MX session, read from the marker here, is recorded as the
+    holder. Found in position, it prints ``Cleared <TAG-id> by <D-id>, found
+    <position>.``, or with ``--json`` the `tag_cleared` event booked, and the tag
+    reads closed. Found out of position, it prints the order's block, or with
+    ``--json`` the `work_package_blocked` event, and exits 3 with the tag still hung.
+
+    Raises:
+        PolicyBreachError: The position found is out of position, the order's block
+            booked (ruling 137); or the marker is present but not on, or the writer
+            refuses the clear (no MX session open, the call not stamped with the
+            dispatch named, the tag not hung, not authorized or already cleared, the
+            dispatch not a live Restoration on the tag's order, the subagent that
+            hung it, the order not commenced or blocked), nothing booked.
+
+    """
+    config = ensure_initialized()
+    root = get_project_root()
+    ledger_path = root / config.paths.ledger
+    ledger = Ledger(ledger_path)
+    try:
+        event = record_tag_clear(
+            load_catalog(root),
+            ledger,
+            tag_id,
+            dispatch_id,
+            position_found,
+            stamped_id=stamped_dispatch_id,
+            mx_session_id=_open_session_id(root, ledger_path),
+            refutations=_refutations(root, ledger, tag_id),
+        )
+    except ValueError as exc:
+        raise PolicyBreachError(str(exc)) from exc
+    fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
+    if isinstance(event, TagClearedEvent):
+        fmt.emit(
+            event
+            if as_json
+            else f"Cleared {event.tag_id} by {event.dispatch_id}, found {event.position_found}."
+        )
+        return
+    fmt.emit(event if as_json else f"Blocked order {event.order} on the operator: {event.reason}")
+    msg = (
+        f"Tag {tag_id} was found {position_found}, out of position, so it is not cleared: "
+        f"order {event.order} is blocked on the operator and the tag stays hung (RP-12 "
+        f"ruling 137). The decision owed: {event.next_operator_action}"
+    )
+    raise PolicyBreachError(msg)
+
+
 def _tag_block(tag: Tag, *, every: bool) -> str:
     """Write one tag as a block of labelled lines, its whole line item legible (ruling 126).
 
-    A hung tag names its hang's dispatch (ruling 129).
+    A hung tag names its hang's dispatch (ruling 129), and a cleared one its clear's
+    dispatch and the position found.
 
     Returns:
         The tag's id and order, its state under ``--all``, then each field on its own line.
@@ -212,6 +297,12 @@ def _tag_block(tag: Tag, *, every: bool) -> str:
     fields = (
         ("Hung by", tag.hang.dispatch_id if tag.hang else "not hung"),
         ("Clearance", "authorized" if tag.clearance else "not authorized"),
+        (
+            "Cleared by",
+            f"{tag.clear.dispatch_id}, found {tag.clear.position_found}"
+            if tag.clear
+            else "not cleared",
+        ),
         ("Class", issue.tag_class),
         ("Surface", issue.surface),
         ("Position", issue.position),
@@ -229,19 +320,30 @@ def _tag_block(tag: Tag, *, every: bool) -> str:
 
 
 def _tag_record(tag: Tag) -> dict[str, object]:
-    """Lay one tag out for ``--json``: its issue, its state and its hang (ruling 129).
+    """Lay one tag out for ``--json``: its issue, its state, its hang, clearance and clear.
 
     Returns:
-        The issue event's fields with ``is_open``, ``state`` (issued or hung) and
-        ``hang``, the hang event or None.
+        The issue event's fields with ``is_open``, ``state`` (issued, hung,
+        authorized or cleared) and ``hang``, ``clearance`` and ``clear``, each its
+        event or None.
 
     """
+    state = (
+        "cleared"
+        if tag.clear
+        else "authorized"
+        if tag.clearance
+        else "hung"
+        if tag.hang
+        else "issued"
+    )
     return {
         **tag.issue.model_dump(mode="json"),
         "is_open": tag.is_open,
-        "state": "authorized" if tag.clearance else "hung" if tag.hang else "issued",
+        "state": state,
         "hang": tag.hang.model_dump(mode="json") if tag.hang else None,
         "clearance": tag.clearance.model_dump(mode="json") if tag.clearance else None,
+        "clear": tag.clear.model_dump(mode="json") if tag.clear else None,
     }
 
 

@@ -8,7 +8,9 @@ the tag-out log, and the reducer that reads a tag open or closed, is proved in
 `tests/test_tag_out.py`; these held tests prove the wiring alone, the verbs' exit
 codes, the stamp refusal and the epilogs (ruling 125). `gz wp tag hang` (O3 task 3,
 act 3) is the stamped call of the Repair dispatch it names (ruling 133);
-`gz wp tag authorize` (O3 task 4) is the coordinator's unstamped call (ruling 114).
+`gz wp tag authorize` (O3 task 4) is the coordinator's unstamped call (ruling 114),
+and `gz wp tag clear` the stamped call of the Restoration dispatch it names, an
+out-of-position find exiting 3 with the order blocked (rulings 137 to 140).
 """
 
 import json
@@ -200,6 +202,7 @@ class TagShowWiringTests(_TagCase):
             [
                 "Hung by",
                 "Clearance",
+                "Cleared by",
                 "Class",
                 "Surface",
                 "Position",
@@ -211,6 +214,7 @@ class TagShowWiringTests(_TagCase):
         )
         self.assertIn("Hung by:     not hung", lines)
         self.assertIn("Clearance:   not authorized", lines)
+        self.assertIn("Cleared by:  not cleared", lines)
         self.assertIn("Hazard:      The scope reads a half-built map.", lines)
         self.assertIn("Removal:     Run the scope; it passes.", lines)
 
@@ -261,12 +265,13 @@ class TagShowWiringTests(_TagCase):
                     tag.get("state"),
                     tag.get("hang", "absent"),
                     tag.get("clearance", "absent"),
+                    tag.get("clear", "absent"),
                 )
                 for tag in printed
             ],
-            [("TAG-01-stamp-hook", "ORD-01-import", True, "issued", None, None)],
+            [("TAG-01-stamp-hook", "ORD-01-import", True, "issued", None, None, None)],
         )
-        added = {"is_open", "state", "hang", "clearance"}
+        added = {"is_open", "state", "hang", "clearance", "clear"}
         self.assertEqual({k: v for k, v in printed[0].items() if k not in added}, _tag_rows()[0])
 
 
@@ -434,11 +439,75 @@ class TagAuthorizeWiringTests(_HungTagCase):
         self.assertEqual(_tag_rows("tag_clearance_authorized"), [])
 
 
+class TagClearWiringTests(_HungTagCase):
+    """The tag hung, the order commenced, the clearance authorized, a Restoration booked."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.stamp_as(self.dispatch)
+        self.assertEqual(self.hang("TAG-01-stamp-hook", "--dispatch", self.dispatch)[0], 0)
+        self.unstamp()
+        root = Path.cwd().resolve().as_posix()
+        for args in (
+            ["wp", "order", "commence", "ORD-01-import", "--evidence", "E"],
+            [*("wp", "dispatch", "WP-01-stamp", "--void", self.dispatch), "--reason", "killed"],
+            ["wp", "tag", "authorize", "TAG-01-stamp-hook"],
+        ):
+            result = self.runner.invoke(main, args)
+            self.assertEqual(result.exit_code, 0, result.output)
+        result = self.runner.invoke(
+            main,
+            [
+                *("wp", "dispatch", "WP-01-stamp", "--order", "ORD-01-import"),
+                *("--role", "Restoration", "--model", "m", "--root", root, "--json"),
+            ],
+        )
+        self.assertEqual(result.exit_code, 0, result.output)
+        self.restorer = json.loads(result.output)["dispatch_id"]
+        self.stamp_as(self.restorer)
+
+    def clear(self, found: str) -> tuple[int, str]:
+        args = ["TAG-01-stamp-hook", "--dispatch", self.restorer, "--position-found", found]
+        result = self.runner.invoke(main, ["wp", "tag", "clear", *args])
+        return result.exit_code, " ".join(result.output.split())
+
+    def test_the_restorations_stamped_call_clears_the_tag_and_show_reads_it_closed(self) -> None:
+        # given the call stamped as the Restoration dispatch, the surface found as hung
+        # when
+        code, output = self.clear("off")
+        self.unstamp()
+        printed = self.runner.invoke(main, ["wp", "tag", "show", "--all", "--json"])
+        # then the clear is booked and the tag reads closed (ruling 129)
+        expected = f"Cleared TAG-01-stamp-hook by {self.restorer}, found off."
+        self.assertEqual((code, output), (0, expected))
+        (row,) = _tag_rows("tag_cleared")
+        self.assertEqual(
+            (row["dispatch_id"], row["hanging_dispatch_id"], row["position_found"]),
+            (self.restorer, self.dispatch, "off"),
+        )
+        record = json.loads(printed.output)[0]
+        self.assertEqual((record.get("state"), record.get("is_open")), ("cleared", False))
+
+    def test_an_out_of_position_clear_exits_3_with_the_order_blocked(self) -> None:
+        # given the surface found back on, not off as it was hung (rulings 137, 140)
+        # when
+        code, output = self.clear("on")
+        # then the order's block is booked, no clear, and the tag stays hung
+        self.assertEqual(code, 3, output)
+        self.assertEqual(_tag_rows("tag_cleared"), [])
+        (block,) = _tag_rows("work_package_blocked")
+        self.assertEqual(block["order"], "ORD-01-import")
+        self.unstamp()
+        printed = self.runner.invoke(main, ["wp", "tag", "show", "--json"])
+        record = json.loads(printed.output)[0]
+        self.assertEqual((record.get("state"), record.get("is_open")), ("authorized", True))
+
+
 class TagEpilogTests(unittest.TestCase):
     def test_every_example_parses_as_a_real_invocation(self) -> None:
         # given the help of `gz wp tag` and of each of its leaves
         parser = _build_parser()
-        leaves = (["wp", "tag", leaf] for leaf in ("issue", "show", "hang", "authorize"))
+        leaves = (["wp", "tag", leaf] for leaf in ("issue", "show", "hang", "authorize", "clear"))
         examples = [
             line.strip()
             for path in (["wp", "tag"], *leaves)
@@ -448,7 +517,7 @@ class TagEpilogTests(unittest.TestCase):
         # when
         parsed = [parser.parse_args(shlex.split(example)[1:]) for example in examples]
         # then each parses, every required flag present, onto a handler
-        self.assertGreaterEqual(len(examples), 9)
+        self.assertGreaterEqual(len(examples), 11)
         self.assertTrue(all(callable(args.func) for args in parsed))
 
 

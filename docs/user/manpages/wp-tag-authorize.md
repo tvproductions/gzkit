@@ -24,7 +24,7 @@ The tag-out log is ledger events, its open tags a derived view (RP-12 ruling 4).
 The coordinator issues a tag (`gz wp tag issue`), the Repair dispatch hangs it
 (`gz wp tag hang`), and once the work is done the coordinator authorizes its
 clearance (ruling 6); the verb books one `tag_clearance_authorized` event. The
-Restoration dispatch then clears it. `docs/governance/harbor-ro12-contractor-kit.md`
+Restoration dispatch then clears it (`gz wp tag clear`). `docs/governance/harbor-ro12-contractor-kit.md`
 § Rulings holds the rulings cited here.
 
 - Clearance authorized is the coordinator's act as Authorizing Officer, so a call
@@ -115,5 +115,5 @@ clears it next.
 
 ## See also
 
-[`gz wp tag hang`](wp-tag-hang.md), [`gz wp tag show`](wp-tag-show.md),
+[`gz wp tag hang`](wp-tag-hang.md), [`gz wp tag clear`](wp-tag-clear.md), [`gz wp tag show`](wp-tag-show.md),
 [`gz wp dispatch`](wp-dispatch.md), [`gz wp order commence`](wp-order-commence.md)

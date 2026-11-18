@@ -71,6 +71,14 @@ Feature: Work packages run through the gz wp verbs
     Then the command exits with code 3
     And the output contains "No MX session is open"
 
+  Scenario: clearing a tag from an unstamped call is a policy breach
+    Given the workspace is initialized
+    And the requirements catalog is seeded
+    When I run the gz command "mx enter --reason repair --attestor g0"
+    And I run the gz command "wp tag clear TAG-01-x --dispatch D-0000000000000000 --position-found off"
+    Then the command exits with code 3
+    And the output contains "This call is not stamped"
+
   Scenario: a package the store does not hold is a user error
     Given the workspace is initialized
     And the requirements catalog is seeded

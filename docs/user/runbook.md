@@ -1058,6 +1058,18 @@ rulings 7, 114, 118 and 138):
 uv run gz wp tag authorize TAG-01-stamp-hook
 ```
 
+Then book a `Restoration` dispatch on the commenced order; its subagent clears each
+authorized tag, naming the position it found the surface in. A subagent that
+claimed the hanging dispatch is refused. Found as it was hung, the tag reads
+closed; found in any other position, `on` among them, the clear books a block on
+the order instead, exits 3 and leaves the tag hung until the operator's unblock
+(RP-12 rulings 6, 129 and 137 to 140):
+
+```bash
+uv run gz wp dispatch WP-01-stamp --order ORD-01-import --role Restoration --model sonnet
+uv run gz wp tag clear TAG-01-stamp-hook --dispatch D-<id> --position-found off
+```
+
 A repair requirement states what must hold again after the repair. It lives in
 `data/catalog/reqs.json` beside the catalog's, written only by `gz wp req new`
 on an open repair package, and names the issue it answers:
