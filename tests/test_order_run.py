@@ -31,9 +31,11 @@ from gzkit.work_package_fence import (
     work_package_write_message,
 )
 from gzkit.work_package_ledger import (
+    ChangeRequest,
     TransitionRequest,
     WorkPackageLedgerError,
     is_blocked,
+    record_work_package_change,
     record_work_package_transition,
 )
 from gzkit.work_package_run import (
@@ -681,6 +683,45 @@ class FrozenOrderFence(_OrderRun):
         # output-contract: the next step names the tag log, the hang and the commence
         for named in ("gz wp tag show", "gz wp tag hang", f"gz wp order commence {_SECOND}"):
             self.assertIn(named, refusal)
+
+    def test_the_refusal_says_the_order_is_frozen_and_what_it_holds(self) -> None:
+        """Refusal 2 and ruling 147: the why names the freeze, then the footprint or the tree."""
+        self.freeze_second()
+        footprint = work_package_write_refusal(self.root, "src/stamp.py") or ""
+        self.seat_frozen("WP-03-other", ())
+        tree = frozen_order_write_refusal(self.root, "src/anything.py") or ""
+        # output-contract: refusal 2 says why the write is held, before the recovery
+        self.assertIn("frozen and not commenced", footprint)
+        self.assertIn("its sealed footprint", footprint)
+        self.assertIn("the whole tree, its seal empty", tree)
+
+    def test_a_change_order_after_the_seal_widens_what_the_frozen_order_holds(self) -> None:
+        """Rulings 56 and 116: the fence reads the seal plus each later change order."""
+        self.freeze_second()
+        self.assertIsNone(frozen_order_write_refusal(self.root, "src/extra.py"))
+        request = ChangeRequest(
+            work_package=_PACKAGE, rung="change_order", approver="operator",
+            change="The matcher needs its helper.", superseded="src/stamp.py alone",
+            work_stopped=True, modules=("src/extra.py",),
+        )  # fmt: skip
+        record_work_package_change(self.catalog, self.ledger, request)
+        (fence,) = fenced_packages(self.root)
+        self.assertEqual(fence.footprint, ("src/stamp.py", "src/extra.py"))
+        self.assertIsNotNone(frozen_order_write_refusal(self.root, "src/extra.py"))
+
+    def test_a_footprint_path_outside_src_stays_open_above_the_demotion(self) -> None:
+        """Ruling 145: the pre-demotion check holds production writes alone, a footprint's too."""
+        self.seat_frozen("WP-03-other", ("tests/test_stamp.py",))
+        self.assertIsNone(frozen_order_write_refusal(self.root, "tests/test_stamp.py"))
+        self.assertIsNone(work_package_write_refusal(self.root, "tests/test_stamp.py"))
+
+    def seat_frozen(self, package: str, modules: tuple[str, ...]) -> None:
+        """Seat a frozen order on a package with the footprint given, past the writer."""
+        seated = OrderTransitionedEvent(
+            event="order_transitioned", id=_SECOND, order=_SECOND, work_package=package,
+            from_state="opened", to_state="frozen", evidence="seated", modules=modules,
+        )  # fmt: skip
+        self.ledger.append(ledger_row(seated))
 
 
 class InFlightOnAnOrder(_OrderRun):
