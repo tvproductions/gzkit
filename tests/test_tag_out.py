@@ -1063,6 +1063,27 @@ class ClearRefusalTests(_ClearCase):
         self.assert_clear_refused("is blocked on the operator")
 
 
+class UnhungClearTests(_HangCase):
+    def test_a_tag_not_hung_is_refused_the_clear(self) -> None:
+        """Ruling 6: a clear follows a hang; an unhung tag isolates nothing to clear."""
+        before = _rows(self.path)
+        raised = _raised(
+            lambda: record_tag_clear(
+                self.catalog,
+                self.ledger,
+                self.tag.tag_id,
+                self.dispatch,
+                "off",
+                stamped_id=self.dispatch,
+                mx_session_id=_SESSION,
+                refutations={},
+            )
+        )
+        self.assertIsInstance(raised, TagOutError)
+        self.assertIn(f"Tag {self.tag.tag_id} is not hung", str(raised))
+        self.assertEqual(_rows(self.path), before)
+
+
 class UnauthorizedClearTests(_ClearanceCase):
     def test_a_tag_whose_clearance_is_not_authorized_is_refused(self) -> None:
         """Ruling 6: clearance authorized by the coordinator, then the clear."""
