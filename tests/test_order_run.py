@@ -238,7 +238,7 @@ class RepairOnAnOrder(_OrderRun):
         self.freeze_second()
         self.block(order=_SECOND)
         self.refused(
-            "is blocked on the operator; it takes no dispatch",
+            f"Order {_SECOND} is blocked on the operator; it takes no dispatch",
             lambda: self.dispatch("Repair", order=_SECOND, req=None),
         )
 
@@ -265,7 +265,7 @@ class RestorationOnAnOrder(_OrderRun):
         """Ruling 59: a blocked order takes no dispatch, the craftsman's among them."""
         self.block()
         self.refused(
-            "is blocked on the operator; it takes no dispatch",
+            f"Order {_ORDER} is blocked on the operator; it takes no dispatch",
             lambda: self.dispatch("Restoration", req=None),
         )
 
@@ -290,12 +290,14 @@ class BlockOnAnOrder(_OrderRun):
 
     def test_a_blocked_order_takes_no_dispatch(self) -> None:
         self.block()
-        self.refused("is blocked on the operator; it takes no dispatch", self.dispatch)
+        self.refused(
+            f"Order {_ORDER} is blocked on the operator; it takes no dispatch", self.dispatch
+        )
 
     def test_a_blocked_order_does_not_move(self) -> None:
         self.block()
         self.refused(
-            "is blocked on the operator; it does not move",
+            f"Order {_ORDER} is blocked on the operator; it does not move",
             lambda: self.move("accepted", **_PAYLOADS["accepted"]),
         )
 
