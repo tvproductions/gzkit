@@ -2308,3 +2308,10 @@
 {"ts": "2026-11-18T00:57:49Z", "source": "20261118T005747Z-rp12-o3-task3-repaired-reviewed.md", "text": "An independent review of the five repair acts before pushing (verbatim: \"Review, then push\")."}
 {"ts": "2026-11-18T00:57:49Z", "source": "20261118T005747Z-rp12-o3-task3-repaired-reviewed.md", "text": "Ruling 136, gz wp runs reports a frozen order holding a live dispatch (by selection: \"Yes, report it\")."}
 {"ts": "2026-11-18T00:57:49Z", "source": "20261118T005747Z-rp12-o3-task3-repaired-reviewed.md", "text": "Push a38024152 (verbatim: \"Push it\")."}
+{"ts": "2026-11-18T07:22:47Z", "source": "20261118T072245Z-rp12-o3-task4-authorize-landed.md", "text": "Ruling on the predecessor handoff, booked by gz handoff decide (verbatim: \"proceed\")."}
+{"ts": "2026-11-18T07:22:47Z", "source": "20261118T072245Z-rp12-o3-task4-authorize-landed.md", "text": "Ruling 137, an out-of-position clear books an order block written by the runtime and leaves the tag hung (by selection: \"A: book an order block (Rec.)\")."}
+{"ts": "2026-11-18T07:22:47Z", "source": "20261118T072245Z-rp12-o3-task4-authorize-landed.md", "text": "Ruling 138, clearance refused while the hanging dispatch is live (by selection: \"A: refuse while live (Rec.)\")."}
+{"ts": "2026-11-18T07:22:47Z", "source": "20261118T072245Z-rp12-o3-task4-authorize-landed.md", "text": "Ruling 139, refusal 1 compares dispatch ids and the subagents that claimed them (by selection: \"A: ids and claiming agents (Rec.)\")."}
+{"ts": "2026-11-18T07:22:47Z", "source": "20261118T072245Z-rp12-o3-task4-authorize-landed.md", "text": "Ruling 140, a position found is off, advisory, recording or on (by selection: \"A: hung positions + on (Rec.)\")."}
+{"ts": "2026-11-18T07:22:47Z", "source": "20261118T072245Z-rp12-o3-task4-authorize-landed.md", "text": "Push the four commits through 941954f21 (verbatim: \"push now\")."}
+{"ts": "2026-11-18T07:22:47Z", "source": "20261118T072245Z-rp12-o3-task4-authorize-landed.md", "text": "Write a fresh handoff and git sync (verbatim: \"write handoff, git sync\")."}
