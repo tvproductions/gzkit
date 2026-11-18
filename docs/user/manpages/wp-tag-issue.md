@@ -54,7 +54,9 @@ line item (rulings 5 and 120). `docs/governance/harbor-ro12-contractor-kit.md`
 - A surface is named as the tree or registry spells it, so `path:SRC/Stamp.py`
   on a case-insensitive volume names `src/stamp.py`.
 - A tag is issued on an opened or frozen order of an initiated repair package
-  (ruling 121), and a surface carries one open tag at a time (ruling 122).
+  (ruling 121), and a surface carries one open tag at a time (ruling 122). Limit:
+  the check reads the ledger before the append takes the ledger's lock, so two
+  issues on one surface run at the same moment could both book.
 - The source is one of ruling 5's four kinds, with no reference yet (ruling 124).
 - A call stamped as a subagent's is refused: the coordinator is the unstamped
   operator-facing session (ruling 114).

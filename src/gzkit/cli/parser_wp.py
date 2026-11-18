@@ -122,10 +122,10 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
     """Register ``gz wp dispatch``, ``block`` and ``unblock`` (RO-14 tranche 1)."""
     p_dispatch = wp_commands.add_parser(
         "dispatch",
-        help="Record a dispatch on a commenced package, holding the fix-cycle bound",
+        help="Record a dispatch on a package or order, holding the fix-cycle bound",
         description=(
-            "Record one dispatch on a commenced work package. The cycle past the\n"
-            "fix-cycle bound is refused whatever was ruled (GHI #1200). The dispatch\n"
+            "Record one dispatch on a commenced work package or order. The cycle past\n"
+            "the fix-cycle bound is refused whatever was ruled (GHI #1200). The dispatch\n"
             "is bound to a minted id and its intended root; put the printed line in\n"
             "the dispatched agent's prompt (RP-12 rulings 1 and 35). --void abandons\n"
             "a booked dispatch, refused from a subagent's call (ruling 42). --order\n"

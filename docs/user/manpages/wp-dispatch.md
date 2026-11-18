@@ -1,7 +1,8 @@
 # gz wp dispatch
 
-Record one dispatch on a commenced work package or order, holding the fix-cycle
-bound, or void one the coordinator abandoned.
+Record one dispatch on a commenced work package or order, or a craftsman's on a
+repair package's frozen or commenced order, holding the fix-cycle bound, or void
+one the coordinator abandoned.
 
 ## Usage
 
@@ -65,8 +66,8 @@ blocked on the operator takes no dispatch until `gz wp unblock --order` (ruling
 59), and after a `reopen` or `terminate` exit on the order it takes no
 implementing dispatch. The
 booked row names the order, so the guard on an open dispatch reads the order's
-run: a dispatch on an order is open while that order is commenced or accepted,
-though its package stays initiated (ruling 40).
+run: a dispatch on an order is open while that order is frozen, commenced or
+accepted, though its package stays initiated (rulings 40 and 134).
 
 The craftsman's two positions are two roles, taken only on a repair package's order
 and refused anywhere else (RP-12 ruling 109). Each names no REQ, and its subject is
@@ -76,7 +77,8 @@ not blocked, and is refused once the order is commenced (rulings 108 and 131). A
 `Restoration` dispatch, the one that clears them, takes a commenced order alone
 (ruling 132). Neither is a review, so neither arms a fix cycle, and neither is
 held to the bound. A dispatch on a frozen order is open to the guard as one on a
-commenced order is.
+commenced order is (ruling 134). A stopping exit on the order holds neither role,
+since restoring what the order isolated must still happen (ruling 135).
 
 A delivery package may declare `SingleDriver` with its reason. Its first dispatch
 arms the count, and a later change of role keeps it, so the same bound applies. A
@@ -161,6 +163,46 @@ $ uv run gz wp dispatch WP-01-stamp --order ORD-01-import --role Implementer --m
 BLOCKERS: gz: error: unrecognized arguments: --issue 1301
 ```
 
+On the same repair package's order, its craftsman's two roles (rulings 108, 109
+and 130 to 132), observed 2026-11-18 in a temporary project set up as
+`tests/commands/test_wp_tag.py` sets one up, `ORD-01-import` frozen. While the
+order is frozen, Restoration is refused, Repair is booked, and a Repair naming a
+REQ is refused:
+
+```console
+$ uv run gz wp dispatch WP-01-stamp --order ORD-01-import --role Restoration --model sonnet
+Order ORD-01-import is frozen; a Restoration dispatch takes a commenced order
+alone (RP-12 ruling 132). Commence the order first: `uv run gz wp order commence
+ORD-01-import --evidence <ref>`.
+$ uv run gz wp dispatch WP-01-stamp --order ORD-01-import --role Repair --model sonnet
+Recorded Repair on order ORD-01-import of WP-01-stamp as dispatch
+D-4e0c7d9be3e770dd, for
+/private/var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/tmpo3_3j8qn.
+Put this line in the dispatched agent's prompt:
+GZKIT-DISPATCH: D-4e0c7d9be3e770dd
+$ uv run gz wp dispatch WP-01-stamp --order ORD-01-import --role Repair --model sonnet --req REQ-1
+A Repair dispatch is bound to its order and names no REQ (RP-12 ruling 130 and
+rulings 108 and 131). Re-run the call without --req REQ-1.
+```
+
+Once the order is commenced, Repair is refused and Restoration is booked:
+
+```console
+$ uv run gz wp order commence ORD-01-import --evidence E
+ORD-01-import: frozen -> commenced
+  airlock in: proceed
+$ uv run gz wp dispatch WP-01-stamp --order ORD-01-import --role Repair --model sonnet
+Order ORD-01-import is commenced; a Repair dispatch takes a frozen order alone
+(RP-12 rulings 108 and 131). Read the order's state with `uv run gz wp order
+show ORD-01-import`.
+$ uv run gz wp dispatch WP-01-stamp --order ORD-01-import --role Restoration --model sonnet
+Recorded Restoration on order ORD-01-import of WP-01-stamp as dispatch
+D-3c727265288aded0, for
+/private/var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/tmpo3_3j8qn.
+Put this line in the dispatched agent's prompt:
+GZKIT-DISPATCH: D-3c727265288aded0
+```
+
 With `REQ-7@1` at the bound:
 
 ```console
@@ -176,7 +218,7 @@ and take an exit: reopen, departure, hold, terminate.
 | 0 | The dispatch was booked, or voided |
 | 1 | The work package is not in the store, the intended root is empty or not an existing directory, or `--void` has no `--reason` |
 | 2 | Usage error: `--role` or `--model` missing to book, a booking flag, `--order` included, given with `--void`, or the retired `--issue` |
-| 3 | The dispatch or the void is refused, the bound, a subagent's call, a repair package's dispatch with no `--order` and a subject outside the order's freeze included; nothing was booked |
+| 3 | The dispatch or the void is refused, the bound, a subagent's call, a repair package's dispatch with no `--order`, a subject outside the order's freeze, and a `Repair` or `Restoration` dispatch off a repair package's order, on an order not in its state, or naming a REQ included; nothing was booked |
 
 ## See also
 

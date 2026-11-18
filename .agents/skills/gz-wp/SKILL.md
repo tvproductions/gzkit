@@ -5,9 +5,9 @@ description: Use to create, attach issues to, move, change, add evidence to or r
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-18
 metadata:
-  skill-version: "0.19.4"
+  skill-version: "0.19.5"
 model: sonnet
 ---
 
@@ -172,6 +172,11 @@ then only add a path (ruling 56), and approves each planned alteration no earlie
 order's freeze approved (ruling 63). Commencement crosses the airlock (ruling 65).
 Commit the order's work under the package's `Task:` trailer, as step 3 says:
 
+```bash
+uv run gz wp order freeze <ORD-id> --baseline REQ-<n>@<rev> --risk-note "<risk>" \
+  --review-receipt <receipt> [--approve-alteration <id>] --evidence "<what justifies it>"
+```
+
 Before the order commences, issue a tag for each surface the repair isolates. The
 issue is the coordinator's act, from the main session while an MX session is open,
 on an opened or frozen order; a subagent's call is refused. The surface is
@@ -205,9 +210,9 @@ session is recorded as the hang's holder. A hung tag reads open until its clear
 uv run gz wp tag hang <TAG-id> --dispatch D-<id> [--json]
 ```
 
+Once every tag the order needs is hung, record commencement:
+
 ```bash
-uv run gz wp order freeze <ORD-id> --baseline REQ-<n>@<rev> --risk-note "<risk>" \
-  --review-receipt <receipt> [--approve-alteration <id>] --evidence "<what justifies it>"
 uv run gz wp order commence <ORD-id> --evidence "<what justifies it>"
 ```
 

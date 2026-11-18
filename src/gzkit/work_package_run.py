@@ -123,7 +123,7 @@ class DispatchRequest(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     work_package: str = Field(..., description="The work package's id")
-    role: str = Field(..., description="The role dispatched, or SingleDriver")
+    role: str = Field(..., description="The role dispatched, one of ROLES")
     model: str = Field(..., description="The model tier")
     req: str | None = Field(None, description="The frozen REQ dispatched against")
     reason: str | None = Field(None, description="Why the run is single-driver")

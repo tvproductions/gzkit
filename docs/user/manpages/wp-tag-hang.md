@@ -46,6 +46,9 @@ the rulings cited here.
   but unreadable, unbound or exiting is refused with the repair its cause names.
 - A hung tag reads open until its clear, whatever its order's state, and keeps
   its surface from a new issue (ruling 129).
+- Limit: the checks read the ledger before the append takes the ledger's lock,
+  so two hangs of one tag run at the same moment, from two `Repair` dispatches
+  on its order, could both book. No refusal holds them apart yet.
 
 A refusal names what failed, why and what to do, and books nothing.
 
@@ -100,7 +103,7 @@ remains to hang.
 |------|---------|
 | 0 | Hung |
 | 1 | The project is not initialized |
-| 2 | Usage error |
+| 2 | Usage error: the tag id or `--dispatch` missing |
 | 3 | Refused: no MX session open or a marker present but not on (its repair named), the call not stamped with the dispatch named, the tag not issued, already hung or not open, the dispatch not a live `Repair` on the tag's order, or the order not frozen, or blocked; nothing booked |
 
 ## See also

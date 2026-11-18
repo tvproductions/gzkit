@@ -1888,21 +1888,23 @@ TAG_ID_PATTERN = "TAG-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*"
 
 
 class WorkPackageDispatchedEvent(_EventBase):
-    """work_package_dispatched event — one role dispatched on a commenced package (RO-14).
+    """work_package_dispatched event — one role dispatched on a package's or order's run.
 
     Written only by ``gzkit.work_package_run.record_work_package_dispatch``, which
     counts fix cycles from these rows and refuses the cycle past the bound
     (GHI #1200). ``id`` is the work package id. Since RP-12 ruling 1 every new
     row carries the minted ``dispatch_id`` and the ``intended_root``; rows booked
     before it carry neither, so both are optional on replay. A dispatch on an
-    order names it in ``order`` (RP-12 ruling 57).
+    order names it in ``order`` (RP-12 ruling 57); a ``Repair`` or ``Restoration``
+    dispatch, the craftsman's (ruling 109), is subject to its order itself (ruling
+    130). RO-14 landed the event.
     """
 
     event: Literal["work_package_dispatched"]
     work_package: str = Field(..., min_length=1, description="The work package's id")
-    role: str = Field(..., min_length=1, description="The role dispatched, or SingleDriver")
+    role: str = Field(..., min_length=1, description="The role dispatched, one of ROLES")
     model: str = Field(..., min_length=1, description="The model tier")
-    subject: str = Field(..., min_length=1, description="REQ-<n>@<rev> or #<issue>, as counted")
+    subject: str = Field(..., min_length=1, description="REQ-<n>@<rev>, #<issue> or the order")
     reason: str | None = Field(None, description="Why the run is single-driver")
     dispatch_id: str | None = Field(
         None, pattern=f"^{DISPATCH_ID_PATTERN}$", description="The id the runtime minted"
