@@ -172,6 +172,16 @@ class TestRenewBooksALapsedLeasesExpiry(SilencedConsoleTestCase):
             self.assertEqual(_events(root, "mx_session_lease_expired"), [])
         self.assertNotIn("Lease expiry booked", printed)
 
+    def test_a_renewed_lease_that_lapses_is_booked_against_its_own_start(self) -> None:
+        """GHI #1261: expiry is once per lease, so a renewed lease's runs from its renewal."""
+        with TemporaryDirectory() as tmp:
+            root = _open_session(tmp)
+            first = datetime.now(UTC) + timedelta(hours=1)
+            self.renew_at(root, first)
+            self.renew_at(root, first + 2 * _LEASE)
+            expired = _events(root, "mx_session_lease_expired")
+        self.assertEqual([row["lease_started_at"] for row in expired], [first.isoformat()])
+
     def test_an_expiry_the_orientation_booked_is_not_booked_again(self) -> None:
         with TemporaryDirectory() as tmp:
             root = _open_session(tmp)
