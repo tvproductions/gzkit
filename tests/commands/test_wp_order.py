@@ -359,6 +359,21 @@ class OrderLifecycleTests(_LifecycleCase):
         self.assertIn("refused from a subagent's call", output)
         self.assertEqual(_ledger_rows(), before)
 
+    def test_a_malformed_tag_row_refuses_the_commence_and_names_its_void(self) -> None:
+        # given the order frozen and a tag_issued row its shape does not admit (ruling 141)
+        self.freeze()
+        row = {"schema": "gzkit.ledger.v1", "event": "tag_issued", "id": "TAG-7-bad"}
+        with (Path(".gzkit") / "ledger.jsonl").open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps({**row, "ts": "2026-11-18T00:00:00+00:00"}) + "\n")
+        before = _ledger_rows()
+        # when
+        output = self.gz(
+            "commence", "ORD-01-import", "--evidence", "e", "--no-isolation", "None.", code=3
+        )
+        # then a policy breach naming the row's void, not a crash, and nothing booked
+        self.assertIn("gz ledger correct", output)
+        self.assertEqual(_ledger_rows(), before)
+
     def test_the_freeze_approves_the_packages_planned_alterations(self) -> None:
         """Ruling 63: `--approve-alteration` names each alteration due at this freeze."""
         store = Path("data") / "catalog" / "work_packages.json"
