@@ -154,10 +154,10 @@ class TestRenewBooksALapsedLeasesExpiry(SilencedConsoleTestCase):
                 for row in _events(root, "mx_session_lease_expired")
                 + _events(root, "mx_session_lease_renewed")
             ]
+            self.assertEqual(rows, ["mx_session_lease_expired", "mx_session_lease_renewed"])
             (opened,) = _events(root, "mx_session_opened")
             (expired,) = _events(root, "mx_session_lease_expired")
             lines = (root / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8")
-        self.assertEqual(rows, ["mx_session_lease_expired", "mx_session_lease_renewed"])
         self.assertEqual(expired["lease_started_at"], opened["ts"])
         self.assertLess(
             lines.index('"mx_session_lease_expired"'), lines.index('"mx_session_lease_renewed"')
