@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-18
 metadata:
-  skill-version: "0.24.0"
+  skill-version: "0.25.0"
 model: sonnet
 ---
 
@@ -84,9 +84,10 @@ refuse and name the order's verb (RP-12 ruling 44).
    `pause` or `terminate`.
 6. **Close through Gate 5.** The attestor is the operator and is never
    defaulted. Account every alteration and name each departure still open. A
-   repair package closes from `initiated` once at least one order is closed and
-   every order is closed through Gate 5, with no `--decision` of its own (rulings
-   62, 76, 79); a subagent's call is refused (ruling 77). A delivery package:
+   repair package closes from `initiated` once at least one order is closed,
+   every order is closed through Gate 5 and every tag they hung is cleared, with
+   no `--decision` of its own (rulings 30, 62, 76, 79); a subagent's call is
+   refused (ruling 77). A delivery package:
    `uv run gz wp close <WP-id> --decision proceed --attestor g0 --residual-risk "<risk>" --account <alt-id> --evidence <id>`
    A repair package:
    `uv run gz wp close <WP-id> --attestor g0 --residual-risk "<risk>" --account <alt-id> --evidence <id>`

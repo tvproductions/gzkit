@@ -985,8 +985,9 @@ it is open, and its orders, below, carry the run (RP-12 ruling 44). Its own
 `freeze`, `commence`, `accept` and `acceptance` are refused and name the order's
 verb, and its `dispatch`, `block` and `unblock` name the order with `--order`. Its
 close waits until at least one order is closed and every order is closed through
-Gate 5, and carries no decision of its own, since Gate 5 sits at the order; it
-records each order's decision (RP-12 rulings 76 and 79). So the package runs at
+Gate 5, and every tag its orders hung is cleared, and carries no decision of its
+own, since Gate 5 sits at the order; it records each order's decision (RP-12
+rulings 30, 76 and 79; refusal 6). So the package runs at
 least one order, below, before it closes:
 
 ```bash

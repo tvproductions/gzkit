@@ -34,6 +34,7 @@ from gzkit.events import (
 )
 from gzkit.ledger import Ledger, ledger_row
 from gzkit.models.catalog import CatalogReq, RepairReq
+from gzkit.mx.tag_rows import order_tags
 
 if TYPE_CHECKING:
     from gzkit.ledger import LedgerEvent
@@ -348,7 +349,12 @@ def package_held_reqs(ledger: Ledger, work_package: str) -> tuple[str, ...]:
 
 
 def _check_repair_close(ledger: Ledger, package: WorkPackage, move: TransitionRequest) -> None:
-    """Refuse a repair close with its own decision, no order or an open one (rulings 76, 79)."""
+    """Refuse a repair close with its own decision, no order, an open one or a hung tag.
+
+    Rulings 76 and 79 hold the close on its orders; ruling 30 and refusal 6 hold it on
+    every tag its orders hung and nobody cleared, read through the leaf `order_tags`
+    (ruling 141).
+    """
     if move.decision is not None:
         _refuse(
             f"Repair package {package.id} books no Gate 5 decision of its own: Gate 5 sits at "
@@ -368,6 +374,16 @@ def _check_repair_close(ledger: Ledger, package: WorkPackage, move: TransitionRe
             f"Repair package {package.id} closes once every order is closed; "
             f"{', '.join(open_orders)} still stands open. Close each through Gate 5 with "
             "`uv run gz wp order close <ORD-id>` first (RP-12 ruling 76)."
+        )
+    if hung := [
+        f"{tag} ({order})" for order in moves for tag in order_tags(ledger, order).hung_uncleared
+    ]:
+        _refuse(
+            f"Repair package {package.id} closes only once every tag its orders hung is "
+            f"cleared; {', '.join(hung)} still hangs (refusal 6, RP-12 rulings 30 "
+            "and 142). Acceptance refuses an order over a hung tag, so a closed order holding "
+            "one was accepted before that refusal: its clear or carry waits on O4's "
+            "discrepancy record, and the package stays open until then."
         )
 
 

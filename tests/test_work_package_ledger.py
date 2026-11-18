@@ -48,6 +48,7 @@ from gzkit.work_package_ledger import (
     work_package_state,
 )
 from tests.test_order_ledger import _raised
+from tests.test_tag_rows import seat_clear, seat_hang, seat_issue
 
 _ALTERATION = Alteration(
     id="ALT-1", description="Rekey the matrix.", configuration_change="replaced"
@@ -339,6 +340,39 @@ class RepairLifecycleTests(_LedgerCase):
         self.book_order(order, "opened", operator_text="open it")
         self.book_order(order, "closed", decision="terminate", attestor="g0",
                         attestation_text="withdraw it")  # fmt: skip
+
+    def test_a_hung_tag_on_any_order_holds_the_close_and_is_named(self) -> None:
+        """Refusal 6 and ruling 30: the package does not close over a tag still hung."""
+        self.withdraw_an_order()
+        self.withdraw_an_order("ORD-02-y")
+        cleared = seat_issue(self.ledger, 1, order="ORD-01-x")
+        seat_hang(self.ledger, 1, order="ORD-01-x")
+        seat_clear(self.ledger, 1, order="ORD-01-x")
+        hung = seat_issue(self.ledger, 2, order="ORD-02-y")
+        seat_hang(self.ledger, 2, order="ORD-02-y")
+        before = _rows(self.path)
+        raised = _raised(self.close)
+        self.assertIsInstance(raised, WorkPackageLedgerError)
+        # output-contract: the refusal names the hung tag and its order, not the cleared one
+        self.assertIn(f"{hung} (ORD-02-y)", str(raised))
+        self.assertNotIn(cleared, str(raised))
+        self.assertEqual(_rows(self.path), before)
+
+    def test_every_tag_cleared_lets_the_close_pass(self) -> None:
+        """Refusal 6: with each hung tag cleared, the package closes."""
+        self.withdraw_an_order()
+        seat_issue(self.ledger, 1, order="ORD-01-x")
+        seat_hang(self.ledger, 1, order="ORD-01-x")
+        seat_clear(self.ledger, 1, order="ORD-01-x")
+        self.assertEqual(self.close().to_state, "closed")
+
+    def test_another_packages_hung_tag_does_not_hold_the_close(self) -> None:
+        """Ruling 30: the close reads the tags its own orders hung."""
+        self.withdraw_an_order()
+        self.book_order("ORD-09-y", "opened", package="WP-01-resume", operator_text="open it")
+        seat_issue(self.ledger, 1, order="ORD-09-y")
+        seat_hang(self.ledger, 1, order="ORD-09-y")
+        self.assertEqual(self.close().to_state, "closed")
 
     def test_another_packages_open_order_does_not_hold_the_close(self) -> None:
         """Ruling 62: a repair package's close reads its own orders alone."""

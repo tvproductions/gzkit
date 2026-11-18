@@ -31,7 +31,10 @@ recording the decision, the attestor and the residual risk. A repair package mov
 only `initiated` to `closed`, its orders carrying the run (RP-12 ruling 44). Gate 5
 sits at each of its orders, [`gz wp order close`](wp-order-close.md), so the
 package's close is refused until at least one order is closed and while any is
-not (ruling 79), carries no `--decision`
+not (ruling 79), and while a tag any of its orders hung is not cleared (refusal
+6, rulings 30 and 142); since acceptance refuses an order over a hung tag, that
+state arises only from an order accepted before the refusal landed, and its
+clear or carry waits on O4's discrepancy record. The close carries no `--decision`
 of its own, and records each order's decision as the ledger holds it in
 `order_decisions` (ruling 76) and each repair REQ a `proceed` holds in `held_reqs`
 (ruling 78), both printed after the move; it keeps the attestor, the residual risk, the
@@ -68,6 +71,20 @@ still stands open. Close each through Gate 5 with `uv run gz wp order close
 <ORD-id>` first (RP-12 ruling 76).
 ```
 
+Captured in-process from the order wiring fixture
+(`tests/commands/test_wp_order_run.py`), `ORD-01-import` closed with
+`TAG-01-stamp` still hung on it, its accepted and closed moves seated by hand
+since acceptance now refuses that state:
+
+```console
+$ uv run gz wp close WP-01-stamp --attestor g0 --residual-risk none --evidence closeout
+Repair package WP-01-stamp closes only once every tag its orders hung is
+cleared; TAG-01-stamp (ORD-01-import) still hangs (refusal 6, RP-12 rulings 30
+and 142). Acceptance refuses an order over a hung tag, so a closed order holding
+one was accepted before that refusal: its clear or carry waits on O4's
+discrepancy record, and the package stays open until then.
+```
+
 Once `ORD-01-import` is closed through Gate 5 too:
 
 ```console
@@ -94,7 +111,7 @@ The close it booked, read from the scratch ledger:
 | 0 | The move was booked |
 | 1 | The work package is not in `data/catalog/work_packages.json` |
 | 2 | Usage error |
-| 3 | A subagent's call, or the lifecycle or the move's own rules refuse it, a repair package's open order or decision among them; nothing was written |
+| 3 | A subagent's call, or the lifecycle or the move's own rules refuse it, a repair package's open order, decision or hung tag among them; nothing was written |
 
 ## See also
 
