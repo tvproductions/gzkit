@@ -397,9 +397,10 @@ def _refuse_unstamped_hang(tag_id: str, dispatch_id: str, stamped_id: str | None
     else:
         stamp = "not stamped"
         step = (
-            f"Run the hang from {dispatch_id}'s own subagent, its prompt carrying the dispatch "
-            "line; with none booked for the tag's order, have the coordinator book one: "
-            f"`uv run gz wp dispatch <WP-id> --order <ORD-id> --role {REPAIR} --model <tier>`."
+            f"If {dispatch_id} is a live {REPAIR} dispatch, run the hang from its own subagent, "
+            "its prompt carrying the dispatch line; with none booked for the tag's order, have "
+            "the coordinator book one: `uv run gz wp dispatch <WP-id> --order <ORD-id> --role "
+            f"{REPAIR} --model <tier>`."
         )
     _refuse(
         f"This call is {stamp}, and a hang is the stamped call of the Repair dispatch it "
