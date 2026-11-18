@@ -2315,3 +2315,15 @@
 {"ts": "2026-11-18T07:22:47Z", "source": "20261118T072245Z-rp12-o3-task4-authorize-landed.md", "text": "Ruling 140, a position found is off, advisory, recording or on (by selection: \"A: hung positions + on (Rec.)\")."}
 {"ts": "2026-11-18T07:22:47Z", "source": "20261118T072245Z-rp12-o3-task4-authorize-landed.md", "text": "Push the four commits through 941954f21 (verbatim: \"push now\")."}
 {"ts": "2026-11-18T07:22:47Z", "source": "20261118T072245Z-rp12-o3-task4-authorize-landed.md", "text": "Write a fresh handoff and git sync (verbatim: \"write handoff, git sync\")."}
+{"ts": "2026-11-18T09:52:58Z", "source": "20261118T095256Z-rp12-o3-task5-acts1-3.md", "text": "Ruling on the predecessor handoff, booked by gz handoff decide (verbatim: \"continue with the handoff's work\")."}
+{"ts": "2026-11-18T09:52:58Z", "source": "20261118T095256Z-rp12-o3-task5-acts1-3.md", "text": "Push task 4's six commits (verbatim: \"push the six commits now\")."}
+{"ts": "2026-11-18T09:52:58Z", "source": "20261118T095256Z-rp12-o3-task5-acts1-3.md", "text": "Fix the stale gz-session-handoff turnover sentence as its own commit (verbatim: \"fix it now as its own commit\")."}
+{"ts": "2026-11-18T09:52:58Z", "source": "20261118T095256Z-rp12-o3-task5-acts1-3.md", "text": "Work O3's remaining tasks (verbatim: \"O3 tasks 5, 6 and 7\")."}
+{"ts": "2026-11-18T09:52:58Z", "source": "20261118T095256Z-rp12-o3-task5-acts1-3.md", "text": "Ruling 141, the tag row readers in a leaf gzkit/mx/tag_rows.py (by selection: \"A: leaf tag_rows.py (Rec.)\")."}
+{"ts": "2026-11-18T09:52:58Z", "source": "20261118T095256Z-rp12-o3-task5-acts1-3.md", "text": "Ruling 142, acceptance refuses every hung tag until O4 admits a carry (by selection: \"A: refuse every hung tag (Rec.)\")."}
+{"ts": "2026-11-18T09:52:58Z", "source": "20261118T095256Z-rp12-o3-task5-acts1-3.md", "text": "Ruling 143, a stopped order commences without its tags or a statement (by selection: \"B: stopped order excused (Rec.)\")."}
+{"ts": "2026-11-18T09:52:58Z", "source": "20261118T095256Z-rp12-o3-task5-acts1-3.md", "text": "Ruling 144, commencement refuses a stamped call (by selection: \"A: refuse any stamped call (Rec.)\")."}
+{"ts": "2026-11-18T09:52:58Z", "source": "20261118T095256Z-rp12-o3-task5-acts1-3.md", "text": "Ruling 145, the frozen fence holds src/ alone, the rest a recorded limit (by selection: \"A: src/ only, limit recorded (Rec.)\")."}
+{"ts": "2026-11-18T09:52:58Z", "source": "20261118T095256Z-rp12-o3-task5-acts1-3.md", "text": "Ruling 146, the frozen-footprint check runs above the hook's MX demotion (by selection: \"C: ruling 116's arm above (Rec.)\")."}
+{"ts": "2026-11-18T09:52:58Z", "source": "20261118T095256Z-rp12-o3-task5-acts1-3.md", "text": "Ruling 147, an empty seal fences the whole tree (by selection: \"B: fence whole tree (Rec.)\")."}
+{"ts": "2026-11-18T09:52:58Z", "source": "20261118T095256Z-rp12-o3-task5-acts1-3.md", "text": "Write a successor handoff and sync (verbatim: \"write a successor handoff now and sync these eight commits\"); the unpushed commits number six, not eight, an agent miscount."}
