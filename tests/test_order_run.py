@@ -237,7 +237,10 @@ class RepairOnAnOrder(_OrderRun):
     def test_a_blocked_frozen_order_refuses_it(self) -> None:
         self.freeze_second()
         self.block(order=_SECOND)
-        self.refused("blocked", lambda: self.dispatch("Repair", order=_SECOND, req=None))
+        self.refused(
+            "is blocked on the operator; it takes no dispatch",
+            lambda: self.dispatch("Repair", order=_SECOND, req=None),
+        )
 
 
 class RestorationOnAnOrder(_OrderRun):
@@ -258,6 +261,23 @@ class RestorationOnAnOrder(_OrderRun):
         refusal = self.refused("names no REQ", lambda: self.dispatch("Restoration"))
         self.assertIn("without --req", refusal)
 
+    def test_a_blocked_commenced_order_refuses_it(self) -> None:
+        """Ruling 59: a blocked order takes no dispatch, the craftsman's among them."""
+        self.block()
+        self.refused(
+            "is blocked on the operator; it takes no dispatch",
+            lambda: self.dispatch("Restoration", req=None),
+        )
+
+    def test_an_accepted_order_refuses_it(self) -> None:
+        """Ruling 132: Restoration takes a commenced order alone, not an accepted one."""
+        self.move("accepted", **_PAYLOADS["accepted"])
+        refusal = self.refused(
+            "is accepted; a Restoration dispatch takes a commenced order",
+            lambda: self.dispatch("Restoration", req=None),
+        )
+        self.assertIn("132", refusal)
+
 
 class BlockOnAnOrder(_OrderRun):
     """Ruling 59: `gz wp block --order` holds that order alone."""
@@ -270,11 +290,14 @@ class BlockOnAnOrder(_OrderRun):
 
     def test_a_blocked_order_takes_no_dispatch(self) -> None:
         self.block()
-        self.refused("blocked", self.dispatch)
+        self.refused("is blocked on the operator; it takes no dispatch", self.dispatch)
 
     def test_a_blocked_order_does_not_move(self) -> None:
         self.block()
-        self.refused("blocked", lambda: self.move("accepted", **_PAYLOADS["accepted"]))
+        self.refused(
+            "is blocked on the operator; it does not move",
+            lambda: self.move("accepted", **_PAYLOADS["accepted"]),
+        )
 
     def test_the_packages_other_orders_are_still_dispatched_and_moved(self) -> None:
         self.commence_second()
