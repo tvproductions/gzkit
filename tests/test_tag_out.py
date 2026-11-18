@@ -10,8 +10,11 @@ initiated repair package (121), one open tag per surface (122). Its id is
 `TAG-<NN>-<slug>` (111). The repair dispatch hangs it (ruling 6), a stamped call
 of a live `Repair` dispatch on the tag's frozen, unblocked order (rulings 109, 130,
 131 and 133), copying the issue's line item (120); a hung tag reads open whatever
-its order's state (129). Every refusal is proved here against the writers, which
-import no `gzkit.cli` (ruling 125). A refusal writes nothing.
+its order's state (129). The coordinator authorizes its clearance on a commenced,
+unblocked order once the hanging dispatch is over, ended or voided, marking the
+repair activity not available (rulings 7, 115, 118, 132, 138). Every refusal is
+proved here against the writers, which import no `gzkit.cli` (ruling 125). A
+refusal writes nothing.
 """
 
 import json
@@ -23,6 +26,7 @@ from typing import TYPE_CHECKING
 from gzkit.events import (
     BaselinedReq,
     OrderTransitionedEvent,
+    TagClearanceAuthorizedEvent,
     TagHungEvent,
     TagIssuedEvent,
     WorkPackageDispatchedEvent,
@@ -35,6 +39,7 @@ from gzkit.mx.tag_out import (
     TagOutError,
     next_tag_id,
     open_tags,
+    record_tag_clearance,
     record_tag_hang,
     record_tag_issue,
     tag_log,
@@ -44,6 +49,7 @@ from gzkit.work_package_ledger import TransitionRequest, record_work_package_tra
 from gzkit.work_package_run import (
     BlockRequest,
     DispatchRequest,
+    record_dispatch_end,
     record_dispatch_void,
     record_work_package_block,
     record_work_package_dispatch,
@@ -706,3 +712,169 @@ class HungTagLogTests(_HangCase):
         self.assertIsInstance(raised, TagOutError)
         self.assertIn("ledger's tag_hung row 'TAG-7-bad'", str(raised))
         self.assertIn("--subject-event tag_hung --subject-id TAG-7-bad", str(raised))
+
+
+class _ClearanceCase(_HangCase):
+    """The tag hung, the order commenced, the hanging dispatch's subagent ended."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.hang()
+        self.move("commenced")
+        record_dispatch_end(self.ledger, self.dispatch, "a-repair")
+
+    def authorize(
+        self, tag_id: str | None = None, *, session: str | None = _SESSION
+    ) -> TagClearanceAuthorizedEvent:
+        return record_tag_clearance(self.ledger, tag_id or self.tag.tag_id, mx_session_id=session)
+
+    def assert_clearance_refused(self, failed: str, act: Callable[[], object] | None = None) -> str:
+        """Assert the clearance is refused by the check named, and nothing is written.
+
+        Returns:
+            The refusal's text.
+
+        """
+        # output-contract: the refusal's what-failed part names the check that refused
+        before = _rows(self.path)
+        raised = _raised(act or self.authorize)
+        self.assertIsInstance(raised, TagOutError)
+        self.assertIn(failed, str(raised))
+        self.assertEqual(_rows(self.path), before)
+        return str(raised)
+
+
+class ClearanceTests(_ClearanceCase):
+    def test_a_clearance_marks_the_repair_activity_not_available(self) -> None:
+        """Rulings 6, 7, 114 and 115: derived from the dispatch's end, the session the mark."""
+        returned = self.authorize()
+        event = parse_typed_event(_rows(self.path)[-1])
+        self.assertIsInstance(event, TagClearanceAuthorizedEvent)
+        assert isinstance(event, TagClearanceAuthorizedEvent)
+        written, read = returned.model_dump(), event.model_dump()
+        written.pop("ts")
+        read.pop("ts")
+        self.assertEqual(written, read)
+        self.assertEqual(
+            (event.tag_id, event.order, event.work_package, event.hanging_dispatch_id),
+            (self.tag.tag_id, _ORDER, _REPAIR, self.dispatch),
+        )
+        self.assertEqual(
+            (event.repair_activity, event.hanging_dispatch_over), ("not-available", "ended")
+        )
+        self.assertEqual(event.mx_session_id, _SESSION)
+
+    def test_a_clearance_is_still_open_until_its_clear(self) -> None:
+        """Rulings 6 and 129: the clearance is recorded on the tag, which stays hung and open."""
+        cleared = self.authorize()
+        (tag,) = tag_log(self.ledger)
+        self.assertTrue(tag.is_open)
+        assert tag.clearance is not None
+        read, written = tag.clearance.model_dump(), cleared.model_dump()
+        read.pop("ts")
+        written.pop("ts")
+        self.assertEqual(read, written)
+
+
+class _UnendedCase(_HangCase):
+    """The tag hung and the order commenced; the hanging dispatch neither ended nor voided."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.hang()
+        self.move("commenced")
+
+    def authorize(self) -> TagClearanceAuthorizedEvent:
+        return record_tag_clearance(self.ledger, self.tag.tag_id, mx_session_id=_SESSION)
+
+
+class UnendedDispatchTests(_UnendedCase):
+    def test_a_voided_hanging_dispatch_reads_over_by_its_void(self) -> None:
+        """Ruling 118: a dispatch killed by TaskStop ends by its void, and the clearance says so."""
+        record_dispatch_void(self.ledger, _REPAIR, self.dispatch, "killed by TaskStop")
+        event = self.authorize()
+        self.assertEqual(
+            (event.hanging_dispatch_id, event.hanging_dispatch_over, event.repair_activity),
+            (self.dispatch, "voided", "not-available"),
+        )
+
+    def test_a_live_hanging_dispatch_refuses_the_clearance(self) -> None:
+        """Rulings 7 and 138: a live dispatch's concurrence is not recorded, so it is refused."""
+        before = _rows(self.path)
+        raised = _raised(self.authorize)
+        self.assertIsInstance(raised, TagOutError)
+        # output-contract: the refusal names the live dispatch and both routes to its end
+        self.assertIn(
+            f"Dispatch {self.dispatch}, which hung {self.tag.tag_id}, is still live", str(raised)
+        )
+        self.assertIn(f"--void {self.dispatch}", str(raised))
+        self.assertEqual(_rows(self.path), before)
+
+
+class ClearanceRefusalTests(_ClearanceCase):
+    def test_a_clearance_with_no_mx_session_open_is_refused(self) -> None:
+        """Rulings 3 and 114: the open MX session is the coordinator's mark; with none, none."""
+        for session in (None, "", "  "):
+            with self.subTest(session=session):
+                self.assert_clearance_refused(
+                    "No MX session is open", lambda s=session: self.authorize(session=s)
+                )
+
+    def test_a_tag_the_ledger_does_not_hold_is_refused(self) -> None:
+        self.assert_clearance_refused(
+            "is not issued in the ledger", lambda: self.authorize("TAG-09-absent")
+        )
+
+    def test_a_clearance_already_authorized_is_refused(self) -> None:
+        """Ruling 6: a tag's clearance is authorized once."""
+        self.authorize()
+        self.assert_clearance_refused("clearance is already authorized")
+
+    def test_an_order_not_commenced_is_refused(self) -> None:
+        """Rulings 132 and 135: a clearance is authorized where the Restoration dispatch works."""
+        self.move("accepted", acceptance_ready=True)
+        self.assert_clearance_refused("a tag's clearance is authorized on a commenced order")
+
+    def test_a_blocked_order_is_refused(self) -> None:
+        """Rulings 59 and 137: a blocked order's acts are held, its clearances among them."""
+        request = BlockRequest(
+            work_package=_REPAIR, reason="stuck", next_action="rule on it", order=_ORDER
+        )
+        record_work_package_block(self.catalog, self.ledger, request, refutations={})
+        self.assert_clearance_refused("is blocked on the operator")
+
+
+class FrozenClearanceTests(_HangCase):
+    def test_a_tag_not_hung_is_refused(self) -> None:
+        """Ruling 6: clearance follows a hang; an unhung tag isolates nothing to clear."""
+        before = _rows(self.path)
+        raised = _raised(
+            lambda: record_tag_clearance(self.ledger, self.tag.tag_id, mx_session_id=_SESSION)
+        )
+        self.assertIsInstance(raised, TagOutError)
+        self.assertIn(f"Tag {self.tag.tag_id} is not hung", str(raised))
+        self.assertEqual(_rows(self.path), before)
+
+    def test_a_frozen_orders_hung_tag_is_refused(self) -> None:
+        """Rulings 131 and 132: before commencement no Restoration dispatch can clear it."""
+        self.hang()
+        record_dispatch_end(self.ledger, self.dispatch, "a-repair")
+        before = _rows(self.path)
+        raised = _raised(
+            lambda: record_tag_clearance(self.ledger, self.tag.tag_id, mx_session_id=_SESSION)
+        )
+        self.assertIsInstance(raised, TagOutError)
+        self.assertIn("Order ORD-01-import is frozen", str(raised))
+        self.assertEqual(_rows(self.path), before)
+
+
+class ClearanceLogTests(_ClearanceCase):
+    def test_a_malformed_clearance_row_is_refused_with_its_void_not_a_crash(self) -> None:
+        """Ruling 4: the log is ledger events; a clearance row it cannot read stops it, named."""
+        row = {"schema": "gzkit.ledger.v1", "event": "tag_clearance_authorized", "id": "TAG-7-bad"}
+        with self.path.open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps({**row, "ts": "2026-11-18T00:00:00+00:00"}) + "\n")
+        raised = _raised(lambda: tag_log(self.ledger))
+        # output-contract: the refusal names the row's event and the void that recovers it
+        self.assertIsInstance(raised, TagOutError)
+        self.assertIn("ledger's tag_clearance_authorized row 'TAG-7-bad'", str(raised))

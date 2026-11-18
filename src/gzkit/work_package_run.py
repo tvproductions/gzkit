@@ -47,6 +47,7 @@ from gzkit.events import (
     DISPATCH_ID_PATTERN,
     DispatchClaimedEvent,
     DispatchEndedEvent,
+    DispatchOver,
     DispatchVoidedEvent,
     WorkPackageBlockedEvent,
     WorkPackageDispatchedEvent,
@@ -735,6 +736,21 @@ def record_dispatch_end(
     )
     ledger.append(ledger_row(event))
     return event
+
+
+def dispatch_over(ledger: Ledger, dispatch_id: str) -> DispatchOver | None:
+    """Read whether a dispatch is over: ended on its own (ruling 115) or voided (ruling 118).
+
+    An end is read first, the record of the subagent's own finish, when a later void
+    also names the dispatch.
+
+    Returns:
+        ``ended`` or ``voided``, or None while the dispatch is live.
+
+    """
+    if any(row.extra.get("dispatch_id") == dispatch_id for row in ledger.query(event_type=_ENDED)):
+        return "ended"
+    return "voided" if dispatch_id in _voided(ledger) else None
 
 
 def open_unclaimed_dispatches(ledger: Ledger, project_root: str) -> list[str]:

@@ -3106,6 +3106,52 @@
         }
       }
     },
+    "tag_clearance_authorized": {
+      "required": [
+        "tag_id",
+        "order",
+        "work_package",
+        "hanging_dispatch_id",
+        "repair_activity",
+        "hanging_dispatch_over",
+        "mx_session_id"
+      ],
+      "properties": {
+        "tag_id": {
+          "type": "string",
+          "pattern": "^TAG-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "order": {
+          "type": "string",
+          "min_length": 1
+        },
+        "work_package": {
+          "type": "string",
+          "min_length": 1
+        },
+        "hanging_dispatch_id": {
+          "type": "string",
+          "pattern": "^D-[0-9a-f]{16}$"
+        },
+        "repair_activity": {
+          "type": "string",
+          "enum": [
+            "not-available"
+          ]
+        },
+        "hanging_dispatch_over": {
+          "type": "string",
+          "enum": [
+            "ended",
+            "voided"
+          ]
+        },
+        "mx_session_id": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
     "work_package_unblocked": {
       "required": [
         "work_package",

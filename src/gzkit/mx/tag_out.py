@@ -25,6 +25,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from gzkit.events import (
     TagCheckLevel,
     TagClass,
+    TagClearanceAuthorizedEvent,
     TagHungEvent,
     TagIssuedEvent,
     TagPosition,
@@ -34,7 +35,7 @@ from gzkit.events import (
 from gzkit.ledger import ledger_row
 from gzkit.order_ledger import TERMINATED, is_order_blocked, order_state
 from gzkit.work_package_ledger import work_package_state
-from gzkit.work_package_run import REPAIR, find_dispatch
+from gzkit.work_package_run import REPAIR, dispatch_over, find_dispatch
 
 if TYPE_CHECKING:
     from gzkit.ledger import Ledger
@@ -119,6 +120,9 @@ class Tag(BaseModel):
 
     issue: TagIssuedEvent = Field(..., description="The tag's issue, its whole line item")
     hang: TagHungEvent | None = Field(None, description="Its hang, None while unhung (ruling 6)")
+    clearance: TagClearanceAuthorizedEvent | None = Field(
+        None, description="Its clearance authorized, None until then (ruling 6)"
+    )
     is_open: bool = Field(
         ..., description="True while hung (ruling 129); unhung, false once its order has closed"
     )
@@ -128,7 +132,7 @@ def _refuse(message: str) -> NoReturn:
     raise TagOutError(message)
 
 
-def _read[E: (TagIssuedEvent, TagHungEvent)](
+def _read[E: (TagIssuedEvent, TagHungEvent, TagClearanceAuthorizedEvent)](
     ledger: Ledger, event_type: str, model: type[E]
 ) -> list[E]:
     """Read every live row of one tag-out event, refusing a row its shape does not admit.
@@ -173,6 +177,19 @@ def _hangs(ledger: Ledger) -> dict[str, TagHungEvent]:
     return hangs
 
 
+def _clearances(ledger: Ledger) -> dict[str, TagClearanceAuthorizedEvent]:
+    """Read each tag's clearance authorized, by tag id; the first stands, as it is booked once.
+
+    Returns:
+        Each clearance the live ledger holds, keyed by its tag.
+
+    """
+    clearances: dict[str, TagClearanceAuthorizedEvent] = {}
+    for clearance in _read(ledger, "tag_clearance_authorized", TagClearanceAuthorizedEvent):
+        clearances.setdefault(clearance.tag_id, clearance)
+    return clearances
+
+
 def next_tag_id(ledger: Ledger, slug: str) -> str:
     """Return the next id in the one series (ruling 111): the highest number plus one.
 
@@ -198,11 +215,12 @@ def tag_log(ledger: Ledger) -> list[Tag]:
         Each tag with its hang and whether it is open.
 
     """
-    hangs = _hangs(ledger)
+    hangs, clearances = _hangs(ledger), _clearances(ledger)
     return [
         Tag(
             issue=issue,
             hang=hangs.get(issue.tag_id),
+            clearance=clearances.get(issue.tag_id),
             is_open=issue.tag_id in hangs or order_state(ledger, issue.order) not in TERMINATED,
         )
         for issue in _issues(ledger)
@@ -495,6 +513,98 @@ def record_tag_hang(
             "tag_id": tag_id,
             "dispatch_id": dispatch_id,
             "issued_by_session": issue.mx_session_id,
+            "mx_session_id": mx_session_id,
+        }
+    )
+    ledger.append(ledger_row(event))
+    return event
+
+
+def _check_clearable(ledger: Ledger, tag: Tag) -> None:
+    """Refuse a clearance on an order not commenced, or blocked (rulings 59, 132, 135).
+
+    A Restoration dispatch clears on a commenced order, a stopped one included
+    (rulings 132 and 135), so its clearance is authorized there; a blocked order's
+    acts are held, an out-of-position find's block among them (rulings 59 and 137).
+    """
+    issue = tag.issue
+    order_now = order_state(ledger, issue.order)
+    if order_now != "commenced":
+        _refuse(
+            f"Order {issue.order} is {order_now or 'not opened'}; a tag's clearance is "
+            "authorized on a commenced order, where the Restoration dispatch that clears it "
+            "is booked (RP-12 rulings 132 and 135). `uv run gz wp order show "
+            f"{issue.order}` reads its state."
+        )
+    if is_order_blocked(ledger, issue.order):
+        _refuse(
+            f"Order {issue.order} is blocked on the operator, and a blocked order's acts are "
+            "held, its clearances among them (RP-12 rulings 59 and 137). Authorize the "
+            f"clearance once `uv run gz wp unblock {issue.work_package} --order {issue.order} "
+            "--ruling <words> --operator <who>` records the ruling."
+        )
+
+
+def record_tag_clearance(
+    ledger: Ledger, tag_id: str, *, mx_session_id: str | None
+) -> TagClearanceAuthorizedEvent:
+    """Book the coordinator's clearance authorized for one hung tag, or refuse it.
+
+    The hanging dispatch's state is read from the ledger, never typed (ruling 7): a
+    live one is refused (ruling 138), so the repair activity is recorded *not
+    available*, naming the dispatch and how it was read over. A refusal writes nothing.
+
+    Returns:
+        The event booked.
+
+    """
+    if not (mx_session_id or "").strip():
+        _refuse(
+            "No MX session is open, so the clearance would carry no mark. The coordinator's "
+            "mark is the open MX session, which holds the tag (RP-12 rulings 3 and 114). "
+            "Have the operator open one through the gz-mx skill (`uv run gz mx enter`), "
+            "then authorize the clearance."
+        )
+    tag = next((tag for tag in tag_log(ledger) if tag.issue.tag_id == tag_id), None)
+    if tag is None:
+        _refuse(
+            f"Tag {tag_id!r} is not issued in the ledger, so there is nothing to clear (RP-12 "
+            "ruling 6). Read the open log with `uv run gz wp tag show` and authorize the "
+            "clearance of a tag it lists."
+        )
+    if tag.hang is None:
+        _refuse(
+            f"Tag {tag_id} is not hung, so nothing isolates its surface to clear; clearance "
+            "follows a hang (RP-12 ruling 6). An unhung tag leaves the open log when its "
+            f"order closes (ruling 122); `uv run gz wp tag show --all` reads it."
+        )
+    if tag.clearance is not None:
+        _refuse(
+            f"Tag {tag_id}'s clearance is already authorized, by MX session "
+            f"{tag.clearance.mx_session_id}; it is authorized once (RP-12 ruling 6). The "
+            "Restoration dispatch clears it next."
+        )
+    _check_clearable(ledger, tag)
+    hanging = tag.hang.dispatch_id
+    over = dispatch_over(ledger, hanging)
+    if over is None:
+        _refuse(
+            f"Dispatch {hanging}, which hung {tag_id}, is still live: it has neither ended nor "
+            "been voided, and its concurrence is not recorded, so the clearance is refused "
+            "(RP-12 rulings 7 and 138). Let its subagent finish, which books its end, or, if "
+            "it was killed or abandoned, have the coordinator void it: `uv run gz wp dispatch "
+            f'{tag.issue.work_package} --void {hanging} --reason "<why>"`.'
+        )
+    event = TagClearanceAuthorizedEvent.model_validate(
+        {
+            "event": "tag_clearance_authorized",
+            "id": tag_id,
+            "tag_id": tag_id,
+            "order": tag.issue.order,
+            "work_package": tag.issue.work_package,
+            "hanging_dispatch_id": hanging,
+            "repair_activity": "not-available",
+            "hanging_dispatch_over": over,
             "mx_session_id": mx_session_id,
         }
     )

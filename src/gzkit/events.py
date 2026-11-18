@@ -2082,6 +2082,9 @@ TagSource = Literal["order-work", "standard-disconnect", "mel-bypass", "surveill
 TagSurfaceKind = Literal["validator", "check", "hook", "path"]
 #: The check levels that disconnect, the only ones a tag is issued under (RP-12 ruling 113).
 TagCheckLevel = Literal["C", "D"]
+#: How a clearance found the hanging dispatch over: ended on its own (ruling 115) or
+#: voided (ruling 118); a live one is refused (ruling 138).
+DispatchOver = Literal["ended", "voided"]
 
 
 class TagIssuedEvent(_EventBase):
@@ -2154,6 +2157,39 @@ class TagHungEvent(_EventBase):
     )
     mx_session_id: str = Field(
         ..., min_length=1, description="The holder, the MX session open at the hang (ruling 133)"
+    )
+
+
+class TagClearanceAuthorizedEvent(_EventBase):
+    """tag_clearance_authorized event — the coordinator authorized a hung tag's clear (RP-12 O3).
+
+    Ruling 6's third act, clearance authorized, by the coordinator as Authorizing
+    Officer, an unstamped call recorded with the open MX session as its mark (ruling
+    114). The verb reads the hanging dispatch's state from the ledger (ruling 7): a
+    live one is refused (ruling 138), so the repair activity is always recorded *not
+    available*, beside the hanging dispatch whose concurrence was absent and how it
+    was read over, ended (ruling 115) or voided (ruling 118). Written only by
+    ``gzkit.mx.tag_out.record_tag_clearance`` on a hung tag of a commenced, unblocked
+    order (rulings 59, 132 and 135). ``id`` is the tag id.
+    """
+
+    event: Literal["tag_clearance_authorized"]
+    tag_id: str = Field(..., pattern=f"^{TAG_ID_PATTERN}$", description="TAG-<NN>-<slug>")
+    order: str = Field(..., min_length=1, description="The order the tag is issued on")
+    work_package: str = Field(..., min_length=1, description="The repair package of the order")
+    hanging_dispatch_id: str = Field(
+        ...,
+        pattern=f"^{DISPATCH_ID_PATTERN}$",
+        description="The Repair dispatch that hung it, whose concurrence was absent (ruling 7)",
+    )
+    repair_activity: Literal["not-available"] = Field(
+        ..., description="The repair activity's mark, derived and stamped (rulings 7, 138)"
+    )
+    hanging_dispatch_over: DispatchOver = Field(
+        ..., description="How the hanging dispatch was read over: ended or voided"
+    )
+    mx_session_id: str = Field(
+        ..., min_length=1, description="The coordinator's mark, the open MX session (ruling 114)"
     )
 
 
@@ -2259,7 +2295,8 @@ TypedLedgerEvent = Annotated[
     | WorkPackageUnblockedEvent
     | OrderTransitionedEvent
     | TagIssuedEvent
-    | TagHungEvent,
+    | TagHungEvent
+    | TagClearanceAuthorizedEvent,
     Field(discriminator="event"),
 ]
 

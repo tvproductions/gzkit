@@ -75,6 +75,13 @@ class ProducerProbeTests(unittest.TestCase):
         self.assertEqual(observation.producer, "gzkit.mx.tag_out.record_tag_hang")
         self.assertEqual(observation.subject, "TAG-01-producer-probe")
 
+    def test_the_clearance_writer_is_verified_and_refuses_a_second_clearance(self) -> None:
+        """RP-12 rulings 7 and 138: one clearance, not available from the end, a second refused."""
+        observation = probe_producer("tag_clearance_authorized")
+        self.assertEqual(observation.status, "verified", observation.error)
+        self.assertEqual(observation.producer, "gzkit.mx.tag_out.record_tag_clearance")
+        self.assertEqual(observation.subject, "TAG-01-producer-probe")
+
     def test_the_claim_writer_is_verified_and_books_each_pair_once(self) -> None:
         """RP-12 ruling 40: one claim per dispatch and agent, none for no dispatch."""
         observation = probe_producer("dispatch_claimed")

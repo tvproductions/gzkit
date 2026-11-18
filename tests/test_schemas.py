@@ -100,6 +100,7 @@ from gzkit.events import (
     Stage2DispatchRecordedEvent,
     Stage2SingleDriverDeclaredEvent,
     SurfaceWeightRecalibratedEvent,
+    TagClearanceAuthorizedEvent,
     TagHungEvent,
     TagIssuedEvent,
     TaskBlockedEvent,
@@ -413,6 +414,8 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "tag_issued": TagIssuedEvent,
     # The tag-out log's hang (RP-12 O3 task 3)
     "tag_hung": TagHungEvent,
+    # The tag-out log's clearance authorized (RP-12 O3 task 4)
+    "tag_clearance_authorized": TagClearanceAuthorizedEvent,
     # Reversible retirement of OBPIs whose parent ADR demoted to pool (GHI #584)
     "obpi_parked": ObpiParkedEvent,
     "obpi_blocked_on_operator": ObpiBlockedOnOperatorEvent,

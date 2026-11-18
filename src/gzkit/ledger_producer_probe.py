@@ -27,6 +27,7 @@ from gzkit.events import (
     OutcomeTransitionedEvent,
     ReportPublishedEvent,
     ReqProofRecordedEvent,
+    TagClearanceAuthorizedEvent,
     TagHungEvent,
     TagIssuedEvent,
     WorkPackageBlockedEvent,
@@ -881,8 +882,10 @@ def _probe_tag_issue(root: Path) -> ProducerObservation:
     )
 
 
-def _probe_tag_hang(root: Path) -> ProducerObservation:
+def _probe_tag_hang(root: Path, event_type: str = "tag_hung") -> ProducerObservation:
     """Hang an issued tag from its frozen order's Repair dispatch, then again; the second refused.
+
+    For ``tag_clearance_authorized`` the hung tag's clearance is observed instead.
 
     Returns:
         The verified observation.
@@ -974,6 +977,8 @@ def _probe_tag_hang(root: Path) -> ProducerObservation:
         ),
     )
     dispatch_id = str(dispatched.dispatch_id)
+    if event_type == "tag_clearance_authorized":
+        return _observe_tag_clearance(catalog, ledger, ledger_path, issue.tag_id, dispatch_id)
     seated = ledger_path.read_bytes()
 
     def write() -> object:
@@ -1003,6 +1008,62 @@ def _probe_tag_hang(root: Path) -> ProducerObservation:
     return ProducerObservation(
         event_type="tag_hung",
         producer=_PRODUCERS["tag_hung"],
+        status="verified",
+        ledger_sha256=hashlib.sha256(persisted).hexdigest(),
+        record_count=1,
+        subject=event.id,
+    )
+
+
+def _observe_tag_clearance(
+    catalog: Catalog, ledger: Ledger, ledger_path: Path, tag_id: str, dispatch_id: str
+) -> ProducerObservation:
+    """Hang the tag, commence, end the hanging dispatch, then authorize twice (RP-12 O3 task 4).
+
+    Returns:
+        The verified observation.
+
+    Raises:
+        TypeError: The writer persisted another event type.
+        ValueError: The writer booked a second clearance, or a mark other than not available.
+
+    """
+    from gzkit import order_ledger  # noqa: PLC0415 - the writer; import only when probed
+    from gzkit import work_package_run as run  # noqa: PLC0415
+    from gzkit.mx import tag_out  # noqa: PLC0415
+
+    tag_out.record_tag_hang(
+        ledger, tag_id, dispatch_id, stamped_id=dispatch_id, mx_session_id=_AUTHOR
+    )
+    order_ledger.record_order_transition(
+        catalog,
+        ledger,
+        order_ledger.OrderMove(order=_ORDER, to_state="commenced", evidence=_AUTHOR),
+    )
+    run.record_dispatch_end(ledger, dispatch_id, "a-probe")
+    seated = ledger_path.read_bytes()
+
+    def write() -> object:
+        return tag_out.record_tag_clearance(ledger, tag_id, mx_session_id=_AUTHOR)
+
+    write()
+    _expect_refusal(write, "a clearance authorized twice", tag_out.TagOutError, "already")
+    persisted = ledger_path.read_bytes()
+    added = persisted[len(seated) :].decode("utf-8").splitlines()
+    if not persisted.startswith(seated) or len(added) != 1:
+        msg = "Writer must persist exactly one clearance and nothing for a refusal"
+        raise ValueError(msg)
+    event = parse_typed_event(json.loads(added[0]))
+    if not isinstance(event, TagClearanceAuthorizedEvent):
+        msg = "Writer persisted the wrong event type"
+        raise TypeError(msg)
+    observed = (event.id, event.hanging_dispatch_id, event.repair_activity)
+    if observed != (tag_id, dispatch_id, "not-available") or event.hanging_dispatch_over != "ended":
+        msg = "Clearance record disagrees with the hang and the dispatch's end"
+        raise ValueError(msg)
+    return ProducerObservation(
+        event_type="tag_clearance_authorized",
+        producer=_PRODUCERS["tag_clearance_authorized"],
         status="verified",
         ledger_sha256=hashlib.sha256(persisted).hexdigest(),
         record_count=1,
@@ -1332,6 +1393,7 @@ _PRODUCERS = {
     "order_transitioned": "gzkit.order_ledger.record_order_transition",
     "tag_issued": "gzkit.mx.tag_out.record_tag_issue",
     "tag_hung": "gzkit.mx.tag_out.record_tag_hang",
+    "tag_clearance_authorized": "gzkit.mx.tag_out.record_tag_clearance",
 }
 
 
@@ -1348,6 +1410,7 @@ _ROOT_PROBES = {
     "order_transitioned": _probe_order_transition,
     "tag_issued": _probe_tag_issue,
     "tag_hung": _probe_tag_hang,
+    "tag_clearance_authorized": lambda root: _probe_tag_hang(root, "tag_clearance_authorized"),
     "legacy_unit_withdrawn": _probe_legacy_withdrawal,
     "dispatch_claimed": _probe_dispatch_claim,
     "dispatch_voided": lambda root: _probe_dispatch_claim(root, "dispatch_voided"),
