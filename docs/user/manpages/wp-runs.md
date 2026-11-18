@@ -23,7 +23,9 @@ A work package's run is in flight from `commenced` until `closed`, so a package 
 `accepted`, awaiting Gate 5, is still reported. An order's run is in flight the
 same way, from its own `commenced`, since its repair package stays `initiated`
 (RP-12 rulings 44 and 57); its line names the order, and `blocked` reads the
-order's block. For each one the verb prints the
+order's block. A frozen order holding a live dispatch, booked and not voided, is
+in flight too, since ruling 40's guard reads that dispatch open (rulings 134 and
+136); a frozen order with none is not reported. For each one the verb prints the
 last row the run booked (`last`), when it was booked (`at`), the subject last
 dispatched against (`subject`) and whether the package awaits the operator
 (`blocked`). No run in flight says so and exits 0. Text the verbs recorded, a block
@@ -66,6 +68,19 @@ order ORD-02-matcher of WP-01-stamp (repair), state: accepted
   last: order_transitioned accepted
   at: 2026-11-07T12:49:59.038610+00:00
   subject: REQ-9@1
+  blocked: no
+```
+
+Observed 2026-11-17 in a temporary project set up as
+`tests/commands/test_wp_tag.py` sets one up, `ORD-01-import` frozen with a
+`Repair` dispatch booked on it:
+
+```console
+$ uv run gz wp runs
+order ORD-01-import of WP-01-stamp (repair), state: frozen
+  last: dispatched Repair ORD-01-import
+  at: 2026-11-18T00:45:22.183622+00:00
+  subject: ORD-01-import
   blocked: no
 ```
 

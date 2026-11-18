@@ -659,6 +659,23 @@ class InFlightOnAnOrder(_OrderRun):
         self.walk_to("frozen", order=_SECOND, baseline=(BaselinedReq(req="REQ-2", revision=1),))
         self.assertEqual([run.order for run in self.runs()], [_ORDER])
 
+    def test_a_frozen_order_holding_a_live_dispatch_is_in_flight(self) -> None:
+        """Ruling 136: the run view reads a frozen order's dispatch as ruling 134's guard does."""
+        self.walk_to("frozen", order=_SECOND, baseline=(BaselinedReq(req="REQ-2", revision=1),))
+        self.dispatch("Repair", order=_SECOND, req=None)
+        frozen = [run for run in self.runs() if run.order == _SECOND]
+        self.assertEqual(
+            [(run.state, run.subject, run.event) for run in frozen],
+            [("frozen", _SECOND, "work_package_dispatched")],
+        )
+
+    def test_a_frozen_order_whose_dispatch_is_voided_is_not_in_flight(self) -> None:
+        """Ruling 136: a voided dispatch is no dispatch (ruling 42), so the order reads unrun."""
+        self.walk_to("frozen", order=_SECOND, baseline=(BaselinedReq(req="REQ-2", revision=1),))
+        event = self.dispatch("Repair", order=_SECOND, req=None)
+        record_dispatch_void(self.ledger, _PACKAGE, str(event.dispatch_id), "never spawned")
+        self.assertEqual([run.order for run in self.runs()], [_ORDER])
+
 
 class OrderFenceRecovery(unittest.TestCase):
     """The refusal names the order and the step that lifts it (ruling 58)."""

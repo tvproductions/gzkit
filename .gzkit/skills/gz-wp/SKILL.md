@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-17
 metadata:
-  skill-version: "0.19.6"
+  skill-version: "0.19.7"
 model: sonnet
 ---
 
@@ -273,7 +273,8 @@ own approved specification; a difference from the prior shape is not one.
 its state, its baseline and the REQs a proceed holds from the ledger (ruling 78);
 `uv run gz wp show <WP-id>` prints the record, the state and the history;
 `uv run gz wp runs` reports what the ledger says every run in flight, a package's or
-an order's, has reached;
+an order's, has reached, a frozen order holding a live dispatch among them (RP-12
+ruling 136);
 `uv run gz validate --catalog` checks the store against RO-5's rulings.
 
 ## Common Rationalizations

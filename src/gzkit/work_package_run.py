@@ -177,7 +177,9 @@ class RunPosition(BaseModel):
 
     work_package: str = Field(..., description="The work package's id")
     kind: str = Field(..., description="delivery or repair, which selects the procedure")
-    state: str = Field(..., description="The lifecycle state: commenced or accepted")
+    state: str = Field(
+        ..., description="The lifecycle state: commenced or accepted, or an order's frozen"
+    )
     blocked: bool = Field(..., description="Whether the package awaits the operator")
     event: str = Field(..., description="The run's last ledger event")
     move: str = Field(..., description="What that event recorded")
@@ -264,17 +266,38 @@ def _order_history(ledger: Ledger, order: str) -> list[LedgerEvent]:
     return [row for row in ledger.query() if row.event in kinds and row.extra.get("order") == order]
 
 
+def _holds_live_dispatch(ledger: Ledger, history: list[LedgerEvent]) -> bool:
+    """Whether an order's rows hold a dispatch booked and not voided (rulings 42, 136).
+
+    Returns:
+        True when at least one dispatch row's id is not voided.
+
+    """
+    voided = _voided(ledger)
+    return any(
+        row.extra.get("dispatch_id") not in voided
+        for row in history
+        if row.event == _DISPATCHED and row.extra.get("dispatch_id")
+    )
+
+
 def order_run_position(catalog: Catalog, ledger: Ledger, order: Order) -> RunPosition | None:
     """Replay what an order's run has reached, as a package's is (RP-12 ruling 57).
 
+    A frozen order is in flight while it holds a live dispatch, booked and not
+    voided, as ruling 134's guard reads it open (RP-12 ruling 136).
+
     Returns:
-        The position, or None when the order is not commenced or accepted.
+        The position, or None when the order is neither commenced, accepted, nor
+        frozen with a live dispatch.
 
     """
     state = order_state(ledger, order.id)
-    if state not in _IN_FLIGHT:
-        return None
     history = _order_history(ledger, order.id)
+    if state not in _IN_FLIGHT and not (
+        state == "frozen" and _holds_live_dispatch(ledger, history)
+    ):
+        return None
     last = history[-1]
     dispatches = [row for row in history if row.event == _DISPATCHED]
     return RunPosition(
@@ -297,7 +320,8 @@ def run_positions(catalog: Catalog, ledger: Ledger) -> list[RunPosition]:
     reader of packages alone would miss every repair run.
 
     Returns:
-        One position per package or order commenced or accepted and not yet closed.
+        One position per package or order commenced or accepted and not yet closed,
+        and per order frozen with a live dispatch (RP-12 ruling 136).
 
     """
     packages = (run_position(catalog, ledger, wp.id) for wp in catalog.work_packages)

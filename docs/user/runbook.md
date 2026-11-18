@@ -1008,7 +1008,8 @@ uv run gz wp close WP-01-astral --attestor g0 --residual-risk "<risk>" --evidenc
 ```
 
 `gz wp runs` reports every run in flight from the ledger: the last row it booked,
-when, the subject last dispatched against and whether it is blocked.
+when, the subject last dispatched against and whether it is blocked. An order
+frozen with a live Repair dispatch on it counts as in flight (RP-12 ruling 136).
 
 An order is the unit Gate 5 sits at, inside a work package (drydock RP-12 O2).
 Its record lives in `data/catalog/orders.json`, written only by `gz wp order new`,
