@@ -38,7 +38,7 @@ class _CommencedOrder(_OrderCase):
             "freeze", _ORDER, "--baseline", "REQ-1@1", "--risk-note", "Touches the hook.",
             "--review-receipt", "review-01", "--evidence", "E",
         )  # fmt: skip
-        self.gz("commence", _ORDER, "--evidence", "tags")
+        self.gz("commence", _ORDER, "--evidence", "tags", "--no-isolation", "Edits a doc.")
 
     def wp(self, *args: str, code: int = 0) -> str:
         result = self.runner.invoke(main, ["wp", *args])

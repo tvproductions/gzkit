@@ -235,7 +235,7 @@ class TestTheOrdersDeparture(_OrderAcceptance):
             "freeze", "ORD-02-matcher", "--baseline", "REQ-2@1", "--baseline", "REQ-3@1",
             "--risk-note", "Touches the matcher.", "--review-receipt", "v", "--evidence", "E",
         )  # fmt: skip
-        self.gz("commence", "ORD-02-matcher", "--evidence", "tags")
+        self.gz("commence", "ORD-02-matcher", "--evidence", "tags", "--no-isolation", "None.")
 
     def depart(self, order: str, req: str, item: str) -> None:
         for role in ("Implementer", "SpecReviewer", "Implementer", "Implementer"):

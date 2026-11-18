@@ -9,6 +9,7 @@ nothing; an unknown package or order exits 1.
 
 import argparse
 import json
+import os
 import shlex
 import unittest
 from pathlib import Path
@@ -18,6 +19,7 @@ from unittest.mock import patch
 from gzkit.airlock.model import TransitObservation
 from gzkit.cli import main
 from gzkit.cli.main import _build_parser
+from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV
 from gzkit.governance.trust_audits.catalog import audit_catalog
 from tests.commands.common import CliRunner, _quick_init
 from tests.test_order_ledger import _raised
@@ -331,14 +333,31 @@ class OrderLifecycleTests(_LifecycleCase):
 
     def test_freeze_then_commence_book_one_step_each(self) -> None:
         self.assertIn("ORD-01-import: opened -> frozen", self.freeze())
-        commenced = self.gz("commence", "ORD-01-import", "--evidence", "tags")
+        commenced = self.gz(
+            "commence", "ORD-01-import", "--evidence", "tags", "--no-isolation", "Edits a doc."
+        )
         self.assertIn("ORD-01-import: frozen -> commenced", commenced)
         self.assertIn("airlock in:", commenced)  # ruling 65: the order crosses inward
         moves = self.moves()
         self.assertEqual([m["to_state"] for m in moves], ["opened", "frozen", "commenced"])
+        self.assertEqual(moves[2]["no_isolation"], "Edits a doc.")  # ruling 117
         self.assertEqual(moves[1]["baseline"], [{"req": "REQ-1", "revision": 1}])
         self.assertEqual(moves[1]["modules"], ["src/stamp.py"])
         self.assertEqual(moves[1]["risk_note"], "Touches the hook.")
+
+    def test_a_stamped_commence_is_refused_and_books_nothing(self) -> None:
+        # given the order frozen and a call stamped as a subagent's (ruling 144)
+        self.freeze()
+        before = _ledger_rows()
+        stamp = {STAMP_ROOT_ENV: Path.cwd().resolve().as_posix(), STAMP_ID_ENV: ""}
+        # when
+        with patch.dict(os.environ, stamp):
+            output = self.gz(
+                "commence", "ORD-01-import", "--evidence", "e", "--no-isolation", "None.", code=3
+            )
+        # then refused for its own reason, nothing booked
+        self.assertIn("refused from a subagent's call", output)
+        self.assertEqual(_ledger_rows(), before)
 
     def test_the_freeze_approves_the_packages_planned_alterations(self) -> None:
         """Ruling 63: `--approve-alteration` names each alteration due at this freeze."""
@@ -376,7 +395,7 @@ class OrderLifecycleTests(_LifecycleCase):
             " ".join(output.split()),
             "Order ORD-01-import cannot move from opened to 'commenced'; the lifecycle allows "
             "frozen from here. Nothing was written; correct the call and re-run `uv run gz wp "
-            "order commence <ORD-id> --evidence <text>`.",
+            "order commence <ORD-id> --evidence <text> [--no-isolation <why>]`.",
         )
 
     def test_a_baseline_entry_not_req_at_revision_is_refused(self) -> None:

@@ -996,7 +996,7 @@ uv run gz wp initiate WP-01-astral --operator-text "<your exact words>"
 uv run gz wp order new WP-01-astral --slug import --purpose "<purpose>" --operator-text "<your exact words>"
 uv run gz wp req new WP-01-astral --statement "<what must hold again>" --criterion "<state>|<outcome>|<evidence>" --kind BEHAVIOR --problem-report 1183
 uv run gz wp order freeze ORD-01-import --baseline REQ-1@1 --risk-note "<risk>" --review-receipt <receipt> --evidence "<what justifies it>"
-uv run gz wp order commence ORD-01-import --evidence "<what justifies it>"
+uv run gz wp order commence ORD-01-import --evidence "<what justifies it>" --no-isolation "<why nothing is isolated>"
 uv run gz wp dispatch WP-01-astral --order ORD-01-import --role Implementer --model sonnet --req REQ-1
 uv run gz wp resolve WP-01-astral 1183 --commit <fix-sha> --reviewer <reviewer>
 uv run gz wp acceptance ORD-01-import init --author <implementing session>
@@ -1086,7 +1086,11 @@ frozen it, an accepted order holding it until its Gate 5; when a proceed already
 delivered it at that revision, new work being a requirement that supersedes it;
 and when another requirement supersedes it, the refusal naming each one to
 freeze instead. It approves each alteration the package plans that no earlier order's
-freeze approved. Commencing crosses the airlock inward on the package's slice:
+freeze approved. Commencement is the coordinator's call from the main session, and
+waits until every tag issued on the order is hung; an order with no tag commences
+only with `--no-isolation "<why>"`, and an order an exit stopped owes neither
+(RP-12 rulings 108, 117, 143 and 144). Commencing crosses the airlock inward on
+the package's slice:
 
 ```bash
 uv run gz wp order freeze ORD-01-import --baseline REQ-1@1 --risk-note "<risk>" \

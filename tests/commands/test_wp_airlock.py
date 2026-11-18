@@ -184,7 +184,7 @@ class _AirlockCase(unittest.TestCase):
     def _commence(self) -> None:
         self._open_order()
         self._freeze_order()
-        self._wp("order", "commence", _ORDER, "--evidence", "e")
+        self._wp("order", "commence", _ORDER, "--evidence", "e", "--no-isolation", "None.")
 
     def _accept(self) -> None:
         self._wp(*_ORDER_ACCEPT[1:])
@@ -535,7 +535,7 @@ class TestFootprintOrders(_AirlockCase):
         self._order("--module", _OUTSIDE)
         self._order("--drop-module", _OUTSIDE)
         self._freeze_order()
-        self._wp("order", "commence", _ORDER, "--evidence", "e")
+        self._wp("order", "commence", _ORDER, "--evidence", "e", "--no-isolation", "None.")
         _commit(_OUTSIDE, _TRAILER)
         result = self.runner.invoke(main, _ORDER_ACCEPT)
         self.assertEqual(result.exit_code, 3, msg=result.output)

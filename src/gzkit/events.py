@@ -2068,6 +2068,9 @@ class OrderTransitionedEvent(_EventBase):
     acceptance_ready: bool | None = Field(
         None, description="Whether acceptance read ready, at accepted (ruling 84)"
     )
+    no_isolation: str | None = Field(
+        None, description="Why an order with no tag isolates nothing, at commenced (ruling 117)"
+    )
 
 
 #: A tag's class (RP-12 ruling 5): Danger forbids operating the surface, Caution limits it.

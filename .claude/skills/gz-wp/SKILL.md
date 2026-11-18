@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-18
 metadata:
-  skill-version: "0.21.0"
+  skill-version: "0.22.0"
 model: sonnet
 ---
 
@@ -208,10 +208,12 @@ cannot hang. A hung tag reads open until its clear (RP-12 rulings 6, 120, 129 to
 uv run gz wp tag hang <TAG-id> --dispatch D-<id> [--json]
 ```
 
-Once every tag the order needs is hung, record commencement:
+Once every tag issued on the order is hung, record commencement from the main
+session; an order with no tag commences only on a stated `--no-isolation`, and a
+stopped order owes neither (rulings 108, 117, 143, 144):
 
 ```bash
-uv run gz wp order commence <ORD-id> --evidence "<what justifies it>"
+uv run gz wp order commence <ORD-id> --evidence "<what justifies it>" [--no-isolation "<why>"]
 ```
 
 Once the work is done, authorize each hung tag's clearance from the main session.

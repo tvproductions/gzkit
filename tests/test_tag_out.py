@@ -357,7 +357,7 @@ class IssueRefusalTests(_TagCase):
         with self.subTest(state="closed"):
             self.assert_refused(order="ORD-03-spare")
         self.freeze()
-        self.move("commenced")
+        self.move("commenced", no_isolation="The test order isolates nothing.")
         with self.subTest(state="commenced"):
             self.assert_refused()
 
@@ -664,8 +664,21 @@ class HangRefusalTests(_HangCase):
         self.assert_hang_refused("is bound to", lambda: self.hang(dispatch_id=seated))
 
     def test_a_tag_whose_order_is_not_frozen_is_refused(self) -> None:
-        """Ruling 131: the hang belongs to a frozen order; after commencement it is refused."""
-        self.move("commenced")
+        """Ruling 131: the hang belongs to a frozen order; after commencement it is refused.
+
+        Commencement now waits on every tag being hung (ruling 108), so an order commenced
+        over an unhung tag is seated by hand: the gate is the hang writer's own.
+        """
+        seated = OrderTransitionedEvent(
+            event="order_transitioned",
+            id=_ORDER,
+            order=_ORDER,
+            work_package=_REPAIR,
+            from_state="frozen",
+            to_state="commenced",
+            evidence="seated",
+        )
+        self.ledger.append(ledger_row(seated))
         self.assert_hang_refused("a tag is hung on a frozen order")
 
     def test_a_tag_whose_order_was_never_frozen_is_refused(self) -> None:

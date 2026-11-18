@@ -17,6 +17,17 @@ if TYPE_CHECKING:
     import argparse
 
 
+#: Commencement's refusals, every one booking nothing (RP-12 rulings 59, 108, 117, 144).
+_COMMENCE_EXIT_CODES = """Exit codes
+    0   Commenced: the order_transitioned event is booked
+    1   User/config error: the project is not initialized, or the order is unknown
+    2   Usage or System/IO error
+    3   Policy breach: a subagent's call, the order not frozen, or blocked, a tag
+        issued and not hung, no tag and no --no-isolation, or --no-isolation with a
+        tag issued; nothing is booked
+"""
+
+
 def _register_wp_order(wp_commands: argparse._SubParsersAction) -> None:
     """Register ``gz wp order`` and its leaves, ``new`` through ``close`` and ``show``."""
     p_order = wp_commands.add_parser(
@@ -135,17 +146,38 @@ def _register_wp_order(wp_commands: argparse._SubParsersAction) -> None:
     p_order_commence = order_commands.add_parser(
         "commence",
         help="Record that work has commenced on a frozen order",
-        description="Record that work has commenced on a frozen order (RP-12 O2 task 3).",
-        epilog=build_epilog(["gz wp order commence ORD-01-import --evidence tags-hung"]),
+        description=(
+            "Record that work has commenced on a frozen order, once every tag issued on\n"
+            "it is hung, or with none issued on a stated --no-isolation; the\n"
+            "coordinator's call, a subagent's refused (RP-12 rulings 108, 117, 144)."
+        ),
+        epilog=build_epilog(
+            [
+                "gz wp order commence ORD-01-import --evidence tags-hung",
+                "gz wp order commence ORD-02-docs --evidence e --no-isolation 'Edits a doc.'",
+            ],
+            exit_codes=_COMMENCE_EXIT_CODES,
+        ),
     )
     p_order_commence.add_argument("order", help="The order's id, ORD-<NN>-<slug>")
     p_order_commence.add_argument("--evidence", required=True, help="What justifies the move")
+    p_order_commence.add_argument(
+        "--no-isolation",
+        metavar="WHY",
+        help="With no tag issued on the order, why the repair isolates nothing",
+    )
     add_json_flag(p_order_commence)
     p_order_commence.set_defaults(
         func=lambda a: _lazy("wp_order_transition_cmd")(
-            fields={"order": a.order, "to_state": "commenced", "evidence": a.evidence},
+            fields={
+                "order": a.order,
+                "to_state": "commenced",
+                "evidence": a.evidence,
+                **({"no_isolation": a.no_isolation} if a.no_isolation is not None else {}),
+            },
             baseline=None,
             as_json=a.as_json,
+            called_by_subagent=bool(getattr(a, "called_by_subagent", False)),
         )
     )
 

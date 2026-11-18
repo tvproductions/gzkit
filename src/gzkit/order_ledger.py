@@ -33,6 +33,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from gzkit.events import BaselinedReq, OrderTransitionedEvent, WorkPackageDecision
 from gzkit.ledger import ledger_row
 from gzkit.models.catalog import RepairReq
+from gzkit.mx.tag_rows import order_tags
 from gzkit.work_package_ledger import (
     declared_modules,
     footprint_sealed,
@@ -64,7 +65,7 @@ STOPPING_EXITS: frozenset[str] = frozenset({"reopen", "terminate"})
 _STATE_FIELDS: dict[str, frozenset[str]] = {
     "opened": frozenset({"operator_text"}),
     "frozen": frozenset({"baseline", "risk_note", "review_receipt", "approved_alterations"}),
-    "commenced": frozenset(),
+    "commenced": frozenset({"no_isolation"}),
     "accepted": frozenset({"acceptance_ready"}),
     "closed": frozenset(
         {
@@ -111,6 +112,9 @@ class OrderMove(BaseModel):
     superseded_by: str | None = Field(None, description="The order a redirect names")
     revisit_condition: str | None = Field(None, description="When a pause is revisited")
     acceptance_ready: bool | None = Field(None, description="Readiness read, at accepted")
+    no_isolation: str | None = Field(
+        None, description="Why an order with no tag isolates nothing, at commenced (ruling 117)"
+    )
 
 
 def _refuse(message: str) -> NoReturn:
@@ -463,6 +467,46 @@ def _check_closed(
         _check_not_held(ledger, order)
 
 
+def _check_commenced(ledger: Ledger, order: Order, move: OrderMove) -> None:
+    """Hold commencement on the order's tags: each hung, or none and a stated reason.
+
+    Ruling 108 waits on every tag issued on the order; ruling 117 has an order with
+    none commence only on the coordinator's stated no-isolation, refused when a tag
+    is issued; ruling 143 excuses a stopped order, which does no work.
+    """
+    stated = move.no_isolation
+    if stated is not None and not stated.strip():
+        _refuse(
+            "--no-isolation is blank. An order with no tag commences on a stated reason that "
+            "the repair isolates nothing (RP-12 ruling 117); state why, or issue the tags."
+        )
+    tags = order_tags(ledger, order.id)
+    if tags.issued and stated is not None:
+        _refuse(
+            f"Order {order.id} has {len(tags.issued)} tag(s) issued "
+            f"({', '.join(tags.issued)}), so it isolates something and --no-isolation is "
+            "refused (RP-12 ruling 117). Commence it without the option once every tag is hung."
+        )
+    if order_took_stopping_exit(ledger, order.id):
+        return
+    if not tags.issued and stated is None:
+        _refuse(
+            f"Order {order.id} has no tag issued. An order commences once every surface it "
+            "isolates has its tag hung, or on the coordinator's stated reason that it "
+            "isolates nothing (RP-12 rulings 108 and 117). Issue its tags with `uv run gz wp "
+            f'tag issue {order.id}`, or commence it with `--no-isolation "<why>"`.'
+        )
+    if tags.unhung:
+        _refuse(
+            f"Order {order.id} has tag(s) issued and not hung: {', '.join(tags.unhung)}. It "
+            "commences only once every tag issued on it is hung, so no work runs on a "
+            "surface not yet isolated (RP-12 ruling 108). Book a Repair dispatch on the "
+            f"frozen order (`uv run gz wp dispatch {order.work_package} --order {order.id} "
+            "--role Repair --model <tier>`) and have its subagent run `uv run gz wp tag "
+            "hang <TAG-id> --dispatch D-<id>` for each, then commence."
+        )
+
+
 def _check_accepted(ledger: Ledger, order: Order, move: OrderMove) -> None:
     """Refuse an acceptance that books no readiness, or an unstopped one not ready (86)."""
     if move.acceptance_ready is None:
@@ -509,6 +553,8 @@ def _check_move(
         )
     if move.to_state == "frozen":
         _check_frozen(catalog, ledger, order, move)
+    if move.to_state == "commenced":
+        _check_commenced(ledger, order, move)
     if move.to_state == "accepted":
         _check_accepted(ledger, order, move)
     if move.to_state == "closed":

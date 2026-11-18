@@ -2795,6 +2795,12 @@
             "boolean",
             "null"
           ]
+        },
+        "no_isolation": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "conditional": [

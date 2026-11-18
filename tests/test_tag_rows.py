@@ -38,6 +38,78 @@ def _tag_id(n: int) -> str:
     return f"TAG-{n:02d}-stamp"
 
 
+def seat_issue(ledger: Ledger, n: int, order: str = _ORDER) -> str:
+    """Seat a typed `tag_issued` row, the gate under test the reader's own.
+
+    Returns:
+        The seated tag's id.
+
+    """
+    surface = f"src/stamp{n}.py"
+    ledger.append(
+        ledger_row(
+            TagIssuedEvent.model_validate(
+                {
+                    **_ITEM,
+                    "event": "tag_issued",
+                    "id": _tag_id(n),
+                    "tag_id": _tag_id(n),
+                    "order": order,
+                    "surface": f"path:{surface}",
+                    "surface_name": surface,
+                    "mx_session_id": "mx-1",
+                }
+            )
+        )
+    )
+    return _tag_id(n)
+
+
+def seat_hang(ledger: Ledger, n: int, order: str = _ORDER) -> None:
+    """Seat a typed `tag_hung` row for tag ``n``."""
+    surface = f"src/stamp{n}.py"
+    ledger.append(
+        ledger_row(
+            TagHungEvent.model_validate(
+                {
+                    **_ITEM,
+                    "event": "tag_hung",
+                    "id": _tag_id(n),
+                    "tag_id": _tag_id(n),
+                    "order": order,
+                    "surface": f"path:{surface}",
+                    "surface_name": surface,
+                    "dispatch_id": _HANGER,
+                    "issued_by_session": "mx-1",
+                    "mx_session_id": "mx-1",
+                }
+            )
+        )
+    )
+
+
+def seat_clear(ledger: Ledger, n: int, order: str = _ORDER) -> None:
+    """Seat a typed `tag_cleared` row for tag ``n``, found as hung."""
+    ledger.append(
+        ledger_row(
+            TagClearedEvent.model_validate(
+                {
+                    "event": "tag_cleared",
+                    "id": _tag_id(n),
+                    "tag_id": _tag_id(n),
+                    "order": order,
+                    "work_package": "WP-01-stamp",
+                    "dispatch_id": _RESTORER,
+                    "hanging_dispatch_id": _HANGER,
+                    "position_found": "off",
+                    "authorized_by_session": "mx-1",
+                    "mx_session_id": "mx-1",
+                }
+            )
+        )
+    )
+
+
 class _RowsCase(unittest.TestCase):
     def setUp(self) -> None:
         self._dir = TemporaryDirectory()
@@ -46,64 +118,13 @@ class _RowsCase(unittest.TestCase):
         self.ledger = Ledger(self.path)
 
     def issue(self, n: int, order: str = _ORDER) -> None:
-        surface = f"src/stamp{n}.py"
-        self.ledger.append(
-            ledger_row(
-                TagIssuedEvent.model_validate(
-                    {
-                        **_ITEM,
-                        "event": "tag_issued",
-                        "id": _tag_id(n),
-                        "tag_id": _tag_id(n),
-                        "order": order,
-                        "surface": f"path:{surface}",
-                        "surface_name": surface,
-                        "mx_session_id": "mx-1",
-                    }
-                )
-            )
-        )
+        seat_issue(self.ledger, n, order)
 
     def hang(self, n: int, order: str = _ORDER) -> None:
-        surface = f"src/stamp{n}.py"
-        self.ledger.append(
-            ledger_row(
-                TagHungEvent.model_validate(
-                    {
-                        **_ITEM,
-                        "event": "tag_hung",
-                        "id": _tag_id(n),
-                        "tag_id": _tag_id(n),
-                        "order": order,
-                        "surface": f"path:{surface}",
-                        "surface_name": surface,
-                        "dispatch_id": _HANGER,
-                        "issued_by_session": "mx-1",
-                        "mx_session_id": "mx-1",
-                    }
-                )
-            )
-        )
+        seat_hang(self.ledger, n, order)
 
     def clear(self, n: int, order: str = _ORDER) -> None:
-        self.ledger.append(
-            ledger_row(
-                TagClearedEvent.model_validate(
-                    {
-                        "event": "tag_cleared",
-                        "id": _tag_id(n),
-                        "tag_id": _tag_id(n),
-                        "order": order,
-                        "work_package": "WP-01-stamp",
-                        "dispatch_id": _RESTORER,
-                        "hanging_dispatch_id": _HANGER,
-                        "position_found": "off",
-                        "authorized_by_session": "mx-1",
-                        "mx_session_id": "mx-1",
-                    }
-                )
-            )
-        )
+        seat_clear(self.ledger, n, order)
 
 
 class OrderTagsTests(_RowsCase):

@@ -27,6 +27,7 @@ from gzkit.models.catalog import (
     RepairReq,
     WorkPackage,
 )
+from gzkit.mx.tag_rows import TagOutError
 from gzkit.ontology.corpus import project_corpus
 from gzkit.order_ledger import (
     OrderLedgerError,
@@ -47,6 +48,13 @@ from gzkit.work_package_ledger import (
     footprint_sealed,
     record_work_package_transition,
 )
+from gzkit.work_package_run import (
+    BlockRequest,
+    UnblockRequest,
+    record_work_package_block,
+    record_work_package_unblock,
+)
+from tests.test_tag_rows import seat_hang, seat_issue
 
 
 def _package(wp_id: str, kind: str = "repair") -> WorkPackage:
@@ -133,7 +141,7 @@ _CLOSE: dict[str, object] = {
 _PAYLOADS: dict[str, dict[str, object]] = {
     "opened": {"operator_text": "open the import order"},
     "frozen": _FREEZE,
-    "commenced": {},
+    "commenced": {"no_isolation": "The repair isolates nothing."},
     "accepted": {"acceptance_ready": True},
 }
 
@@ -409,13 +417,13 @@ class FreezeTests(_OrderCase):
         """Ruling 85: a later supersession leaves an order already frozen on the REQ."""
         self.move("frozen", **_FREEZE)
         self.supersede_req_1()
-        self.assertEqual(self.move("commenced").to_state, "commenced")
+        self.assertEqual(self.move("commenced", **_PAYLOADS["commenced"]).to_state, "commenced")
         self.assertEqual(self.move("accepted", **_PAYLOADS["accepted"]).to_state, "accepted")
 
     def test_an_accepted_order_holds_its_req_until_its_gate_5(self) -> None:
         """Ruling 82: an accepted order awaiting Gate 5 still holds its baseline."""
         self.move("frozen", **_FREEZE)
-        self.move("commenced")
+        self.move("commenced", **_PAYLOADS["commenced"])
         self.move("accepted", **_PAYLOADS["accepted"])
         self.move("opened", order="ORD-02-matcher", **_PAYLOADS["opened"])
         output = self.assert_refused("frozen", order="ORD-02-matcher", **_FREEZE)
@@ -694,3 +702,83 @@ class CorpusTests(_OrderCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CommencementTagTests(_OrderCase):
+    """Rulings 108, 117 and 143: commencement waits on the tags issued on the order."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.walk_to("frozen")
+
+    def test_an_unhung_tag_holds_commencement_and_is_named(self) -> None:
+        """Ruling 108: the order commences only once every tag issued on it is hung."""
+        unhung = seat_issue(self.ledger, 1)
+        hung = seat_issue(self.ledger, 2)
+        seat_hang(self.ledger, 2)
+        refusal = self.assert_refused("commenced")
+        # output-contract: the refusal names the unhung tag and not the hung one
+        self.assertIn(unhung, refusal)
+        self.assertNotIn(hung, refusal)
+
+    def test_commencement_passes_once_every_tag_is_hung(self) -> None:
+        """Ruling 108: with each tag hung, the order commences and states no no-isolation."""
+        seat_issue(self.ledger, 1)
+        seat_hang(self.ledger, 1)
+        event = self.move("commenced")
+        self.assertEqual((event.to_state, event.no_isolation), ("commenced", None))
+
+    def test_no_tag_and_no_statement_is_refused(self) -> None:
+        """Ruling 117: with no tag issued, commencement needs the coordinator's statement."""
+        refusal = self.assert_refused("commenced")
+        # output-contract: the refusal names the option that states it
+        self.assertIn("--no-isolation", refusal)
+
+    def test_no_tag_with_a_statement_books_it_on_the_event(self) -> None:
+        """Ruling 117: the empty case is a recorded statement, not a silence."""
+        event = self.move("commenced", no_isolation="The repair edits a doc only.")
+        self.assertEqual(event.no_isolation, "The repair edits a doc only.")
+
+    def test_a_statement_with_a_tag_issued_is_refused(self) -> None:
+        """Ruling 117: with a tag issued, the no-isolation option is refused."""
+        seat_issue(self.ledger, 1)
+        seat_hang(self.ledger, 1)
+        self.assert_refused("commenced", no_isolation="Nothing to isolate.")
+
+    def test_a_blank_statement_is_refused(self) -> None:
+        """Ruling 117: a statement with no reason says nothing."""
+        self.assert_refused("commenced", no_isolation="  ")
+
+    def test_another_orders_tag_does_not_hold_it(self) -> None:
+        """Ruling 108: commencement waits on the tags issued on its own order."""
+        seat_issue(self.ledger, 1, order="ORD-09-other")
+        event = self.move("commenced", no_isolation="The repair edits a doc only.")
+        self.assertEqual(event.to_state, "commenced")
+
+    def test_a_stopped_order_commences_without_its_tags(self) -> None:
+        """Ruling 143: a stopped order does no work, so it owes no hang and no statement."""
+        seat_issue(self.ledger, 1)
+        block = BlockRequest(
+            work_package="WP-01-stamp", order="ORD-01-import", reason="r", next_action="rule"
+        )
+        record_work_package_block(self.catalog, self.ledger, block, refutations={})
+        unblock = UnblockRequest(
+            work_package="WP-01-stamp",
+            order="ORD-01-import",
+            ruling="stop it",
+            operator="g0",
+            exit_taken="terminate",
+        )
+        record_work_package_unblock(self.catalog, self.ledger, unblock)
+        event = self.move("commenced")
+        self.assertEqual((event.to_state, event.no_isolation), ("commenced", None))
+
+    def test_a_malformed_tag_row_is_refused_not_read_past(self) -> None:
+        """Ruling 141: the leaf reader refuses a row it cannot read; nothing is booked."""
+        row = {"schema": "gzkit.ledger.v1", "event": "tag_issued", "id": "TAG-7-bad"}
+        with self.path.open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps({**row, "ts": "2026-11-18T00:00:00+00:00"}) + "\n")
+        before = _rows(self.path)
+        raised = _raised(lambda: self.move("commenced", no_isolation="x"))
+        self.assertIsInstance(raised, (OrderLedgerError, TagOutError))
+        self.assertEqual(_rows(self.path), before)

@@ -26,6 +26,7 @@ from gzkit.core.exceptions import PolicyBreachError, ResourceNotFoundError
 from gzkit.events import BaselinedReq, OrderTransitionedEvent
 from gzkit.ledger import Ledger
 from gzkit.models.catalog import Catalog, Order, WorkPackage, load_catalog
+from gzkit.mx.tag_rows import TagOutError
 from gzkit.order_ledger import (
     OrderLedgerError,
     OrderMove,
@@ -223,7 +224,9 @@ _RERUN = {
         "`uv run gz wp order freeze <ORD-id> --baseline REQ-<n>@<revision> --risk-note <text> "
         "--review-receipt <id> [--approve-alteration <id>] --evidence <text>`"
     ),
-    "commenced": "`uv run gz wp order commence <ORD-id> --evidence <text>`",
+    "commenced": (
+        "`uv run gz wp order commence <ORD-id> --evidence <text> [--no-isolation <why>]`"
+    ),
     "accepted": "`uv run gz wp order accept <ORD-id> --evidence <text>`",
     "closed": (
         "`uv run gz wp order close <ORD-id> --decision <proceed|redirect|pause|terminate> "
@@ -246,7 +249,11 @@ def _baseline_entry(to_state: str, entry: str) -> BaselinedReq:
 
 
 def wp_order_transition_cmd(
-    *, fields: dict[str, object], baseline: list[str] | None, as_json: bool
+    *,
+    fields: dict[str, object],
+    baseline: list[str] | None,
+    as_json: bool,
+    called_by_subagent: bool = False,
 ) -> None:
     """Move an order one step, `frozen` or `commenced` (RP-12 O2 task 3).
 
@@ -255,13 +262,23 @@ def wp_order_transition_cmd(
     package's footprint (ruling 56), so it is refused while that footprint does not
     hold, and approves the package's alterations no earlier freeze approved (ruling
     63); a commencement crosses the airlock inward on the package's slice (ruling 65).
+    Commencement is the coordinator's unstamped call (ruling 144), refused from a
+    subagent's call before anything is read; it waits on every tag issued on the
+    order being hung, or with none on ``no_isolation`` (rulings 108, 117 and 143).
     An unknown order exits 1; any refusal exits 3 and writes nothing.
     """
+    to_state = str(fields["to_state"])
+    if called_by_subagent and to_state == "commenced":
+        _refuse_move(
+            to_state,
+            "A commencement is refused from a subagent's call: commencement is the "
+            "coordinator's act (record C1), from the unstamped operator-facing session "
+            "(RP-12 rulings 114 and 144). Run it from the main session.",
+        )
     config = ensure_initialized()
     root = get_project_root()
     catalog = load_catalog(root)
     ledger = Ledger(root / config.paths.ledger)
-    to_state = str(fields["to_state"])
     _booked_lost(catalog, ledger)
     order = _order(catalog, str(fields["order"]))
     package = _package(catalog, order.work_package)
@@ -273,7 +290,7 @@ def wp_order_transition_cmd(
     move = OrderMove.model_validate({**fields, **({"baseline": entries} if entries else {})})
     try:
         event = record_order_transition(catalog, ledger, move)
-    except OrderLedgerError as exc:
+    except (OrderLedgerError, TagOutError) as exc:
         _refuse_move(to_state, str(exc))
     _emit_move(event, cross_airlock(root, ledger, package, event.to_state), as_json=as_json)
 
