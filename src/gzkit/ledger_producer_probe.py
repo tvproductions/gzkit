@@ -1124,6 +1124,48 @@ def _probe_work_package_run(root: Path, event_type: str) -> ProducerObservation:
     )
 
 
+def _observe_dispatch_end(
+    ledger: Ledger, ledger_path: Path, dispatch_id: str
+) -> ProducerObservation:
+    """End a booked dispatch twice, end an unknown id, then a voided one (RP-12 ruling 115).
+
+    Returns:
+        The verified observation.
+
+    Raises:
+        ValueError: The writer booked a second end of one pair, or an end of no
+            live dispatch.
+
+    """
+    from gzkit import work_package_run as run  # noqa: PLC0415 - the writer; import only when probed
+
+    seated = ledger_path.read_bytes()
+    ended = run.record_dispatch_end(ledger, dispatch_id, "a-probe")
+    again = run.record_dispatch_end(ledger, dispatch_id, "a-probe")
+    unknown = run.record_dispatch_end(ledger, "D-0000000000000000", "a-probe")
+    run.record_dispatch_void(ledger, _WORK_PACKAGE, dispatch_id, _AUTHOR)
+    voided = run.record_dispatch_end(ledger, dispatch_id, "a-later")
+    persisted = ledger_path.read_bytes()
+    added = [
+        parse_typed_event(json.loads(line))
+        for line in persisted[len(seated) :].decode("utf-8").splitlines()
+    ]
+    if ended is None or (again, unknown, voided) != (None, None, None):
+        msg = "The end writer must book one row per live dispatch and agent, none for no dispatch"
+        raise ValueError(msg)
+    if [row.event for row in added] != ["dispatch_ended", "dispatch_voided"]:
+        msg = "The end writer must book one dispatch_ended row and nothing for a refusal"
+        raise ValueError(msg)
+    return ProducerObservation(
+        event_type="dispatch_ended",
+        producer=_PRODUCERS["dispatch_ended"],
+        status="verified",
+        ledger_sha256=hashlib.sha256(persisted).hexdigest(),
+        record_count=1,
+        subject=ended.id,
+    )
+
+
 def _observe_dispatch_void(
     ledger: Ledger, ledger_path: Path, dispatch_id: str
 ) -> ProducerObservation:
@@ -1195,6 +1237,8 @@ def _probe_dispatch_claim(root: Path, event_type: str = "dispatch_claimed") -> P
     dispatch_id = str(dispatched.dispatch_id)
     if event_type == "dispatch_voided":
         return _observe_dispatch_void(ledger, ledger_path, dispatch_id)
+    if event_type == "dispatch_ended":
+        return _observe_dispatch_end(ledger, ledger_path, dispatch_id)
     seated = ledger_path.read_bytes()
     claimed = run.record_dispatch_claim(ledger, dispatch_id, "a-probe", "stamp")
     again = run.record_dispatch_claim(ledger, dispatch_id, "a-probe", "agent_returned")
@@ -1283,6 +1327,7 @@ _PRODUCERS = {
     "work_package_unblocked": "gzkit.work_package_run.record_work_package_unblock",
     "dispatch_claimed": "gzkit.work_package_run.record_dispatch_claim",
     "dispatch_voided": "gzkit.work_package_run.record_dispatch_void",
+    "dispatch_ended": "gzkit.work_package_run.record_dispatch_end",
     "legacy_unit_withdrawn": "gzkit.legacy_units.withdraw_legacy_unit",
     "order_transitioned": "gzkit.order_ledger.record_order_transition",
     "tag_issued": "gzkit.mx.tag_out.record_tag_issue",
@@ -1306,6 +1351,7 @@ _ROOT_PROBES = {
     "legacy_unit_withdrawn": _probe_legacy_withdrawal,
     "dispatch_claimed": _probe_dispatch_claim,
     "dispatch_voided": lambda root: _probe_dispatch_claim(root, "dispatch_voided"),
+    "dispatch_ended": lambda root: _probe_dispatch_claim(root, "dispatch_ended"),
 }
 
 

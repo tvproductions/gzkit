@@ -1939,6 +1939,25 @@ class DispatchClaimedEvent(_EventBase):
     )
 
 
+class DispatchEndedEvent(_EventBase):
+    """dispatch_ended event — a dispatched subagent ended on its own (RP-12 ruling 115).
+
+    Written only by ``gzkit.work_package_run.record_dispatch_end``, from the
+    stamp hook on ``SubagentStop``, which reads the dispatch line from the
+    subagent's own transcript (§ The ``SubagentStop`` probe). A subagent killed by
+    ``TaskStop`` fires no ``SubagentStop``; its dispatch ends by its void (ruling
+    118). Readers take the ends as a set: hooks racing on one pair may book it
+    twice. A dispatch with neither an end nor a void reads live, so a clearance is
+    refused on it (ruling 138). ``id`` is the dispatch id.
+    """
+
+    event: Literal["dispatch_ended"]
+    dispatch_id: str = Field(
+        ..., pattern=f"^{DISPATCH_ID_PATTERN}$", description="The dispatch whose subagent ended"
+    )
+    agent_id: str = Field(..., min_length=1, description="The harness's id of the subagent")
+
+
 class DispatchVoidedEvent(_EventBase):
     """dispatch_voided event — a dispatch the coordinator abandoned (RP-12 ruling 42).
 
@@ -2234,6 +2253,7 @@ TypedLedgerEvent = Annotated[
     | WorkPackageIssueClosedEvent
     | WorkPackageDispatchedEvent
     | DispatchClaimedEvent
+    | DispatchEndedEvent
     | DispatchVoidedEvent
     | WorkPackageBlockedEvent
     | WorkPackageUnblockedEvent

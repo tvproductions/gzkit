@@ -15,9 +15,10 @@ Current hook surface in gzkit:
   transcript and the ledger, or the project's root when it has no
   dispatch, so `gz` refuses it anywhere else; a subagent's
   PowerShell `gz` call is denied (ruling 39), and on the Agent
-  tool's return it books the subagent's claim (ruling 40); no
-  permission decision, a no-root stamp when gzkit or the decision
-  fails, on at every mode level (RP-12 rulings 17, 34, 35, 38, 39, 40).
+  tool's return it books the subagent's claim (ruling 40), and on
+  SubagentStop the end of its dispatch (ruling 115); no permission
+  decision, a no-root stamp when gzkit or the decision fails, on at
+  every mode level (RP-12 rulings 17, 34, 35, 38, 39, 40, 115).
 - `prefer-lsp.py`
   PreToolUse (`Grep|Bash|PowerShell`) hook that denies the first
   text search for a Python symbol in a session and points at the
@@ -100,6 +101,7 @@ Current hook surface in gzkit:
 - `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,
   then `ledger-writer.py`
 - `Stop` `*`: `stop-turn-feedback.py`
+- `SubagentStop` `*`: `dispatch-stamp.py` (the end, ruling 115)
 - `UserPromptSubmit` `*`: `mx-awareness.py`
 - `SessionStart` `*`: `session-start-advisement.py` (only without
   `scripts/session_orientation.py`)

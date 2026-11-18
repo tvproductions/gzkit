@@ -26,6 +26,7 @@ from gzkit.dispatch_stamp import (
     STAMP_ID_ENV,
     STAMP_ROOT_ENV,
     claim_hook_output,
+    end_hook_output,
     names_gz,
     stamp_hook_output,
 )
@@ -96,8 +97,40 @@ class _Session(unittest.TestCase):
         }
 
     def _claims(self) -> list[dict]:
+        return self._events("dispatch_claimed")
+
+    def _events(self, event: str) -> list[dict]:
         rows = [json.loads(line) for line in self.ledger.read_text(encoding="utf-8").splitlines()]
-        return [row for row in rows if row.get("event") == "dispatch_claimed"]
+        return [row for row in rows if row.get("event") == event]
+
+    def _stopped(self, agent: str = _AGENT) -> dict:
+        """Return a ``SubagentStop`` payload as the probe measured it (ruling 115).
+
+        Returns:
+            The payload, its transcript the subagent's own.
+
+        """
+        return {
+            "hook_event_name": "SubagentStop",
+            "agent_id": agent,
+            "agent_type": "general-purpose",
+            "agent_transcript_path": (self.subagents / f"agent-{_AGENT}.jsonl").as_posix(),
+            "transcript_path": self.parent.as_posix(),
+            "cwd": self.project.as_posix(),
+        }
+
+    def _void(self, dispatch_id: str = _DISPATCH) -> None:
+        row = {
+            "schema": "gzkit.ledger.v1",
+            "event": "dispatch_voided",
+            "id": dispatch_id,
+            "ts": "2026-11-05T00:00:00+00:00",
+            "dispatch_id": dispatch_id,
+            "work_package": "WP-01-loop",
+            "reason": "killed by TaskStop",
+        }
+        with self.ledger.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(row) + "\n")
 
     def _prompt(self, content: object, agent: str = _AGENT) -> None:
         first = {
@@ -496,6 +529,65 @@ class TheClaim(_Session):
         self.assertEqual(self._claims(), [])
 
 
+class TheEnd(_Session):
+    """Ruling 115: a dispatch's end is booked when its subagent stops."""
+
+    def test_a_stopping_subagent_books_its_dispatchs_end_once(self) -> None:
+        """No claim is needed first: a foreground claim is booked after SubagentStop."""
+        self._move("commenced")
+        self._book()
+        self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}")
+        end_hook_output(self._stopped(), self.project)
+        end_hook_output(self._stopped(), self.project)
+        (end,) = self._events("dispatch_ended")
+        self.assertEqual((end["dispatch_id"], end["agent_id"]), (_DISPATCH, _AGENT))
+        self.assertEqual(self._claims(), [])
+
+    def test_no_end_for_a_prompt_naming_no_live_dispatch(self) -> None:
+        """Ruling 118: a voided dispatch has ended by its void; none booked, none to end."""
+        self._book()
+        self._book("D-1111111111111111")
+        self._void("D-1111111111111111")
+        for prompt in (
+            "no line here",
+            "GZKIT-DISPATCH: D-fedcba9876543210",
+            "GZKIT-DISPATCH: D-1111111111111111",
+        ):
+            with self.subTest(prompt=prompt):
+                self._prompt(prompt)
+                end_hook_output(self._stopped(), self.project)
+        self.assertEqual(self._events("dispatch_ended"), [])
+
+    def test_no_end_from_a_payload_missing_its_agent_or_transcript(self) -> None:
+        self._book()
+        self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}")
+        for field in ("agent_id", "agent_transcript_path"):
+            for value in (None, ""):
+                with self.subTest(field=field, value=value):
+                    payload = {**self._stopped(), field: value}
+                    self.assertIsNone(end_hook_output(payload, self.project))
+        self.assertEqual(self._events("dispatch_ended"), [])
+
+    def test_no_end_from_a_transcript_that_is_not_the_stopping_agents(self) -> None:
+        self._book()
+        self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}", agent="a-someone-else")
+        end_hook_output(self._stopped(), self.project)
+        missing = {
+            **self._stopped(),
+            "agent_transcript_path": (self.subagents / "x.jsonl").as_posix(),
+        }
+        end_hook_output(missing, self.project)
+        self.assertEqual(self._events("dispatch_ended"), [])
+
+    def test_only_subagent_stop_books_an_end(self) -> None:
+        self._book()
+        self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}")
+        for event in ("Stop", "PostToolUse", "PreToolUse"):
+            with self.subTest(event=event):
+                end_hook_output({**self._stopped(), "hook_event_name": event}, self.project)
+        self.assertEqual(self._events("dispatch_ended"), [])
+
+
 def drydock() -> AbstractContextManager[object]:
     """Hold the safe-mode condition on at the drydock level, at its source.
 
@@ -528,7 +620,7 @@ class OutOfService(_Session):
             for hook in entry["hooks"]
             if "dispatch-stamp" in hook["command"]
         ]
-        self.assertEqual(len(commands), 3)
+        self.assertEqual(len(commands), 4)
         for command in commands:
             self.assertNotIn("gzkit.mx.alarms", command)
 
@@ -728,6 +820,12 @@ class TheGeneratedHook(_Session):
         stdout = self._run_hook(self._returned(f"GZKIT-DISPATCH: {_DISPATCH}"))
         self.assertEqual(stdout, "")
         self.assertEqual([claim["source"] for claim in self._claims()], ["agent_returned"])
+
+    def test_the_hook_books_an_end_when_a_subagent_stops(self) -> None:
+        self._book()
+        self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}")
+        self.assertEqual(self._run_hook(self._stopped()), "")
+        self.assertEqual([end["agent_id"] for end in self._events("dispatch_ended")], [_AGENT])
 
     def test_the_fail_closed_path_leaves_the_main_session_alone(self) -> None:
         payload = self._payload("gz status", agent=None)

@@ -46,6 +46,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from gzkit.events import (
     DISPATCH_ID_PATTERN,
     DispatchClaimedEvent,
+    DispatchEndedEvent,
     DispatchVoidedEvent,
     WorkPackageBlockedEvent,
     WorkPackageDispatchedEvent,
@@ -101,6 +102,7 @@ _ORDER_DISPATCH_OPEN = _IN_FLIGHT | {"frozen"}
 _DISPATCHED = "work_package_dispatched"
 _CLAIMED = "dispatch_claimed"
 _VOIDED = "dispatch_voided"
+_ENDED = "dispatch_ended"
 DISPATCH_LINE_PREFIX = "GZKIT-DISPATCH: "
 _DISPATCH_LINE = re.compile(
     rf"^{re.escape(DISPATCH_LINE_PREFIX)}({DISPATCH_ID_PATTERN})\s*$", re.MULTILINE
@@ -702,6 +704,34 @@ def record_dispatch_claim(
             "agent_id": agent_id,
             "source": source,
         }
+    )
+    ledger.append(ledger_row(event))
+    return event
+
+
+def record_dispatch_end(
+    ledger: Ledger, dispatch_id: str, agent_id: str
+) -> DispatchEndedEvent | None:
+    """Book that a dispatched subagent ended on its own (RP-12 ruling 115).
+
+    The `SubagentStop` hook books it, as the stamp hook books a claim (ruling 35).
+    No claim is required first: a foreground subagent's claim on the Agent tool's
+    return is booked after its `SubagentStop` (§ The `SubagentStop` probe, run 2).
+    A pair already booked is not booked again, read outside the ledger's append
+    lock as a claim is, so every reader takes the ends as a set.
+
+    Returns:
+        The event booked, or None when the ledger holds no live dispatch of that id,
+        none booked or voided (ruling 118), or the pair is already booked.
+
+    """
+    if find_dispatch(ledger, dispatch_id) is None:
+        return None
+    for row in ledger.query(event_type=_ENDED):
+        if row.extra.get("dispatch_id") == dispatch_id and row.extra.get("agent_id") == agent_id:
+            return None
+    event = DispatchEndedEvent.model_validate(
+        {"event": _ENDED, "id": dispatch_id, "dispatch_id": dispatch_id, "agent_id": agent_id}
     )
     ledger.append(ledger_row(event))
     return event

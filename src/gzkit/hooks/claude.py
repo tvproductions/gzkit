@@ -68,9 +68,10 @@ def _claude_hooks_readme() -> str:
             "  transcript and the ledger, or the project's root when it has no",
             "  dispatch, so `gz` refuses it anywhere else; a subagent's",
             "  PowerShell `gz` call is denied (ruling 39), and on the Agent",
-            "  tool's return it books the subagent's claim (ruling 40); no",
-            "  permission decision, a no-root stamp when gzkit or the decision",
-            "  fails, on at every mode level (RP-12 rulings 17, 34, 35, 38, 39, 40).",
+            "  tool's return it books the subagent's claim (ruling 40), and on",
+            "  SubagentStop the end of its dispatch (ruling 115); no permission",
+            "  decision, a no-root stamp when gzkit or the decision fails, on at",
+            "  every mode level (RP-12 rulings 17, 34, 35, 38, 39, 40, 115).",
             "- `prefer-lsp.py`",
             "  PreToolUse (`Grep|Bash|PowerShell`) hook that denies the first",
             "  text search for a Python symbol in a session and points at the",
@@ -153,6 +154,7 @@ def _claude_hooks_readme() -> str:
             "- `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,",
             "  then `ledger-writer.py`",
             "- `Stop` `*`: `stop-turn-feedback.py`",
+            "- `SubagentStop` `*`: `dispatch-stamp.py` (the end, ruling 115)",
             "- `UserPromptSubmit` `*`: `mx-awareness.py`",
             "- `SessionStart` `*`: `session-start-advisement.py` (only without",
             "  `scripts/session_orientation.py`)",
@@ -205,9 +207,11 @@ def gzkit_owned_phases() -> tuple[str, ...]:
 
     `SessionEnd` is owned so the exit-beat bookmark is a delivered surface
     rather than a local convenience (GHI #756); `SessionStart` is owned so the
-    handoff advisement is (GHI #757). Phases NOT listed (e.g. `PreCompact`)
-    pass through untouched, which is how an adopter's own hooks survive a
-    sync — ownership is deliberately narrow, not total. Within an owned phase,
+    handoff advisement is (GHI #757); `SubagentStop` is owned so a dispatch's
+    end is booked wherever the stamp hook ships (RP-12 ruling 115). Phases NOT
+    listed (e.g. `PreCompact`) pass through untouched, which is how an
+    adopter's own hooks survive a sync — ownership is deliberately narrow, not
+    total. Within an owned phase,
     hooks that do not reference the gzkit hooks directory are preserved
     alongside gzkit's, so a project's own `SessionStart` orientation script
     keeps running.
@@ -220,6 +224,7 @@ def gzkit_owned_phases() -> tuple[str, ...]:
         "PreToolUse",
         "PostToolUse",
         "Stop",
+        "SubagentStop",
         "UserPromptSubmit",
         "SessionEnd",
         "SessionStart",
@@ -369,6 +374,19 @@ def generate_claude_settings(config: GzkitConfig, project_root: Path | None = No
                         {
                             "type": "command",
                             "command": _hook_command(hooks_dir, "stop-turn-feedback.py"),
+                        }
+                    ],
+                },
+            ],
+            "SubagentStop": [
+                {
+                    # Books the end of the stopping subagent's dispatch (RP-12
+                    # ruling 115); decides nothing.
+                    "matcher": "*",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": _hook_command(hooks_dir, "dispatch-stamp.py"),
                         }
                     ],
                 },

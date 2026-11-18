@@ -50,7 +50,9 @@ def dispatch_stamp_script() -> str:
             refuses the call before any write unless it runs in that root. Every
             other call passes untouched; the main session's carry no `agent_id`.
             On PostToolUse for the Agent tool it books the returned subagent's
-            claim of the dispatch its prompt names (ruling 40), deciding nothing.
+            claim of the dispatch its prompt names (ruling 40), and on
+            SubagentStop the end of the dispatch the stopping subagent's own
+            transcript names (ruling 115), deciding nothing.
 
             Thin adapter only: the decision is
             `gzkit.dispatch_stamp.stamp_hook_output`.
@@ -120,6 +122,15 @@ def dispatch_stamp_script() -> str:
 
                         root = Path(os.environ.get("CLAUDE_PROJECT_DIR") or str(payload.get("cwd") or "."))
                         claim_hook_output(payload, root)
+                    sys.exit(0)
+
+                if payload.get("hook_event_name") == "SubagentStop":
+                    # An end unbooked leaves its dispatch live, so a clearance is refused.
+                    with contextlib.suppress(Exception):
+                        from gzkit.dispatch_stamp import end_hook_output  # noqa: PLC0415
+
+                        root = Path(os.environ.get("CLAUDE_PROJECT_DIR") or str(payload.get("cwd") or "."))
+                        end_hook_output(payload, root)
                     sys.exit(0)
 
                 try:

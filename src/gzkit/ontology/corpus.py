@@ -229,8 +229,10 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         # RO-5). A work package is a catalog record, not a node of this
         # projection, so a move, a change or an issue close on one is no
         # lineage between artifacts here.
-        # A subagent's claim of its dispatch (RP-12 ruling 40), a run record.
+        # A subagent's claim of its dispatch (RP-12 ruling 40) and its end
+        # (ruling 115), run records.
         "dispatch_claimed",
+        "dispatch_ended",
         "dispatch_voided",
         "work_package_blocked",
         "work_package_changed",

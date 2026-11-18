@@ -406,7 +406,7 @@ class TestGenerateClaudeSettings(unittest.TestCase):
 
         commands = [
             hook["command"]
-            for phase in ("PreToolUse", "PostToolUse", "Stop")
+            for phase in ("PreToolUse", "PostToolUse", "Stop", "SubagentStop")
             for group in settings["hooks"][phase]
             for hook in group["hooks"]
         ]
@@ -419,8 +419,9 @@ class TestGenerateClaudeSettings(unittest.TestCase):
         # retirement (2026-10-17, drydock RO-1 act b). 12 since the prefer-LSP
         # hook joined the generator (GHI #1278). 13 since the dispatch stamp
         # (RP-12 rulings 34, 35), 14 with its PowerShell entry (ruling 39), 15
-        # with its claim on the Agent tool's return (ruling 40).
-        self.assertEqual(len(commands), 15, commands)
+        # with its claim on the Agent tool's return (ruling 40), 16 with its end
+        # on SubagentStop (ruling 115).
+        self.assertEqual(len(commands), 16, commands)
         for command in commands:
             self.assertIn('"$CLAUDE_PROJECT_DIR/', command, command)
             self.assertNotIn("python .claude/hooks/", command, command)
@@ -471,6 +472,24 @@ class TestGenerateClaudeSettings(unittest.TestCase):
             settings_path.write_text(json.dumps(stale_full), encoding="utf-8")
             diffs = detect_claude_settings_drift(root, config)
             self.assertTrue(any("Stop" in d for d in diffs), diffs)
+
+    def test_subagent_stop_phase_is_gzkit_owned(self) -> None:
+        """RP-12 ruling 115: the dispatch's end ships wherever the stamp hook does.
+
+        A phase the merge does not own is never written into an existing
+        settings file, so the end would be booked nowhere but a fresh project.
+        """
+        settings = generate_claude_settings(GzkitConfig(project_name="gzkit-test"))
+        with tempfile.TemporaryDirectory() as tmp:
+            # given a settings file that predates the SubagentStop phase
+            settings_path = Path(tmp) / "settings.json"
+            stale = {p: g for p, g in settings["hooks"].items() if p != "SubagentStop"}
+            settings_path.write_text(json.dumps({"hooks": stale}), encoding="utf-8")
+            # when it is merged with the generated settings
+            merged = merge_settings(settings_path, settings, ".claude/hooks")
+        # then the phase arrives, carrying the stamp hook alone
+        merged_cmds = [h["command"] for g in merged["hooks"]["SubagentStop"] for h in g["hooks"]]
+        self.assertEqual(merged_cmds, [_expected_hook_command("dispatch-stamp.py")])
 
     def test_user_prompt_submit_phase_is_gzkit_owned(self) -> None:
         """The UserPromptSubmit phase wires mx-awareness.py and survives merge.

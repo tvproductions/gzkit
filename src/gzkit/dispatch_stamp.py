@@ -1073,3 +1073,33 @@ def claim_hook_output(payload: Mapping[str, Any], project_root: Path) -> None:
     dispatch_id = read_dispatch_id(prompt)
     if dispatch_id is not None:
         _bind(project_root, dispatch_id, agent_id, "agent_returned")
+
+
+def end_hook_output(payload: Mapping[str, Any], project_root: Path) -> None:
+    """Book a dispatch's end when its subagent stops (RP-12 ruling 115).
+
+    `SubagentStop` carries the subagent's `agent_id` and its own transcript as
+    `agent_transcript_path`, whose first record is its prompt (§ The
+    `SubagentStop` probe), so the dispatch line is read from there directly. A
+    subagent killed by `TaskStop` fires no `SubagentStop`; its dispatch ends by
+    its void (ruling 118). An end unbooked leaves the dispatch live, and a
+    clearance is refused on a live hanging dispatch (ruling 138), the fail-closed
+    side.
+
+    The hook decides nothing; it only books.
+    """
+    if payload.get("hook_event_name") != "SubagentStop":
+        return
+    agent_id, transcript = payload.get("agent_id"), payload.get("agent_transcript_path")
+    if not isinstance(agent_id, str) or not agent_id or not isinstance(transcript, str):
+        return
+    record = _first_record(Path(transcript))
+    if record is None or record.get("type") != "user" or record.get("agentId") != agent_id:
+        return
+    from gzkit.work_package_run import read_dispatch_id, record_dispatch_end  # noqa: PLC0415
+
+    dispatch_id = read_dispatch_id(_prompt_text(record))
+    if dispatch_id is None:
+        return
+    with contextlib.suppress(OSError, ValueError):
+        record_dispatch_end(_ledger(project_root), dispatch_id, agent_id)

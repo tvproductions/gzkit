@@ -87,6 +87,13 @@ class ProducerProbeTests(unittest.TestCase):
         self.assertEqual(observation.status, "verified", observation.error)
         self.assertRegex(observation.subject or "", r"^D-[0-9a-f]{16}$")
 
+    def test_the_end_writer_is_verified_and_books_each_live_pair_once(self) -> None:
+        """RP-12 ruling 115: one end per dispatch and agent, none for no live dispatch."""
+        observation = probe_producer("dispatch_ended")
+        self.assertEqual(observation.status, "verified", observation.error)
+        self.assertEqual(observation.producer, "gzkit.work_package_run.record_dispatch_end")
+        self.assertRegex(observation.subject or "", r"^D-[0-9a-f]{16}$")
+
     def test_real_initializer_persists_obligation_and_disposes_the_project(self) -> None:
         roots: list[Path] = []
 
