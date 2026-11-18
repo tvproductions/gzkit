@@ -715,6 +715,15 @@ class FrozenOrderFence(_OrderRun):
         self.assertIsNone(frozen_order_write_refusal(self.root, "tests/test_stamp.py"))
         self.assertIsNone(work_package_write_refusal(self.root, "tests/test_stamp.py"))
 
+    def test_an_unreadable_ledger_holds_a_production_write_above_the_demotion(self) -> None:
+        """Ruling 148: the pre-demotion check fails closed when the fence cannot read."""
+        with self.path.open("a", encoding="utf-8") as stream:
+            stream.write("{not json\n")
+        (fence,) = fenced_packages(self.root)
+        self.assertEqual(fence.reason, "unreadable")
+        self.assertIsNotNone(frozen_order_write_refusal(self.root, "src/anything.py"))
+        self.assertIsNone(frozen_order_write_refusal(self.root, "tests/test_anything.py"))
+
     def seat_frozen(self, package: str, modules: tuple[str, ...]) -> None:
         """Seat a frozen order on a package with the footprint given, past the writer."""
         seated = OrderTransitionedEvent(

@@ -32,7 +32,8 @@ Mode contract: the commit arm is on at the operational condition and at both
 standby levels, under the `post-authoring-src-commits` pin. The write arm is on at
 the operational condition and advisory at both standby levels, under the
 `pipeline-gate` demotion, except the frozen-order footprint, which the hook checks
-before that demotion and so is on at every level (ruling 146). MEL entry:
+before that demotion and so is on at every level (ruling 146), an unreadable ledger
+holding the write there too (ruling 148). MEL entry:
 `docs/governance/harbor-ro14-obpi-forward-migration.md` § Act 4's reading. Self-test:
 `tests/commands/test_wp_fence.py`.
 """

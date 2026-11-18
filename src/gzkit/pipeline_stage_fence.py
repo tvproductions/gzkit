@@ -137,10 +137,12 @@ def frozen_order_write_refusal(project_root: Path, rel_path: str) -> str | None:
 
     The hook runs this before its MX demotion, so the frozen-order fence refuses at
     write time while the hangar is open, where tags exist (RP-12 ruling 146); every
-    other fence keeps its demotion.
+    other fence keeps its demotion. An unreadable ledger hides every frozen order, so
+    it holds the write here too, failing closed (ruling 148).
 
     Returns:
-        The message to print, or None when no frozen order holds the path.
+        The message to print, or None when no frozen order holds the path and the
+        ledger reads.
 
     """
     if not is_production_path(rel_path):
@@ -150,8 +152,13 @@ def frozen_order_write_refusal(project_root: Path, rel_path: str) -> str | None:
         work_package_write_message,
     )
 
+    # Ruling 148: an unreadable ledger hides every frozen order, so it holds the write too.
     fence = next(
-        (f for f in fenced_packages(project_root) if f.reason == "frozen" and f.holds(rel_path)),
+        (
+            f
+            for f in fenced_packages(project_root)
+            if f.reason == "unreadable" or (f.reason == "frozen" and f.holds(rel_path))
+        ),
         None,
     )
     return work_package_write_message(fence, rel_path) if fence else None
