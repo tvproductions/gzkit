@@ -980,6 +980,45 @@ class OutOfPositionTests(_ClearCase):
             self.assertIn(named, event.reason)
         self.assertIn(f"unblock {_ORDER}", event.next_operator_action)
 
+    def test_the_block_carries_the_acceptance_runtimes_refutations(self) -> None:
+        """Ruling 8: the block's counts are the runtime's, keyed by the order's frozen REQ."""
+        event = record_tag_clear(
+            self.catalog,
+            self.ledger,
+            self.tag.tag_id,
+            self.restorer,
+            "on",
+            stamped_id=self.restorer,
+            mx_session_id=_SESSION,
+            refutations={"REQ-1": 2},
+        )
+        assert isinstance(event, WorkPackageBlockedEvent)
+        self.assertEqual(event.refutations, {"REQ-1@1": 2})
+
+    def test_an_unreadable_acceptance_history_still_blocks_and_says_so(self) -> None:
+        """Ruling 137: the stop is booked whether or not the refutations could be read."""
+        booked: list[object] = []
+        raised = _raised(
+            lambda: booked.append(
+                record_tag_clear(
+                    self.catalog,
+                    self.ledger,
+                    self.tag.tag_id,
+                    self.restorer,
+                    "on",
+                    stamped_id=self.restorer,
+                    mx_session_id=_SESSION,
+                    refutations=None,
+                )
+            )
+        )
+        self.assertIsNone(raised)
+        (event,) = booked
+        assert isinstance(event, WorkPackageBlockedEvent)
+        self.assertEqual(event.refutations, {"REQ-1@1": 0})
+        # output-contract: the reason says the refutations were not counted
+        self.assertIn("refutations not counted", event.reason)
+
 
 class ClearRefusalTests(_ClearCase):
     def test_a_clear_with_no_mx_session_open_is_refused(self) -> None:
