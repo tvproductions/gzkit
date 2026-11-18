@@ -14,13 +14,15 @@ The writer sits beside the marker and the lease, since the MX session holds the
 tag (ruling 119). It takes the catalog, the ledger, the open session's id and the
 surface registry as parameters (ruling 128), and reads neither the marker nor a registry nor
 the filesystem itself (`.gzkit/rules/hexagonal-architecture.md` rule 4). A
-refusal writes nothing.
+refusal writes nothing. The typed row readers and `TagOutError` live in the leaf
+`gzkit.mx.tag_rows`, so the order and package ledgers this module imports can
+read tags too (ruling 141); `TagOutError` is re-exported here.
 """
 
 import re
 from typing import TYPE_CHECKING, NoReturn, Protocol, get_args
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.events import (
     TagCheckLevel,
@@ -36,6 +38,13 @@ from gzkit.events import (
     WorkPackageBlockedEvent,
 )
 from gzkit.ledger import ledger_row
+from gzkit.mx.tag_rows import (
+    TagOutError,
+    tag_clearances,
+    tag_clears,
+    tag_hangs,
+    tag_issues,
+)
 from gzkit.order_ledger import TERMINATED, is_order_blocked, order_state
 from gzkit.work_package_ledger import work_package_state
 from gzkit.work_package_run import (
@@ -89,10 +98,6 @@ LINE_ITEM: tuple[str, ...] = (
 )
 #: A tag's slug: lowercase words joined by hyphens, as an order's (rulings 43 and 111).
 _SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
-
-
-class TagOutError(ValueError):
-    """A tag-out act the ruled grammar refuses; nothing was written."""
 
 
 class SurfaceRegistry(Protocol):
@@ -149,77 +154,6 @@ def _refuse(message: str) -> NoReturn:
     raise TagOutError(message)
 
 
-def _read[E: (TagIssuedEvent, TagHungEvent, TagClearanceAuthorizedEvent, TagClearedEvent)](
-    ledger: Ledger, event_type: str, model: type[E]
-) -> list[E]:
-    """Read every live row of one tag-out event, refusing a row its shape does not admit.
-
-    A void correction drops a row from the live stream (`gzkit.ledger_corrections`),
-    so a malformed row is recovered by voiding it, never by editing the ledger.
-
-    Returns:
-        Each event the live ledger holds, oldest first.
-
-    """
-    events: list[E] = []
-    for row in ledger.query(event_type=event_type):
-        try:
-            events.append(model.model_validate(row.model_dump()))
-        except ValidationError as exc:
-            _refuse(
-                f"The ledger's {event_type} row {row.id!r} at {row.ts} does not parse "
-                f"({exc.error_count()} field errors), so the tag-out log cannot be read; it is "
-                "ledger events alone (RP-12 ruling 4) and a ledger row is never hand-edited. "
-                "Have the operator void it: `uv run gz ledger correct --subject-event "
-                f"{event_type} --subject-id {row.id} --subject-ts {row.ts} --disposition void "
-                '--cause agent-error --reason "<why>" --attestor g0`.'
-            )
-    return events
-
-
-def _issues(ledger: Ledger) -> list[TagIssuedEvent]:
-    return _read(ledger, "tag_issued", TagIssuedEvent)
-
-
-def _hangs(ledger: Ledger) -> dict[str, TagHungEvent]:
-    """Read each hung tag's hang, by tag id; the first stands, as a tag is hung once (ruling 6).
-
-    Returns:
-        Each hang the live ledger holds, keyed by its tag.
-
-    """
-    hangs: dict[str, TagHungEvent] = {}
-    for hang in _read(ledger, "tag_hung", TagHungEvent):
-        hangs.setdefault(hang.tag_id, hang)
-    return hangs
-
-
-def _clearances(ledger: Ledger) -> dict[str, TagClearanceAuthorizedEvent]:
-    """Read each tag's clearance authorized, by tag id; the first stands, as it is booked once.
-
-    Returns:
-        Each clearance the live ledger holds, keyed by its tag.
-
-    """
-    clearances: dict[str, TagClearanceAuthorizedEvent] = {}
-    for clearance in _read(ledger, "tag_clearance_authorized", TagClearanceAuthorizedEvent):
-        clearances.setdefault(clearance.tag_id, clearance)
-    return clearances
-
-
-def _clears(ledger: Ledger) -> dict[str, TagClearedEvent]:
-    """Read each cleared tag's clear, by tag id; the first stands, as a tag is cleared once.
-
-    Returns:
-        Each clear the live ledger holds, keyed by its tag.
-
-    """
-    clears: dict[str, TagClearedEvent] = {}
-    for clear in _read(ledger, "tag_cleared", TagClearedEvent):
-        clears.setdefault(clear.tag_id, clear)
-    return clears
-
-
 def next_tag_id(ledger: Ledger, slug: str) -> str:
     """Return the next id in the one series (ruling 111): the highest number plus one.
 
@@ -229,7 +163,7 @@ def next_tag_id(ledger: Ledger, slug: str) -> str:
         `TAG-<NN>-<slug>`, numbered past every tag the ledger names.
 
     """
-    numbers = [int(issue.tag_id.split("-")[1]) for issue in _issues(ledger)]
+    numbers = [int(issue.tag_id.split("-")[1]) for issue in tag_issues(ledger)]
     return f"TAG-{max(numbers, default=0) + 1:02d}-{slug}"
 
 
@@ -245,7 +179,7 @@ def tag_log(ledger: Ledger) -> list[Tag]:
         Each tag with its hang, clearance and clear, and whether it is open.
 
     """
-    hangs, clearances, clears = _hangs(ledger), _clearances(ledger), _clears(ledger)
+    hangs, clearances, clears = tag_hangs(ledger), tag_clearances(ledger), tag_clears(ledger)
 
     def is_open(issue: TagIssuedEvent) -> bool:
         if issue.tag_id in hangs:
@@ -260,7 +194,7 @@ def tag_log(ledger: Ledger) -> list[Tag]:
             clear=clears.get(issue.tag_id),
             is_open=is_open(issue),
         )
-        for issue in _issues(ledger)
+        for issue in tag_issues(ledger)
     ]
 
 
@@ -485,7 +419,7 @@ def record_tag_hang(
         )
     if stamped_id != dispatch_id:
         _refuse_unstamped_hang(tag_id, dispatch_id, stamped_id)
-    issue = next((issue for issue in _issues(ledger) if issue.tag_id == tag_id), None)
+    issue = next((issue for issue in tag_issues(ledger) if issue.tag_id == tag_id), None)
     if issue is None:
         _refuse(
             f"Tag {tag_id!r} is not issued in the ledger, so the hang has no line item to "
@@ -493,7 +427,7 @@ def record_tag_hang(
             "rulings 6 and 120). Read the open log with `uv run gz wp tag show` and hang a "
             "tag it lists."
         )
-    if hung := _hangs(ledger).get(tag_id):
+    if hung := tag_hangs(ledger).get(tag_id):
         _refuse(
             f"Tag {tag_id} is already hung, by dispatch {hung.dispatch_id}; a tag is hung "
             "once (RP-12 ruling 6). Read it with `uv run gz wp tag show --all`; nothing "
