@@ -5,9 +5,9 @@ description: Use to create, attach issues to, move, change, add evidence to or r
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-18
 metadata:
-  skill-version: "0.19.7"
+  skill-version: "0.20.0"
 model: sonnet
 ---
 
@@ -209,6 +209,18 @@ session is recorded as the hang's holder. A hung tag reads open until its clear
 
 ```bash
 uv run gz wp tag hang <TAG-id> --dispatch D-<id> [--json]
+```
+
+Once the order is commenced and the work done, authorize each hung tag's clearance
+from the main session; a subagent's call is refused. The order is commenced and not
+blocked, the tag hung and its clearance not yet authorized, and the hanging
+dispatch over: ended (its subagent's `SubagentStop` books it) or voided with
+`gz wp dispatch <WP-id> --void D-<id> --reason "<why>"` when it was killed. A live
+one is refused. The clearance records the repair activity not available and the
+open MX session as the mark (RP-12 rulings 6, 7, 114, 115, 118 and 138):
+
+```bash
+uv run gz wp tag authorize <TAG-id> [--json]
 ```
 
 Once every tag the order needs is hung, record commencement:

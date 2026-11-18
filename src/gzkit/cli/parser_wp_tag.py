@@ -1,4 +1,4 @@
-"""``gz wp tag`` subparser registrations (RP-12 O3 tasks 2 and 3).
+"""``gz wp tag`` subparser registrations (RP-12 O3 tasks 2 to 4).
 
 The nested group the operator ruled on 2026-11-16 (RP-12 ruling 110, *"A: gz wp
 tag (Rec.)"*). Each leaf is written out literally, ``p_x = tag_commands.add_parser(...)``
@@ -43,6 +43,19 @@ _HANG_EXIT_CODES = """Exit codes
         the tag not open or already hung, the dispatch not a live Repair on its
         order, or the order not frozen, or blocked; nothing is booked
 """
+_AUTHORIZE_EXAMPLES = [
+    "gz wp tag authorize TAG-01-stamp-hook",
+    "gz wp tag authorize TAG-02-hexagon --json",
+]
+#: Every refusal of the clearance is the writer's or the stamp's, and books nothing.
+_AUTHORIZE_EXIT_CODES = """Exit codes
+    0   Authorized: the tag_clearance_authorized event is booked
+    1   User/config error: the project is not initialized
+    2   Usage or System/IO error
+    3   Policy breach: a subagent's call, no MX session, the tag not issued, not
+        hung or already authorized, the order not commenced, or blocked, or the
+        hanging dispatch still live; nothing is booked
+"""
 #: `show` writes nothing; it exits 3 only on a ledger row it cannot read.
 _SHOW_EXIT_CODES = """Exit codes
     0   Shown, an empty log included
@@ -53,7 +66,7 @@ _SHOW_EXIT_CODES = """Exit codes
 
 
 def _register_wp_tag(wp_commands: argparse._SubParsersAction) -> None:
-    """Register ``gz wp tag`` and its leaves, ``issue``, ``show`` and ``hang``."""
+    """Register ``gz wp tag`` and its leaves, ``issue``, ``show``, ``hang`` and ``authorize``."""
     p_tag = wp_commands.add_parser(
         "tag",
         help="The tag-out log: tags isolating surfaces for a repair",
@@ -168,6 +181,27 @@ def _register_wp_tag(wp_commands: argparse._SubParsersAction) -> None:
             tag_id=a.tag,
             dispatch_id=a.dispatch,
             stamped_dispatch_id=getattr(a, "stamped_dispatch_id", None),
+            as_json=a.as_json,
+        )
+    )
+
+    p_tag_authorize = tag_commands.add_parser(
+        "authorize",
+        help="Authorize a hung tag's clearance, as the coordinator",
+        description=(
+            "Book the coordinator's clearance authorized for one hung tag on a\n"
+            "commenced order, the repair activity marked not available from the\n"
+            "hanging dispatch's end or void. A subagent's call is refused (RP-12\n"
+            "rulings 6, 7, 114, 115, 118, 138)."
+        ),
+        epilog=build_epilog(_AUTHORIZE_EXAMPLES, exit_codes=_AUTHORIZE_EXIT_CODES),
+    )
+    p_tag_authorize.add_argument("tag", help="The hung tag's id, TAG-<NN>-<slug>")
+    add_json_flag(p_tag_authorize)
+    p_tag_authorize.set_defaults(
+        func=lambda a: _lazy("wp_tag_authorize_cmd")(
+            tag_id=a.tag,
+            called_by_subagent=bool(getattr(a, "called_by_subagent", False)),
             as_json=a.as_json,
         )
     )

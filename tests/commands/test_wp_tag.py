@@ -7,7 +7,8 @@ tags by default and every tag on request (rulings 4 and 110). Every refusal of
 the tag-out log, and the reducer that reads a tag open or closed, is proved in
 `tests/test_tag_out.py`; these held tests prove the wiring alone, the verbs' exit
 codes, the stamp refusal and the epilogs (ruling 125). `gz wp tag hang` (O3 task 3,
-act 3) is the stamped call of the Repair dispatch it names (ruling 133).
+act 3) is the stamped call of the Repair dispatch it names (ruling 133);
+`gz wp tag authorize` (O3 task 4) is the coordinator's unstamped call (ruling 114).
 """
 
 import json
@@ -198,6 +199,7 @@ class TagShowWiringTests(_TagCase):
             [line.split(":", 1)[0] for line in lines[1:]],
             [
                 "Hung by",
+                "Clearance",
                 "Class",
                 "Surface",
                 "Position",
@@ -208,6 +210,7 @@ class TagShowWiringTests(_TagCase):
             ],
         )
         self.assertIn("Hung by:     not hung", lines)
+        self.assertIn("Clearance:   not authorized", lines)
         self.assertIn("Hazard:      The scope reads a half-built map.", lines)
         self.assertIn("Removal:     Run the scope; it passes.", lines)
 
@@ -257,16 +260,17 @@ class TagShowWiringTests(_TagCase):
                     tag["is_open"],
                     tag.get("state"),
                     tag.get("hang", "absent"),
+                    tag.get("clearance", "absent"),
                 )
                 for tag in printed
             ],
-            [("TAG-01-stamp-hook", "ORD-01-import", True, "issued", None)],
+            [("TAG-01-stamp-hook", "ORD-01-import", True, "issued", None, None)],
         )
-        added = {"is_open", "state", "hang"}
+        added = {"is_open", "state", "hang", "clearance"}
         self.assertEqual({k: v for k, v in printed[0].items() if k not in added}, _tag_rows()[0])
 
 
-class TagHangWiringTests(_TagCase):
+class _HungTagCase(_TagCase):
     """A tag issued on ORD-01-import, the order frozen, a Repair dispatch booked on it."""
 
     def setUp(self) -> None:
@@ -304,6 +308,23 @@ class TagHangWiringTests(_TagCase):
         self.assertEqual(result.exit_code, 0, result.output)
         self.dispatch = json.loads(result.output)["dispatch_id"]
 
+    def stamp_as(self, dispatch_id: str) -> None:
+        """Stamp the call as the named dispatch's subagent, held to this root (ruling 133)."""
+        self.stamp()
+        os.environ[STAMP_ID_ENV] = dispatch_id
+        self.addCleanup(os.environ.pop, STAMP_ID_ENV, None)
+
+    def unstamp(self) -> None:
+        """Return to the main session's call, carrying no stamp."""
+        for name in (STAMP_ROOT_ENV, STAMP_ID_ENV):
+            os.environ.pop(name, None)
+
+    def hang(self, *args: str) -> tuple[int, str]:
+        result = self.runner.invoke(main, ["wp", "tag", "hang", *args])
+        return result.exit_code, " ".join(result.output.split())
+
+
+class TagHangWiringTests(_HungTagCase):
     def test_show_names_a_hung_tags_dispatch_in_its_block_and_json(self) -> None:
         # output-contract: ruling 129 names the hang's dispatch in the view's block and JSON
         # given the tag hung by the Repair dispatch's stamped call
@@ -320,16 +341,6 @@ class TagHangWiringTests(_TagCase):
         self.assertIsInstance(record, dict)
         hang = record.get("hang") or {}
         self.assertEqual((record.get("state"), hang.get("dispatch_id")), ("hung", self.dispatch))
-
-    def stamp_as(self, dispatch_id: str) -> None:
-        """Stamp the call as the named dispatch's subagent, held to this root (ruling 133)."""
-        self.stamp()
-        os.environ[STAMP_ID_ENV] = dispatch_id
-        self.addCleanup(os.environ.pop, STAMP_ID_ENV, None)
-
-    def hang(self, *args: str) -> tuple[int, str]:
-        result = self.runner.invoke(main, ["wp", "tag", "hang", *args])
-        return result.exit_code, " ".join(result.output.split())
 
     def test_the_named_repair_dispatchs_stamped_call_hangs_the_tag(self) -> None:
         # given the call stamped with the Repair dispatch it names
@@ -374,11 +385,60 @@ class TagHangWiringTests(_TagCase):
         self.assertEqual(_tag_rows("tag_hung"), [])
 
 
+class TagAuthorizeWiringTests(_HungTagCase):
+    """The tag hung, the order commenced, the hanging dispatch voided after a kill."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.stamp_as(self.dispatch)
+        self.assertEqual(self.hang("TAG-01-stamp-hook", "--dispatch", self.dispatch)[0], 0)
+        self.unstamp()
+        for args in (
+            ["wp", "order", "commence", "ORD-01-import", "--evidence", "E"],
+            [*("wp", "dispatch", "WP-01-stamp", "--void", self.dispatch), "--reason", "killed"],
+        ):
+            result = self.runner.invoke(main, args)
+            self.assertEqual(result.exit_code, 0, result.output)
+
+    def authorize(self, *args: str) -> tuple[int, str]:
+        result = self.runner.invoke(main, ["wp", "tag", "authorize", *args])
+        return result.exit_code, " ".join(result.output.split())
+
+    def test_the_coordinators_call_authorizes_the_clearance_and_show_reads_it(self) -> None:
+        # given the main session's call and the hanging dispatch voided
+        # when
+        code, output = self.authorize("TAG-01-stamp-hook")
+        printed = self.runner.invoke(main, ["wp", "tag", "show", "--json"])
+        # then the clearance is booked not available, read over by the void
+        expected = (
+            f"Clearance of TAG-01-stamp-hook authorized; {self.dispatch} voided, "
+            "repair activity not available."
+        )
+        self.assertEqual((code, output), (0, expected))
+        (row,) = _tag_rows("tag_clearance_authorized")
+        self.assertEqual(
+            (row["hanging_dispatch_id"], row["repair_activity"], row["mx_session_id"]),
+            (self.dispatch, "not-available", "test-session"),
+        )
+        record = json.loads(printed.output)[0]
+        self.assertEqual(record.get("state"), "authorized")
+
+    def test_a_stamped_authorize_is_refused_and_books_nothing(self) -> None:
+        # given a call stamped as a subagent's (ruling 114)
+        self.stamp_as(self.dispatch)
+        # when
+        code, output = self.authorize("TAG-01-stamp-hook")
+        # then refused for its own reason, not the writer's
+        self.assertEqual(code, 3, output)
+        self.assertIn("A clearance is refused from a subagent's call", output)
+        self.assertEqual(_tag_rows("tag_clearance_authorized"), [])
+
+
 class TagEpilogTests(unittest.TestCase):
     def test_every_example_parses_as_a_real_invocation(self) -> None:
         # given the help of `gz wp tag` and of each of its leaves
         parser = _build_parser()
-        leaves = (["wp", "tag", leaf] for leaf in ("issue", "show", "hang"))
+        leaves = (["wp", "tag", leaf] for leaf in ("issue", "show", "hang", "authorize"))
         examples = [
             line.strip()
             for path in (["wp", "tag"], *leaves)
@@ -388,7 +448,7 @@ class TagEpilogTests(unittest.TestCase):
         # when
         parsed = [parser.parse_args(shlex.split(example)[1:]) for example in examples]
         # then each parses, every required flag present, onto a handler
-        self.assertGreaterEqual(len(examples), 7)
+        self.assertGreaterEqual(len(examples), 9)
         self.assertTrue(all(callable(args.func) for args in parsed))
 
 

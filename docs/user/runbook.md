@@ -1048,6 +1048,16 @@ uv run gz wp dispatch WP-01-stamp --order ORD-01-import --role Repair --model so
 uv run gz wp tag hang TAG-01-stamp-hook --dispatch D-<id>
 ```
 
+Once the work is done and the order is commenced, the coordinator authorizes each
+tag's clearance from the main session. The hanging dispatch must be over: its
+subagent's end is booked when it stops, and a dispatch killed or abandoned is
+voided first. Every clearance records the repair activity not available (RP-12
+rulings 7, 114, 118 and 138):
+
+```bash
+uv run gz wp tag authorize TAG-01-stamp-hook
+```
+
 A repair requirement states what must hold again after the repair. It lives in
 `data/catalog/reqs.json` beside the catalog's, written only by `gz wp req new`
 on an open repair package, and names the issue it answers:

@@ -83,6 +83,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "wp_tag_issue_cmd": "gzkit.commands.wp_tag",
     "wp_tag_show_cmd": "gzkit.commands.wp_tag",
     "wp_tag_hang_cmd": "gzkit.commands.wp_tag",
+    "wp_tag_authorize_cmd": "gzkit.commands.wp_tag",
     # --- handoff group (parser_maintenance) ---
     "handoff_archive_cmd": "gzkit.commands.handoff_archive",
     "handoff_authorize_cmd": "gzkit.commands.handoff",

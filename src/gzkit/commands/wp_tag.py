@@ -1,4 +1,4 @@
-"""``gz wp tag`` commands over the tag-out log (RP-12 O3 tasks 2 and 3).
+"""``gz wp tag`` commands over the tag-out log (RP-12 O3 tasks 2 to 4).
 
 The group the operator ruled on 2026-11-16 (RP-12 ruling 110). `show` renders
 the log from the ledger's tag events, read-only (ruling 4). `issue` is the
@@ -11,6 +11,9 @@ nor a registry (ruling 119), and every refusal it raises exits 3 and books nothi
 `hang` is the stamped call of the Repair dispatch it names (ruling 133): the entry
 keeps the stamped dispatch id before it consumes the stamp, and the writer,
 `record_tag_hang`, refuses a call not stamped with the dispatch named.
+`authorize` is the coordinator's act again (ruling 6), refused from a subagent's
+call (ruling 114); its writer, `record_tag_clearance`, reads the hanging
+dispatch's end or void from the ledger and refuses a live one (rulings 7 and 138).
 """
 
 from typing import TYPE_CHECKING
@@ -26,6 +29,7 @@ from gzkit.mx.tag_out import (
     TagIssue,
     TagOutError,
     open_tags,
+    record_tag_clearance,
     record_tag_hang,
     record_tag_issue,
     tag_log,
@@ -66,7 +70,8 @@ def _open_session_id(root: Path, ledger_path: Path) -> str | None:
         msg = (
             f"The MX marker is present but {held.cause}, so no session is open to hold the "
             "tag. A tag is held by the open MX session, whose id is the coordinator's mark "
-            f"(RP-12 rulings 3 and 114). {_MARKER_RECOVERY[held.cause]}, then issue the tag."
+            f"(RP-12 rulings 3 and 114). {_MARKER_RECOVERY[held.cause]}, then run this tag "
+            "act again."
         )
         raise PolicyBreachError(msg)
     return None
@@ -149,6 +154,50 @@ def wp_tag_hang_cmd(
     fmt.emit(event if as_json else f"Hung {event.tag_id} by {event.dispatch_id}.")
 
 
+def wp_tag_authorize_cmd(*, tag_id: str, called_by_subagent: bool, as_json: bool) -> None:
+    """Book the coordinator's clearance authorized for one hung tag (RP-12 rulings 6, 7, 138).
+
+    The open MX session, read from the marker here, is the coordinator's mark
+    (ruling 114). The writer reads the hanging dispatch's state from the ledger,
+    never typed (ruling 7). Prints ``Clearance of <TAG-id> authorized; <D-id>
+    <ended|voided>, repair activity not available.``, or with ``--json`` the
+    `tag_clearance_authorized` event booked.
+
+    Raises:
+        PolicyBreachError: The call is a subagent's, the marker is present but not
+            on, or the writer refuses the clearance (no MX session open, the tag not
+            issued, not hung or already authorized, the order not commenced or
+            blocked, the hanging dispatch still live); nothing is booked.
+
+    """
+    if called_by_subagent:
+        msg = (
+            "A clearance is refused from a subagent's call: clearance authorized is the "
+            "coordinator's act as Authorizing Officer (RP-12 ruling 6), and the coordinator "
+            "is the unstamped operator-facing session (RP-12 ruling 114). Run `uv run gz wp "
+            "tag authorize` from the main session."
+        )
+        raise PolicyBreachError(msg)
+    config = ensure_initialized()
+    root = get_project_root()
+    ledger_path = root / config.paths.ledger
+    try:
+        event = record_tag_clearance(
+            Ledger(ledger_path), tag_id, mx_session_id=_open_session_id(root, ledger_path)
+        )
+    except TagOutError as exc:
+        raise PolicyBreachError(str(exc)) from exc
+    fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
+    fmt.emit(
+        event
+        if as_json
+        else (
+            f"Clearance of {event.tag_id} authorized; {event.hanging_dispatch_id} "
+            f"{event.hanging_dispatch_over}, repair activity not available."
+        )
+    )
+
+
 def _tag_block(tag: Tag, *, every: bool) -> str:
     """Write one tag as a block of labelled lines, its whole line item legible (ruling 126).
 
@@ -162,6 +211,7 @@ def _tag_block(tag: Tag, *, every: bool) -> str:
     state = f" ({'open' if tag.is_open else 'closed'})" if every else ""
     fields = (
         ("Hung by", tag.hang.dispatch_id if tag.hang else "not hung"),
+        ("Clearance", "authorized" if tag.clearance else "not authorized"),
         ("Class", issue.tag_class),
         ("Surface", issue.surface),
         ("Position", issue.position),
@@ -189,8 +239,9 @@ def _tag_record(tag: Tag) -> dict[str, object]:
     return {
         **tag.issue.model_dump(mode="json"),
         "is_open": tag.is_open,
-        "state": "hung" if tag.hang else "issued",
+        "state": "authorized" if tag.clearance else "hung" if tag.hang else "issued",
         "hang": tag.hang.model_dump(mode="json") if tag.hang else None,
+        "clearance": tag.clearance.model_dump(mode="json") if tag.clearance else None,
     }
 
 

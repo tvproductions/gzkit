@@ -64,6 +64,13 @@ Feature: Work packages run through the gz wp verbs
     Then the command exits with code 3
     And the output contains "This call is not stamped"
 
+  Scenario: authorizing a clearance with no MX session open is a policy breach
+    Given the workspace is initialized
+    And the requirements catalog is seeded
+    When I run the gz command "wp tag authorize TAG-01-x"
+    Then the command exits with code 3
+    And the output contains "No MX session is open"
+
   Scenario: a package the store does not hold is a user error
     Given the workspace is initialized
     And the requirements catalog is seeded
