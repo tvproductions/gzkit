@@ -8,6 +8,7 @@
   "sweeps": [
     {
       "source": "src/gzkit/mx/tag_out.py",
+      "tree": "bdfb4313ec347aacc34d8312fae61c1ab4524dde",
       "scope": {
         "cited": [
           "SurfaceRegistry.resolve",
@@ -36,7 +37,7 @@
         "tests.commands.test_wp_tag"
       ],
       "baseline_green": true,
-      "baseline_tests_run": 107,
+      "baseline_tests_run": 108,
       "source_restored": true,
       "counts": {
         "killed": 62,
@@ -46,7 +47,7 @@
       },
       "mutants": [
         {
-          "label": "tag_out.py:_block_out_of_position:684:7 if forced true",
+          "label": "tag_out.py:_block_out_of_position:686:7 if forced true",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -55,7 +56,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_block_out_of_position:684:7 if forced false",
+          "label": "tag_out.py:_block_out_of_position:686:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -65,7 +66,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_check_clearable:503:7 if forced true",
+          "label": "tag_out.py:_check_clearable:505:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -111,7 +112,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_check_clearable:503:7 if forced false",
+          "label": "tag_out.py:_check_clearable:505:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -122,7 +123,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_check_clearable:510:7 if forced true",
+          "label": "tag_out.py:_check_clearable:512:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -167,7 +168,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_check_clearable:510:7 if forced false",
+          "label": "tag_out.py:_check_clearable:512:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -179,7 +180,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_check_clearable:502:27 ifexp forced true",
+          "label": "tag_out.py:_check_clearable:504:27 ifexp forced true",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -188,7 +189,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_check_clearable:502:27 ifexp forced false",
+          "label": "tag_out.py:_check_clearable:504:27 ifexp forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -197,7 +198,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_check_restorer:632:7 if forced true",
+          "label": "tag_out.py:_check_restorer:634:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -226,7 +227,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_check_restorer:632:7 if forced false",
+          "label": "tag_out.py:_check_restorer:634:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -235,7 +236,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_check_restorer:639:7 if forced true",
+          "label": "tag_out.py:_check_restorer:641:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -263,7 +264,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_check_restorer:639:7 if forced false",
+          "label": "tag_out.py:_check_restorer:641:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -272,7 +273,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_check_restorer:645:7 if forced true",
+          "label": "tag_out.py:_check_restorer:647:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -299,7 +300,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_check_restorer:645:7 if forced false",
+          "label": "tag_out.py:_check_restorer:647:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -308,7 +309,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_check_restorer:652:7 if forced true",
+          "label": "tag_out.py:_check_restorer:654:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -334,7 +335,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_check_restorer:652:7 if forced false",
+          "label": "tag_out.py:_check_restorer:654:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -343,14 +344,14 @@
           ]
         },
         {
-          "label": "tag_out.py:_check_restorer:653:57 ifexp forced true",
+          "label": "tag_out.py:_check_restorer:655:57 ifexp forced true",
           "outcome": "survived",
           "reason": "",
           "failure_class": "none",
           "failing_tests": []
         },
         {
-          "label": "tag_out.py:_check_restorer:653:57 ifexp forced false",
+          "label": "tag_out.py:_check_restorer:655:57 ifexp forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -404,6 +405,7 @@
             "tests.test_tag_out.FrozenClearanceTests.test_a_tag_not_hung_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_with_no_mx_session_open_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
@@ -497,6 +499,7 @@
             "tests.test_tag_out.FrozenClearanceTests.test_a_tag_not_hung_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_with_no_mx_session_open_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
@@ -598,7 +601,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_cleared_tag:596:7 if forced true",
+          "label": "tag_out.py:_cleared_tag:598:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -632,7 +635,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_cleared_tag:596:7 if forced false",
+          "label": "tag_out.py:_cleared_tag:598:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -642,7 +645,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_cleared_tag:601:7 if forced true",
+          "label": "tag_out.py:_cleared_tag:603:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -675,7 +678,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_cleared_tag:601:7 if forced false",
+          "label": "tag_out.py:_cleared_tag:603:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -684,7 +687,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_cleared_tag:606:7 if forced true",
+          "label": "tag_out.py:_cleared_tag:608:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -717,7 +720,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_cleared_tag:606:7 if forced false",
+          "label": "tag_out.py:_cleared_tag:608:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -726,7 +729,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_cleared_tag:611:7 if forced true",
+          "label": "tag_out.py:_cleared_tag:613:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -758,7 +761,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_cleared_tag:611:7 if forced false",
+          "label": "tag_out.py:_cleared_tag:613:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -767,7 +770,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_cleared_tag:595:50 filter forced true",
+          "label": "tag_out.py:_cleared_tag:597:50 filter forced true",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -777,7 +780,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_cleared_tag:595:50 filter forced false",
+          "label": "tag_out.py:_cleared_tag:597:50 filter forced false",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -845,6 +848,7 @@
             "tests.test_tag_out.FrozenClearanceTests.test_a_tag_not_hung_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_with_no_mx_session_open_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
@@ -969,6 +973,7 @@
             "tests.test_tag_out.FrozenClearanceTests.test_a_tag_not_hung_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_with_no_mx_session_open_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
@@ -1073,6 +1078,7 @@
             "tests.test_tag_out.FrozenClearanceTests.test_a_tag_not_hung_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_with_no_mx_session_open_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
@@ -1164,6 +1170,7 @@
             "tests.test_tag_out.FrozenClearanceTests.test_a_tag_not_hung_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_with_no_mx_session_open_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
@@ -1259,6 +1266,7 @@
             "tests.test_tag_out.FrozenClearanceTests.test_a_tag_not_hung_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_with_no_mx_session_open_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
@@ -1362,7 +1370,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clear:721:7 if forced true",
+          "label": "tag_out.py:record_tag_clear:723:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -1400,7 +1408,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clear:721:7 if forced false",
+          "label": "tag_out.py:record_tag_clear:723:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -1409,7 +1417,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clear:727:7 if forced true",
+          "label": "tag_out.py:record_tag_clear:729:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -1446,7 +1454,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clear:727:7 if forced false",
+          "label": "tag_out.py:record_tag_clear:729:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -1455,7 +1463,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clear:734:7 if forced true",
+          "label": "tag_out.py:record_tag_clear:736:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -1491,7 +1499,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clear:734:7 if forced false",
+          "label": "tag_out.py:record_tag_clear:736:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -1501,7 +1509,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clear:743:7 if forced true",
+          "label": "tag_out.py:record_tag_clear:745:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -1517,7 +1525,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clear:743:7 if forced false",
+          "label": "tag_out.py:record_tag_clear:745:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -1535,7 +1543,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clear:744:8 early return removed",
+          "label": "tag_out.py:record_tag_clear:746:8 early return removed",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -1553,7 +1561,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clear:728:48 ifexp forced true",
+          "label": "tag_out.py:record_tag_clear:730:48 ifexp forced true",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -1562,7 +1570,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clear:728:48 ifexp forced false",
+          "label": "tag_out.py:record_tag_clear:730:48 ifexp forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -1571,7 +1579,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clearance:532:7 if forced true",
+          "label": "tag_out.py:record_tag_clearance:534:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -1622,7 +1630,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clearance:532:7 if forced false",
+          "label": "tag_out.py:record_tag_clearance:534:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -1631,7 +1639,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clearance:540:7 if forced true",
+          "label": "tag_out.py:record_tag_clearance:542:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -1680,7 +1688,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clearance:540:7 if forced false",
+          "label": "tag_out.py:record_tag_clearance:542:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -1690,7 +1698,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clearance:546:7 if forced true",
+          "label": "tag_out.py:record_tag_clearance:548:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -1738,7 +1746,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clearance:546:7 if forced false",
+          "label": "tag_out.py:record_tag_clearance:548:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -1747,7 +1755,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clearance:552:7 if forced true",
+          "label": "tag_out.py:record_tag_clearance:554:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -1795,7 +1803,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clearance:552:7 if forced false",
+          "label": "tag_out.py:record_tag_clearance:554:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -1804,7 +1812,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clearance:561:7 if forced true",
+          "label": "tag_out.py:record_tag_clearance:563:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -1848,7 +1856,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clearance:561:7 if forced false",
+          "label": "tag_out.py:record_tag_clearance:563:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -1857,7 +1865,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clearance:539:50 filter forced true",
+          "label": "tag_out.py:record_tag_clearance:541:50 filter forced true",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -1867,7 +1875,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clearance:539:50 filter forced false",
+          "label": "tag_out.py:record_tag_clearance:541:50 filter forced false",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -1960,6 +1968,7 @@
             "tests.test_tag_out.UnendedDispatchTests.test_a_voided_hanging_dispatch_reads_over_by_its_void",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_tag_not_open_is_refused",
@@ -2043,6 +2052,7 @@
             "tests.test_tag_out.UnendedDispatchTests.test_a_voided_hanging_dispatch_reads_over_by_its_void",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_tag_not_open_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_tag_the_ledger_does_not_hold_is_refused",
@@ -2125,6 +2135,7 @@
             "tests.test_tag_out.UnendedDispatchTests.test_a_voided_hanging_dispatch_reads_over_by_its_void",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_tag_not_open_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_tag_whose_order_is_blocked_is_refused",
@@ -2202,6 +2213,7 @@
             "tests.test_tag_out.UnendedDispatchTests.test_a_voided_hanging_dispatch_reads_over_by_its_void",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_tag_not_open_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_tag_whose_order_is_blocked_is_refused",
@@ -2279,6 +2291,7 @@
             "tests.test_tag_out.UnendedDispatchTests.test_a_voided_hanging_dispatch_reads_over_by_its_void",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_tag_whose_order_is_blocked_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_tag_whose_order_is_not_frozen_is_refused",
@@ -2311,7 +2324,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_hang:444:7 if forced true",
+          "label": "tag_out.py:record_tag_hang:445:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -2377,16 +2390,17 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_hang:444:7 if forced false",
+          "label": "tag_out.py:record_tag_hang:445:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
           "failing_tests": [
-            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused"
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused"
           ]
         },
         {
-          "label": "tag_out.py:record_tag_hang:451:7 if forced true",
+          "label": "tag_out.py:record_tag_hang:453:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -2451,7 +2465,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_hang:451:7 if forced false",
+          "label": "tag_out.py:record_tag_hang:453:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -2460,7 +2474,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_hang:458:7 if forced true",
+          "label": "tag_out.py:record_tag_hang:460:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -2524,7 +2538,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_hang:458:7 if forced false",
+          "label": "tag_out.py:record_tag_hang:460:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -2533,7 +2547,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_hang:465:7 if forced true",
+          "label": "tag_out.py:record_tag_hang:467:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -2595,7 +2609,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_hang:465:7 if forced false",
+          "label": "tag_out.py:record_tag_hang:467:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -2605,7 +2619,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_hang:472:7 if forced true",
+          "label": "tag_out.py:record_tag_hang:474:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -2666,7 +2680,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_hang:472:7 if forced false",
+          "label": "tag_out.py:record_tag_hang:474:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -2730,6 +2744,7 @@
             "tests.test_tag_out.UnendedDispatchTests.test_a_voided_hanging_dispatch_reads_over_by_its_void",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_tag_not_open_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_tag_whose_order_is_blocked_is_refused",
@@ -2788,6 +2803,7 @@
             "tests.test_tag_out.FrozenClearanceTests.test_a_tag_not_hung_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_with_no_mx_session_open_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
@@ -2894,6 +2910,7 @@
             "tests.test_tag_out.FrozenClearanceTests.test_a_tag_not_hung_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_with_no_mx_session_open_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
@@ -2998,6 +3015,7 @@
             "tests.test_tag_out.FrozenClearanceTests.test_a_tag_not_hung_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_with_no_mx_session_open_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
@@ -3102,6 +3120,7 @@
             "tests.test_tag_out.FrozenClearanceTests.test_a_tag_not_hung_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_with_no_mx_session_open_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
@@ -3206,6 +3225,7 @@
             "tests.test_tag_out.FrozenClearanceTests.test_a_tag_not_hung_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_with_no_mx_session_open_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
@@ -3309,6 +3329,7 @@
             "tests.test_tag_out.FrozenClearanceTests.test_a_tag_not_hung_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_with_no_mx_session_open_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
@@ -3412,6 +3433,7 @@
             "tests.test_tag_out.FrozenClearanceTests.test_a_tag_not_hung_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_with_no_mx_session_open_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
@@ -3515,6 +3537,7 @@
             "tests.test_tag_out.FrozenClearanceTests.test_a_tag_not_hung_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_with_no_mx_session_open_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
@@ -3618,6 +3641,7 @@
             "tests.test_tag_out.FrozenClearanceTests.test_a_tag_not_hung_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_hang_with_no_mx_session_open_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
@@ -3782,7 +3806,7 @@
       ],
       "follow_ups": [
         {
-          "label": "tag_out.py:_check_clearable:503:7 if forced true",
+          "label": "tag_out.py:_check_clearable:505:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.ClearanceRefusalTests.test_a_blocked_order_is_refused",
@@ -3928,7 +3952,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_check_clearable:510:7 if forced true",
+          "label": "tag_out.py:_check_clearable:512:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.ClearanceTests.test_a_clearance_is_still_open_until_its_clear",
@@ -4074,7 +4098,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_check_restorer:632:7 if forced true",
+          "label": "tag_out.py:_check_restorer:634:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.ClearRefusalTests.test_a_clearing_dispatch_whose_role_is_not_restoration_is_refused",
@@ -4154,7 +4178,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_check_restorer:639:7 if forced true",
+          "label": "tag_out.py:_check_restorer:641:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.ClearRefusalTests.test_a_restoration_dispatch_on_another_order_is_refused",
@@ -4234,7 +4258,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_check_restorer:645:7 if forced true",
+          "label": "tag_out.py:_check_restorer:647:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.ClearRefusalTests.test_a_subagent_that_claimed_the_hanging_dispatch_is_refused_the_clear",
@@ -4314,7 +4338,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_check_restorer:652:7 if forced true",
+          "label": "tag_out.py:_check_restorer:654:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.ClearRefusalTests.test_distinct_subagents_on_the_two_dispatches_clear",
@@ -4569,6 +4593,12 @@
             },
             {
               "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
               "baseline_green": true,
               "outcome": "inconclusive",
               "failure_class": "error"
@@ -5051,6 +5081,12 @@
             },
             {
               "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
               "baseline_green": true,
               "outcome": "inconclusive",
               "failure_class": "error"
@@ -5390,7 +5426,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_cleared_tag:596:7 if forced true",
+          "label": "tag_out.py:_cleared_tag:598:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.ClearRefusalTests.test_a_blocked_order_is_refused",
@@ -5470,7 +5506,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_cleared_tag:601:7 if forced true",
+          "label": "tag_out.py:_cleared_tag:603:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.ClearRefusalTests.test_a_blocked_order_is_refused",
@@ -5550,7 +5586,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_cleared_tag:606:7 if forced true",
+          "label": "tag_out.py:_cleared_tag:608:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.ClearRefusalTests.test_a_blocked_order_is_refused",
@@ -5618,7 +5654,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_cleared_tag:611:7 if forced true",
+          "label": "tag_out.py:_cleared_tag:613:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.ClearRefusalTests.test_a_blocked_order_is_refused",
@@ -5698,7 +5734,7 @@
           ]
         },
         {
-          "label": "tag_out.py:_cleared_tag:595:50 filter forced false",
+          "label": "tag_out.py:_cleared_tag:597:50 filter forced false",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.ClearRefusalTests.test_a_blocked_order_is_refused",
@@ -5953,6 +5989,12 @@
             },
             {
               "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
               "baseline_green": true,
               "outcome": "inconclusive",
               "failure_class": "error"
@@ -6352,6 +6394,12 @@
               "failure_class": "error"
             },
             {
+              "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
               "test": "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
               "baseline_green": true,
               "outcome": "inconclusive",
@@ -6715,6 +6763,12 @@
             },
             {
               "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
               "baseline_green": true,
               "outcome": "inconclusive",
               "failure_class": "error"
@@ -7088,6 +7142,12 @@
               "failure_class": "error"
             },
             {
+              "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
               "test": "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
               "baseline_green": true,
               "outcome": "inconclusive",
@@ -7328,7 +7388,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clear:721:7 if forced true",
+          "label": "tag_out.py:record_tag_clear:723:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.ClearRefusalTests.test_a_blocked_order_is_refused",
@@ -7402,7 +7462,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clear:727:7 if forced true",
+          "label": "tag_out.py:record_tag_clear:729:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.ClearRefusalTests.test_a_blocked_order_is_refused",
@@ -7476,7 +7536,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clear:734:7 if forced true",
+          "label": "tag_out.py:record_tag_clear:736:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.ClearRefusalTests.test_a_blocked_order_is_refused",
@@ -7556,7 +7616,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clear:743:7 if forced true",
+          "label": "tag_out.py:record_tag_clear:745:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.ClearRefusalTests.test_a_tag_already_cleared_is_refused",
@@ -7576,7 +7636,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clearance:532:7 if forced true",
+          "label": "tag_out.py:record_tag_clearance:534:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.ClearanceRefusalTests.test_a_blocked_order_is_refused",
@@ -7722,7 +7782,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clearance:540:7 if forced true",
+          "label": "tag_out.py:record_tag_clearance:542:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.ClearanceRefusalTests.test_a_blocked_order_is_refused",
@@ -7868,7 +7928,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clearance:546:7 if forced true",
+          "label": "tag_out.py:record_tag_clearance:548:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.ClearanceRefusalTests.test_a_blocked_order_is_refused",
@@ -8014,7 +8074,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clearance:552:7 if forced true",
+          "label": "tag_out.py:record_tag_clearance:554:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.ClearanceRefusalTests.test_a_blocked_order_is_refused",
@@ -8160,7 +8220,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clearance:561:7 if forced true",
+          "label": "tag_out.py:record_tag_clearance:563:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.ClearanceTests.test_a_clearance_is_still_open_until_its_clear",
@@ -8306,7 +8366,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_clearance:539:50 filter forced false",
+          "label": "tag_out.py:record_tag_clearance:541:50 filter forced false",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.ClearanceRefusalTests.test_a_blocked_order_is_refused",
@@ -9632,7 +9692,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_hang:444:7 if forced true",
+          "label": "tag_out.py:record_tag_hang:445:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
@@ -9868,7 +9928,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_hang:451:7 if forced true",
+          "label": "tag_out.py:record_tag_hang:453:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
@@ -10104,7 +10164,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_hang:458:7 if forced true",
+          "label": "tag_out.py:record_tag_hang:460:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.HangRefusalTests.test_a_tag_whose_order_is_blocked_is_refused",
@@ -10340,7 +10400,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_hang:465:7 if forced true",
+          "label": "tag_out.py:record_tag_hang:467:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.HangRefusalTests.test_a_tag_whose_order_is_blocked_is_refused",
@@ -10576,7 +10636,7 @@
           ]
         },
         {
-          "label": "tag_out.py:record_tag_hang:472:7 if forced true",
+          "label": "tag_out.py:record_tag_hang:474:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.commands.test_wp_tag.TagHangWiringTests.test_json_mode_prints_the_booked_hang",
@@ -11306,6 +11366,12 @@
               "failure_class": "error"
             },
             {
+              "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
               "test": "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
               "baseline_green": true,
               "outcome": "inconclusive",
@@ -11669,6 +11735,12 @@
             },
             {
               "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
               "baseline_green": true,
               "outcome": "inconclusive",
               "failure_class": "error"
@@ -12042,6 +12114,12 @@
               "failure_class": "error"
             },
             {
+              "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
               "test": "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
               "baseline_green": true,
               "outcome": "inconclusive",
@@ -12405,6 +12483,12 @@
             },
             {
               "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
               "baseline_green": true,
               "outcome": "inconclusive",
               "failure_class": "error"
@@ -12778,6 +12862,12 @@
               "failure_class": "error"
             },
             {
+              "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
               "test": "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
               "baseline_green": true,
               "outcome": "inconclusive",
@@ -13141,6 +13231,12 @@
             },
             {
               "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
               "baseline_green": true,
               "outcome": "inconclusive",
               "failure_class": "error"
@@ -13514,6 +13610,12 @@
               "failure_class": "error"
             },
             {
+              "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
               "test": "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
               "baseline_green": true,
               "outcome": "inconclusive",
@@ -13877,6 +13979,12 @@
             },
             {
               "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
               "baseline_green": true,
               "outcome": "inconclusive",
               "failure_class": "error"
@@ -14364,6 +14472,12 @@
               "failure_class": "error"
             },
             {
+              "test": "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
               "test": "tests.test_tag_out.HangRefusalTests.test_a_hang_not_stamped_with_the_dispatch_it_names_is_refused",
               "baseline_green": true,
               "outcome": "inconclusive",
@@ -14647,6 +14761,7 @@
     },
     {
       "source": "src/gzkit/commands/wp_tag.py",
+      "tree": "bdfb4313ec347aacc34d8312fae61c1ab4524dde",
       "scope": {
         "cited": [
           "_open_session_id",
@@ -14666,7 +14781,7 @@
         "tests.commands.test_wp_tag"
       ],
       "baseline_green": true,
-      "baseline_tests_run": 107,
+      "baseline_tests_run": 108,
       "source_restored": true,
       "counts": {
         "killed": 60,
@@ -15996,6 +16111,7 @@
     },
     {
       "source": "src/gzkit/cli/main.py",
+      "tree": "bdfb4313ec347aacc34d8312fae61c1ab4524dde",
       "scope": {
         "cited": [
           "main"
@@ -16010,7 +16126,7 @@
         "tests.commands.test_wp_tag"
       ],
       "baseline_green": true,
-      "baseline_tests_run": 107,
+      "baseline_tests_run": 108,
       "source_restored": true,
       "counts": {
         "killed": 1,
@@ -16150,6 +16266,7 @@
     },
     {
       "source": "src/gzkit/mx/tag_rows.py",
+      "tree": "bdfb4313ec347aacc34d8312fae61c1ab4524dde",
       "scope": {
         "cited": [
           "order_tags"
@@ -16437,6 +16554,7 @@
     },
     {
       "source": "src/gzkit/order_ledger.py",
+      "tree": "bdfb4313ec347aacc34d8312fae61c1ab4524dde",
       "scope": {
         "cited": [
           "_check_accepted",
@@ -18585,6 +18703,7 @@
     },
     {
       "source": "src/gzkit/commands/wp_order.py",
+      "tree": "bdfb4313ec347aacc34d8312fae61c1ab4524dde",
       "scope": {
         "cited": [
           "wp_order_accept_cmd",
@@ -20254,6 +20373,7 @@
     },
     {
       "source": "src/gzkit/work_package_ledger.py",
+      "tree": "bdfb4313ec347aacc34d8312fae61c1ab4524dde",
       "scope": {
         "cited": [
           "_check_repair_close"
@@ -20755,6 +20875,7 @@
     },
     {
       "source": "src/gzkit/work_package_fence.py",
+      "tree": "bdfb4313ec347aacc34d8312fae61c1ab4524dde",
       "scope": {
         "cited": [
           "FencedPackage._frozen_names_its_order",
@@ -20777,7 +20898,7 @@
         "tests.commands.test_wp_fence"
       ],
       "baseline_green": true,
-      "baseline_tests_run": 131,
+      "baseline_tests_run": 132,
       "source_restored": true,
       "counts": {
         "killed": 34,
@@ -22111,6 +22232,7 @@
     },
     {
       "source": "src/gzkit/pipeline_stage_fence.py",
+      "tree": "bdfb4313ec347aacc34d8312fae61c1ab4524dde",
       "scope": {
         "cited": [
           "frozen_order_write_refusal"
@@ -22125,7 +22247,7 @@
         "tests.commands.test_wp_fence"
       ],
       "baseline_green": true,
-      "baseline_tests_run": 130,
+      "baseline_tests_run": 132,
       "source_restored": true,
       "counts": {
         "killed": 9,
@@ -22253,6 +22375,7 @@
     },
     {
       "source": "src/gzkit/work_package_run.py",
+      "tree": "bdfb4313ec347aacc34d8312fae61c1ab4524dde",
       "scope": {
         "cited": [
           "claiming_agents",
@@ -22271,13 +22394,13 @@
         "tests.commands.test_wp_tag"
       ],
       "baseline_green": true,
-      "baseline_tests_run": 259,
+      "baseline_tests_run": 265,
       "source_restored": true,
       "counts": {
-        "killed": 9,
-        "survived": 0,
+        "killed": 12,
+        "survived": 1,
         "invalid": 0,
-        "inconclusive": 13
+        "inconclusive": 14
       },
       "mutants": [
         {
@@ -22299,133 +22422,215 @@
           ]
         },
         {
-          "label": "work_package_run.py:dispatch_over:765:7 if forced true",
+          "label": "work_package_run.py:dispatch_over:775:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
           "failing_tests": [
+            "tests.test_tag_out.ClearRefusalTests.test_a_blocked_order_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_clear_not_stamped_with_the_dispatch_it_names_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_clear_with_no_mx_session_open_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_clearing_dispatch_whose_role_is_not_restoration_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_position_found_outside_the_ruled_set_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_restoration_dispatch_on_another_order_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_subagent_that_claimed_the_hanging_dispatch_is_refused_the_clear",
             "tests.test_tag_out.ClearRefusalTests.test_a_tag_already_cleared_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_tag_the_ledger_does_not_hold_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_voided_or_ended_clearing_dispatch_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_an_order_not_commenced_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_distinct_subagents_on_the_two_dispatches_clear",
             "tests.test_tag_out.ClearReviewTests.test_a_blocked_orders_refusal_shows_though_the_restorer_has_ended",
             "tests.test_tag_out.ClearReviewTests.test_an_out_of_position_clear_reads_the_refutations_of_its_order",
             "tests.test_tag_out.ClearReviewTests.test_the_refutations_are_read_only_when_a_block_is_booked",
             "tests.test_tag_out.ClearTests.test_a_clear_in_position_books_the_clear_and_the_tag_reads_closed",
             "tests.test_tag_out.ClearTests.test_a_cleared_tag_frees_its_surface_for_a_new_issue",
+            "tests.test_tag_out.ClearanceLogTests.test_a_malformed_clearance_row_is_refused_with_its_void_not_a_crash",
+            "tests.test_tag_out.ClearanceRefusalTests.test_a_blocked_order_is_refused",
+            "tests.test_tag_out.ClearanceRefusalTests.test_a_clearance_already_authorized_is_refused",
+            "tests.test_tag_out.ClearanceRefusalTests.test_a_clearance_with_no_mx_session_open_is_refused",
+            "tests.test_tag_out.ClearanceRefusalTests.test_a_tag_the_ledger_does_not_hold_is_refused",
+            "tests.test_tag_out.ClearanceRefusalTests.test_an_order_not_commenced_is_refused",
+            "tests.test_tag_out.ClearanceTests.test_a_clearance_is_still_open_until_its_clear",
+            "tests.test_tag_out.ClearanceTests.test_a_clearance_marks_the_repair_activity_not_available",
+            "tests.test_tag_out.FrozenClearanceTests.test_a_frozen_orders_hung_tag_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_tag_already_hung_is_refused",
+            "tests.test_tag_out.HangTests.test_a_hang_copies_the_issue_and_records_its_dispatch_and_holder",
+            "tests.test_tag_out.HungTagLogTests.test_a_closed_orders_hung_tag_still_holds_its_surface",
+            "tests.test_tag_out.HungTagLogTests.test_a_hung_tag_reads_open_after_its_order_closes",
             "tests.test_tag_out.OutOfPositionTests.test_a_position_found_other_than_the_hung_one_blocks_the_order",
+            "tests.test_tag_out.OutOfPositionTests.test_an_unreadable_acceptance_history_still_blocks_and_says_so",
             "tests.test_tag_out.OutOfPositionTests.test_the_block_carries_the_acceptance_runtimes_refutations",
             "tests.test_tag_out.OutOfPositionTests.test_the_block_is_worded_by_the_runtime_from_the_tag_and_both_positions",
-            "tests.commands.test_wp_tag.TagClearWiringTests.test_an_out_of_position_clear_exits_3_with_the_order_blocked",
-            "tests.commands.test_wp_tag.TagClearWiringTests.test_an_unreadable_acceptance_history_is_named_in_the_block",
-            "tests.test_tag_out.ClearRefusalTests.test_a_clearing_dispatch_whose_role_is_not_restoration_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_a_restoration_dispatch_on_another_order_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_a_subagent_that_claimed_the_hanging_dispatch_is_refused_the_clear",
-            "tests.test_tag_out.ClearRefusalTests.test_distinct_subagents_on_the_two_dispatches_clear",
-            "tests.test_tag_out.OutOfPositionTests.test_an_unreadable_acceptance_history_still_blocks_and_says_so",
+            "tests.test_tag_out.UnauthorizedClearTests.test_a_tag_whose_clearance_is_not_authorized_is_refused",
             "tests.test_tag_out.UnendedDispatchTests.test_a_live_hanging_dispatch_refuses_the_clearance",
             "tests.test_tag_out.UnendedDispatchTests.test_a_voided_hanging_dispatch_reads_over_by_its_void",
+            "tests.test_dispatch_stamp_hook.OutOfService.test_the_stamp_holds_with_the_alarms_off",
+            "tests.test_dispatch_stamp_hook.TheStamp.test_a_booked_dispatch_stamps_its_intended_root",
+            "tests.test_dispatch_stamp_hook.TheStamp.test_a_prompt_given_as_content_blocks_is_read",
+            "tests.test_dispatch_stamp_hook.TheStamp.test_a_root_with_shell_characters_survives_the_prefix",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_tag_whose_order_is_blocked_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_tag_whose_order_is_not_frozen_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_tag_whose_order_was_never_frozen_is_refused",
+            "tests.commands.test_wp_tag.TagAuthorizeWiringTests.test_a_stamped_authorize_is_refused_and_books_nothing",
+            "tests.commands.test_wp_tag.TagAuthorizeWiringTests.test_a_writer_refusal_exits_3_with_its_prose_and_books_nothing",
+            "tests.commands.test_wp_tag.TagAuthorizeWiringTests.test_json_mode_prints_the_booked_clearance",
+            "tests.commands.test_wp_tag.TagAuthorizeWiringTests.test_show_reads_the_clearance_in_its_block_and_json",
             "tests.commands.test_wp_tag.TagAuthorizeWiringTests.test_the_coordinators_call_authorizes_the_clearance_and_show_reads_it",
+            "tests.commands.test_wp_tag.TagClearWiringTests.test_a_writer_refusal_exits_3_with_its_prose_and_books_nothing",
             "tests.commands.test_wp_tag.TagClearWiringTests.test_an_out_of_position_block_prints_its_order_and_reads_its_counts",
-            "tests.commands.test_wp_tag.TagClearWiringTests.test_json_mode_prints_the_booked_clear",
-            "tests.commands.test_wp_tag.TagClearWiringTests.test_json_mode_prints_the_out_of_position_block_booked",
-            "tests.commands.test_wp_tag.TagClearWiringTests.test_show_reads_the_clear_in_its_block_and_json",
-            "tests.commands.test_wp_tag.TagClearWiringTests.test_the_restorations_stamped_call_clears_the_tag_and_show_reads_it_closed"
-          ]
-        },
-        {
-          "label": "work_package_run.py:dispatch_over:765:7 if forced false",
-          "outcome": "inconclusive",
-          "reason": "the run did not report a clean assertion failure",
-          "failure_class": "error",
-          "failing_tests": [
-            "tests.test_tag_out.ClearRefusalTests.test_a_blocked_order_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_a_clear_not_stamped_with_the_dispatch_it_names_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_a_clear_with_no_mx_session_open_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_a_clearing_dispatch_whose_role_is_not_restoration_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_a_position_found_outside_the_ruled_set_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_a_restoration_dispatch_on_another_order_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_a_subagent_that_claimed_the_hanging_dispatch_is_refused_the_clear",
-            "tests.test_tag_out.ClearRefusalTests.test_a_tag_already_cleared_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_a_tag_the_ledger_does_not_hold_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_a_voided_or_ended_clearing_dispatch_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_an_order_not_commenced_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_distinct_subagents_on_the_two_dispatches_clear",
-            "tests.test_tag_out.ClearReviewTests.test_a_blocked_orders_refusal_shows_though_the_restorer_has_ended",
-            "tests.test_tag_out.ClearReviewTests.test_an_out_of_position_clear_reads_the_refutations_of_its_order",
-            "tests.test_tag_out.ClearReviewTests.test_the_refutations_are_read_only_when_a_block_is_booked",
-            "tests.test_tag_out.ClearTests.test_a_clear_in_position_books_the_clear_and_the_tag_reads_closed",
-            "tests.test_tag_out.ClearTests.test_a_cleared_tag_frees_its_surface_for_a_new_issue",
-            "tests.test_tag_out.ClearanceRefusalTests.test_a_clearance_already_authorized_is_refused",
-            "tests.test_tag_out.OutOfPositionTests.test_a_position_found_other_than_the_hung_one_blocks_the_order",
-            "tests.test_tag_out.OutOfPositionTests.test_an_unreadable_acceptance_history_still_blocks_and_says_so",
-            "tests.test_tag_out.OutOfPositionTests.test_the_block_carries_the_acceptance_runtimes_refutations",
-            "tests.test_tag_out.OutOfPositionTests.test_the_block_is_worded_by_the_runtime_from_the_tag_and_both_positions",
-            "tests.test_tag_out.ClearanceTests.test_a_clearance_is_still_open_until_its_clear",
-            "tests.test_tag_out.ClearanceTests.test_a_clearance_marks_the_repair_activity_not_available"
-          ]
-        },
-        {
-          "label": "work_package_run.py:dispatch_over:766:8 early return removed",
-          "outcome": "inconclusive",
-          "reason": "the run did not report a clean assertion failure",
-          "failure_class": "error",
-          "failing_tests": [
-            "tests.test_tag_out.ClearRefusalTests.test_a_blocked_order_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_a_clear_not_stamped_with_the_dispatch_it_names_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_a_clear_with_no_mx_session_open_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_a_clearing_dispatch_whose_role_is_not_restoration_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_a_position_found_outside_the_ruled_set_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_a_restoration_dispatch_on_another_order_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_a_subagent_that_claimed_the_hanging_dispatch_is_refused_the_clear",
-            "tests.test_tag_out.ClearRefusalTests.test_a_tag_already_cleared_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_a_tag_the_ledger_does_not_hold_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_a_voided_or_ended_clearing_dispatch_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_an_order_not_commenced_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_distinct_subagents_on_the_two_dispatches_clear",
-            "tests.test_tag_out.ClearReviewTests.test_a_blocked_orders_refusal_shows_though_the_restorer_has_ended",
-            "tests.test_tag_out.ClearReviewTests.test_an_out_of_position_clear_reads_the_refutations_of_its_order",
-            "tests.test_tag_out.ClearReviewTests.test_the_refutations_are_read_only_when_a_block_is_booked",
-            "tests.test_tag_out.ClearTests.test_a_clear_in_position_books_the_clear_and_the_tag_reads_closed",
-            "tests.test_tag_out.ClearTests.test_a_cleared_tag_frees_its_surface_for_a_new_issue",
-            "tests.test_tag_out.ClearanceRefusalTests.test_a_clearance_already_authorized_is_refused",
-            "tests.test_tag_out.OutOfPositionTests.test_a_position_found_other_than_the_hung_one_blocks_the_order",
-            "tests.test_tag_out.OutOfPositionTests.test_an_unreadable_acceptance_history_still_blocks_and_says_so",
-            "tests.test_tag_out.OutOfPositionTests.test_the_block_carries_the_acceptance_runtimes_refutations",
-            "tests.test_tag_out.OutOfPositionTests.test_the_block_is_worded_by_the_runtime_from_the_tag_and_both_positions",
-            "tests.test_tag_out.ClearanceTests.test_a_clearance_is_still_open_until_its_clear",
-            "tests.test_tag_out.ClearanceTests.test_a_clearance_marks_the_repair_activity_not_available"
-          ]
-        },
-        {
-          "label": "work_package_run.py:dispatch_over:767:23 ifexp forced true",
-          "outcome": "inconclusive",
-          "reason": "the run did not report a clean assertion failure",
-          "failure_class": "error",
-          "failing_tests": [
-            "tests.test_tag_out.ClearRefusalTests.test_a_tag_already_cleared_is_refused",
-            "tests.test_tag_out.ClearReviewTests.test_a_blocked_orders_refusal_shows_though_the_restorer_has_ended",
-            "tests.test_tag_out.ClearReviewTests.test_an_out_of_position_clear_reads_the_refutations_of_its_order",
-            "tests.test_tag_out.ClearReviewTests.test_the_refutations_are_read_only_when_a_block_is_booked",
-            "tests.test_tag_out.ClearTests.test_a_clear_in_position_books_the_clear_and_the_tag_reads_closed",
-            "tests.test_tag_out.ClearTests.test_a_cleared_tag_frees_its_surface_for_a_new_issue",
-            "tests.test_tag_out.OutOfPositionTests.test_a_position_found_other_than_the_hung_one_blocks_the_order",
-            "tests.test_tag_out.OutOfPositionTests.test_the_block_carries_the_acceptance_runtimes_refutations",
-            "tests.test_tag_out.OutOfPositionTests.test_the_block_is_worded_by_the_runtime_from_the_tag_and_both_positions",
             "tests.commands.test_wp_tag.TagClearWiringTests.test_an_out_of_position_clear_exits_3_with_the_order_blocked",
             "tests.commands.test_wp_tag.TagClearWiringTests.test_an_unreadable_acceptance_history_is_named_in_the_block",
-            "tests.test_tag_out.ClearRefusalTests.test_a_clearing_dispatch_whose_role_is_not_restoration_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_a_restoration_dispatch_on_another_order_is_refused",
-            "tests.test_tag_out.ClearRefusalTests.test_a_subagent_that_claimed_the_hanging_dispatch_is_refused_the_clear",
-            "tests.test_tag_out.ClearRefusalTests.test_distinct_subagents_on_the_two_dispatches_clear",
-            "tests.test_tag_out.OutOfPositionTests.test_an_unreadable_acceptance_history_still_blocks_and_says_so",
-            "tests.test_tag_out.UnendedDispatchTests.test_a_live_hanging_dispatch_refuses_the_clearance",
-            "tests.commands.test_wp_tag.TagClearWiringTests.test_an_out_of_position_block_prints_its_order_and_reads_its_counts",
             "tests.commands.test_wp_tag.TagClearWiringTests.test_json_mode_prints_the_booked_clear",
             "tests.commands.test_wp_tag.TagClearWiringTests.test_json_mode_prints_the_out_of_position_block_booked",
             "tests.commands.test_wp_tag.TagClearWiringTests.test_show_reads_the_clear_in_its_block_and_json",
-            "tests.commands.test_wp_tag.TagClearWiringTests.test_the_restorations_stamped_call_clears_the_tag_and_show_reads_it_closed"
+            "tests.commands.test_wp_tag.TagClearWiringTests.test_the_restorations_stamped_call_clears_the_tag_and_show_reads_it_closed",
+            "tests.commands.test_wp_tag.TagHangWiringTests.test_json_mode_prints_the_booked_hang",
+            "tests.commands.test_wp_tag.TagHangWiringTests.test_show_names_a_hung_tags_dispatch_in_its_block_and_json",
+            "tests.commands.test_wp_tag.TagHangWiringTests.test_the_named_repair_dispatchs_stamped_call_hangs_the_tag"
           ]
         },
         {
-          "label": "work_package_run.py:dispatch_over:767:23 ifexp forced false",
+          "label": "work_package_run.py:dispatch_over:775:7 if forced false",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_tag_out.ClearRefusalTests.test_a_blocked_order_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_clear_not_stamped_with_the_dispatch_it_names_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_clear_with_no_mx_session_open_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_clearing_dispatch_whose_role_is_not_restoration_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_position_found_outside_the_ruled_set_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_restoration_dispatch_on_another_order_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_subagent_that_claimed_the_hanging_dispatch_is_refused_the_clear",
+            "tests.test_tag_out.ClearRefusalTests.test_a_tag_already_cleared_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_tag_the_ledger_does_not_hold_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_voided_or_ended_clearing_dispatch_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_an_order_not_commenced_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_distinct_subagents_on_the_two_dispatches_clear",
+            "tests.test_tag_out.ClearReviewTests.test_a_blocked_orders_refusal_shows_though_the_restorer_has_ended",
+            "tests.test_tag_out.ClearReviewTests.test_an_out_of_position_clear_reads_the_refutations_of_its_order",
+            "tests.test_tag_out.ClearReviewTests.test_the_refutations_are_read_only_when_a_block_is_booked",
+            "tests.test_tag_out.ClearTests.test_a_clear_in_position_books_the_clear_and_the_tag_reads_closed",
+            "tests.test_tag_out.ClearTests.test_a_cleared_tag_frees_its_surface_for_a_new_issue",
+            "tests.test_tag_out.ClearanceRefusalTests.test_a_clearance_already_authorized_is_refused",
+            "tests.test_tag_out.OutOfPositionTests.test_a_position_found_other_than_the_hung_one_blocks_the_order",
+            "tests.test_tag_out.OutOfPositionTests.test_an_unreadable_acceptance_history_still_blocks_and_says_so",
+            "tests.test_tag_out.OutOfPositionTests.test_the_block_carries_the_acceptance_runtimes_refutations",
+            "tests.test_tag_out.OutOfPositionTests.test_the_block_is_worded_by_the_runtime_from_the_tag_and_both_positions",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
+            "tests.test_tag_out.ClearanceTests.test_a_clearance_is_still_open_until_its_clear",
+            "tests.test_tag_out.ClearanceTests.test_a_clearance_marks_the_repair_activity_not_available",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused"
+          ]
+        },
+        {
+          "label": "work_package_run.py:dispatch_over:776:8 early return removed",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_tag_out.ClearRefusalTests.test_a_blocked_order_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_clear_not_stamped_with_the_dispatch_it_names_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_clear_with_no_mx_session_open_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_clearing_dispatch_whose_role_is_not_restoration_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_position_found_outside_the_ruled_set_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_restoration_dispatch_on_another_order_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_subagent_that_claimed_the_hanging_dispatch_is_refused_the_clear",
+            "tests.test_tag_out.ClearRefusalTests.test_a_tag_already_cleared_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_tag_the_ledger_does_not_hold_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_voided_or_ended_clearing_dispatch_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_an_order_not_commenced_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_distinct_subagents_on_the_two_dispatches_clear",
+            "tests.test_tag_out.ClearReviewTests.test_a_blocked_orders_refusal_shows_though_the_restorer_has_ended",
+            "tests.test_tag_out.ClearReviewTests.test_an_out_of_position_clear_reads_the_refutations_of_its_order",
+            "tests.test_tag_out.ClearReviewTests.test_the_refutations_are_read_only_when_a_block_is_booked",
+            "tests.test_tag_out.ClearTests.test_a_clear_in_position_books_the_clear_and_the_tag_reads_closed",
+            "tests.test_tag_out.ClearTests.test_a_cleared_tag_frees_its_surface_for_a_new_issue",
+            "tests.test_tag_out.ClearanceRefusalTests.test_a_clearance_already_authorized_is_refused",
+            "tests.test_tag_out.OutOfPositionTests.test_a_position_found_other_than_the_hung_one_blocks_the_order",
+            "tests.test_tag_out.OutOfPositionTests.test_an_unreadable_acceptance_history_still_blocks_and_says_so",
+            "tests.test_tag_out.OutOfPositionTests.test_the_block_carries_the_acceptance_runtimes_refutations",
+            "tests.test_tag_out.OutOfPositionTests.test_the_block_is_worded_by_the_runtime_from_the_tag_and_both_positions",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
+            "tests.test_tag_out.ClearanceTests.test_a_clearance_is_still_open_until_its_clear",
+            "tests.test_tag_out.ClearanceTests.test_a_clearance_marks_the_repair_activity_not_available",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused"
+          ]
+        },
+        {
+          "label": "work_package_run.py:dispatch_over:777:23 ifexp forced true",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_tag_out.ClearRefusalTests.test_a_blocked_order_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_clear_not_stamped_with_the_dispatch_it_names_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_clear_with_no_mx_session_open_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_clearing_dispatch_whose_role_is_not_restoration_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_position_found_outside_the_ruled_set_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_restoration_dispatch_on_another_order_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_subagent_that_claimed_the_hanging_dispatch_is_refused_the_clear",
+            "tests.test_tag_out.ClearRefusalTests.test_a_tag_already_cleared_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_tag_the_ledger_does_not_hold_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_voided_or_ended_clearing_dispatch_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_an_order_not_commenced_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_distinct_subagents_on_the_two_dispatches_clear",
+            "tests.test_tag_out.ClearReviewTests.test_a_blocked_orders_refusal_shows_though_the_restorer_has_ended",
+            "tests.test_tag_out.ClearReviewTests.test_an_out_of_position_clear_reads_the_refutations_of_its_order",
+            "tests.test_tag_out.ClearReviewTests.test_the_refutations_are_read_only_when_a_block_is_booked",
+            "tests.test_tag_out.ClearTests.test_a_clear_in_position_books_the_clear_and_the_tag_reads_closed",
+            "tests.test_tag_out.ClearTests.test_a_cleared_tag_frees_its_surface_for_a_new_issue",
+            "tests.test_tag_out.ClearanceLogTests.test_a_malformed_clearance_row_is_refused_with_its_void_not_a_crash",
+            "tests.test_tag_out.ClearanceRefusalTests.test_a_blocked_order_is_refused",
+            "tests.test_tag_out.ClearanceRefusalTests.test_a_clearance_already_authorized_is_refused",
+            "tests.test_tag_out.ClearanceRefusalTests.test_a_clearance_with_no_mx_session_open_is_refused",
+            "tests.test_tag_out.ClearanceRefusalTests.test_a_tag_the_ledger_does_not_hold_is_refused",
+            "tests.test_tag_out.ClearanceRefusalTests.test_an_order_not_commenced_is_refused",
+            "tests.test_tag_out.ClearanceTests.test_a_clearance_is_still_open_until_its_clear",
+            "tests.test_tag_out.ClearanceTests.test_a_clearance_marks_the_repair_activity_not_available",
+            "tests.test_tag_out.FrozenClearanceTests.test_a_frozen_orders_hung_tag_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_tag_already_hung_is_refused",
+            "tests.test_tag_out.HangTests.test_a_hang_copies_the_issue_and_records_its_dispatch_and_holder",
+            "tests.test_tag_out.HungTagLogTests.test_a_closed_orders_hung_tag_still_holds_its_surface",
+            "tests.test_tag_out.HungTagLogTests.test_a_hung_tag_reads_open_after_its_order_closes",
+            "tests.test_tag_out.OutOfPositionTests.test_a_position_found_other_than_the_hung_one_blocks_the_order",
+            "tests.test_tag_out.OutOfPositionTests.test_an_unreadable_acceptance_history_still_blocks_and_says_so",
+            "tests.test_tag_out.OutOfPositionTests.test_the_block_carries_the_acceptance_runtimes_refutations",
+            "tests.test_tag_out.OutOfPositionTests.test_the_block_is_worded_by_the_runtime_from_the_tag_and_both_positions",
+            "tests.test_tag_out.UnauthorizedClearTests.test_a_tag_whose_clearance_is_not_authorized_is_refused",
+            "tests.test_tag_out.UnendedDispatchTests.test_a_live_hanging_dispatch_refuses_the_clearance",
+            "tests.test_tag_out.UnendedDispatchTests.test_a_voided_hanging_dispatch_reads_over_by_its_void",
+            "tests.test_dispatch_stamp_hook.OutOfService.test_the_stamp_holds_with_the_alarms_off",
+            "tests.test_dispatch_stamp_hook.TheStamp.test_a_booked_dispatch_stamps_its_intended_root",
+            "tests.test_dispatch_stamp_hook.TheStamp.test_a_prompt_given_as_content_blocks_is_read",
+            "tests.test_dispatch_stamp_hook.TheStamp.test_a_root_with_shell_characters_survives_the_prefix",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_tag_whose_order_is_blocked_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_tag_whose_order_is_not_frozen_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_tag_whose_order_was_never_frozen_is_refused",
+            "tests.commands.test_wp_tag.TagAuthorizeWiringTests.test_a_stamped_authorize_is_refused_and_books_nothing",
+            "tests.commands.test_wp_tag.TagAuthorizeWiringTests.test_a_writer_refusal_exits_3_with_its_prose_and_books_nothing",
+            "tests.commands.test_wp_tag.TagAuthorizeWiringTests.test_json_mode_prints_the_booked_clearance",
+            "tests.commands.test_wp_tag.TagAuthorizeWiringTests.test_show_reads_the_clearance_in_its_block_and_json",
+            "tests.commands.test_wp_tag.TagAuthorizeWiringTests.test_the_coordinators_call_authorizes_the_clearance_and_show_reads_it",
+            "tests.commands.test_wp_tag.TagClearWiringTests.test_a_writer_refusal_exits_3_with_its_prose_and_books_nothing",
+            "tests.commands.test_wp_tag.TagClearWiringTests.test_an_out_of_position_block_prints_its_order_and_reads_its_counts",
+            "tests.commands.test_wp_tag.TagClearWiringTests.test_an_out_of_position_clear_exits_3_with_the_order_blocked",
+            "tests.commands.test_wp_tag.TagClearWiringTests.test_an_unreadable_acceptance_history_is_named_in_the_block",
+            "tests.commands.test_wp_tag.TagClearWiringTests.test_json_mode_prints_the_booked_clear",
+            "tests.commands.test_wp_tag.TagClearWiringTests.test_json_mode_prints_the_out_of_position_block_booked",
+            "tests.commands.test_wp_tag.TagClearWiringTests.test_show_reads_the_clear_in_its_block_and_json",
+            "tests.commands.test_wp_tag.TagClearWiringTests.test_the_restorations_stamped_call_clears_the_tag_and_show_reads_it_closed",
+            "tests.commands.test_wp_tag.TagHangWiringTests.test_json_mode_prints_the_booked_hang",
+            "tests.commands.test_wp_tag.TagHangWiringTests.test_show_names_a_hung_tags_dispatch_in_its_block_and_json",
+            "tests.commands.test_wp_tag.TagHangWiringTests.test_the_named_repair_dispatchs_stamped_call_hangs_the_tag"
+          ]
+        },
+        {
+          "label": "work_package_run.py:dispatch_over:777:23 ifexp forced false",
           "outcome": "inconclusive",
           "reason": "a fixture assertion failed outside the test body",
           "failure_class": "assertion",
@@ -22445,7 +22650,7 @@
           ]
         },
         {
-          "label": "work_package_run.py:record_dispatch_end:743:7 if forced true",
+          "label": "work_package_run.py:record_dispatch_end:746:7 if forced true",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -22473,14 +22678,18 @@
             "tests.test_tag_out.OutOfPositionTests.test_the_block_carries_the_acceptance_runtimes_refutations",
             "tests.test_tag_out.OutOfPositionTests.test_the_block_is_worded_by_the_runtime_from_the_tag_and_both_positions",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_prompt_in_content_blocks_reads_its_text_blocks_alone",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch",
+            "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_an_ended_dispatch_no_longer_holds_the_undispatched_subagent",
             "tests.test_tag_out.ClearanceLogTests.test_a_malformed_clearance_row_is_refused_with_its_void_not_a_crash",
             "tests.test_tag_out.ClearanceTests.test_a_clearance_is_still_open_until_its_clear",
-            "tests.test_tag_out.ClearanceTests.test_a_clearance_marks_the_repair_activity_not_available"
+            "tests.test_tag_out.ClearanceTests.test_a_clearance_marks_the_repair_activity_not_available",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused"
           ]
         },
         {
-          "label": "work_package_run.py:record_dispatch_end:743:7 if forced false",
+          "label": "work_package_run.py:record_dispatch_end:746:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -22489,7 +22698,55 @@
           ]
         },
         {
-          "label": "work_package_run.py:record_dispatch_end:744:8 early return removed",
+          "label": "work_package_run.py:record_dispatch_end:753:7 if forced true",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_tag_out.ClearRefusalTests.test_a_blocked_order_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_clear_not_stamped_with_the_dispatch_it_names_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_clear_with_no_mx_session_open_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_clearing_dispatch_whose_role_is_not_restoration_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_position_found_outside_the_ruled_set_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_restoration_dispatch_on_another_order_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_subagent_that_claimed_the_hanging_dispatch_is_refused_the_clear",
+            "tests.test_tag_out.ClearRefusalTests.test_a_tag_already_cleared_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_tag_the_ledger_does_not_hold_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_a_voided_or_ended_clearing_dispatch_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_an_order_not_commenced_is_refused",
+            "tests.test_tag_out.ClearRefusalTests.test_distinct_subagents_on_the_two_dispatches_clear",
+            "tests.test_tag_out.ClearReviewTests.test_a_blocked_orders_refusal_shows_though_the_restorer_has_ended",
+            "tests.test_tag_out.ClearReviewTests.test_an_out_of_position_clear_reads_the_refutations_of_its_order",
+            "tests.test_tag_out.ClearReviewTests.test_the_refutations_are_read_only_when_a_block_is_booked",
+            "tests.test_tag_out.ClearTests.test_a_clear_in_position_books_the_clear_and_the_tag_reads_closed",
+            "tests.test_tag_out.ClearTests.test_a_cleared_tag_frees_its_surface_for_a_new_issue",
+            "tests.test_tag_out.ClearanceRefusalTests.test_a_clearance_already_authorized_is_refused",
+            "tests.test_tag_out.OutOfPositionTests.test_a_position_found_other_than_the_hung_one_blocks_the_order",
+            "tests.test_tag_out.OutOfPositionTests.test_an_unreadable_acceptance_history_still_blocks_and_says_so",
+            "tests.test_tag_out.OutOfPositionTests.test_the_block_carries_the_acceptance_runtimes_refutations",
+            "tests.test_tag_out.OutOfPositionTests.test_the_block_is_worded_by_the_runtime_from_the_tag_and_both_positions",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_prompt_in_content_blocks_reads_its_text_blocks_alone",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch",
+            "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_an_ended_dispatch_no_longer_holds_the_undispatched_subagent",
+            "tests.test_tag_out.ClearanceLogTests.test_a_malformed_clearance_row_is_refused_with_its_void_not_a_crash",
+            "tests.test_tag_out.ClearanceTests.test_a_clearance_is_still_open_until_its_clear",
+            "tests.test_tag_out.ClearanceTests.test_a_clearance_marks_the_repair_activity_not_available",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused"
+          ]
+        },
+        {
+          "label": "work_package_run.py:record_dispatch_end:753:7 if forced false",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch"
+          ]
+        },
+        {
+          "label": "work_package_run.py:record_dispatch_end:747:8 early return removed",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -22498,7 +22755,16 @@
           ]
         },
         {
-          "label": "work_package_run.py:record_dispatch_end:746:11 if forced true",
+          "label": "work_package_run.py:record_dispatch_end:754:8 early return removed",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch"
+          ]
+        },
+        {
+          "label": "work_package_run.py:record_dispatch_end:756:11 if forced true",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -22507,7 +22773,7 @@
           ]
         },
         {
-          "label": "work_package_run.py:record_dispatch_end:746:11 if forced false",
+          "label": "work_package_run.py:record_dispatch_end:756:11 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -22516,7 +22782,23 @@
           ]
         },
         {
-          "label": "work_package_run.py:record_dispatch_end:747:12 early return removed",
+          "label": "work_package_run.py:record_dispatch_end:751:11 filter forced true",
+          "outcome": "survived",
+          "reason": "",
+          "failure_class": "none",
+          "failing_tests": []
+        },
+        {
+          "label": "work_package_run.py:record_dispatch_end:751:11 filter forced false",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch"
+          ]
+        },
+        {
+          "label": "work_package_run.py:record_dispatch_end:757:12 early return removed",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -22571,13 +22853,18 @@
             "tests.test_tag_out.UnendedDispatchTests.test_a_live_hanging_dispatch_refuses_the_clearance",
             "tests.test_tag_out.UnendedDispatchTests.test_a_voided_hanging_dispatch_reads_over_by_its_void",
             "tests.test_dispatch_stamp_hook.OutOfService.test_the_stamp_holds_with_the_alarms_off",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_foreground_return_after_its_end_still_books_the_claim",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_prompt_in_content_blocks_reads_its_text_blocks_alone",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_booked_dispatch_stamps_its_intended_root",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_prompt_given_as_content_blocks_is_read",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_root_with_shell_characters_survives_the_prefix",
+            "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_an_ended_dispatch_no_longer_holds_the_undispatched_subagent",
             "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_once_claimed_the_undispatched_subagent_is_held_to_the_project",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_tag_whose_order_is_blocked_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_tag_whose_order_is_not_frozen_is_refused",
@@ -22606,8 +22893,7 @@
           "reason": "",
           "failure_class": "assertion",
           "failing_tests": [
-            "tests.test_dispatch_stamp_hook.TheEnd.test_no_end_for_a_prompt_naming_no_live_dispatch",
-            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused"
+            "tests.test_dispatch_stamp_hook.TheEnd.test_no_end_for_a_prompt_naming_no_live_dispatch"
           ]
         },
         {
@@ -22616,8 +22902,7 @@
           "reason": "",
           "failure_class": "assertion",
           "failing_tests": [
-            "tests.test_dispatch_stamp_hook.TheEnd.test_no_end_for_a_prompt_naming_no_live_dispatch",
-            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_the_ledger_does_not_hold_live_is_refused"
+            "tests.test_dispatch_stamp_hook.TheEnd.test_no_end_for_a_prompt_naming_no_live_dispatch"
           ]
         },
         {
@@ -22681,13 +22966,18 @@
             "tests.test_tag_out.UnendedDispatchTests.test_a_live_hanging_dispatch_refuses_the_clearance",
             "tests.test_tag_out.UnendedDispatchTests.test_a_voided_hanging_dispatch_reads_over_by_its_void",
             "tests.test_dispatch_stamp_hook.OutOfService.test_the_stamp_holds_with_the_alarms_off",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_foreground_return_after_its_end_still_books_the_claim",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_prompt_in_content_blocks_reads_its_text_blocks_alone",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_booked_dispatch_stamps_its_intended_root",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_prompt_given_as_content_blocks_is_read",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_root_with_shell_characters_survives_the_prefix",
+            "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_an_ended_dispatch_no_longer_holds_the_undispatched_subagent",
             "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_once_claimed_the_undispatched_subagent_is_held_to_the_project",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_tag_whose_order_is_blocked_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_tag_whose_order_is_not_frozen_is_refused",
@@ -22793,13 +23083,18 @@
             "tests.test_tag_out.UnendedDispatchTests.test_a_live_hanging_dispatch_refuses_the_clearance",
             "tests.test_tag_out.UnendedDispatchTests.test_a_voided_hanging_dispatch_reads_over_by_its_void",
             "tests.test_dispatch_stamp_hook.OutOfService.test_the_stamp_holds_with_the_alarms_off",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_foreground_return_after_its_end_still_books_the_claim",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_prompt_in_content_blocks_reads_its_text_blocks_alone",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_booked_dispatch_stamps_its_intended_root",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_prompt_given_as_content_blocks_is_read",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_root_with_shell_characters_survives_the_prefix",
+            "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_an_ended_dispatch_no_longer_holds_the_undispatched_subagent",
             "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_once_claimed_the_undispatched_subagent_is_held_to_the_project",
             "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_role_is_not_repair_is_refused",
+            "tests.test_tag_out.HangRefusalTests.test_a_dispatch_whose_subagent_has_ended_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_repair_dispatch_on_another_order_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_tag_whose_order_is_blocked_is_refused",
             "tests.test_tag_out.HangRefusalTests.test_a_tag_whose_order_is_not_frozen_is_refused",
@@ -22835,11 +23130,15 @@
             "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_a_dispatch_booked_twice_with_different_roots",
             "tests.test_dispatch_stamp_hook.OutOfService.test_the_stamp_holds_with_the_alarms_off",
             "tests.test_dispatch_stamp_hook.TheClaim.test_a_dispatched_subagents_gz_call_books_its_claim_once",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_foreground_return_after_its_end_still_books_the_claim",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_prompt_in_content_blocks_reads_its_text_blocks_alone",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_booked_dispatch_stamps_its_intended_root",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_prompt_given_as_content_blocks_is_read",
-            "tests.test_dispatch_stamp_hook.TheStamp.test_a_root_with_shell_characters_survives_the_prefix"
+            "tests.test_dispatch_stamp_hook.TheStamp.test_a_root_with_shell_characters_survives_the_prefix",
+            "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_an_ended_dispatch_no_longer_holds_the_undispatched_subagent"
           ]
         },
         {
@@ -22909,13 +23208,79 @@
       ],
       "follow_ups": [
         {
-          "label": "work_package_run.py:dispatch_over:765:7 if forced true",
+          "label": "work_package_run.py:dispatch_over:775:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
-          "killed_by": "tests.test_tag_out.ClearRefusalTests.test_a_clearing_dispatch_whose_role_is_not_restoration_is_refused",
+          "killed_by": "tests.test_dispatch_stamp_hook.OutOfService.test_the_stamp_holds_with_the_alarms_off",
           "tried": [
             {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_blocked_order_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_clear_not_stamped_with_the_dispatch_it_names_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_clear_with_no_mx_session_open_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_clearing_dispatch_whose_role_is_not_restoration_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_position_found_outside_the_ruled_set_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_restoration_dispatch_on_another_order_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_subagent_that_claimed_the_hanging_dispatch_is_refused_the_clear",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
               "test": "tests.test_tag_out.ClearRefusalTests.test_a_tag_already_cleared_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_tag_the_ledger_does_not_hold_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_voided_or_ended_clearing_dispatch_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_an_order_not_commenced_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_distinct_subagents_on_the_two_dispatches_clear",
               "baseline_green": true,
               "outcome": "inconclusive",
               "failure_class": "error"
@@ -22951,7 +23316,91 @@
               "failure_class": "error"
             },
             {
+              "test": "tests.test_tag_out.ClearanceLogTests.test_a_malformed_clearance_row_is_refused_with_its_void_not_a_crash",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearanceRefusalTests.test_a_blocked_order_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearanceRefusalTests.test_a_clearance_already_authorized_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearanceRefusalTests.test_a_clearance_with_no_mx_session_open_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearanceRefusalTests.test_a_tag_the_ledger_does_not_hold_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearanceRefusalTests.test_an_order_not_commenced_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearanceTests.test_a_clearance_is_still_open_until_its_clear",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearanceTests.test_a_clearance_marks_the_repair_activity_not_available",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.FrozenClearanceTests.test_a_frozen_orders_hung_tag_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.HangRefusalTests.test_a_tag_already_hung_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.HangTests.test_a_hang_copies_the_issue_and_records_its_dispatch_and_holder",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.HungTagLogTests.test_a_closed_orders_hung_tag_still_holds_its_surface",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.HungTagLogTests.test_a_hung_tag_reads_open_after_its_order_closes",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
               "test": "tests.test_tag_out.OutOfPositionTests.test_a_position_found_other_than_the_hung_one_blocks_the_order",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.OutOfPositionTests.test_an_unreadable_acceptance_history_still_blocks_and_says_so",
               "baseline_green": true,
               "outcome": "inconclusive",
               "failure_class": "error"
@@ -22969,19 +23418,25 @@
               "failure_class": "error"
             },
             {
-              "test": "tests.commands.test_wp_tag.TagClearWiringTests.test_an_out_of_position_clear_exits_3_with_the_order_blocked",
+              "test": "tests.test_tag_out.UnauthorizedClearTests.test_a_tag_whose_clearance_is_not_authorized_is_refused",
               "baseline_green": true,
               "outcome": "inconclusive",
               "failure_class": "error"
             },
             {
-              "test": "tests.commands.test_wp_tag.TagClearWiringTests.test_an_unreadable_acceptance_history_is_named_in_the_block",
+              "test": "tests.test_tag_out.UnendedDispatchTests.test_a_live_hanging_dispatch_refuses_the_clearance",
               "baseline_green": true,
               "outcome": "inconclusive",
               "failure_class": "error"
             },
             {
-              "test": "tests.test_tag_out.ClearRefusalTests.test_a_clearing_dispatch_whose_role_is_not_restoration_is_refused",
+              "test": "tests.test_tag_out.UnendedDispatchTests.test_a_voided_hanging_dispatch_reads_over_by_its_void",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_dispatch_stamp_hook.OutOfService.test_the_stamp_holds_with_the_alarms_off",
               "baseline_green": true,
               "outcome": "killed",
               "failure_class": "assertion"
@@ -22989,10 +23444,10 @@
           ]
         },
         {
-          "label": "work_package_run.py:dispatch_over:765:7 if forced false",
+          "label": "work_package_run.py:dispatch_over:775:7 if forced false",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
-          "killed_by": "tests.test_tag_out.ClearanceTests.test_a_clearance_is_still_open_until_its_clear",
+          "killed_by": "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
           "tried": [
             {
               "test": "tests.test_tag_out.ClearRefusalTests.test_a_blocked_order_is_refused",
@@ -23127,7 +23582,7 @@
               "failure_class": "error"
             },
             {
-              "test": "tests.test_tag_out.ClearanceTests.test_a_clearance_is_still_open_until_its_clear",
+              "test": "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
               "baseline_green": true,
               "outcome": "killed",
               "failure_class": "assertion"
@@ -23135,10 +23590,10 @@
           ]
         },
         {
-          "label": "work_package_run.py:dispatch_over:766:8 early return removed",
+          "label": "work_package_run.py:dispatch_over:776:8 early return removed",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
-          "killed_by": "tests.test_tag_out.ClearanceTests.test_a_clearance_is_still_open_until_its_clear",
+          "killed_by": "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
           "tried": [
             {
               "test": "tests.test_tag_out.ClearRefusalTests.test_a_blocked_order_is_refused",
@@ -23273,7 +23728,7 @@
               "failure_class": "error"
             },
             {
-              "test": "tests.test_tag_out.ClearanceTests.test_a_clearance_is_still_open_until_its_clear",
+              "test": "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
               "baseline_green": true,
               "outcome": "killed",
               "failure_class": "assertion"
@@ -23281,13 +23736,79 @@
           ]
         },
         {
-          "label": "work_package_run.py:dispatch_over:767:23 ifexp forced true",
+          "label": "work_package_run.py:dispatch_over:777:23 ifexp forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
-          "killed_by": "tests.test_tag_out.ClearRefusalTests.test_a_clearing_dispatch_whose_role_is_not_restoration_is_refused",
+          "killed_by": "tests.test_dispatch_stamp_hook.OutOfService.test_the_stamp_holds_with_the_alarms_off",
           "tried": [
             {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_blocked_order_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_clear_not_stamped_with_the_dispatch_it_names_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_clear_with_no_mx_session_open_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_clearing_dispatch_whose_role_is_not_restoration_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_position_found_outside_the_ruled_set_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_restoration_dispatch_on_another_order_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_subagent_that_claimed_the_hanging_dispatch_is_refused_the_clear",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
               "test": "tests.test_tag_out.ClearRefusalTests.test_a_tag_already_cleared_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_tag_the_ledger_does_not_hold_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_voided_or_ended_clearing_dispatch_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_an_order_not_commenced_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_distinct_subagents_on_the_two_dispatches_clear",
               "baseline_green": true,
               "outcome": "inconclusive",
               "failure_class": "error"
@@ -23323,7 +23844,91 @@
               "failure_class": "error"
             },
             {
+              "test": "tests.test_tag_out.ClearanceLogTests.test_a_malformed_clearance_row_is_refused_with_its_void_not_a_crash",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearanceRefusalTests.test_a_blocked_order_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearanceRefusalTests.test_a_clearance_already_authorized_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearanceRefusalTests.test_a_clearance_with_no_mx_session_open_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearanceRefusalTests.test_a_tag_the_ledger_does_not_hold_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearanceRefusalTests.test_an_order_not_commenced_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearanceTests.test_a_clearance_is_still_open_until_its_clear",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearanceTests.test_a_clearance_marks_the_repair_activity_not_available",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.FrozenClearanceTests.test_a_frozen_orders_hung_tag_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.HangRefusalTests.test_a_tag_already_hung_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.HangTests.test_a_hang_copies_the_issue_and_records_its_dispatch_and_holder",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.HungTagLogTests.test_a_closed_orders_hung_tag_still_holds_its_surface",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.HungTagLogTests.test_a_hung_tag_reads_open_after_its_order_closes",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
               "test": "tests.test_tag_out.OutOfPositionTests.test_a_position_found_other_than_the_hung_one_blocks_the_order",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.OutOfPositionTests.test_an_unreadable_acceptance_history_still_blocks_and_says_so",
               "baseline_green": true,
               "outcome": "inconclusive",
               "failure_class": "error"
@@ -23341,19 +23946,25 @@
               "failure_class": "error"
             },
             {
-              "test": "tests.commands.test_wp_tag.TagClearWiringTests.test_an_out_of_position_clear_exits_3_with_the_order_blocked",
+              "test": "tests.test_tag_out.UnauthorizedClearTests.test_a_tag_whose_clearance_is_not_authorized_is_refused",
               "baseline_green": true,
               "outcome": "inconclusive",
               "failure_class": "error"
             },
             {
-              "test": "tests.commands.test_wp_tag.TagClearWiringTests.test_an_unreadable_acceptance_history_is_named_in_the_block",
+              "test": "tests.test_tag_out.UnendedDispatchTests.test_a_live_hanging_dispatch_refuses_the_clearance",
               "baseline_green": true,
               "outcome": "inconclusive",
               "failure_class": "error"
             },
             {
-              "test": "tests.test_tag_out.ClearRefusalTests.test_a_clearing_dispatch_whose_role_is_not_restoration_is_refused",
+              "test": "tests.test_tag_out.UnendedDispatchTests.test_a_voided_hanging_dispatch_reads_over_by_its_void",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_dispatch_stamp_hook.OutOfService.test_the_stamp_holds_with_the_alarms_off",
               "baseline_green": true,
               "outcome": "killed",
               "failure_class": "assertion"
@@ -23361,7 +23972,7 @@
           ]
         },
         {
-          "label": "work_package_run.py:dispatch_over:767:23 ifexp forced false",
+          "label": "work_package_run.py:dispatch_over:777:23 ifexp forced false",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_tag_out.UnendedDispatchTests.test_a_voided_hanging_dispatch_reads_over_by_its_void",
@@ -23375,7 +23986,153 @@
           ]
         },
         {
-          "label": "work_package_run.py:record_dispatch_end:743:7 if forced true",
+          "label": "work_package_run.py:record_dispatch_end:746:7 if forced true",
+          "broad_outcome": "inconclusive",
+          "outcome": "killed",
+          "killed_by": "tests.test_dispatch_stamp_hook.TheEnd.test_a_prompt_in_content_blocks_reads_its_text_blocks_alone",
+          "tried": [
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_blocked_order_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_clear_not_stamped_with_the_dispatch_it_names_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_clear_with_no_mx_session_open_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_clearing_dispatch_whose_role_is_not_restoration_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_position_found_outside_the_ruled_set_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_restoration_dispatch_on_another_order_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_subagent_that_claimed_the_hanging_dispatch_is_refused_the_clear",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_tag_already_cleared_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_tag_the_ledger_does_not_hold_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_a_voided_or_ended_clearing_dispatch_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_an_order_not_commenced_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearRefusalTests.test_distinct_subagents_on_the_two_dispatches_clear",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearReviewTests.test_a_blocked_orders_refusal_shows_though_the_restorer_has_ended",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearReviewTests.test_an_out_of_position_clear_reads_the_refutations_of_its_order",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearReviewTests.test_the_refutations_are_read_only_when_a_block_is_booked",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearTests.test_a_clear_in_position_books_the_clear_and_the_tag_reads_closed",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearTests.test_a_cleared_tag_frees_its_surface_for_a_new_issue",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.ClearanceRefusalTests.test_a_clearance_already_authorized_is_refused",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.OutOfPositionTests.test_a_position_found_other_than_the_hung_one_blocks_the_order",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.OutOfPositionTests.test_an_unreadable_acceptance_history_still_blocks_and_says_so",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.OutOfPositionTests.test_the_block_carries_the_acceptance_runtimes_refutations",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_tag_out.OutOfPositionTests.test_the_block_is_worded_by_the_runtime_from_the_tag_and_both_positions",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_dispatch_stamp_hook.TheEnd.test_a_prompt_in_content_blocks_reads_its_text_blocks_alone",
+              "baseline_green": true,
+              "outcome": "killed",
+              "failure_class": "assertion"
+            }
+          ]
+        },
+        {
+          "label": "work_package_run.py:record_dispatch_end:753:7 if forced true",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_dispatch_stamp_hook.TheEnd.test_a_prompt_in_content_blocks_reads_its_text_blocks_alone",
@@ -24654,8 +25411,10 @@
     },
     {
       "source": "src/gzkit/dispatch_stamp.py",
+      "tree": "bdfb4313ec347aacc34d8312fae61c1ab4524dde",
       "scope": {
         "cited": [
+          "_bind",
           "end_hook_output"
         ],
         "helpers": [
@@ -24669,27 +25428,111 @@
         "tests.test_hooks"
       ],
       "baseline_green": true,
-      "baseline_tests_run": 152,
+      "baseline_tests_run": 157,
       "source_restored": true,
       "counts": {
-        "killed": 22,
+        "killed": 26,
         "survived": 2,
         "invalid": 0,
-        "inconclusive": 4
+        "inconclusive": 7
       },
       "mutants": [
         {
-          "label": "dispatch_stamp.py:end_hook_output:1091:7 if forced true",
+          "label": "dispatch_stamp.py:_bind:964:7 if forced true",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_dispatch_stamp_hook.TheClaim.test_a_dispatched_subagents_gz_call_books_its_claim_once",
+            "tests.test_dispatch_stamp_hook.TheClaim.test_the_agent_tools_return_books_the_claim",
+            "tests.test_dispatch_stamp_hook.OutOfService.test_the_stamp_holds_with_the_alarms_off",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_foreground_return_after_its_end_still_books_the_claim",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch",
+            "tests.test_dispatch_stamp_hook.TheStamp.test_a_booked_dispatch_stamps_its_intended_root",
+            "tests.test_dispatch_stamp_hook.TheStamp.test_a_prompt_given_as_content_blocks_is_read",
+            "tests.test_dispatch_stamp_hook.TheStamp.test_a_root_with_shell_characters_survives_the_prefix",
+            "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_once_claimed_the_undispatched_subagent_is_held_to_the_project"
+          ]
+        },
+        {
+          "label": "dispatch_stamp.py:_bind:964:7 if forced false",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_dispatch_stamp_hook.TheClaim.test_no_claim_for_a_prompt_naming_no_booked_dispatch",
+            "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_a_dispatch_booked_twice_with_different_roles",
+            "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_a_dispatch_booked_twice_with_different_roots",
+            "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_a_dispatch_the_ledger_does_not_hold"
+          ]
+        },
+        {
+          "label": "dispatch_stamp.py:_bind:962:4 handler re-raises",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_an_unreadable_ledger"
+          ]
+        },
+        {
+          "label": "dispatch_stamp.py:_bind:965:8 early return removed",
+          "outcome": "inconclusive",
+          "reason": "the run did not report a clean assertion failure",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.test_dispatch_stamp_hook.TheClaim.test_no_claim_for_a_prompt_naming_no_booked_dispatch",
+            "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_a_dispatch_booked_twice_with_different_roles",
+            "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_a_dispatch_booked_twice_with_different_roots",
+            "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_a_dispatch_the_ledger_does_not_hold"
+          ]
+        },
+        {
+          "label": "dispatch_stamp.py:_bind:968:17 ifexp forced true",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_dispatch_stamp_hook.OutOfService.test_the_stamp_holds_with_the_alarms_off",
+            "tests.test_dispatch_stamp_hook.TheStamp.test_a_booked_dispatch_stamps_its_intended_root",
+            "tests.test_dispatch_stamp_hook.TheStamp.test_a_prompt_given_as_content_blocks_is_read",
+            "tests.test_dispatch_stamp_hook.TheStamp.test_a_root_with_shell_characters_survives_the_prefix"
+          ]
+        },
+        {
+          "label": "dispatch_stamp.py:_bind:968:17 ifexp forced false",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root"
+          ]
+        },
+        {
+          "label": "dispatch_stamp.py:_bind:963:8 early return removed",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_an_unreadable_ledger"
+          ]
+        },
+        {
+          "label": "dispatch_stamp.py:end_hook_output:1107:7 if forced true",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
           "failing_tests": [
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_prompt_in_content_blocks_reads_its_text_blocks_alone",
-            "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once"
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch",
+            "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_an_ended_dispatch_no_longer_holds_the_undispatched_subagent"
           ]
         },
         {
-          "label": "dispatch_stamp.py:end_hook_output:1091:7 if forced false",
+          "label": "dispatch_stamp.py:end_hook_output:1107:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -24698,17 +25541,20 @@
           ]
         },
         {
-          "label": "dispatch_stamp.py:end_hook_output:1094:7 if forced true",
+          "label": "dispatch_stamp.py:end_hook_output:1110:7 if forced true",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
           "failing_tests": [
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_prompt_in_content_blocks_reads_its_text_blocks_alone",
-            "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once"
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch",
+            "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_an_ended_dispatch_no_longer_holds_the_undispatched_subagent"
           ]
         },
         {
-          "label": "dispatch_stamp.py:end_hook_output:1094:7 if forced false",
+          "label": "dispatch_stamp.py:end_hook_output:1110:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -24717,17 +25563,20 @@
           ]
         },
         {
-          "label": "dispatch_stamp.py:end_hook_output:1097:7 if forced true",
+          "label": "dispatch_stamp.py:end_hook_output:1113:7 if forced true",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
           "failing_tests": [
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_prompt_in_content_blocks_reads_its_text_blocks_alone",
-            "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once"
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch",
+            "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_an_ended_dispatch_no_longer_holds_the_undispatched_subagent"
           ]
         },
         {
-          "label": "dispatch_stamp.py:end_hook_output:1097:7 if forced false",
+          "label": "dispatch_stamp.py:end_hook_output:1113:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -24738,24 +25587,27 @@
           ]
         },
         {
-          "label": "dispatch_stamp.py:end_hook_output:1102:7 if forced true",
+          "label": "dispatch_stamp.py:end_hook_output:1118:7 if forced true",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
           "failing_tests": [
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_prompt_in_content_blocks_reads_its_text_blocks_alone",
-            "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once"
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch",
+            "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_an_ended_dispatch_no_longer_holds_the_undispatched_subagent"
           ]
         },
         {
-          "label": "dispatch_stamp.py:end_hook_output:1102:7 if forced false",
+          "label": "dispatch_stamp.py:end_hook_output:1118:7 if forced false",
           "outcome": "survived",
           "reason": "",
           "failure_class": "none",
           "failing_tests": []
         },
         {
-          "label": "dispatch_stamp.py:end_hook_output:1092:8 early return removed",
+          "label": "dispatch_stamp.py:end_hook_output:1108:8 early return removed",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -24764,7 +25616,7 @@
           ]
         },
         {
-          "label": "dispatch_stamp.py:end_hook_output:1095:8 early return removed",
+          "label": "dispatch_stamp.py:end_hook_output:1111:8 early return removed",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -24773,7 +25625,7 @@
           ]
         },
         {
-          "label": "dispatch_stamp.py:end_hook_output:1098:8 early return removed",
+          "label": "dispatch_stamp.py:end_hook_output:1114:8 early return removed",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -24784,14 +25636,14 @@
           ]
         },
         {
-          "label": "dispatch_stamp.py:end_hook_output:1103:8 early return removed",
+          "label": "dispatch_stamp.py:end_hook_output:1119:8 early return removed",
           "outcome": "survived",
           "reason": "",
           "failure_class": "none",
           "failing_tests": []
         },
         {
-          "label": "dispatch_stamp.py:_first_record:855:4 handler re-raises",
+          "label": "dispatch_stamp.py:_first_record:861:4 handler re-raises",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -24803,7 +25655,7 @@
           ]
         },
         {
-          "label": "dispatch_stamp.py:_first_record:857:21 ifexp forced true",
+          "label": "dispatch_stamp.py:_first_record:863:21 ifexp forced true",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -24812,7 +25664,7 @@
           ]
         },
         {
-          "label": "dispatch_stamp.py:_first_record:857:21 ifexp forced false",
+          "label": "dispatch_stamp.py:_first_record:863:21 ifexp forced false",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -24821,18 +25673,22 @@
             "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_a_dispatch_the_ledger_does_not_hold",
             "tests.test_dispatch_stamp_hook.OutOfService.test_the_stamp_holds_with_the_alarms_off",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_prompt_in_content_blocks_reads_its_text_blocks_alone",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_voided_dispatch_is_stamped_no_root",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_booked_dispatch_stamps_its_intended_root",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_prompt_given_as_content_blocks_is_read",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_root_with_shell_characters_survives_the_prefix",
             "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_a_dispatch_whose_run_is_not_in_flight_does_not_count",
+            "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_an_ended_dispatch_no_longer_holds_the_undispatched_subagent",
             "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_an_unclaimed_dispatch_for_this_project_does_not_count",
             "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_it_is_stamped_with_the_project_root",
             "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_once_claimed_the_undispatched_subagent_is_held_to_the_project"
           ]
         },
         {
-          "label": "dispatch_stamp.py:_first_record:856:8 early return removed",
+          "label": "dispatch_stamp.py:_first_record:862:8 early return removed",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -24844,7 +25700,7 @@
           ]
         },
         {
-          "label": "dispatch_stamp.py:_prompt_text:863:7 if forced true",
+          "label": "dispatch_stamp.py:_prompt_text:869:7 if forced true",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -24855,7 +25711,7 @@
           ]
         },
         {
-          "label": "dispatch_stamp.py:_prompt_text:863:7 if forced false",
+          "label": "dispatch_stamp.py:_prompt_text:869:7 if forced false",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -24868,13 +25724,17 @@
             "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_a_prompt_that_mentions_the_dispatch_line_in_prose",
             "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_two_different_dispatch_lines",
             "tests.test_dispatch_stamp_hook.OutOfService.test_the_stamp_holds_with_the_alarms_off",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_voided_dispatch_is_stamped_no_root",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_booked_dispatch_stamps_its_intended_root",
-            "tests.test_dispatch_stamp_hook.TheStamp.test_a_root_with_shell_characters_survives_the_prefix"
+            "tests.test_dispatch_stamp_hook.TheStamp.test_a_root_with_shell_characters_survives_the_prefix",
+            "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_an_ended_dispatch_no_longer_holds_the_undispatched_subagent"
           ]
         },
         {
-          "label": "dispatch_stamp.py:_prompt_text:865:7 if forced true",
+          "label": "dispatch_stamp.py:_prompt_text:871:7 if forced true",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -24883,7 +25743,7 @@
           ]
         },
         {
-          "label": "dispatch_stamp.py:_prompt_text:865:7 if forced false",
+          "label": "dispatch_stamp.py:_prompt_text:871:7 if forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -24893,7 +25753,7 @@
           ]
         },
         {
-          "label": "dispatch_stamp.py:_prompt_text:862:40 ifexp forced true",
+          "label": "dispatch_stamp.py:_prompt_text:868:40 ifexp forced true",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -24902,7 +25762,7 @@
           ]
         },
         {
-          "label": "dispatch_stamp.py:_prompt_text:862:40 ifexp forced false",
+          "label": "dispatch_stamp.py:_prompt_text:868:40 ifexp forced false",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -24916,14 +25776,18 @@
             "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_two_different_dispatch_lines",
             "tests.test_dispatch_stamp_hook.OutOfService.test_the_stamp_holds_with_the_alarms_off",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_prompt_in_content_blocks_reads_its_text_blocks_alone",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_voided_dispatch_is_stamped_no_root",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_booked_dispatch_stamps_its_intended_root",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_prompt_given_as_content_blocks_is_read",
-            "tests.test_dispatch_stamp_hook.TheStamp.test_a_root_with_shell_characters_survives_the_prefix"
+            "tests.test_dispatch_stamp_hook.TheStamp.test_a_root_with_shell_characters_survives_the_prefix",
+            "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_an_ended_dispatch_no_longer_holds_the_undispatched_subagent"
           ]
         },
         {
-          "label": "dispatch_stamp.py:_prompt_text:864:8 early return removed",
+          "label": "dispatch_stamp.py:_prompt_text:870:8 early return removed",
           "outcome": "inconclusive",
           "reason": "the run did not report a clean assertion failure",
           "failure_class": "error",
@@ -24936,13 +25800,17 @@
             "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_a_prompt_that_mentions_the_dispatch_line_in_prose",
             "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_two_different_dispatch_lines",
             "tests.test_dispatch_stamp_hook.OutOfService.test_the_stamp_holds_with_the_alarms_off",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_a_voided_dispatch_is_stamped_no_root",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_booked_dispatch_stamps_its_intended_root",
-            "tests.test_dispatch_stamp_hook.TheStamp.test_a_root_with_shell_characters_survives_the_prefix"
+            "tests.test_dispatch_stamp_hook.TheStamp.test_a_root_with_shell_characters_survives_the_prefix",
+            "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_an_ended_dispatch_no_longer_holds_the_undispatched_subagent"
           ]
         },
         {
-          "label": "dispatch_stamp.py:_prompt_text:867:8 early return removed",
+          "label": "dispatch_stamp.py:_prompt_text:873:8 early return removed",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -24952,7 +25820,7 @@
           ]
         },
         {
-          "label": "dispatch_stamp.py:_prompt_text:866:52 filter forced true",
+          "label": "dispatch_stamp.py:_prompt_text:872:52 filter forced true",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -24961,7 +25829,7 @@
           ]
         },
         {
-          "label": "dispatch_stamp.py:_prompt_text:866:52 filter forced false",
+          "label": "dispatch_stamp.py:_prompt_text:872:52 filter forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -24971,7 +25839,7 @@
           ]
         },
         {
-          "label": "dispatch_stamp.py:_prompt_text:867:52 filter forced true",
+          "label": "dispatch_stamp.py:_prompt_text:873:52 filter forced true",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -24980,7 +25848,7 @@
           ]
         },
         {
-          "label": "dispatch_stamp.py:_prompt_text:867:52 filter forced false",
+          "label": "dispatch_stamp.py:_prompt_text:873:52 filter forced false",
           "outcome": "killed",
           "reason": "",
           "failure_class": "assertion",
@@ -24992,7 +25860,73 @@
       ],
       "follow_ups": [
         {
-          "label": "dispatch_stamp.py:_first_record:857:21 ifexp forced false",
+          "label": "dispatch_stamp.py:_bind:964:7 if forced true",
+          "broad_outcome": "inconclusive",
+          "outcome": "killed",
+          "killed_by": "tests.test_dispatch_stamp_hook.OutOfService.test_the_stamp_holds_with_the_alarms_off",
+          "tried": [
+            {
+              "test": "tests.test_dispatch_stamp_hook.TheClaim.test_a_dispatched_subagents_gz_call_books_its_claim_once",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_dispatch_stamp_hook.TheClaim.test_the_agent_tools_return_books_the_claim",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_dispatch_stamp_hook.OutOfService.test_the_stamp_holds_with_the_alarms_off",
+              "baseline_green": true,
+              "outcome": "killed",
+              "failure_class": "assertion"
+            }
+          ]
+        },
+        {
+          "label": "dispatch_stamp.py:_bind:964:7 if forced false",
+          "broad_outcome": "inconclusive",
+          "outcome": "killed",
+          "killed_by": "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_a_dispatch_booked_twice_with_different_roles",
+          "tried": [
+            {
+              "test": "tests.test_dispatch_stamp_hook.TheClaim.test_no_claim_for_a_prompt_naming_no_booked_dispatch",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_a_dispatch_booked_twice_with_different_roles",
+              "baseline_green": true,
+              "outcome": "killed",
+              "failure_class": "assertion"
+            }
+          ]
+        },
+        {
+          "label": "dispatch_stamp.py:_bind:965:8 early return removed",
+          "broad_outcome": "inconclusive",
+          "outcome": "killed",
+          "killed_by": "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_a_dispatch_booked_twice_with_different_roles",
+          "tried": [
+            {
+              "test": "tests.test_dispatch_stamp_hook.TheClaim.test_no_claim_for_a_prompt_naming_no_booked_dispatch",
+              "baseline_green": true,
+              "outcome": "inconclusive",
+              "failure_class": "error"
+            },
+            {
+              "test": "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_a_dispatch_booked_twice_with_different_roles",
+              "baseline_green": true,
+              "outcome": "killed",
+              "failure_class": "assertion"
+            }
+          ]
+        },
+        {
+          "label": "dispatch_stamp.py:_first_record:863:21 ifexp forced false",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_a_dispatch_the_ledger_does_not_hold",
@@ -25012,7 +25946,7 @@
           ]
         },
         {
-          "label": "dispatch_stamp.py:_prompt_text:863:7 if forced false",
+          "label": "dispatch_stamp.py:_prompt_text:869:7 if forced false",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_a_dispatch_booked_twice_with_different_roles",
@@ -25032,7 +25966,7 @@
           ]
         },
         {
-          "label": "dispatch_stamp.py:_prompt_text:862:40 ifexp forced false",
+          "label": "dispatch_stamp.py:_prompt_text:868:40 ifexp forced false",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_a_dispatch_booked_twice_with_different_roles",
@@ -25052,7 +25986,7 @@
           ]
         },
         {
-          "label": "dispatch_stamp.py:_prompt_text:864:8 early return removed",
+          "label": "dispatch_stamp.py:_prompt_text:870:8 early return removed",
           "broad_outcome": "inconclusive",
           "outcome": "killed",
           "killed_by": "tests.test_dispatch_stamp_hook.NoRootIsStamped.test_a_dispatch_booked_twice_with_different_roles",
