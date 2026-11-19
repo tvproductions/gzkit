@@ -775,7 +775,8 @@ def open_unclaimed_dispatches(ledger: Ledger, project_root: str) -> list[str]:
     repair package stays initiated (RP-12 rulings 44 and 57), and a frozen order's
     counts, where a Repair dispatch is booked (ruling 108). While one is open, an
     undispatched subagent may be that dispatch's, its line lost, so it is held to no
-    root.
+    root. A dispatch claimed, voided or ended is closed: no new subagent can take one
+    whose subagent has stopped (ruling 161).
 
     Returns:
         Their dispatch ids, oldest first.
@@ -783,6 +784,7 @@ def open_unclaimed_dispatches(ledger: Ledger, project_root: str) -> list[str]:
     """
     claimed = {row.extra.get("dispatch_id") for row in ledger.query(event_type=_CLAIMED)}
     claimed |= _voided(ledger)
+    claimed |= {row.extra.get("dispatch_id") for row in ledger.query(event_type=_ENDED)}
     in_flight: dict[tuple[str, str], bool] = {}
     found: list[str] = []
     for row in ledger.query(event_type=_DISPATCHED):

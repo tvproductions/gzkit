@@ -942,8 +942,11 @@ def _bind(project_root: Path, dispatch_id: str, agent_id: str, source: str) -> s
         The root, or an empty string when the ledger cannot be read, holds no such
         dispatch, or reads it over: voided (ruling 118) or ended, since a subagent
         stopped can be resumed through SendMessage still carrying its dispatch line
-        (ruling 160), and is held as a void is. A claim that cannot be booked leaves
-        the dispatch open, which errs toward refusal (ruling 40).
+        (ruling 160), and is held as a void is. The claim is booked either way, so it
+        records what happened: a foreground subagent's stop books its end before the
+        Agent tool returns, and its claim still lands (ruling 161). A claim that
+        cannot be booked leaves the dispatch open, which errs toward refusal (ruling
+        40).
 
     """
     from gzkit.work_package_run import (  # noqa: PLC0415
@@ -958,11 +961,11 @@ def _bind(project_root: Path, dispatch_id: str, agent_id: str, source: str) -> s
         over = dispatch_over(ledger, dispatch_id)
     except OSError, ValueError:
         return ""
-    if record is None or over is not None:
+    if record is None:
         return ""
     with contextlib.suppress(OSError, ValueError):
         record_dispatch_claim(ledger, dispatch_id, agent_id, source)
-    return record.intended_root
+    return "" if over is not None else record.intended_root
 
 
 def _undispatched_root(project_root: Path) -> str:

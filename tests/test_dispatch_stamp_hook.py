@@ -580,9 +580,28 @@ class TheEnd(_Session):
         self._book()
         self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}")
         self._end(self._stopped())
-        claims = self._claims()
         self.assertEqual(self._stamped(), {STAMP_ROOT_ENV: "", STAMP_ID_ENV: _DISPATCH})
-        self.assertEqual(self._claims(), claims)  # an over dispatch takes no fresh claim
+        # ruling 161: the claim records what happened; the stamp alone holds it
+        self.assertEqual(
+            [(c["dispatch_id"], c["agent_id"]) for c in self._claims()], [(_DISPATCH, _AGENT)]
+        )
+
+    def test_a_foreground_return_after_its_end_still_books_the_claim(self) -> None:
+        """Ruling 161: a foreground subagent's stop books its end before the Agent tool returns.
+
+        The return's claim is booked all the same (ruling 40), so the dispatch reads
+        claimed, as it did before ruling 160 (§ The `SubagentStop` probe, run 2).
+        """
+        self._move("commenced")
+        self._book()
+        line = f"GZKIT-DISPATCH: {_DISPATCH}"
+        self._prompt(line)
+        self._end(self._stopped())
+        self.assertIsNone(_raised(lambda: claim_hook_output(self._returned(line), self.project)))
+        self.assertEqual(
+            [(c["dispatch_id"], c["agent_id"], c["source"]) for c in self._claims()],
+            [(_DISPATCH, _AGENT, "agent_returned")],
+        )
 
     def test_a_voided_dispatch_is_stamped_no_root(self) -> None:
         """Ruling 118: a killed dispatch ends by its void, and its subagent stamps no root."""
@@ -714,6 +733,20 @@ class TheUndispatchedSubagent(_Session):
             self.project,
         )
         self._prompt("Review this commit; no dispatch line.")
+        self.assertEqual(self._stamped()[STAMP_ROOT_ENV], self.project.as_posix())
+
+    def test_an_ended_dispatch_no_longer_holds_the_undispatched_subagent(self) -> None:
+        """Ruling 161: an ended dispatch is closed to ruling 40, as a voided one is.
+
+        No new subagent can take a dispatch whose subagent has stopped, so it no longer
+        holds an undispatched subagent at no root, whether or not its claim was booked.
+        """
+        self._move("commenced")
+        self._book()
+        self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}")
+        self._end(self._stopped())
+        self._prompt("Review this commit; no dispatch line.")
+        self.assertEqual(self._claims(), [])
         self.assertEqual(self._stamped()[STAMP_ROOT_ENV], self.project.as_posix())
 
     def test_an_accepted_package_is_still_in_flight(self) -> None:
