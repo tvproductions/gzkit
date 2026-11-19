@@ -675,6 +675,12 @@ class HangRefusalTests(_HangCase):
         with self.subTest(dispatch="voided"):
             self.assert_hang_refused("is not a live dispatch")
 
+    def test_a_dispatch_whose_subagent_has_ended_is_refused(self) -> None:
+        """Rulings 115 and 160: an ended dispatch is not live, as the hang row says."""
+        record_dispatch_end(self.ledger, self.dispatch, "a-repair")
+        refusal = self.assert_hang_refused("is not a live dispatch")
+        self.assertIn("(ended)", refusal)
+
     def test_a_dispatch_whose_role_is_not_repair_is_refused(self) -> None:
         """Rulings 6 and 109: a hang requires a Repair dispatch, the craftsman's position."""
         seated = {role: self.seat_dispatch(role, _ORDER) for role in ("Restoration", "Implementer")}

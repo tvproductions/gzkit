@@ -441,10 +441,12 @@ def record_tag_hang(
             "issue`."
         )
     dispatch = find_dispatch(ledger, dispatch_id)
-    if dispatch is None:
+    over = dispatch_over(ledger, dispatch_id)
+    if dispatch is None or over is not None:
+        state = over or "not booked"
         _refuse(
-            f"Dispatch {dispatch_id} is not a live dispatch in the ledger, none booked or "
-            "voided, so the ledger says it may do nothing (RP-12 rulings 1 and 42). Have the "
+            f"Dispatch {dispatch_id} is not a live dispatch in the ledger ({state}), so the "
+            "ledger says it may do nothing (RP-12 rulings 1, 42, 115 and 160). Have the "
             f"coordinator book one: `uv run gz wp dispatch {issue.work_package} --order "
             f"{issue.order} --role {REPAIR} --model <tier>`."
         )
