@@ -307,6 +307,21 @@ exclude = [
 [tool.ty.terminal]
 error-on-warning = true
 
+# ty ships these rules off (`Default level: ignore` in `uv run ty explain rule`).
+# Operator ruling 2026-11-19, verbatim: "when ty introduces new rules and a
+# stricter posture, we go strict." Each rule the tree passes is on at error; the
+# ten that still report findings (2,586 on ty 0.0.107) join this table rule by
+# rule as each is repaired by root cause (gz-deps-upgrade step 9a).
+[tool.ty.rules]
+disjoint-cast = "error"
+division-by-zero = "error"
+invalid-legacy-positional-parameter = "error"
+mismatched-sentinel-name = "error"
+missing-direct-dependency = "error"
+possibly-missing-attribute = "error"
+possibly-missing-import = "error"
+unsupported-dynamic-base = "error"
+
 # behave ships no types and binds @given/@when/@then to placeholder objects a
 # checker cannot call; typings/behave-stubs types those three names, so the
 # step glue is checked like any other code (RO-9 tranche 4, replacing a

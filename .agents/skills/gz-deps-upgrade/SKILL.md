@@ -5,10 +5,10 @@ description: Use when the operator asks to upgrade deps, Python, uv, pyproject o
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-19
 model: haiku
 metadata:
-  skill-version: "1.6.0"
+  skill-version: "1.7.0"
 ---
 
 # gz deps-upgrade
@@ -129,9 +129,20 @@ order, not skipping the floor-bump or the verification step.
    ```
 
    Must end with `✓ All checks passed (full sweep).` Anything else is a failure — stop
-   and diagnose. Do **not** weaken floors to make the gate pass; pin the
-   offender at the previous-known-good version and file a GHI for the
-   migration.
+   and diagnose, then repair the code to the new version's posture. Never
+   lower a floor or pin a package back to pass the gate (operator ruling
+   2026-11-19, below).
+
+9a. **Adopt the new strictness.** A dependency that ships new rules or a
+    stricter posture is adopted strict (operator, 2026-11-19, verbatim:
+    *"when ty introduces new rules and a stricter posture, we go strict. this
+    is generally true of any updates (like with Pydantic). we want to move
+    forward with our depencies."*). For ty, list the rules it ships off with
+    `uv run ty explain rule` (`Default level: ignore`) and set each one the
+    tree passes to `"error"` under `[tool.ty.rules]` in `pyproject.toml`; a
+    rule with findings is repaired by root cause, rule by rule, never
+    suppressed in bulk. The same holds for a Pydantic or Ruff change of
+    behavior: move the code, not the version.
 
 10. **Emit canonical ARB unittest receipt** (per AGENTS.md § Attestation).
 
@@ -179,8 +190,9 @@ release notes if `gz check --full` fails after the upgrade):
 - `behave` minor bumps after long quiet periods
 - `pyinstaller` minor bumps (binary build path)
 
-Recovery posture: pin the offender, file a GHI for the migration, do not
-skip the upgrade for the rest of the surface.
+Recovery posture: move forward (step 9a). Repair the code to the new
+version; when the repair outgrows the pass, track it with a GHI and land the
+upgrade anyway, never holding a package at last-known-good.
 
 ## Validation
 
@@ -204,7 +216,7 @@ These thoughts mean STOP — you are about to ship a half-upgrade:
 | "I'll bump the floor to whatever — `>=4.0` covers 4.26 anyway" | The floor is a tested baseline, not a wish. Set it to what `uv lock` actually resolved, so future installs match the tested resolution. |
 | "Python is fine, no need to refresh the patch" | Patch releases ship CPython security fixes. `uv python pin <newest patch>` is one line and moves every consumer. |
 | "The skill is about deps, not uv itself" | uv IS the toolchain that resolves every dep. A pass that upgrades tools/lock on a stale uv is a half-upgrade running on an old resolver. `uv self update` is Step 1; skipping it is the bug this row exists to prevent. |
-| "If `gz check --full` fails, I'll just lower the floor" | Lowering a floor to mask a failure ships a known-broken upgrade. Pin the offender at last-known-good and file a GHI. |
+| "If `gz check --full` fails, I'll just lower the floor" | Lowering a floor or pinning back holds the project behind its dependencies. Repair the code to the new version (step 9a). |
 
 ## Red Flags
 
