@@ -586,6 +586,24 @@ class TheEnd(_Session):
             [(c["dispatch_id"], c["agent_id"]) for c in self._claims()], [(_DISPATCH, _AGENT)]
         )
 
+    def test_only_the_first_claimants_stop_ends_the_dispatch(self) -> None:
+        """Ruling 162: another agent prompted with the same line cannot end a claimed dispatch.
+
+        The inspection's probe: agent B's stop ended the dispatch and stripped A's root.
+        """
+        self._move("commenced")
+        self._book()
+        line = f"GZKIT-DISPATCH: {_DISPATCH}"
+        self._prompt(line)
+        root = self._stamped()[STAMP_ROOT_ENV]  # A claims by its stamp
+        self._prompt(line, agent="a-helper")
+        self._end(self._stopped(agent="a-helper"))
+        self.assertEqual(self._events("dispatch_ended"), [])
+        self._prompt(line)
+        self.assertEqual(self._stamped()[STAMP_ROOT_ENV], root)  # A keeps its root
+        self._end(self._stopped())
+        self.assertEqual([e["agent_id"] for e in self._events("dispatch_ended")], [_AGENT])
+
     def test_a_foreground_return_after_its_end_still_books_the_claim(self) -> None:
         """Ruling 161: a foreground subagent's stop books its end before the Agent tool returns.
 

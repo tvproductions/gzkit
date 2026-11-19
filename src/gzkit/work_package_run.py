@@ -733,14 +733,24 @@ def record_dispatch_end(
     No claim is required first: a foreground subagent's claim on the Agent tool's
     return is booked after its `SubagentStop` (§ The `SubagentStop` probe, run 2).
     A pair already booked is not booked again, read outside the ledger's append
-    lock as a claim is, so every reader takes the ends as a set.
+    lock as a claim is, so every reader takes the ends as a set. Once the dispatch is
+    claimed, only its first claimant's stop ends it: another agent prompted with the
+    same line would otherwise end it under its live subagent (ruling 162).
 
     Returns:
         The event booked, or None when the ledger holds no live dispatch of that id,
-        none booked or voided (ruling 118), or the pair is already booked.
+        none booked or voided (ruling 118), the stopping agent is not the dispatch's
+        first claimant, or the pair is already booked.
 
     """
     if find_dispatch(ledger, dispatch_id) is None:
+        return None
+    claimants = [
+        row.extra.get("agent_id")
+        for row in ledger.query(event_type=_CLAIMED)
+        if row.extra.get("dispatch_id") == dispatch_id
+    ]
+    if claimants and claimants[0] != agent_id:
         return None
     for row in ledger.query(event_type=_ENDED):
         if row.extra.get("dispatch_id") == dispatch_id and row.extra.get("agent_id") == agent_id:
