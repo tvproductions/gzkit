@@ -30,6 +30,7 @@ from gzkit.work_package_fence import (
 )
 from tests.commands.common import CliRunner, _quick_init
 from tests.mx.held import open_marker
+from tests.test_order_ledger import _raised
 
 _PACKAGE = "WP-01-loop"
 _OTHER = "WP-02-other"
@@ -299,8 +300,19 @@ class TestTheCommitGuard(_FenceCase):
     """The arm no tool choice evades: it reads the staged diff."""
 
     def _guard(self, staged: str = _BOTH_STAGED) -> int:
+        """Run the guard over a staged diff, asserting it answers and never crashes.
+
+        Returns:
+            The guard's exit code.
+
+        """
+        codes: list[int] = []
         with mock.patch.object(guards, "_run_git", return_value=staged):
-            return guards.forbid_post_authoring_src_commits(Path.cwd())
+            crash = _raised(
+                lambda: codes.append(guards.forbid_post_authoring_src_commits(Path.cwd()))
+            )
+        self.assertIsNone(crash)  # RP-12 ruling 156: a crash fails here, never errors
+        return codes[0]
 
     def test_a_blocked_package_refuses_a_production_commit(self) -> None:
         self._commence()
@@ -381,6 +393,67 @@ class TestTheGeneratedHook(_FenceCase):
                 errors="replace",
                 check=False,
             )
+
+    def _crashing_hook(self, rel_path: str, check: str) -> subprocess.CompletedProcess[str]:
+        """Run the hook as Claude Code does, the fence check named made to raise.
+
+        The check is replaced on its module before the script runs, which is how a
+        defect inside it would reach the hook; nothing in the fence is mocked.
+
+        Returns:
+            The hook's completed process.
+
+        """
+        payload = {
+            "cwd": str(Path.cwd()),
+            "tool_input": {"file_path": str(Path.cwd() / rel_path)},
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            script = Path(directory) / "pipeline-gate.py"
+            script.write_text(_pipeline_gate_script(), encoding="utf-8")
+            boot = (
+                "import runpy, sys, gzkit.pipeline_stage_fence as fence\n"
+                "def crash(*_):\n"
+                "    raise RuntimeError('a defect inside the fence check')\n"
+                f"setattr(fence, {check!r}, crash)\n"
+                "runpy.run_path(sys.argv[1], run_name='__main__')\n"
+            )
+            return subprocess.run(  # noqa: S603 - this interpreter and a script the test wrote
+                [sys.executable, "-c", boot, str(script)],
+                input=json.dumps(payload),
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+            )
+
+    def test_a_crashing_frozen_check_holds_the_write_under_the_marker(self) -> None:
+        # given an open MX marker, the one check above the demotion raising (ruling 157)
+        open_marker(Path.cwd())
+        # when
+        result = self._crashing_hook(_SOURCE, "frozen_order_write_refusal")
+        # then the write is held, exit 2, and the refusal names its cause and next step
+        self.assertEqual(result.returncode, 2, msg=result.stderr)
+        # output-contract: guardrail-feedback-prose, what failed, why, and the next step
+        self.assertIn("RuntimeError: a defect inside the fence check", result.stderr)
+        self.assertIn("RP-12 rulings 148 and 157", result.stderr)
+        self.assertIn("uv run gz validate --ledger", result.stderr)
+
+    def test_a_crashing_fence_check_holds_the_write_with_no_marker(self) -> None:
+        # given no MX marker and the full fence check raising (ruling 157)
+        # when
+        result = self._crashing_hook(_SOURCE, "work_package_write_refusal")
+        # then the write is held as under the marker
+        self.assertEqual(result.returncode, 2, msg=result.stderr)
+        self.assertIn("RuntimeError: a defect inside the fence check", result.stderr)
+
+    def test_a_crashing_check_still_leaves_tests_writable(self) -> None:
+        # given the full fence check raising
+        # when a test path is written, which no fence holds (ruling 145)
+        result = self._crashing_hook(_TEST, "work_package_write_refusal")
+        # then the write passes: the hold is for what the check would have judged
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
 
     def test_a_blocked_package_refuses_the_write_and_says_how_to_recover(self) -> None:
         self._commence()

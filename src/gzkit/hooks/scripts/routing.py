@@ -105,6 +105,10 @@ def _pipeline_gate_script() -> str:
             import re
             import sys
             from pathlib import Path
+            from typing import TYPE_CHECKING
+
+            if TYPE_CHECKING:
+                from collections.abc import Callable
 
 
             def resolve_repo_path(cwd: str, file_path: str) -> str | None:
@@ -177,6 +181,42 @@ def _pipeline_gate_script() -> str:
                     sys.exit(2)
 
 
+            def _fence_refusal(
+                check: Callable[[Path, str], str | None],
+                is_production_path: Callable[[str], bool],
+                project_root: Path,
+                rel_path: str,
+            ) -> str | None:
+                \"\"\"Run a fence check, holding a production write when the check itself raises.
+
+                A check that raises would exit this hook 1, which Claude Code reads as a
+                non-blocking error, so the write would land; the fence fails closed instead,
+                as on an unreadable ledger (RP-12 rulings 148 and 157).
+
+                Returns:
+                    The check's refusal; a hold naming the crash for a production path the
+                    check could not judge; or None.
+
+                \"\"\"
+                try:
+                    return check(project_root, rel_path)
+                except Exception as exc:  # a crash here must hold the write, never pass it
+                    if not is_production_path(rel_path):
+                        return None
+                    return (
+                        f"BLOCKED: `{rel_path}` is a production write.\\n\\n"
+                        f"WHY: the work-package fence check raised {type(exc).__name__}: {exc}, "
+                        "so no fence can be read; a crash here would let the write land, so it is "
+                        "held, failing closed as on an unreadable ledger (RP-12 rulings 148 and "
+                        "157).\\n\\n"
+                        "NEXT STEP: run `uv run gz validate --ledger`, repair what it names, and "
+                        "write again; if the ledger reads clean, the crash is a defect in the fence, "
+                        "filed through `/ghi-author`. Do not work around this gate (AGENTS.md § "
+                        "Behavior Rules: a blocking hook is diagnosed, never worked around). "
+                        "`tests/**` stays open."
+                    )
+
+
             def main() -> None:
                 \"\"\"Gate implementation writes until the pipeline is active.\"\"\"
                 try:
@@ -212,6 +252,7 @@ def _pipeline_gate_script() -> str:
                     # it, and this hook is the arm Bash writes bypass (GHI #844).
                     from gzkit.pipeline_stage_fence import (
                         frozen_order_write_refusal,
+                        is_production_path,
                         marker_stage,
                         post_authoring_message,
                         refuses_production_write,
@@ -233,7 +274,11 @@ def _pipeline_gate_script() -> str:
                 if _checkpoint is not None and _checkpoint.is_advisory(
                     "pipeline-gate", project_root
                 ):
-                    _refuse_if(frozen_order_write_refusal(project_root, rel_path))
+                    _refuse_if(
+                        _fence_refusal(
+                            frozen_order_write_refusal, is_production_path, project_root, rel_path
+                        )
+                    )
                     print(_checkpoint.demote_notice("pipeline-gate"), file=sys.stderr)
                     sys.exit(0)
 
@@ -241,7 +286,11 @@ def _pipeline_gate_script() -> str:
                 # a frozen order its sealed footprint, so a write here cannot dodge
                 # `gz wp dispatch` or commencement (GHI #1206; RP-12 ruling 116). The
                 # fence is read once on either branch.
-                _refuse_if(work_package_write_refusal(project_root, rel_path))
+                _refuse_if(
+                    _fence_refusal(
+                        work_package_write_refusal, is_production_path, project_root, rel_path
+                    )
+                )
 
                 plans_dir = pipeline_plans_dir(project_root)
                 docs_root = project_root / "docs"
