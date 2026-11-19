@@ -184,7 +184,16 @@ def main() -> None:
         from gzkit.mx import checkpoint as _checkpoint
     except ImportError:
         _checkpoint = None
-    if _checkpoint is not None and _checkpoint.is_advisory("pipeline-gate", project_root):
+    # An advisory reading that raises is the condition unread, so the full
+    # fence below runs rather than the hook exiting 1 and passing the write
+    # (RP-12 ruling 163).
+    try:
+        advisory = _checkpoint is not None and _checkpoint.is_advisory(
+            "pipeline-gate", project_root
+        )
+    except Exception:
+        advisory = False
+    if _checkpoint is not None and advisory:
         _refuse_if(
             _fence_refusal(frozen_order_write_refusal, is_production_path, project_root, rel_path)
         )

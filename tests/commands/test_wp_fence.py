@@ -394,7 +394,9 @@ class TestTheGeneratedHook(_FenceCase):
                 check=False,
             )
 
-    def _crashing_hook(self, rel_path: str, check: str) -> subprocess.CompletedProcess[str]:
+    def _crashing_hook(
+        self, rel_path: str, check: str, module: str = "gzkit.pipeline_stage_fence"
+    ) -> subprocess.CompletedProcess[str]:
         """Run the hook as Claude Code does, the fence check named made to raise.
 
         The check is replaced on its module before the script runs, which is how a
@@ -412,7 +414,7 @@ class TestTheGeneratedHook(_FenceCase):
             script = Path(directory) / "pipeline-gate.py"
             script.write_text(_pipeline_gate_script(), encoding="utf-8")
             boot = (
-                "import runpy, sys, gzkit.pipeline_stage_fence as fence\n"
+                f"import importlib, runpy, sys\nfence = importlib.import_module({module!r})\n"
                 "def crash(*_):\n"
                 "    raise RuntimeError('a defect inside the fence check')\n"
                 f"setattr(fence, {check!r}, crash)\n"
@@ -447,6 +449,19 @@ class TestTheGeneratedHook(_FenceCase):
         # then the write is held as under the marker
         self.assertEqual(result.returncode, 2, msg=result.stderr)
         self.assertIn("RuntimeError: a defect inside the fence check", result.stderr)
+
+    def test_an_unreadable_condition_runs_the_full_fence(self) -> None:
+        # given an open MX marker, a frozen footprint, and the advisory reading raising
+        open_marker(Path.cwd())
+        _seat_frozen_order([_SOURCE])
+        # when (ruling 163: the condition unread is the condition off)
+        held = self._crashing_hook(_SOURCE, "is_advisory", "gzkit.mx.checkpoint")
+        outside = self._crashing_hook(
+            "src/gzkit/elsewhere.py", "is_advisory", "gzkit.mx.checkpoint"
+        )
+        # then the full-strength fence holds the footprint write and passes one outside it
+        self.assertEqual((held.returncode, outside.returncode), (2, 0), msg=held.stderr)
+        self.assertIn("ORD-01-fix", held.stderr)
 
     def test_a_crashing_check_still_leaves_tests_writable(self) -> None:
         # given the full fence check raising
