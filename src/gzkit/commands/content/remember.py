@@ -18,7 +18,9 @@ from typing import Literal
 from gzkit.commands.common import get_project_root
 from gzkit.commands.content._drift import warn_on_rendition_drift
 from gzkit.content.corpus_store import append_entry, load_corpus
-from gzkit.content.models import AgentContract, Corpus, CorpusEntry
+from gzkit.content.models import AgentContract, CorpusEntry
+from gzkit.content.ownership import iter_section_boundaries
+from gzkit.content.ownership_errors import OwnershipLoadError
 from gzkit.content.parse import parse
 from gzkit.content.parse.markdown_parser import section_id
 from gzkit.ledger import Ledger
@@ -72,7 +74,6 @@ def content_remember_cmd(
     if not isinstance(parsed, AgentContract):  # parse('AgentContract') returns this type
         print(f"Error: surface {surface!r} did not yield an AgentContract.", file=sys.stderr)
         sys.exit(1)
-    contract = parsed
 
     normalized_section = section_id(section)
     timestamp = datetime.now(UTC).isoformat()
@@ -93,13 +94,19 @@ def content_remember_cmd(
     )
 
     # Validate BEFORE any write — an unaddressable section never reaches the store (REQ-04).
+    # The vocabulary is the one `gz content own` and the ownership declaration use: every
+    # H1 and H2 boundary (GHI #1018). `AgentContract.pillars` is H2-only, so validating
+    # against it refused H1 sections that the declaration measures and `own` prescribes.
     try:
-        Corpus(entries=(entry,)).validate_against(contract)
-    except ValueError:
-        valid = ", ".join(sorted(pillar.id for pillar in contract.pillars))
+        boundaries = iter_section_boundaries(surface_text)
+    except OwnershipLoadError as exc:
+        print(f"Error: surface {surface!r} carries an ambiguous section map: {exc}", file=sys.stderr)
+        sys.exit(1)
+    valid_ids = sorted({boundary.section_id for boundary in boundaries})
+    if normalized_section not in valid_ids:
         print(
             f"Error: section {section!r} (normalized {normalized_section!r}) resolves to no "
-            f"section of {surface!r}. Valid sections: {valid}. No entry written.",
+            f"section of {surface!r}. Valid sections: {', '.join(valid_ids)}. No entry written.",
             file=sys.stderr,
         )
         sys.exit(1)
