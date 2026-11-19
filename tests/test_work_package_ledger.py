@@ -419,8 +419,9 @@ class RepairLifecycleTests(_LedgerCase):
         self.book_order("ORD-02-y", "closed", decision="terminate", attestor="g0",
                         attestation_text="withdraw it")  # fmt: skip
         before = _rows(self.path)
-        with self.assertRaisesRegex(WorkPackageLedgerError, "ORD-01-x"):
-            self.close()
+        refused = _raised(self.close)
+        self.assertIsInstance(refused, WorkPackageLedgerError)
+        self.assertIn("ORD-01-x", str(refused))
         self.assertEqual(_rows(self.path), before)
         self.book_order("ORD-01-x", "closed", decision="terminate", attestor="g0",
                         attestation_text="withdraw it too")  # fmt: skip

@@ -782,6 +782,17 @@ class _ClearanceCase(_HangCase):
     ) -> TagClearanceAuthorizedEvent:
         return record_tag_clearance(self.ledger, tag_id or self.tag.tag_id, mx_session_id=session)
 
+    def authorized(self) -> TagClearanceAuthorizedEvent:
+        """Authorize the clearance, asserting it is not refused (RP-12 ruling 156).
+
+        Returns:
+            The clearance booked.
+
+        """
+        held: list[TagClearanceAuthorizedEvent] = []
+        self.assertIsNone(_raised(lambda: held.append(self.authorize())))
+        return held[0]
+
     def assert_clearance_refused(self, failed: str, act: Callable[[], object] | None = None) -> str:
         """Assert the clearance is refused by the check named, and nothing is written.
 
@@ -801,7 +812,7 @@ class _ClearanceCase(_HangCase):
 class ClearanceTests(_ClearanceCase):
     def test_a_clearance_marks_the_repair_activity_not_available(self) -> None:
         """Rulings 6, 7, 114 and 115: derived from the dispatch's end, the session the mark."""
-        returned = self.authorize()
+        returned = self.authorized()
         event = parse_typed_event(_rows(self.path)[-1])
         self.assertIsInstance(event, TagClearanceAuthorizedEvent)
         assert isinstance(event, TagClearanceAuthorizedEvent)
@@ -820,7 +831,7 @@ class ClearanceTests(_ClearanceCase):
 
     def test_a_clearance_is_still_open_until_its_clear(self) -> None:
         """Rulings 6 and 129: the clearance is recorded on the tag, which stays hung and open."""
-        cleared = self.authorize()
+        cleared = self.authorized()
         (tag,) = tag_log(self.ledger)
         self.assertTrue(tag.is_open)
         assert tag.clearance is not None
@@ -846,7 +857,9 @@ class UnendedDispatchTests(_UnendedCase):
     def test_a_voided_hanging_dispatch_reads_over_by_its_void(self) -> None:
         """Ruling 118: a dispatch killed by TaskStop ends by its void, and the clearance says so."""
         record_dispatch_void(self.ledger, _REPAIR, self.dispatch, "killed by TaskStop")
-        event = self.authorize()
+        held: list[TagClearanceAuthorizedEvent] = []
+        self.assertIsNone(_raised(lambda: held.append(self.authorize())))
+        event = held[0]
         self.assertEqual(
             (event.hanging_dispatch_id, event.hanging_dispatch_over, event.repair_activity),
             (self.dispatch, "voided", "not-available"),
@@ -1154,7 +1167,9 @@ class ClearRefusalTests(_ClearCase):
         """Ruling 139: refusal 1 refuses only a shared claimant."""
         record_dispatch_claim(self.ledger, self.dispatch, "a-craftsman", "stamp")
         record_dispatch_claim(self.ledger, self.restorer, "a-restorer", "stamp")
-        self.assertIsInstance(self.clear(), TagClearedEvent)
+        held: list[object] = []
+        self.assertIsNone(_raised(lambda: held.append(self.clear())))  # ruling 156
+        self.assertIsInstance(held[0], TagClearedEvent)
 
     def test_an_order_not_commenced_is_refused(self) -> None:
         """Rulings 132 and 135: a clear is made where the Restoration dispatch works."""

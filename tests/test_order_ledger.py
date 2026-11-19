@@ -770,8 +770,9 @@ class CommencementTagTests(_OrderCase):
             exit_taken="terminate",
         )
         record_work_package_unblock(self.catalog, self.ledger, unblock)
-        event = self.move("commenced")
-        self.assertEqual((event.to_state, event.no_isolation), ("commenced", None))
+        moved: list[OrderTransitionedEvent] = []
+        self.assertIsNone(_raised(lambda: moved.append(self.move("commenced"))))
+        self.assertEqual([(e.to_state, e.no_isolation) for e in moved], [("commenced", None)])
 
     def test_a_malformed_tag_row_is_refused_not_read_past(self) -> None:
         """Ruling 141: the leaf reader refuses a row it cannot read; nothing is booked."""

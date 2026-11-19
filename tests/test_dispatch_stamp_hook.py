@@ -35,10 +35,29 @@ from gzkit.hooks.claude import generate_claude_settings
 from gzkit.hooks.scripts.dispatch import dispatch_stamp_script
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from contextlib import AbstractContextManager
 
 _AGENT = "a0123456789abcdef"
 _DISPATCH = "D-0123456789abcdef"
+
+
+def _raised(act: Callable[[], object]) -> Exception | None:
+    """Run *act* and return what it raised, so a crash fails an assertion rather than erroring.
+
+    The generated hook suppresses what these functions raise, so a crash reaches no
+    harness; it drops the booking instead, which is why each call asserts none (RP-12
+    rulings 100 and 156).
+
+    Returns:
+        The exception *act* raised, or ``None`` when it returned.
+
+    """
+    try:
+        act()
+    except Exception as exc:  # a crash in place of the behaviour must fail, not error
+        return exc
+    return None
 
 
 class _Session(unittest.TestCase):
@@ -103,6 +122,10 @@ class _Session(unittest.TestCase):
         rows = [json.loads(line) for line in self.ledger.read_text(encoding="utf-8").splitlines()]
         return [row for row in rows if row.get("event") == event]
 
+    def _end(self, payload: dict) -> None:
+        """Run the end hook, asserting it books or does nothing and never raises."""
+        self.assertIsNone(_raised(lambda: end_hook_output(payload, self.project)))
+
     def _stopped(self, agent: str = _AGENT) -> dict:
         """Return a ``SubagentStop`` payload as the probe measured it (ruling 115).
 
@@ -164,7 +187,10 @@ class _Session(unittest.TestCase):
             The two stamp variables as the rewritten command's shell sees them.
 
         """
-        output = stamp_hook_output(self._payload(command), self.project)
+        outputs: list[dict | None] = []
+        payload = self._payload(command)
+        self.assertIsNone(_raised(lambda: outputs.append(stamp_hook_output(payload, self.project))))
+        (output,) = outputs
         self.assertIsNotNone(output)
         assert output is not None
         rewritten = output["hookSpecificOutput"]["updatedInput"]["command"]
@@ -537,11 +563,33 @@ class TheEnd(_Session):
         self._move("commenced")
         self._book()
         self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}")
-        end_hook_output(self._stopped(), self.project)
-        end_hook_output(self._stopped(), self.project)
-        (end,) = self._events("dispatch_ended")
-        self.assertEqual((end["dispatch_id"], end["agent_id"]), (_DISPATCH, _AGENT))
+        self._end(self._stopped())
+        self._end(self._stopped())
+        ends = self._events("dispatch_ended")
+        self.assertEqual(len(ends), 1)
+        self.assertEqual((ends[0]["dispatch_id"], ends[0]["agent_id"]), (_DISPATCH, _AGENT))
         self.assertEqual(self._claims(), [])
+
+    def test_a_prompt_in_content_blocks_reads_its_text_blocks_alone(self) -> None:
+        """A block that is not an object, or carries no text, is passed over, not read."""
+        self._move("commenced")
+        self._book()
+        self._prompt(
+            ["stray", {"type": "image"}, {"type": "text", "text": f"GZKIT-DISPATCH: {_DISPATCH}"}]
+        )
+        self._end(self._stopped())
+        ends = self._events("dispatch_ended")
+        self.assertEqual([end["dispatch_id"] for end in ends], [_DISPATCH])
+
+    def test_no_end_from_a_first_record_or_message_that_is_not_an_object(self) -> None:
+        self._book()
+        transcript = self.subagents / f"agent-{_AGENT}.jsonl"
+        message = {"agentId": _AGENT, "type": "user", "message": f"GZKIT-DISPATCH: {_DISPATCH}"}
+        for first in ([f"GZKIT-DISPATCH: {_DISPATCH}"], message):
+            with self.subTest(first=first):
+                transcript.write_text(json.dumps(first) + "\n", encoding="utf-8")
+                self._end(self._stopped())
+        self.assertEqual(self._events("dispatch_ended"), [])
 
     def test_no_end_for_a_prompt_naming_no_live_dispatch(self) -> None:
         """Ruling 118: a voided dispatch has ended by its void; none booked, none to end."""
@@ -555,7 +603,7 @@ class TheEnd(_Session):
         ):
             with self.subTest(prompt=prompt):
                 self._prompt(prompt)
-                end_hook_output(self._stopped(), self.project)
+                self._end(self._stopped())
         self.assertEqual(self._events("dispatch_ended"), [])
 
     def test_no_end_from_a_payload_missing_its_agent_or_transcript(self) -> None:
@@ -564,19 +612,18 @@ class TheEnd(_Session):
         for field in ("agent_id", "agent_transcript_path"):
             for value in (None, ""):
                 with self.subTest(field=field, value=value):
-                    payload = {**self._stopped(), field: value}
-                    self.assertIsNone(end_hook_output(payload, self.project))
+                    self._end({**self._stopped(), field: value})
         self.assertEqual(self._events("dispatch_ended"), [])
 
     def test_no_end_from_a_transcript_that_is_not_the_stopping_agents(self) -> None:
         self._book()
         self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}", agent="a-someone-else")
-        end_hook_output(self._stopped(), self.project)
+        self._end(self._stopped())
         missing = {
             **self._stopped(),
             "agent_transcript_path": (self.subagents / "x.jsonl").as_posix(),
         }
-        end_hook_output(missing, self.project)
+        self._end(missing)
         self.assertEqual(self._events("dispatch_ended"), [])
 
     def test_only_subagent_stop_books_an_end(self) -> None:
@@ -584,7 +631,7 @@ class TheEnd(_Session):
         self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}")
         for event in ("Stop", "PostToolUse", "PreToolUse"):
             with self.subTest(event=event):
-                end_hook_output({**self._stopped(), "hook_event_name": event}, self.project)
+                self._end({**self._stopped(), "hook_event_name": event})
         self.assertEqual(self._events("dispatch_ended"), [])
 
 
