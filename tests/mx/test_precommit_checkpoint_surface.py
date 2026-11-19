@@ -36,8 +36,6 @@ _NOT_A_GZKIT_GUARD = {
     "ty-check": "third-party type checker invoked directly",
     "complexity-ceiling": "`gz validate` scope -- already checkpointed at "
     "validate_cmd.py `_run_scope_checks`",
-    "gitleaks": "third-party secrets scanner; `secrets` is a gate5 floor member and "
-    "stays hard by construction -- over-strict, never under-strict",
     "check-todos-fixmes": "informational only; `|| true` can never fail",
     "task-trailer-stamp": "prepare-commit-msg stamper, not a gate",
     "unittest": "test runner, manual stage",

@@ -19,6 +19,8 @@ is the drift class this script exists to surface, automated. One authority, read
 out-of-process, degrading to silence when unavailable.
 """
 
+import contextlib
+import io
 import json
 import os
 import re
@@ -47,6 +49,8 @@ ACCOUNT_COMMIT_LIMIT = 10
 SECTION_HEADINGS: tuple[str, ...] = (
     "Active campaign — Magna Carta",
     "Git remote state",
+    # CONDITIONAL — emitted only when a declared hook is not installed (GHI #1330).
+    "Hooks not delivered",
     "Most-recent handoff",
     # CONDITIONAL — emitted only when an AUTHORED handoff exists to anchor on.
     "Account since the last authored handoff",
@@ -1300,6 +1304,53 @@ def _render_mx_hangar(lines: list[str], payload: object) -> None:
     lines.append("")
 
 
+def collect_hook_delivery(repo_root: Path) -> list[str] | None:
+    """Return the session green gate's findings for every declared hook not installed (GHI #1330).
+
+    A clone with no hook files commits with no gate run and no commit-locus row,
+    and nothing said so before the first push: `gz check`'s delivery step was
+    demoted in safe mode and this digest did not ask. The findings are the gate's
+    own rendering (``audit_session_green_gate`` with its delivery arm on), read
+    rather than re-derived, including the advisories it emits for recording hooks.
+    Guarded end-to-end: any failure returns ``None`` so the boot hook never crashes.
+
+    Returns:
+        One line per undelivered hook (gate findings first, then recording-hook
+        advisories without their marker), empty when every declared hook is
+        installed; None when the audit raises.
+
+    """
+    try:
+        # Deferred: gzkit is optional in this boot hook and must degrade, not crash.
+        from gzkit.advisory import ADVISORY_MARKER, advisory_lines  # noqa: PLC0415
+        from gzkit.governance.trust_audits.session_green_gate import (  # noqa: PLC0415
+            audit_session_green_gate,
+        )
+
+        captured = io.StringIO()
+        with contextlib.redirect_stderr(captured):
+            findings = audit_session_green_gate(repo_root, check_delivery=True)
+    except Exception:
+        return None
+    advisories = [
+        line.removeprefix(ADVISORY_MARKER).strip() for line in advisory_lines(captured.getvalue())
+    ]
+    return [finding.message for finding in findings] + advisories
+
+
+def _render_hook_delivery(lines: list[str], payload: object) -> None:
+    """Name each declared hook that is not installed; render nothing when all are."""
+    if not isinstance(payload, list) or not payload:
+        return
+    lines.append("## Hooks not delivered")
+    lines.extend(f"- {message}" for message in payload)
+    lines.append(
+        "- A commit made before these are installed runs no gate and books no "
+        "commit-locus record; install them before the first commit (GHI #1330)."
+    )
+    lines.append("")
+
+
 def _render_adr_pipeline(lines: list[str], payload: object) -> None:
     """Name each in-flight run, the stage it has reached, its position and its resume command.
 
@@ -1357,6 +1408,7 @@ def collect_state(repo_root: Path, now: datetime) -> dict:
         "chore_staleness": collect_chore_staleness(),
         "unreviewed_canaries": collect_unreviewed_canaries(repo_root),
         "mx_hangar": collect_mx_hangar(repo_root, now),
+        "hook_delivery": collect_hook_delivery(repo_root),
     }
 
 
@@ -1451,6 +1503,8 @@ def render(state: dict, now: datetime) -> str:
     else:
         lines.append("- (no remote state available)")
     lines.append("")
+
+    _render_hook_delivery(lines, state.get("hook_delivery"))
 
     lines.append("## Most-recent handoff")
     handoff = state.get("handoff")

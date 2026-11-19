@@ -51,7 +51,7 @@ from gzkit.governance.trust_audits.astral_discipline import (
 from gzkit.governance.trust_audits.session_green_gate import (
     configured_hooks_path,
     declared_hook_types,
-    install_command,
+    install_recovery,
 )
 from gzkit.hooks.claude import setup_claude_hooks
 from gzkit.hooks.commit_ledger import RECORDER_HOOK_NAME, install_recorder_hook
@@ -666,14 +666,16 @@ repos:
         stages: [pre-push]
 """
 
-# Ordered by how the project is most likely to reach a pre-commit: the project
-# venv first, then an ephemeral uvx download. pre-commit is deliberately NOT a
-# gzkit dependency (STDLIB-FIRST: adding a runtime dep needs foundation
-# attestation), so activation is best-effort here — `gz check`'s delivery arm is
-# the fail-closed half that makes a silent miss impossible.
+# Ordered by how the project reaches a durable pre-commit: `uv run` finds one the
+# project locks (gzkit's own dev group, GHI #1330) or one installed with
+# `uv tool install` on PATH; a bare `pre-commit` covers a project not run through
+# uv. There is no `uvx` fallback: hooks it installs point into uv's cache, which a
+# prune deletes, so the gate would vanish with the machine's cache (GHI #1330).
+# pre-commit is a dev tool, never a gzkit runtime dependency (STDLIB-FIRST).
+# Activation stays best-effort here; `gz check`'s delivery arm is the fail-closed
+# half, and it stays on in safe mode.
 _INSTALLERS = (
     ("uv", "run", "pre-commit"),
-    ("uvx", "pre-commit"),
     ("pre-commit",),
 )
 
@@ -736,8 +738,8 @@ def _install_pre_commit_hooks(project_root: Path, *, dry_run: bool = False) -> s
             f"Pre-push gate NOT installed: core.hooksPath is set ({redirect.as_posix()}), "
             "and pre-commit refuses to install hooks while it is. Commits and pushes "
             "will run unenforced until this is resolved. Recovery: "
-            "`git config --local --unset-all core.hooksPath` then "
-            f"`{install_command(declared_hook_types(project_root))}`."
+            "`git config --local --unset-all core.hooksPath`, then "
+            f"{install_recovery(declared_hook_types(project_root))}."
         )
 
     hook_args = [
@@ -762,9 +764,8 @@ def _install_pre_commit_hooks(project_root: Path, *, dry_run: bool = False) -> s
             )
     return (
         "Pre-push gate NOT installed: could not run `pre-commit install`. Commits and "
-        "pushes will run unenforced until this is resolved. Recovery: install pre-commit "
-        "(`uv tool install pre-commit`), then "
-        f"`{install_command(declared_hook_types(project_root))}`."
+        "pushes will run unenforced until this is resolved. Recovery: "
+        f"{install_recovery(declared_hook_types(project_root))}."
     )
 
 

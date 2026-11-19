@@ -368,6 +368,12 @@ dev = [
     "cohesion>=1.2.0",
     "coverage>=7.17.0",
     "lizard>=1.26.1",
+    # The hook runner every `.pre-commit-config.yaml` gate needs, delivered by
+    # `uv sync` rather than by the machine (GHI #1330; operator ruling 2026-11-19,
+    # by selection: "Dev dependency"). A dev tool, not a runtime dependency, so
+    # gzkit's wheel still carries none (STDLIB-FIRST is unaffected). It also builds
+    # the upstream gitleaks hook, bootstrapping Go itself (pre-commit >= 3.0.0).
+    "pre-commit>=4.7.0",
     "pyinstaller>=6.22.0",
     "ruff>=0.17.3",
     # Tracks ty forward, never pinned backward. Operator ruling 2026-08-09: "we

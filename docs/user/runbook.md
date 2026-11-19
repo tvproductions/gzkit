@@ -518,7 +518,7 @@ uv run gz agent sync control-surfaces   # Rebuild Tier B mirrors
 uv run gz lint                           # Verify tooling works
 uv run gz smoke                          # Build verification, budgeted (<=60s)
 uv run gz test                           # Verify tests pass
-uvx pre-commit install --hook-type pre-commit --hook-type pre-push --hook-type prepare-commit-msg --hook-type post-commit  # Every declared hook type (GHI #851)
+uv run pre-commit install --hook-type pre-commit --hook-type pre-push --hook-type prepare-commit-msg --hook-type post-commit  # Every declared hook type (GHI #851); pre-commit is a dev dependency `uv sync` delivered (GHI #1330)
 uv run -m gzkit.hooks.commit_ledger --install  # Commit-locus recorder, run before pre-commit's stash (GHI #1092)
 uv run gz validate --session-green-gate  # Verify it is DELIVERED, not just declared
 ```

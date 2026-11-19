@@ -304,11 +304,12 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         lambda r, _f: _ta().audit_adversarial_validation(r),
     ),
     _ScopeEntry("red_parity", "explicit", True, lambda r, _f: _ta().audit_red_parity(r)),
-    _ScopeEntry(
+    _ScopeEntry(  # CRITICAL: the witness that hooks are installed never demotes (GHI #1330)
         "session_green_gate",
         "explicit",
         False,
         lambda r, _f: _ta().audit_session_green_gate(r, check_delivery=_delivery_arm_enabled()),
+        _mx_levels.CRITICAL,
     ),
     _ScopeEntry(
         "orientation_freshness",

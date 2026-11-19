@@ -51,13 +51,12 @@
     },
     {
       "name": "pre-commit",
-      "external": true,
-      "reason": "The hook framework; Astral ships hooks for it (ruff-pre-commit, uv-pre-commit), not a runner."
+      "reason": "The hook framework, locked in the dev group so `uv sync` delivers it (GHI #1330); Astral ships hooks for it (ruff-pre-commit, uv-pre-commit), not a runner."
     },
     {
       "name": "gitleaks",
       "external": true,
-      "reason": "Scans commits for secrets; Ruff S105 to S107 catch hard-coded passwords only."
+      "reason": "Scans commits for secrets; Ruff S105 to S107 catch hard-coded passwords only. Delivered by its own pre-commit hook repo, which pre-commit builds (GHI #1330)."
     },
     {
       "name": "jinja2",
@@ -100,6 +99,11 @@
       "file": "src/gzkit/governance/stage4_evidence.py",
       "symbol": "_REQUIRED_RECEIPT_STEPS",
       "reason": "A tuple of ARB receipt step names (ruff, typecheck, unittest), read as data to find receipts; it runs nothing."
+    },
+    {
+      "file": "src/gzkit/governance/trust_audits/_qc_nc_hooks.py",
+      "symbol": "_UNDECLARED_TYPES",
+      "reason": "A tuple of pre-commit hook type names (pre-commit, pre-push), read as data to build a fixture config; it runs nothing."
     }
   ]
 }

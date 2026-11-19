@@ -47,9 +47,30 @@ def install_command(hook_types: list[str]) -> str:
     return "uv run pre-commit install " + " ".join(f"--hook-type {t}" for t in hook_types)
 
 
+def install_recovery(hook_types: list[str]) -> str:
+    """Return the hook-install recovery, naming where pre-commit comes from first.
+
+    Public because two surfaces print it: this module's delivery arm and ``gz init``'s
+    activation step. ``install_command`` alone cannot run on a machine without
+    pre-commit, which is how GHI #1330 surfaced: the recovery failed with
+    "Failed to spawn: pre-commit". The project declares pre-commit as a dev
+    dependency, so ``uv sync`` delivers it; an adopter project that does not declare
+    it installs it as a uv tool.
+
+    Returns:
+        ``uv sync`` (or ``uv tool install pre-commit`` where the project does not
+        declare it), then ``install_command(hook_types)``.
+
+    """
+    return (
+        f"`uv sync`, then `{install_command(hook_types)}` (where the project does not "
+        "declare pre-commit as a dependency, run `uv tool install pre-commit` first)"
+    )
+
+
 def _delivery_recovery(hook_types: list[str]) -> str:
     return (
-        f"Recovery: `{install_command(hook_types)}`. If it refuses with 'Cowardly refusing to "
+        f"Recovery: {install_recovery(hook_types)}. If it refuses with 'Cowardly refusing to "
         "install hooks with `core.hooksPath` set', run `git config --local --unset-all "
         "core.hooksPath` first, then re-run the install."
     )

@@ -131,15 +131,20 @@ repos:
         exclude: ^(site/|docs/design/adr/.*/appendices/)
       - id: check-merge-conflict
 
-  - repo: local
+  # The secrets scanner comes from gitleaks' own hook repo, which pre-commit
+  # builds (`language: golang`, bootstrapping Go when none is installed), so
+  # installing the hooks delivers it; a `language: system` entry needed a
+  # gitleaks binary no install provided (GHI #1330). Move the rev with each
+  # `gz-deps-upgrade` pass.
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
     hooks:
       - id: gitleaks
         name: gitleaks (secrets scanner)
-        entry: gitleaks protect --staged --redact
-        language: system
-        pass_filenames: false
         stages: [pre-commit]
 
+  - repo: local
+    hooks:
       - id: authorship
         name: authorship policy (commit identity)
         # Guards at COMMIT time, which is the moment the address is stamped into

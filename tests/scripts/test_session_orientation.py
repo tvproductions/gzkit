@@ -2317,3 +2317,96 @@ class TestMxHangarReachesSessionStart(unittest.TestCase):
                 stack.enter_context(mock.patch.object(self.mod, name, return_value=None))
             state = self.mod.collect_state(root, self.now)
         self.assertEqual(state["mx_hangar"]["booked"], ["s1"])
+
+
+_GATE_CONFIG = """\
+default_install_hook_types: [pre-commit, pre-push, post-commit]
+repos:
+  - repo: local
+    hooks:
+      - id: gz-check-pre-push
+        name: gz check
+        entry: uv run gz check
+        language: unsupported
+        pass_filenames: false
+        stages: [pre-push]
+"""
+
+
+class TestUndeliveredHooksReachSessionStart(unittest.TestCase):
+    """A clone with no hooks says so at session start, before the first commit (GHI #1330).
+
+    On 2026-11-19 a clone with no hook files oriented clean, passed `gz check --full`
+    under safe mode, and committed unhooked; only the push blocked. Operator ruling,
+    by selection: session-start orientation reports undelivered hooks.
+    """
+
+    def setUp(self):
+        self.mod = _load_orientation_module()
+        self.now = datetime(2026, 11, 19, 12, 0, 0, tzinfo=UTC)
+
+    def _worktree(self, tmp: str, *, hooked: bool) -> Path:
+        root = Path(tmp)
+        hooks = root / ".git" / "hooks"
+        hooks.mkdir(parents=True)
+        (root / ".pre-commit-config.yaml").write_text(_GATE_CONFIG, encoding="utf-8")
+        if hooked:
+            for hook_type in ("pre-commit", "pre-push"):
+                (hooks / hook_type).write_text("# installed by pre-commit\n", encoding="utf-8")
+        return root
+
+    def test_an_unhooked_clone_names_every_missing_gate_hook(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            found = self.mod.collect_hook_delivery(self._worktree(tmp, hooked=False))
+        self.assertIsNotNone(found)
+        joined = "\n".join(found or [])
+        self.assertIn("'pre-commit' hook is not delivered", joined)
+        self.assertIn("'pre-push' hook is not delivered", joined)
+        self.assertIn("uv tool install pre-commit", joined)
+
+    def test_a_missing_recording_hook_is_reported_too(self):
+        """The commit-locus recorder records nothing while absent, so it is named as well."""
+        with tempfile.TemporaryDirectory() as tmp:
+            found = self.mod.collect_hook_delivery(self._worktree(tmp, hooked=True))
+        self.assertTrue(any("'post-commit' hook is not delivered" in line for line in found or []))
+        self.assertFalse(any(line.startswith("[advisory]") for line in found or []))
+
+    def test_a_fully_hooked_clone_reports_nothing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._worktree(tmp, hooked=True)
+            (root / ".pre-commit-config.yaml").write_text(
+                _GATE_CONFIG.replace(", post-commit", ""), encoding="utf-8"
+            )
+            self.assertEqual(self.mod.collect_hook_delivery(root), [])
+
+    def test_the_section_names_each_missing_hook(self):
+        out = self.mod.render({"hook_delivery": ["'pre-push' hook is not delivered"]}, self.now)
+        self.assertIn("## Hooks not delivered", out)
+        self.assertIn("'pre-push' hook is not delivered", out)
+        rendered = [line[3:] for line in out.splitlines() if line.startswith("## ")]
+        self.assertIn("Hooks not delivered", self.mod.SECTION_HEADINGS)
+        positions = [list(self.mod.SECTION_HEADINGS).index(h) for h in rendered]
+        self.assertEqual(positions, sorted(positions))
+
+    def test_nothing_missing_renders_no_section(self):
+        for label, payload in (("delivered", []), ("unavailable", None)):
+            with self.subTest(label):
+                out = self.mod.render({"hook_delivery": payload}, self.now)
+                self.assertNotIn("## Hooks not delivered", out)
+
+    def test_a_failure_degrades_to_silence(self):
+        target = "gzkit.governance.trust_audits.session_green_gate.audit_session_green_gate"
+        with mock.patch(target, side_effect=OSError("disk")):
+            self.assertIsNone(self.mod.collect_hook_delivery(Path("/repo")))
+
+    def test_the_boot_state_carries_the_hook_reading(self):
+        with tempfile.TemporaryDirectory() as tmp, contextlib.ExitStack() as stack:
+            root = self._worktree(tmp, hooked=False)
+            for name in dir(self.mod):
+                if name.startswith("collect_") and name not in {
+                    "collect_state",
+                    "collect_hook_delivery",
+                }:
+                    stack.enter_context(mock.patch.object(self.mod, name, return_value=None))
+            state = self.mod.collect_state(root, self.now)
+        self.assertTrue(state["hook_delivery"])

@@ -99,7 +99,10 @@ _STEP_GUARD_META: dict[str, tuple[str, int]] = {
     "Astral discipline": ("astral-discipline", _mx_levels.ERROR),
     "Complexity ceiling": ("complexity-ceiling", _mx_levels.CRITICAL),
     "OBPI lifecycle coherence": ("obpi-lifecycle-coherence", _mx_levels.ERROR),
-    "Session green gate": ("session-green-gate", _mx_levels.ERROR),
+    # CRITICAL: demoted, it let a clone with no hook files pass `gz check --full`
+    # green while a commit landed unhooked; the witness that the hooks exist stays
+    # on in safe mode (operator ruling 2026-11-19, GHI #1330).
+    "Session green gate": ("session-green-gate", _mx_levels.CRITICAL),
     "Closeout proof": ("closeout-proof", _mx_levels.ERROR),
     "Kind invariance": ("kind-invariance", _mx_levels.ERROR),
     "Persona witness": ("persona-witness", _mx_levels.ERROR),

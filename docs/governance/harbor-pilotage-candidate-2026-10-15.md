@@ -1140,6 +1140,20 @@ From the R&D run [`repair-work-organization`](../rnd/repair-work-organization.md
   the decline and close it; (C) draft the list now. Recommended A. Operator, verbatim: *"A: Hold to stage 7"*.
   With it, every RP-7 held ruling H1 to H15 is ruled.
 
+## Rulings of 2026-11-19
+
+- **Dependency updates are adopted strict.** Operator, verbatim: *"when ty introduces new rules and a
+  stricter posture, we go strict. this is generally true of any updates (like with Pydantic). we want to
+  move forward with our depencies."* Seated in `gz-deps-upgrade` step 9a; the skill no longer prescribes
+  pinning an offender back. Insight record `2026-11-19T20:37:09.746168+00:00`.
+- **The installation delivers the hook toolchain (GHI #1330).** Operator, verbatim: *"these are troubling
+  because if they live at the machine level then we have a failing of gzkit's installation"*. Put to the
+  operator, three choices; ruled by selection: *"Dev dependency (Recommended)"* (pre-commit joins the dev
+  group), *"Upstream pre-commit hook (Recommended)"* (gitleaks from its own hook repo, built by
+  pre-commit), *"Pin it on, plus session start (Recommended)"* (the hook-delivery check pinned CRITICAL so
+  safe mode cannot demote it, and session orientation names undelivered hooks). Insight record
+  `2026-11-19T23:31:08.707196+00:00`.
+
 ## Superseded on 2026-10-30 (record, not binding)
 
 § The general arrangement as it stood before the redraw of 2026-10-30, kept verbatim (operator,
@@ -1929,3 +1943,6 @@ Each order adds a line for whatever else it unplugs, dismantles or modifies as i
 | 2026-11-13 | RP-7 held ruling H12 (operator, verbatim *"A: Fix the code"*) | `extract_closing_argument` matched `## Closing Argument`; 81 briefs use `###` and none `##`, so every Defense Brief rendered no closing argument | the extractor matches the H3 and ends at the next H2 or H3; across the live briefs it extracts 64 closing arguments (0 before); the unit and BDD fixtures that wrote the H2 shape now write H3, and two tests hold the shipped layout | the commit landing this row | `uv run -m unittest tests.test_closeout_ceremony` |
 | 2026-11-14 | RP-7 held ruling H13 (operator, verbatim *"A: Keep, re-scope"*) | `agents-md-map-doctrine.md` loaded only on three generated surfaces, so it never reached an agent authoring canon, and the validity batch voted RETIRE against an attested REQ | the rule stays at 0.14.0 with 6 `paths:` (3 before), adding `.gzkit/corpus/**`, `.gzkit/rules/**` and `.gzkit/skills/**`; the REQ test's path pin moves from equality to containment | the commit landing this row | `uv run -m unittest tests.governance.test_agents_md_map_doctrine` |
 | 2026-11-14 | RP-7 held ruling H14 (operator, verbatim *"A: Hold to stage 7"*) | root `AGENTS.md` (24,906 B) is 98 % `tier: invariant`, and the line awaiting the operator still held it | H14 graded *due by RP-7 stage 7*; RP-7's held rulings awaiting the operator 14 → 0 | the commit landing this row | `uv run gz validate --documents` |
+| 2026-11-19 | dependency upgrade (`/gz-deps-upgrade`): uv, tools and `uv.lock` to latest; the ty 0.0.107 surface migrated | uv 0.13.8, ruff 0.17.3, ty 0.0.92 locked; `gz check --full` red on ty (68 diagnostics, `error-on-warning`) and 4 tests | uv 0.13.9, ruff 0.17.6, ty 0.0.107; 15 locked upgrades; 44 ignore comments in 28 files moved to ty's renamed rules; one `PGH003` baseline row retired | `39ecd5b82` | `gz check --full` passed; ARB unittest 14,026 tests OK, receipt `arb-step-unittest-f9b5f3a20e5d44ad8941372f1bf30289`. Committed before this clone's hooks existed: they ran afterwards over the commit, all passing, and its commit-locus row is lost (GHI #1330) |
+| 2026-11-19 | dependency updates go strict (ruling of 2026-11-19) | `gz-deps-upgrade` 1.6.0 prescribed pinning an offender back; ty's 18 off-by-default rules all off | skill 1.7.0, step 9a; 8 of the 18 rules on at error under `[tool.ty.rules]`; the other 10 carry 2,586 findings for rule-by-rule repair | `47a8465ee` | `uv run ty check .` passed; every pre-commit hook passed at commit |
+| 2026-11-19 | the installation delivers the hook toolchain (GHI #1330; rulings of 2026-11-19) | pre-commit in no dependency group; gitleaks `language: system`; the hook-delivery check ERROR, demoted in safe mode; orientation silent on missing hooks; `gz init` fell back to `uvx pre-commit` | pre-commit 4.7.0 in the dev group; gitleaks from `gitleaks/gitleaks` v8.30.1, built by pre-commit; scope and step pinned CRITICAL; orientation section *Hooks not delivered*; one shared recovery naming `uv sync` and `uv tool install pre-commit`; no `uvx` installer | the commit landing this row | 19 tests RED first, 3 of them by import error before the shared recovery existed (`tests.governance.test_hook_toolchain_delivery`, `TestHookDeliveryNeverDemotes`, `TestUndeliveredHooksReachSessionStart`), then green; `gz validate --astral-discipline` passed |

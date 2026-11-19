@@ -10,8 +10,9 @@ from unittest import mock
 from gzkit.commands.quality import _STEP_GUARD_META
 from gzkit.commands.validate_cmd import VALIDATOR_REGISTRY
 from gzkit.governance.trust_audits.session_green_gate import declared_hook_entries
-from gzkit.mx import alarms, levels
-from tests.mx.held import bind_session
+from gzkit.mx import alarms, checkpoint, levels
+from gzkit.mx.marker import Marker
+from tests.mx.held import bind_session, open_marker
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -99,3 +100,23 @@ class TestFastStaticStaysArmed(unittest.TestCase):
         for step in self._STEPS:
             with self.subTest(step=step):
                 self.assertEqual(_STEP_GUARD_META[step][1], levels.CRITICAL)
+
+
+class TestHookDeliveryNeverDemotes(unittest.TestCase):
+    """The witness that hooks are installed stays on in safe mode (GHI #1330).
+
+    Demoted, it let a clone with no hook files pass `gz check --full` green while a
+    commit landed unhooked. Operator ruling 2026-11-19, by selection: pin the
+    hook-delivery check CRITICAL so the hangar cannot demote it.
+    """
+
+    def test_the_session_green_gate_scope_blocks_under_a_safe_marker(self):
+        level = {e.stem: e.level for e in VALIDATOR_REGISTRY}["session_green_gate"]
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".gzkit").mkdir()
+            open_marker(root, Marker(session_id="safe-session", level="drydock"))
+            self.assertTrue(checkpoint.blocks("session-green-gate", level, root))
+
+    def test_the_session_green_gate_step_is_pinned_critical(self):
+        self.assertEqual(_STEP_GUARD_META["Session green gate"][1], levels.CRITICAL)
