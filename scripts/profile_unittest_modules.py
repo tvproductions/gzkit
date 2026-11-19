@@ -19,7 +19,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import IO, Any
 
-sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[unresolved-attribute]
+sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[missing-union-attribute]
 
 
 class TimingResult(unittest.TextTestResult):
@@ -91,7 +91,7 @@ def profile(
         total = time.perf_counter() - started
 
     timings: list[tuple[str, float]] = sorted(
-        result.timings,  # ty: ignore[unresolved-attribute]
+        result.timings,  # ty: ignore[missing-attribute]
         key=lambda item: item[1],
         reverse=True,
     )

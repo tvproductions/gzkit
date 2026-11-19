@@ -82,7 +82,7 @@ _MEASURE_ROOT = _PROJECT_ROOT / "src"
 # capturing harness. EAFP rather than `hasattr` — the guard form narrows the
 # attribute to `object` and breaks ty's own suppression code.
 with contextlib.suppress(AttributeError):
-    sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[unresolved-attribute]
+    sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[missing-union-attribute]
 
 
 class MissingBlockBandError(SystemExit):

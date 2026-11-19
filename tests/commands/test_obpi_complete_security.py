@@ -294,7 +294,7 @@ class _ObpiCompleteIntegrationFixture(unittest.TestCase):
             recorded_console.append(" ".join(str(a) for a in args))
             return original_print(*args, **kwargs)
 
-        rec_console.print = _capture  # type: ignore
+        rec_console.print = _capture
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

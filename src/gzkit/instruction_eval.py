@@ -449,7 +449,7 @@ def run_eval_suite(
                 EvalResult(case_id=case.id, passed=False, detail=f"No check function for {case.id}")
             )
             continue
-        result = check_fn(project_root)  # ty: ignore[call-non-callable]
+        result = check_fn(project_root)  # ty: ignore[not-callable]
         results.append(result)
 
     # Compute dimension scores

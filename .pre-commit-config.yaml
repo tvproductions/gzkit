@@ -114,7 +114,7 @@ repos:
   # that touches either (RO-9 tranche 2). Its rev is the uv release it runs; move
   # it to the current uv in each `gz-deps-upgrade` pass (step 1).
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.13.5
+    rev: 0.13.9
     hooks:
       - id: uv-lock
 

@@ -59,7 +59,7 @@ from gzkit.commands.chores_staleness import git_artifact_changed
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[unresolved-attribute]
+sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[missing-union-attribute]
 
 # Chores whose staleness is externally driven have no in-repo signal to key on,
 # so they gate on elapsed time instead of on a surface's commit date. The maximum

@@ -305,7 +305,7 @@ def _render_adr_by_kind(
             kind=kind,
             status="Draft",
             date=date.today().isoformat(),
-            decomposition_scorecard=scorecard.to_markdown(),  # ty: ignore[unresolved-attribute]
+            decomposition_scorecard=scorecard.to_markdown(),  # ty: ignore[missing-attribute]
             checklist=checklist_seed,
             why_foundation_tier=why_foundation_tier,
             persona=PERSONA_PROMPT,

@@ -73,11 +73,11 @@ def _project_root_is(module: ModuleType, root: Path) -> Generator[None]:
     (the pre-commit guard runs it with ``Path.cwd`` patched).
     """
     original = module.get_project_root
-    module.get_project_root = lambda: root  # ty: ignore[unresolved-attribute]
+    module.get_project_root = lambda: root  # ty: ignore[missing-attribute]
     try:
         yield
     finally:
-        module.get_project_root = original  # ty: ignore[unresolved-attribute]
+        module.get_project_root = original  # ty: ignore[missing-attribute]
 
 
 def _json_exit(handler: Callable[..., None], finding_class: str | None) -> int:

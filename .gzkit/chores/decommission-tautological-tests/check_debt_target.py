@@ -51,7 +51,7 @@ _DAYS_PER_MONTH = 365.25 / 12
 # `.gzkit/rules/cross-platform.md` § Console; EAFP because a capturing harness
 # may swap in a `StringIO`, which has no `reconfigure`.
 with contextlib.suppress(AttributeError):
-    sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[unresolved-attribute]
+    sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[missing-union-attribute]
 
 
 class DebtTargetMissingFieldsError(ValueError):

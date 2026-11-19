@@ -9607,11 +9607,6 @@
       "count": 2
     },
     {
-      "file": "tests/commands/test_obpi_complete_security.py",
-      "rule": "PGH003",
-      "count": 1
-    },
-    {
       "file": "tests/commands/test_obpi_pipeline.py",
       "rule": "RUF003",
       "count": 1

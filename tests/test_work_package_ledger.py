@@ -141,7 +141,7 @@ def _unstamped(event: object) -> dict[str, object]:
         The event's other fields.
 
     """
-    dumped = event.model_dump()  # ty: ignore[unresolved-attribute]
+    dumped = event.model_dump()  # ty: ignore[missing-attribute]
     return {key: value for key, value in dumped.items() if key != "ts"}
 
 
@@ -201,7 +201,7 @@ class _LedgerCase(unittest.TestCase):
 
     def assert_refused(self, call: object, **kwargs: object) -> None:
         before = _rows(self.path)
-        raised = _raised(lambda: call(**kwargs))  # ty: ignore[call-non-callable]
+        raised = _raised(lambda: call(**kwargs))  # ty: ignore[not-callable]
         self.assertIsInstance(raised, WorkPackageLedgerError)
         self.assertEqual(_rows(self.path), before)
 

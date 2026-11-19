@@ -30,11 +30,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[call-non-callable]
+    sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[not-callable]
 if hasattr(sys.stderr, "reconfigure"):
-    sys.stderr.reconfigure(encoding="utf-8")  # ty: ignore[call-non-callable]
+    sys.stderr.reconfigure(encoding="utf-8")  # ty: ignore[not-callable]
 if hasattr(sys.stdin, "reconfigure"):
-    sys.stdin.reconfigure(encoding="utf-8")  # ty: ignore[call-non-callable]
+    sys.stdin.reconfigure(encoding="utf-8")  # ty: ignore[not-callable]
 
 # --- Markdown renderer (default) ---------------------------------------------
 

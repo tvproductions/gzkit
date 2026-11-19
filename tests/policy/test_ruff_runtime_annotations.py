@@ -94,6 +94,25 @@ def _configured_bases() -> set[str]:
     return set(type_checking["runtime-evaluated-base-classes"])
 
 
+def _unparametrized(base: type) -> type:
+    """Return the generic origin of a parametrized Pydantic model, else *base*.
+
+    Ruff matches a base written ``RootModel[...]`` by its origin's name. From
+    Pydantic 2.14.4 a parametrized class reports the module that subscripted it
+    (``gzkit.req_kind`` for ``RootModel[dict[...]]``), not ``pydantic``, so the
+    origin is read from Pydantic's generic metadata instead.
+
+    Canonical: https://docs.pydantic.dev/latest/concepts/models/#generic-models
+    (``__pydantic_generic_metadata__``); ``[tool.ruff.lint.flake8-type-checking]
+    runtime-evaluated-base-classes`` in ``pyproject.toml``.
+
+    Returns:
+        The class Ruff names when it reads the base expression.
+    """
+    metadata = getattr(base, "__pydantic_generic_metadata__", None) or {}
+    return metadata.get("origin") or base
+
+
 def _project_model_bases() -> set[str]:
     """Return every gzkit class a gzkit Pydantic model inherits from directly.
 
@@ -108,9 +127,10 @@ def _project_model_bases() -> set[str]:
         for _, cls in inspect.getmembers(module, inspect.isclass):
             if cls.__module__ != module.__name__ or not issubclass(cls, BaseModel):
                 continue
+            origins = (_unparametrized(base) for base in cls.__bases__)
             bases.update(
                 f"{base.__module__}.{base.__qualname__}"
-                for base in cls.__bases__
+                for base in origins
                 if issubclass(base, BaseModel) and base.__module__.startswith("gzkit.")
             )
     return bases

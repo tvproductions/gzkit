@@ -25,7 +25,7 @@ def _done(stdout: str = "", returncode: int = 0) -> subprocess.CompletedProcess[
 
 
 def _argvs(run: object) -> list[list[str]]:
-    return [call.args[0][1:] for call in run.call_args_list]  # ty: ignore[unresolved-attribute]
+    return [call.args[0][1:] for call in run.call_args_list]  # ty: ignore[missing-attribute]
 
 
 class _GhCase(unittest.TestCase):

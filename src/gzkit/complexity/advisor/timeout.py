@@ -107,15 +107,15 @@ def _run_with_signal[T](callable_: Callable[[], T], timeout_s: float) -> T | obj
     # (`os.name == "nt"` routes Windows to _run_with_timer). ty analyses this
     # body unconditionally on the host platform and cannot see that guard, so
     # the POSIX-only members are suppressed with ty's own code.
-    old_handler = signal.signal(signal.SIGALRM, _handler)  # ty: ignore[unresolved-attribute]
-    signal.setitimer(signal.ITIMER_REAL, timeout_s)  # ty: ignore[unresolved-attribute]
+    old_handler = signal.signal(signal.SIGALRM, _handler)  # ty: ignore[missing-attribute]
+    signal.setitimer(signal.ITIMER_REAL, timeout_s)  # ty: ignore[missing-attribute]
     try:
         result = callable_()
     except _TimeoutError:
         return _SENTINEL_TIMED_OUT
     finally:
-        signal.setitimer(signal.ITIMER_REAL, 0)  # ty: ignore[unresolved-attribute]
-        signal.signal(signal.SIGALRM, old_handler)  # ty: ignore[unresolved-attribute]
+        signal.setitimer(signal.ITIMER_REAL, 0)  # ty: ignore[missing-attribute]
+        signal.signal(signal.SIGALRM, old_handler)  # ty: ignore[missing-attribute]
     return result
 
 

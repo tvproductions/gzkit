@@ -336,7 +336,7 @@ class TestTheGeneratedCompletionHookDerivesTheAdr(unittest.TestCase):
             compile(hook_validation._obpi_completion_validator_script(), "hook", "exec"), namespace
         )
         extract = namespace["extract_adr_id"]
-        self.assertEqual(extract("OBPI-0.14.0-04"), "ADR-0.14.0")  # ty: ignore[call-non-callable]
+        self.assertEqual(extract("OBPI-0.14.0-04"), "ADR-0.14.0")  # ty: ignore[not-callable]
 
 
 class TestCoverageRollsUpAdrsInSemverOrder(unittest.TestCase):

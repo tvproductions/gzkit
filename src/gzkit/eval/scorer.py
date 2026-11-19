@@ -449,4 +449,4 @@ def score_case(surface: str, case_input: dict[str, object]) -> list[DimensionRes
     if scorer is None:
         msg = f"No scorer registered for surface: {surface}"
         raise KeyError(msg)
-    return scorer(case_input)  # ty: ignore[call-non-callable]
+    return scorer(case_input)  # ty: ignore[not-callable]
