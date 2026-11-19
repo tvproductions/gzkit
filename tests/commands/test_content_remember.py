@@ -190,6 +190,32 @@ class TestContentRemember(unittest.TestCase):
             self.assertNotEqual(result.exit_code, 0)
             self.assertFalse((Path(".gzkit") / "corpus" / "AGENTS.md.jsonl").exists())
 
+    @covers("REQ-0.0.37-19-04")
+    def test_captures_into_an_h1_section(self) -> None:
+        """An H1-opened section is addressable by remember, as `gz content own` expects (GHI #1018)."""
+        with self._runner.isolated_filesystem():
+            Path("AGENTS.md").write_text(
+                "# AGENTS.md\n\nProject instructions for gzkit.\n\n## Behavior Rules\n\n- Do it.\n",
+                encoding="utf-8",
+            )
+            result = self._runner.invoke(
+                main,
+                [
+                    "content",
+                    "remember",
+                    "AGENTS.md",
+                    "--section",
+                    "agents-md",
+                    "--text",
+                    "Project instructions for gzkit.",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            corpus = Corpus.loads(
+                (Path(".gzkit") / "corpus" / "AGENTS.md.jsonl").read_text(encoding="utf-8")
+            )
+            self.assertEqual([e.section for e in corpus.entries], ["agents-md"])
+
 
 class _AdvisoryWriteFails(io.StringIO):
     """A stderr sink that raises OSError when the drift advisory is written; counts hits."""
