@@ -109,6 +109,7 @@ class TagIssueWiringTests(_TagCase):
         code, output = self.issue(*_ISSUE, "--json")
         # then
         self.assertEqual(code, 0, output)
+        self.assertTrue(output.startswith("{"), output)  # JSON, never the human line
         printed, booked = json.loads(output), _tag_rows()[0]
         # the line item is the booked one; the stamp time is the ledger row's own
         self.assertEqual(
@@ -174,6 +175,39 @@ class TagShowWiringTests(_TagCase):
         code, output = self.show()
         # then
         self.assertEqual((code, output.strip()), (0, "No tag is open."))
+
+    def test_all_with_no_tag_issued_says_none_has_been_issued(self) -> None:
+        # output-contract: docs/user/manpages/wp-tag-show.md names both empty lines
+        # given no tag issued
+        # when
+        code, output = self.show("--all")
+        # then
+        self.assertEqual((code, output.strip()), (0, "No tag has been issued."))
+
+    def test_json_with_no_tag_open_prints_an_empty_list(self) -> None:
+        # given no tag issued
+        # when
+        code, output = self.show("--json")
+        # then the machine form is the list, never the human line
+        self.assertEqual((code, output.strip()), (0, "[]"))
+
+    def test_all_marks_each_tag_open_or_closed(self) -> None:
+        # output-contract: docs/user/manpages/wp-tag-show.md, the state after the order
+        # given a tag issued on an opened order
+        open_marker(Path.cwd())
+        self.assertEqual(self.issue(*_ISSUE)[0], 0)
+        # when read under --all before and after the order closes
+        before = self.show("--all")[1].splitlines()[0]
+        self.close_order()
+        after = self.show("--all")[1].splitlines()[0]
+        # then
+        self.assertEqual(
+            (before, after),
+            (
+                "TAG-01-stamp-hook on ORD-01-import (open)",
+                "TAG-01-stamp-hook on ORD-01-import (closed)",
+            ),
+        )
 
     def test_show_after_an_issue_lists_the_open_tag(self) -> None:
         # given a tag issued on ORD-01-import under an open MX session
@@ -359,6 +393,19 @@ class TagHangWiringTests(_HungTagCase):
             [("TAG-01-stamp-hook", self.dispatch, "test-session")],
         )
 
+    def test_json_mode_prints_the_booked_hang(self) -> None:
+        # given the Repair dispatch's stamped call
+        self.stamp_as(self.dispatch)
+        # when
+        result = self.runner.invoke(
+            main, ["wp", "tag", "hang", "TAG-01-stamp-hook", "--dispatch", self.dispatch, "--json"]
+        )
+        # then the event booked, never the human line
+        self.assertEqual(result.exit_code, 0, result.output)
+        self.assertTrue(result.output.startswith("{"), result.output)
+        printed = json.loads(result.output)
+        self.assertEqual((printed["event"], printed["dispatch_id"]), ("tag_hung", self.dispatch))
+
     def test_an_unstamped_hang_is_refused_and_books_nothing(self) -> None:
         # given the main session's call, carrying no stamp
         # when
@@ -428,6 +475,36 @@ class TagAuthorizeWiringTests(_HungTagCase):
         record = json.loads(printed.output)[0]
         self.assertEqual(record.get("state"), "authorized")
 
+    def test_json_mode_prints_the_booked_clearance(self) -> None:
+        # given the main session's call
+        # when
+        result = self.runner.invoke(main, ["wp", "tag", "authorize", "TAG-01-stamp-hook", "--json"])
+        # then the event booked, never the human line
+        self.assertEqual(result.exit_code, 0, result.output)
+        self.assertTrue(result.output.startswith("{"), result.output)
+        printed = json.loads(result.output)
+        self.assertEqual(printed["event"], "tag_clearance_authorized")
+
+    def test_show_reads_the_clearance_in_its_block_and_json(self) -> None:
+        # output-contract: docs/user/manpages/wp-tag-show.md, the Clearance line
+        # given the clearance authorized
+        self.assertEqual(self.authorize("TAG-01-stamp-hook")[0], 0)
+        # when
+        block = self.runner.invoke(main, ["wp", "tag", "show"]).output
+        record = json.loads(self.runner.invoke(main, ["wp", "tag", "show", "--json"]).output)[0]
+        # then
+        self.assertIn("Clearance:   authorized", block)
+        self.assertEqual((record.get("clearance") or {}).get("tag_id"), "TAG-01-stamp-hook")
+
+    def test_a_writer_refusal_exits_3_with_its_prose_and_books_nothing(self) -> None:
+        # given a tag the ledger does not hold
+        # when
+        code, output = self.authorize("TAG-99-none")
+        # then the writer's refusal is the verb's, exit 3 (cli.md § Exit Codes)
+        self.assertEqual(code, 3, output)
+        self.assertIn("Tag 'TAG-99-none' is not issued in the ledger", output)
+        self.assertEqual(_tag_rows("tag_clearance_authorized"), [])
+
     def test_a_stamped_authorize_is_refused_and_books_nothing(self) -> None:
         # given a call stamped as a subagent's (ruling 114)
         self.stamp_as(self.dispatch)
@@ -487,6 +564,93 @@ class TagClearWiringTests(_HungTagCase):
         )
         record = json.loads(printed.output)[0]
         self.assertEqual((record.get("state"), record.get("is_open")), ("cleared", False))
+
+    def test_json_mode_prints_the_booked_clear(self) -> None:
+        # given the Restoration dispatch's stamped call, the surface found as hung
+        # when
+        result = self.runner.invoke(
+            main,
+            [
+                *("wp", "tag", "clear", "TAG-01-stamp-hook", "--dispatch", self.restorer),
+                *("--position-found", "off", "--json"),
+            ],
+        )
+        # then the event booked, never the human line
+        self.assertEqual(result.exit_code, 0, result.output)
+        self.assertTrue(result.output.startswith("{"), result.output)
+        self.assertEqual(json.loads(result.output)["event"], "tag_cleared")
+
+    def test_show_reads_the_clear_in_its_block_and_json(self) -> None:
+        # output-contract: docs/user/manpages/wp-tag-show.md, the Cleared by line
+        # given the tag cleared
+        self.assertEqual(self.clear("off")[0], 0)
+        self.unstamp()
+        # when
+        block = self.runner.invoke(main, ["wp", "tag", "show", "--all"]).output
+        record = json.loads(
+            self.runner.invoke(main, ["wp", "tag", "show", "--all", "--json"]).output
+        )[0]
+        # then
+        self.assertIn(f"Cleared by:  {self.restorer}, found off", block)
+        self.assertEqual((record.get("clear") or {}).get("dispatch_id"), self.restorer)
+
+    def test_a_writer_refusal_exits_3_with_its_prose_and_books_nothing(self) -> None:
+        # given a tag the ledger does not hold
+        # when
+        args = ["TAG-99-none", "--dispatch", self.restorer, "--position-found", "off"]
+        result = self.runner.invoke(main, ["wp", "tag", "clear", *args])
+        # then the writer's refusal is the verb's, exit 3 (cli.md § Exit Codes)
+        self.assertEqual(result.exit_code, 3, result.output)
+        self.assertIn("TAG-99-none", result.output)
+        self.assertEqual(_tag_rows("tag_cleared"), [])
+
+    def test_an_out_of_position_block_prints_its_order_and_reads_its_counts(self) -> None:
+        # output-contract: the verb's docstring, the block printed then exit 3
+        # given the surface found back on
+        # when
+        code, output = self.clear("on")
+        # then the human line names the order, and the counts were read (ruling 8)
+        self.assertEqual(code, 3, output)
+        self.assertIn("Blocked order ORD-01-import on the operator:", output)
+        (block,) = _tag_rows("work_package_blocked")
+        self.assertNotIn("acceptance history unreadable", block["reason"])
+
+    def test_json_mode_prints_the_out_of_position_block_booked(self) -> None:
+        # given the surface found back on
+        # when
+        result = self.runner.invoke(
+            main,
+            [
+                *("wp", "tag", "clear", "TAG-01-stamp-hook", "--dispatch", self.restorer),
+                *("--position-found", "on", "--json"),
+            ],
+        )
+        # then the block event first, never the human line, then exit 3
+        self.assertEqual(result.exit_code, 3, result.output)
+        self.assertTrue(result.output.startswith("{"), result.output)
+        printed, _ = json.JSONDecoder().raw_decode(result.output)
+        self.assertEqual(
+            (printed["event"], printed["order"]), ("work_package_blocked", "ORD-01-import")
+        )
+
+    def test_an_unreadable_acceptance_history_is_named_in_the_block(self) -> None:
+        # given an acceptance record on the order the replay cannot read
+        row = {
+            "schema": "gzkit.ledger.v1",
+            "event": "acceptance_recorded",
+            "id": "ORD-01-import",
+            "ts": "2026-11-19T00:00:00+00:00",
+            "record_type": "not-a-record-type",
+            "payload": {},
+        }
+        with Path(".gzkit/ledger.jsonl").open("a", encoding="utf-8") as ledger:
+            ledger.write(json.dumps(row) + "\n")
+        # when
+        code, output = self.clear("on")
+        # then the block is still booked, its reason saying what it could not count
+        self.assertEqual(code, 3, output)
+        (block,) = _tag_rows("work_package_blocked")
+        self.assertIn("(acceptance history unreadable, refutations not counted)", block["reason"])
 
     def test_an_out_of_position_clear_exits_3_with_the_order_blocked(self) -> None:
         # given the surface found back on, not off as it was hung (rulings 137, 140)

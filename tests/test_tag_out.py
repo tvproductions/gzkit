@@ -383,6 +383,18 @@ class IssueRefusalTests(_TagCase):
             with self.subTest(surface=surface):
                 self.assert_refused(slug="second", surface=surface)
 
+    def test_another_surface_takes_its_own_tag_beside_an_open_one(self) -> None:
+        """Ruling 122: the hold is per surface, so a second surface is not held by the first."""
+        self.issue()
+        held: list[TagIssuedEvent] = []
+        self.assertIsNone(
+            _raised(lambda: held.append(self.issue(slug="second", surface="path:src/stamp.py")))
+        )
+        self.assertEqual(
+            [tag.issue.tag_id for tag in open_tags(self.ledger)],
+            ["TAG-01-stamp-hook", held[0].tag_id],
+        )
+
 
 class TagLogTests(_TagCase):
     def test_a_tag_reads_closed_once_its_order_has_closed(self) -> None:
@@ -1112,11 +1124,14 @@ class ClearRefusalTests(_ClearCase):
 
     def test_a_clear_not_stamped_with_the_dispatch_it_names_is_refused(self) -> None:
         """Rulings 6 and 133: the clear is the named Restoration dispatch's own call."""
-        for stamped in (None, "D-00000000000000ff"):
+        # output-contract: the refusal's what-failed part says which stamp, if any, it read
+        for stamped, read in ((None, "This call is not stamped"), ("D-00000000000000ff",
+                              "This call is stamped with D-00000000000000ff")):  # fmt: skip
             with self.subTest(stamped=stamped):
-                self.assert_clear_refused(
+                refusal = self.assert_clear_refused(
                     "a clear is the stamped call", lambda s=stamped: self.clear(stamped=s)
                 )
+                self.assertIn(read, refusal)
 
     def test_a_position_found_outside_the_ruled_set_is_refused(self) -> None:
         """Ruling 140: off, advisory, recording or on, nothing else."""

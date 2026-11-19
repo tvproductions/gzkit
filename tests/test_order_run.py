@@ -668,6 +668,15 @@ class FrozenOrderFence(_OrderRun):
         self.assertIsNotNone(self._write("src/other.py"))
         self.assertIsNone(self._frozen("src/other.py"))
 
+    def test_a_stopped_orders_close_lifts_its_fence(self) -> None:
+        """Ruling 58: an order holds the fence only while commenced or accepted, never closed."""
+        self.block()
+        self.unblock(exit_taken="terminate")
+        self.assertEqual([f.reason for f in self._fences() if f.order == _ORDER], ["stopped"])
+        self.move("accepted", acceptance_ready=True)
+        self.move("closed", **_CLOSE)
+        self.assertEqual([f for f in self._fences() if f.order == _ORDER], [])
+
     def test_commencement_lifts_the_frozen_fence(self) -> None:
         """Ruling 116: the footprint is held only while the order is frozen."""
         self.commence_second()
