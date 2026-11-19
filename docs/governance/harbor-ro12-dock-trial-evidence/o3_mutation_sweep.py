@@ -119,8 +119,50 @@ def _copy(root: Path) -> None:
         shutil.copytree(REPO / name, root / name, ignore=shutil.ignore_patterns("__pycache__"))
 
 
+#: Ruling 155: a file whose row cites one statement, not its function. The statement is
+#: the one in the function that names the symbol; only its mutants are taken, no helpers.
+SITES: dict[str, tuple[str, str]] = {
+    "src/gzkit/cli/main.py": ("main", "STAMP_ID_ENV"),
+}
+
+
+def _site_lines(relative: str) -> set[int]:
+    """Return the lines of the statement ruling 155 cites in *relative*.
+
+    Raises:
+        SystemExit: the function or the statement naming the symbol is gone.
+
+    """
+    function, symbol = SITES[relative]
+    tree = rule.ast.parse((REPO / relative).read_text(encoding="utf-8"))
+    func = rule._functions(tree).get(function)  # noqa: SLF001
+    if func is None:
+        msg = f"{relative}: {function} not found"
+        raise SystemExit(msg)
+    statements = [
+        node
+        for node in rule.ast.walk(func)
+        if isinstance(node, rule.ast.stmt)
+        and not isinstance(node, rule._Func)  # noqa: SLF001
+        and any(isinstance(n, rule.ast.Name) and n.id == symbol for n in rule.ast.walk(node))
+        and not any(isinstance(n, rule.ast.stmt) for n in rule.ast.iter_child_nodes(node))
+    ]
+    if len(statements) != 1:
+        msg = f"{relative}: {function} holds {len(statements)} statements naming {symbol}"
+        raise SystemExit(msg)
+    node = statements[0]
+    return set(range(node.lineno, (node.end_lineno or node.lineno) + 1))
+
+
 def planned(relative: str) -> tuple[dict[str, list[str]], list[Mutation]]:
     """Return *relative*'s scope and its mutants under O2's rule, direct helpers only."""
+    if relative in SITES:
+        function = SITES[relative][0]
+        lines = _site_lines(relative)
+        taken = rule.mutants(REPO / relative, [function])
+        sited = [m for m in taken if int(m.label.split(":")[2]) in lines]
+        site = [f"{relative}:{line}" for line in sorted(lines)]
+        return {"cited": [function], "helpers": [], "site": site}, sited
     found = rule.scope(REPO / relative, CITED[relative], transitive=False)
     return found, rule.mutants(REPO / relative, found["cited"] + found["helpers"])
 
