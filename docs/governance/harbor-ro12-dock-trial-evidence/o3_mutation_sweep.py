@@ -33,6 +33,7 @@ Usage:
 
 import json
 import shutil
+import subprocess
 import sys
 import tempfile
 from concurrent.futures import ThreadPoolExecutor
@@ -84,7 +85,8 @@ CITED: dict[str, tuple[str, ...] | None] = {
     "src/gzkit/pipeline_stage_fence.py": ("frozen_order_write_refusal",),
     # A dispatch's end, and refusal 1's claiming agents in the clear row.
     "src/gzkit/work_package_run.py": ("record_dispatch_end", "dispatch_over", "claiming_agents"),
-    "src/gzkit/dispatch_stamp.py": ("end_hook_output",),
+    # A dispatch's end and ruling 160's hold on an over dispatch, `_bind` the row cites.
+    "src/gzkit/dispatch_stamp.py": ("end_hook_output", "_bind"),
 }
 #: The self-test modules of the rows that cite each file (ruling 152).
 MODULES: dict[str, tuple[str, ...]] = {
@@ -199,6 +201,7 @@ def _run_file(relative: str) -> dict[str, object]:
     sys.stdout.flush()
     return {
         "source": relative,
+        "tree": _tree(),
         "scope": found,
         "modules": list(modules),
         "baseline_green": sweep.baseline_green,
@@ -208,6 +211,22 @@ def _run_file(relative: str) -> dict[str, object]:
         "mutants": [rule._witness_entry(w) for w in sweep.witnesses],  # noqa: SLF001
         "follow_ups": follow,
     }
+
+
+def _tree() -> str:
+    """Name the tree a file's sweep ran on: HEAD, marked when the work tree differs.
+
+    Returns:
+        The commit, with ``+dirty`` when tracked files differ from it.
+
+    """
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=REPO, capture_output=True, text=True, check=True
+    ).stdout.strip()
+    dirty = subprocess.run(
+        ["git", "diff", "--quiet", "HEAD"], cwd=REPO, check=False
+    ).returncode
+    return f"{head}+dirty" if dirty else head
 
 
 def plan() -> int:
