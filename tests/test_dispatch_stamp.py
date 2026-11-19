@@ -69,6 +69,13 @@ class StampRefusal(unittest.TestCase):
             with self.subTest(root=empty):
                 self.assertIsNotNone(self._refusal(empty, self.project))
 
+    def test_the_no_root_refusal_names_why_and_the_way_on(self) -> None:
+        """Rulings 17, 118 and 160: a dispatch over or unread stamps no root; book a fresh one."""
+        # output-contract: guardrail-feedback-prose, the refusal's why and its next step
+        refusal = str(self._refusal("", self.project))
+        self.assertIn("ended, voided or not booked", refusal)
+        self.assertIn("uv run gz wp dispatch", refusal)
+
     def test_a_relative_stamp_root_is_refused(self) -> None:
         self.assertIsNotNone(self._refusal("project", self.base))
 

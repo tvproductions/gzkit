@@ -570,6 +570,27 @@ class TheEnd(_Session):
         self.assertEqual((ends[0]["dispatch_id"], ends[0]["agent_id"]), (_DISPATCH, _AGENT))
         self.assertEqual(self._claims(), [])
 
+    def test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root(self) -> None:
+        """Ruling 160: an end holds like a void, though SendMessage resumes the subagent.
+
+        The probe of ruling 158 measured a stopped subagent resumed through SendMessage
+        running gz under its ended dispatch's stamp; its first record still names it.
+        """
+        self._move("commenced")
+        self._book()
+        self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}")
+        self._end(self._stopped())
+        claims = self._claims()
+        self.assertEqual(self._stamped(), {STAMP_ROOT_ENV: "", STAMP_ID_ENV: _DISPATCH})
+        self.assertEqual(self._claims(), claims)  # an over dispatch takes no fresh claim
+
+    def test_a_voided_dispatch_is_stamped_no_root(self) -> None:
+        """Ruling 118: a killed dispatch ends by its void, and its subagent stamps no root."""
+        self._book()
+        self._void()
+        self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}")
+        self.assertEqual(self._stamped(), {STAMP_ROOT_ENV: "", STAMP_ID_ENV: _DISPATCH})
+
     def test_a_prompt_in_content_blocks_reads_its_text_blocks_alone(self) -> None:
         """A block that is not an object, or carries no text, is passed over, not read."""
         self._move("commenced")

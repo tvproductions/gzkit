@@ -131,7 +131,13 @@ def stamp_refusal(environ: Mapping[str, str], real_root: Callable[[], Path]) -> 
     dispatch = environ.get(STAMP_ID_ENV, "").strip() or "no dispatch id"
     lead = f"Refused before any write: this call is stamped as a dispatched subagent's ({dispatch})"
     if not stamped:
-        return f"{lead}, which names no intended root (RP-12 ruling 17)."
+        return (
+            f"{lead}, which names no intended root: its dispatch is ended, voided or not "
+            "booked, or its record could not be read, and such a subagent writes nothing "
+            "(RP-12 rulings 17, 118 and 160). Return the work to the coordinator, who books "
+            "a fresh dispatch (`uv run gz wp dispatch <WP-id> --role <role> --model <tier>`) "
+            "and runs it from a new subagent."
+        )
     intended = Path(stamped)
     if not intended.is_absolute():
         return (
@@ -933,19 +939,26 @@ def _bind(project_root: Path, dispatch_id: str, agent_id: str, source: str) -> s
     """Read the root a dispatch intends, booking the subagent's claim of it.
 
     Returns:
-        The root, or an empty string when the ledger cannot be read or holds no
-        such dispatch. A claim that cannot be booked leaves the dispatch open,
-        which errs toward refusal (ruling 40).
+        The root, or an empty string when the ledger cannot be read, holds no such
+        dispatch, or reads it over: voided (ruling 118) or ended, since a subagent
+        stopped can be resumed through SendMessage still carrying its dispatch line
+        (ruling 160), and is held as a void is. A claim that cannot be booked leaves
+        the dispatch open, which errs toward refusal (ruling 40).
 
     """
-    from gzkit.work_package_run import find_dispatch, record_dispatch_claim  # noqa: PLC0415
+    from gzkit.work_package_run import (  # noqa: PLC0415
+        dispatch_over,
+        find_dispatch,
+        record_dispatch_claim,
+    )
 
     try:
         ledger = _ledger(project_root)
         record = find_dispatch(ledger, dispatch_id)
+        over = dispatch_over(ledger, dispatch_id)
     except OSError, ValueError:
         return ""
-    if record is None:
+    if record is None or over is not None:
         return ""
     with contextlib.suppress(OSError, ValueError):
         record_dispatch_claim(ledger, dispatch_id, agent_id, source)
