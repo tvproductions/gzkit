@@ -72,7 +72,10 @@ class StampRefusal(unittest.TestCase):
     def test_the_no_root_refusal_names_why_and_the_way_on(self) -> None:
         """Rulings 17, 118 and 160: a dispatch over or unread stamps no root; book a fresh one."""
         # output-contract: guardrail-feedback-prose, the refusal's why and its next step
+        # given a call stamped with no root
+        # when the stamp is read
         refusal = str(self._refusal("", self.project))
+        # then the refusal names why and the coordinator's fresh dispatch
         self.assertIn("ended, voided or not booked", refusal)
         self.assertIn("uv run gz wp dispatch", refusal)
 
