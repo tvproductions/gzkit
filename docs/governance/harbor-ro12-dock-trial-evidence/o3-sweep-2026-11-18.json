@@ -22375,7 +22375,7 @@
     },
     {
       "source": "src/gzkit/work_package_run.py",
-      "tree": "bdfb4313ec347aacc34d8312fae61c1ab4524dde",
+      "tree": "55549a807cf81c4d049a152fee5d447f067bee30",
       "scope": {
         "cited": [
           "claiming_agents",
@@ -22394,11 +22394,11 @@
         "tests.commands.test_wp_tag"
       ],
       "baseline_green": true,
-      "baseline_tests_run": 265,
+      "baseline_tests_run": 266,
       "source_restored": true,
       "counts": {
-        "killed": 12,
-        "survived": 1,
+        "killed": 13,
+        "survived": 0,
         "invalid": 0,
         "inconclusive": 14
       },
@@ -22680,6 +22680,7 @@
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_prompt_in_content_blocks_reads_its_text_blocks_alone",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_another_dispatchs_earlier_claim_does_not_bar_this_ones_end",
             "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch",
             "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_an_ended_dispatch_no_longer_holds_the_undispatched_subagent",
             "tests.test_tag_out.ClearanceLogTests.test_a_malformed_clearance_row_is_refused_with_its_void_not_a_crash",
@@ -22728,6 +22729,7 @@
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_prompt_in_content_blocks_reads_its_text_blocks_alone",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_another_dispatchs_earlier_claim_does_not_bar_this_ones_end",
             "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch",
             "tests.test_dispatch_stamp_hook.TheUndispatchedSubagent.test_an_ended_dispatch_no_longer_holds_the_undispatched_subagent",
             "tests.test_tag_out.ClearanceLogTests.test_a_malformed_clearance_row_is_refused_with_its_void_not_a_crash",
@@ -22783,10 +22785,12 @@
         },
         {
           "label": "work_package_run.py:record_dispatch_end:751:11 filter forced true",
-          "outcome": "survived",
+          "outcome": "killed",
           "reason": "",
-          "failure_class": "none",
-          "failing_tests": []
+          "failure_class": "assertion",
+          "failing_tests": [
+            "tests.test_dispatch_stamp_hook.TheEnd.test_another_dispatchs_earlier_claim_does_not_bar_this_ones_end"
+          ]
         },
         {
           "label": "work_package_run.py:record_dispatch_end:751:11 filter forced false",
@@ -22857,6 +22861,7 @@
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_prompt_in_content_blocks_reads_its_text_blocks_alone",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_another_dispatchs_earlier_claim_does_not_bar_this_ones_end",
             "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_booked_dispatch_stamps_its_intended_root",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_prompt_given_as_content_blocks_is_read",
@@ -22970,6 +22975,7 @@
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_prompt_in_content_blocks_reads_its_text_blocks_alone",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_another_dispatchs_earlier_claim_does_not_bar_this_ones_end",
             "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_booked_dispatch_stamps_its_intended_root",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_prompt_given_as_content_blocks_is_read",
@@ -23087,6 +23093,7 @@
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_prompt_in_content_blocks_reads_its_text_blocks_alone",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_another_dispatchs_earlier_claim_does_not_bar_this_ones_end",
             "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_booked_dispatch_stamps_its_intended_root",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_prompt_given_as_content_blocks_is_read",
@@ -23134,6 +23141,7 @@
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_prompt_in_content_blocks_reads_its_text_blocks_alone",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_resumed_subagent_whose_dispatch_ended_is_stamped_no_root",
             "tests.test_dispatch_stamp_hook.TheEnd.test_a_stopping_subagent_books_its_dispatchs_end_once",
+            "tests.test_dispatch_stamp_hook.TheEnd.test_another_dispatchs_earlier_claim_does_not_bar_this_ones_end",
             "tests.test_dispatch_stamp_hook.TheEnd.test_only_the_first_claimants_stop_ends_the_dispatch",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_booked_dispatch_stamps_its_intended_root",
             "tests.test_dispatch_stamp_hook.TheStamp.test_a_prompt_given_as_content_blocks_is_read",
