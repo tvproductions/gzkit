@@ -604,6 +604,30 @@ class TheEnd(_Session):
         self._end(self._stopped())
         self.assertEqual([e["agent_id"] for e in self._events("dispatch_ended")], [_AGENT])
 
+    def test_another_dispatchs_earlier_claim_does_not_bar_this_ones_end(self) -> None:
+        """Ruling 162 reads the first claimant of this dispatch, not of the ledger.
+
+        The O3 re-sweep's survivor: a claimant filter forced true read another
+        dispatch's claim as this one's, and a claimed subagent's stop booked no end.
+        """
+        self._move("commenced")
+        other = "D-fedcba9876543210"
+        self._book(other)
+        self._book()
+        returned = self._returned(f"GZKIT-DISPATCH: {other}", agent="b-agent")
+        self.assertIsNone(_raised(lambda: claim_hook_output(returned, self.project)))
+        self._prompt(f"GZKIT-DISPATCH: {_DISPATCH}")
+        self._stamped()  # this dispatch is claimed by its own subagent
+        self.assertEqual(
+            [(c["dispatch_id"], c["agent_id"]) for c in self._claims()],
+            [(other, "b-agent"), (_DISPATCH, _AGENT)],
+        )
+        self._end(self._stopped())
+        self.assertEqual(
+            [(e["dispatch_id"], e["agent_id"]) for e in self._events("dispatch_ended")],
+            [(_DISPATCH, _AGENT)],
+        )
+
     def test_a_foreground_return_after_its_end_still_books_the_claim(self) -> None:
         """Ruling 161: a foreground subagent's stop books its end before the Agent tool returns.
 
