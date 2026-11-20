@@ -232,7 +232,7 @@ def gh_issue_created_at(number: str, project_root: Path) -> datetime | None:
         return None
 
 
-def _resolve_cite(cite: str, store: dict[str, str], root: Path) -> tuple[str, datetime] | None:
+def resolve_cite(cite: str, store: dict[str, str], root: Path) -> tuple[str, datetime] | None:
     """Map one citation to its label and full timestamp, or None when it names nothing."""
     number = cite.removeprefix("#")
     if number.isdigit():
@@ -266,7 +266,7 @@ def recurrence(*, cites: list[str], as_json: bool) -> None:
     store = insight_lines_by_ts(root / DEFAULT_INSIGHTS_PATH)
     resolved: dict[str, datetime] = {}
     for cite in cites:
-        found = _resolve_cite(cite, store, root)
+        found = resolve_cite(cite, store, root)
         if found is None:
             print(f"Error: {cite} names no insight record or resolvable GHI.", file=sys.stderr)
             sys.exit(1)

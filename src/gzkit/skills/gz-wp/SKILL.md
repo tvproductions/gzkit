@@ -7,16 +7,14 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-20
 metadata:
-  skill-version: "0.26.2"
+  skill-version: "0.27.0"
 model: sonnet
 ---
 
 # gz-wp
 
 Run a work package through its record, lifecycle and change ladder with `gz wp`
-(drydock RO-5, `docs/governance/harbor-ro5-work-packages.md`). This is the lean
-wielder the operator ruled for tranche 2 ("New lean gz-wp skill (Recommended)",
-2026-10-28); RO-12's contractor kit composes it.
+(drydock RO-5, `docs/governance/harbor-ro5-work-packages.md`; RP-12's contractor kit).
 
 ## The record
 
@@ -33,10 +31,8 @@ uv run gz wp new --kind delivery --slug <slug> --outcome <code> [--alteration ID
 uv run gz wp attach <WP-id> --issue <n>
 ```
 
-Attaching an issue, by `new` or `attach`, also labels it `repair` and comments
-the package id on it, aliases in parentheses (ruling 7); the verb creates the
-label when the repository lacks it. If `gh` fails, the verb exits 2 and writes
-nothing; fix `gh` and re-run.
+Attaching an issue labels it `repair` and comments the package id on it (ruling 7);
+if `gh` fails, the verb exits 2 and writes nothing: fix `gh` and re-run.
 
 ## Objective quality evidence
 
@@ -67,9 +63,8 @@ refuse and name the order's verb (RP-12 ruling 44).
 3. **Commence** once every surface the package works has its tag hung:
    `uv run gz wp commence <WP-id> --evidence <what was checked>`. This crosses the
    airlock and books `airlock_in`.
-   Commit the package's work under a `Task:` trailer that starts with the lowercased
-   package id, such as `TASK-wp-02-resume-#1185`: that trailer is how the exit knows
-   the commit is the package's. A defect fix keeps its own trailer.
+   Commit its work under a `Task:` trailer starting with the lowercased package id,
+   `TASK-wp-02-resume-#1185`, how the exit knows the commit; a defect fix keeps its own.
 4. **Prove and review.** `uv run gz wp acceptance <WP-id> init --author <session>`,
    then `prove --spec <file>` and `review --receipt <run-id>`, on the frozen REQs.
    Spec, quality and adversarial reviews approve each proof. A package gets three
@@ -95,9 +90,8 @@ refuse and name the order's verb (RP-12 ruling 44).
 ## Withdrawing a legacy unit
 
 `uv run gz wp withdraw-legacy <OBPI-id> --reason "<why, and where its REQs went>" --attestor g0`
-withdraws a legacy OBPI for good, as `gz obpi withdraw` does; RO-8 runs it on the
-operator's word. It takes a legacy id, not a package, the attestor is human and never
-defaulted, and `--dry-run` shows the event first.
+withdraws a legacy OBPI for good on the operator's word (RO-8), as `gz obpi withdraw`
+does; the attestor is human and never defaulted, and `--dry-run` shows the event first.
 
 ## The run
 
@@ -182,19 +176,13 @@ on an opened or frozen order; a subagent's call is refused. The surface is
 `<kind>:<name>`: `validator:` a scope in its flag's spelling, `check:` a step lower
 case and hyphenated, `hook:` a registered script or pre-commit id, bare or as
 `hook:settings:<script>` or `hook:pre-commit:<id>`, `path:` a repo path. One open
-tag per surface (rulings 110 to 127):
+tag per surface (rulings 110 to 127). `gz wp tag show` reads the open log, every tag
+with `--all`; any session may run it (rulings 4 and 110):
 
 ```bash
 uv run gz wp tag issue <ORD-id> --slug <slug> --class <Danger|Caution> --surface <kind>:<name> \
   --position <off|advisory|recording> --hazard "<hazard>" --removal-procedure "<how>" \
   --source order-work --check-level <C|D>
-```
-
-Read the tag-out log with `gz wp tag show`, the open tags by default and every
-tag, each marked open or closed, with `--all`. It writes nothing, needs no MX
-session, and any session may run it (RP-12 rulings 4 and 110):
-
-```bash
 uv run gz wp tag show [--all] [--json]
 ```
 
@@ -238,6 +226,17 @@ work, never the main session; the commit landing the work names the entry in its
 uv run gz wp entry book --dispatch D-<id> --slug <slug> --description "<what was done>" \
   --before "<measurement>" --after "<measurement>" --witness "<command or receipt>" [--json]
 uv run gz wp entry show [--json]
+```
+
+What the work leaves broken goes on the list of discrepancies, always on an order (rulings 9,
+178): the coordinator's call names `--order`, a performer's stamped call records only a find
+in the work. Grade `blocks-return-to-service`, or `due-by-event` with the event in text. The
+coordinator alone clears, citing an entry, a cleared tag or the open issue it was filed as;
+a blocking or recurring line carries root cause and corrective action (rulings 172, 179 to 181):
+
+```bash
+uv run gz wp discrepancy record --order <ORD-id> --slug <slug> --grade <grade> --source <source> --description "<what is wrong>" [--due-by "<event>"] [--tag <TAG-id>]
+uv run gz wp discrepancy clear <DSC-id> (--entry <ENT-id> | --tag <TAG-id> | --ghi <n>) [--root-cause "<text>" --corrective-action "<text>"] [--recurs <cite>]
 ```
 
 The order's run is the package's run with `--order`: dispatch only against a REQ the

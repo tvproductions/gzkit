@@ -124,6 +124,8 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz wp tag hang`](wp-tag-hang.md) | Hang an issued tag, as the Repair dispatch's stamped call (RP-12 O3) |
 | [`gz wp tag authorize`](wp-tag-authorize.md) | Authorize a hung tag's clearance, as the coordinator (RP-12 O3) |
 | [`gz wp tag clear`](wp-tag-clear.md) | Clear an authorized tag, as the Restoration dispatch's stamped call (RP-12 O3) |
+| [`gz wp discrepancy clear`](wp-discrepancy-clear.md) | Clear a line on the list of discrepancies on its evidence, the coordinator's call (RP-12 O4) |
+| [`gz wp discrepancy record`](wp-discrepancy-record.md) | Record a line on the list of discrepancies, the coordinator's or a performer's find (RP-12 O4) |
 | [`gz wp entry book`](wp-entry-book.md) | Book a maintenance-record entry, as the stamped call of the dispatch that did the work (RP-12 O4) |
 | [`gz wp entry show`](wp-entry-show.md) | Show the maintenance record: every entry, with its order's Gate 5 (RP-12 O4) |
 | [`gz wp req new`](wp-req-new.md) | Write a repair requirement with the next `REQ-<n>`, held on its repair package (RP-12 O2) |

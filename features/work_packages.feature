@@ -78,6 +78,22 @@ Feature: Work packages run through the gz wp verbs
     Then the command exits with code 3
     And the output contains "This call is not stamped"
 
+  Scenario: recording a discrepancy with no order is a policy breach
+    Given the workspace is initialized
+    And the requirements catalog is seeded
+    When I run the gz command "mx enter --reason repair --attestor g0"
+    And I run the gz command "wp discrepancy record --slug x --grade blocks-return-to-service --source left-broken --description d"
+    Then the command exits with code 3
+    And the output contains "--order is required"
+
+  Scenario: clearing a discrepancy not recorded is a policy breach
+    Given the workspace is initialized
+    And the requirements catalog is seeded
+    When I run the gz command "mx enter --reason repair --attestor g0"
+    And I run the gz command "wp discrepancy clear DSC-01-x --entry ENT-01-x"
+    Then the command exits with code 3
+    And the output contains "is not recorded in the ledger"
+
   Scenario: authorizing a clearance with no MX session open is a policy breach
     Given the workspace is initialized
     And the requirements catalog is seeded

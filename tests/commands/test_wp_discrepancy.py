@@ -1,0 +1,243 @@
+"""``gz wp discrepancy record`` and ``clear``'s wiring: RP-12 O4 task 2, act 2.
+
+`docs/governance/harbor-ro12-contractor-kit.md` § Rulings: the coordinator's
+unstamped call records a line on its order, and a performer's stamped call records
+a find in the work (rulings 9, 172, 178); the coordinator alone clears a line on its
+evidence, an issue confirmed through `gh` (rulings 172, 180, 181). Every refusal of
+the writers, and the reducer, is proved in `tests/test_discrepancies.py`; these held
+tests prove the wiring alone: the stamp, the session and `gh` read at the CLI, the
+exit codes and the epilogs (ruling 125).
+"""
+
+import json
+import os
+import shlex
+import unittest
+from pathlib import Path
+from typing import Any
+
+from gzkit.cli import main
+from gzkit.cli.main import _build_parser
+from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV
+from tests.commands.test_wp_entry import _EntryCase
+from tests.commands.test_wp_order import _help_parser
+from tests.mx.held import open_marker
+
+_LINE = (
+    *("--slug", "hook-left-off"),
+    *("--grade", "due-by-event", "--due-by", "the restoration"),
+    *("--description", "The stamp hook is left off."),
+)
+
+
+def _rows(event: str) -> list[dict[str, Any]]:
+    text = (Path(".gzkit") / "ledger.jsonl").read_text(encoding="utf-8")
+    rows = [json.loads(line) for line in text.splitlines() if line.strip()]
+    return [row for row in rows if row["event"] == event]
+
+
+class _DiscrepancyCase(_EntryCase):
+    """The entry case's commenced order and its Restoration dispatch, an MX session open."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        open_marker(Path.cwd())
+
+    def run_gz(self, *args: str) -> tuple[int, str]:
+        result = self.runner.invoke(main, ["wp", "discrepancy", *args])
+        return result.exit_code, " ".join(result.output.split())
+
+    def unstamp(self) -> None:
+        for name in (STAMP_ROOT_ENV, STAMP_ID_ENV):
+            os.environ.pop(name, None)
+
+
+class RecordWiringTests(_DiscrepancyCase):
+    def test_the_coordinators_call_records_a_line_on_its_order(self) -> None:
+        # output-contract: docs/user/manpages/wp-discrepancy-record.md, the line a record prints
+        # given an open MX session and the main session's call, carrying no stamp
+        # when
+        code, output = self.run_gz(
+            "record", "--order", "ORD-01-import", "--source", "left-broken", *_LINE
+        )
+        # then the line is booked on the typed order, with no performer, under the session
+        self.assertEqual((code, output), (0, "Recorded DSC-01-hook-left-off on ORD-01-import."))
+        self.assertEqual(
+            [
+                (r["discrepancy_id"], r["order"], r.get("dispatch_id"), r["mx_session_id"])
+                for r in _rows("discrepancy_recorded")
+            ],
+            [("DSC-01-hook-left-off", "ORD-01-import", None, "test-session")],
+        )
+
+    def test_json_mode_prints_the_recorded_event(self) -> None:
+        # given the coordinator's call
+        # when
+        code, output = self.run_gz(
+            "record", "--order", "ORD-01-import", "--source", "left-broken", *_LINE, "--json"
+        )
+        # then the event booked, never the human line
+        self.assertEqual(code, 0, output)
+        printed, (booked,) = json.loads(output), _rows("discrepancy_recorded")
+        self.assertEqual(
+            {k: v for k, v in printed.items() if k != "ts"},
+            {k: v for k, v in booked.items() if k != "ts"},
+        )
+
+    def test_a_performers_stamped_call_records_a_find_on_its_own_order(self) -> None:
+        # given the call stamped with the Restoration dispatch it names
+        self.stamp_as(self.dispatch)
+        # when
+        code, output = self.run_gz(
+            "record", "--dispatch", self.dispatch, "--source", "found-in-work", *_LINE
+        )
+        # then the order is read from the dispatch, and the performer recorded
+        self.assertEqual(code, 0, output)
+        ((order, dispatch_id),) = [
+            (r["order"], r["dispatch_id"]) for r in _rows("discrepancy_recorded")
+        ]
+        self.assertEqual((order, dispatch_id), ("ORD-01-import", self.dispatch))
+
+    def test_a_subagents_call_with_no_dispatch_id_is_refused(self) -> None:
+        # output-contract: the refusal names its cause (guardrail-feedback-prose)
+        # given a subagent's call stamped with a root but no dispatch id
+        os.environ[STAMP_ROOT_ENV] = Path.cwd().resolve().as_posix()
+        self.addCleanup(os.environ.pop, STAMP_ROOT_ENV, None)
+        # when
+        code, output = self.run_gz(
+            "record", "--order", "ORD-01-import", "--source", "left-broken", *_LINE
+        )
+        # then neither the coordinator nor a performer made it: exit 3, nothing booked
+        self.assertEqual(code, 3, output)
+        self.assertIn("stamped with no dispatch id", output)
+        self.assertEqual(_rows("discrepancy_recorded"), [])
+
+    def test_the_writers_refusal_exits_3_and_books_nothing(self) -> None:
+        # given the coordinator's call naming no order
+        # when
+        code, output = self.run_gz("record", "--source", "left-broken", *_LINE)
+        # then the writer's refusal is the verb's (cli.md § Exit Codes)
+        self.assertEqual(code, 3, output)
+        self.assertIn("--order is required", output)
+        self.assertEqual(_rows("discrepancy_recorded"), [])
+
+
+class ClearWiringTests(_DiscrepancyCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.stamp_as(self.dispatch)
+        self.assertEqual(self.book()[0], 0)
+        self.unstamp()
+        code, output = self.run_gz(
+            "record", "--order", "ORD-01-import", "--source", "left-broken", *_LINE
+        )
+        self.assertEqual(code, 0, output)
+
+    def test_the_coordinator_clears_a_line_on_an_entry(self) -> None:
+        # output-contract: docs/user/manpages/wp-discrepancy-clear.md, the line a clear prints
+        # given the line and an entry of its package
+        # when
+        code, output = self.run_gz(
+            "clear", "DSC-01-hook-left-off", "--entry", "ENT-01-stamp-import"
+        )
+        # then the clear is booked, citing the entry
+        self.assertEqual((code, output), (0, "Cleared DSC-01-hook-left-off on ORD-01-import."))
+        self.assertEqual(
+            [(r["discrepancy_id"], r["entry_id"]) for r in _rows("discrepancy_cleared")],
+            [("DSC-01-hook-left-off", "ENT-01-stamp-import")],
+        )
+
+    def test_a_subagents_call_is_refused(self) -> None:
+        # given the call stamped as the dispatch's subagent
+        self.stamp_as(self.dispatch)
+        # when
+        code, output = self.run_gz(
+            "clear", "DSC-01-hook-left-off", "--entry", "ENT-01-stamp-import"
+        )
+        # then the coordinator alone clears: exit 3, nothing booked
+        self.assertEqual(code, 3, output)
+        self.assertIn("coordinator's unstamped call alone", output)
+        self.assertEqual(_rows("discrepancy_cleared"), [])
+
+    def test_an_issue_gh_cannot_read_exits_2_and_books_nothing(self) -> None:
+        # given no gh on the path, so the issue cannot be read
+        empty = Path("no-bin")
+        empty.mkdir()
+        self.addCleanup(os.environ.__setitem__, "PATH", os.environ["PATH"])
+        os.environ["PATH"] = empty.resolve().as_posix()
+        # when
+        code, output = self.run_gz("clear", "DSC-01-hook-left-off", "--ghi", "1412")
+        # then a System/IO error, never a policy breach (ruling 180; cli.md § Exit Codes)
+        self.assertEqual(code, 2, output)
+        self.assertIn("could not be read through `gh`", output)
+        self.assertEqual(_rows("discrepancy_cleared"), [])
+
+    def test_each_recurs_citation_reaches_the_writer(self) -> None:
+        # given a citation that names nothing, repeated after one that does not either
+        # when
+        code, output = self.run_gz(
+            "clear",
+            "DSC-01-hook-left-off",
+            "--entry",
+            "ENT-01-stamp-import",
+            *("--recurs", "2026-01-01T00:00:00+00:00", "--recurs", "#999999999"),
+        )
+        # then the first citation is read and refused by name, so the flag repeats onto the clear
+        self.assertEqual(code, 3, output)
+        self.assertIn("--recurs 2026-01-01T00:00:00+00:00 names no", output)
+
+    def test_a_resolved_citation_with_no_threshold_registry_exits_1(self) -> None:
+        # given three insight records the citations resolve, and no recurrence registry
+        store = Path(".gzkit") / "insights" / "agent-insights.jsonl"
+        store.parent.mkdir(parents=True, exist_ok=True)
+        cites = [f"2026-0{month}-01T00:00:00+00:00" for month in (1, 2, 3)]
+        store.write_text("".join(json.dumps({"ts": c}) + "\n" for c in cites), encoding="utf-8")
+        registry = Path("data") / "recurrence_threshold.json"
+        registry.unlink(missing_ok=True)
+        # when
+        code, output = self.run_gz(
+            "clear",
+            "DSC-01-hook-left-off",
+            "--entry",
+            "ENT-01-stamp-import",
+            *(arg for cite in cites for arg in ("--recurs", cite)),
+        )
+        # then a config error names the registry, and nothing is booked (cli.md § Exit Codes)
+        self.assertEqual(code, 1, output)
+        self.assertIn("recurrence_threshold.json", output)
+        self.assertEqual(_rows("discrepancy_cleared"), [])
+
+
+class DiscrepancyEpilogTests(unittest.TestCase):
+    def test_every_example_parses_as_a_real_invocation(self) -> None:
+        # given the help of `gz wp discrepancy` and of each of its leaves
+        parser = _build_parser()
+        paths = (
+            ["wp", "discrepancy"],
+            *(["wp", "discrepancy", leaf] for leaf in ("record", "clear")),
+        )
+        examples = [
+            line.strip()
+            for path in paths
+            for line in (_help_parser(parser, list(path)).epilog or "").splitlines()
+            if line.strip().startswith("gz ")
+        ]
+        group = [
+            line.strip()
+            for line in (_help_parser(parser, ["wp", "discrepancy"]).epilog or "").splitlines()
+            if line.strip().startswith("gz ")
+        ]
+        # when
+        parsed = [parser.parse_args(shlex.split(example)[1:]) for example in examples]
+        leaves = {
+            parser.parse_args(shlex.split(example)[1:]).discrepancy_command for example in group
+        }
+        # then each parses, every required flag present, onto a handler
+        self.assertGreaterEqual(len(examples), 7)
+        self.assertTrue(all(callable(args.func) for args in parsed))
+        # and the group's own help shows an example of each of its leaves
+        self.assertEqual(leaves, {"record", "clear"})
+
+
+if __name__ == "__main__":
+    unittest.main()

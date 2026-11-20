@@ -1092,6 +1092,22 @@ uv run gz wp entry show
 uv run gz wp entry show --json
 ```
 
+What the work leaves broken goes on the list of discrepancies, always against an
+order. The coordinator records a line from the main session with `--order`; a
+dispatched performer records a find in the work from its own stamped call, its
+order read from its dispatch. A line blocks return to service, or is due by an
+event named in text. The coordinator alone clears it, citing an entry or a cleared
+tag of its package, or the open issue it was filed as, with root cause and
+corrective action on a blocking or recurring line (RP-12 rulings 9, 172 and 178 to
+181):
+
+```bash
+uv run gz wp discrepancy record --order ORD-01-import --slug hook-left-off \
+  --grade blocks-return-to-service --source left-broken --description "<what is wrong>"
+uv run gz wp discrepancy clear DSC-01-hook-left-off --entry ENT-01-stamp-import \
+  --root-cause "<cause>" --corrective-action "<action>"
+```
+
 A repair requirement states what must hold again after the repair. It lives in
 `data/catalog/reqs.json` beside the catalog's, written only by `gz wp req new`
 on an open repair package, and names the issue it answers:
