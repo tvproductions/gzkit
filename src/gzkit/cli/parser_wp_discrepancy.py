@@ -8,14 +8,20 @@ a parameter named ``wp_commands``, the name ``register_wp_parsers`` binds to the
 shape. Building the parser tree imports no handler-only module (GHI #180).
 """
 
-from typing import TYPE_CHECKING, get_args
+from typing import TYPE_CHECKING
 
 from gzkit.cli.helpers import add_json_flag, build_epilog
 from gzkit.cli.parser_handler_manifest import _lazy
-from gzkit.events import DiscrepancyGrade, DiscrepancySource
 
 if TYPE_CHECKING:
     import argparse
+
+#: The members of ``gzkit.events.DiscrepancyGrade`` and ``DiscrepancySource``, spelled
+#: out as the sibling parsers spell theirs: a driving adapter imports no module outside
+#: its region's row (`docs/governance/hexagonal-architecture.md` § The dependency
+#: rules). ``DiscrepancyChoicesTests`` holds them equal to the closed sets.
+_GRADES = ("blocks-return-to-service", "due-by-event")
+_SOURCES = ("left-broken", "inspector-rejection", "found-in-work")
 
 _RECORD_EXAMPLES = [
     (
@@ -110,10 +116,10 @@ def _register_wp_discrepancy(wp_commands: argparse._SubParsersAction) -> None:
         "--slug", required=True, help="Lowercase words joined by hyphens"
     )
     p_discrepancy_record.add_argument(
-        "--grade", required=True, choices=get_args(DiscrepancyGrade), help="The line's grade"
+        "--grade", required=True, choices=_GRADES, help="The line's grade"
     )
     p_discrepancy_record.add_argument(
-        "--source", required=True, choices=get_args(DiscrepancySource), help="Where it comes from"
+        "--source", required=True, choices=_SOURCES, help="Where it comes from"
     )
     p_discrepancy_record.add_argument("--description", required=True, help="What is wrong")
     p_discrepancy_record.add_argument(

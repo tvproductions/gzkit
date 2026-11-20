@@ -14,11 +14,12 @@ import os
 import shlex
 import unittest
 from pathlib import Path
-from typing import Any
+from typing import Any, get_args
 
 from gzkit.cli import main
 from gzkit.cli.main import _build_parser
 from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV
+from gzkit.events import DiscrepancyGrade, DiscrepancySource
 from tests.commands.test_wp_entry import _EntryCase
 from tests.commands.test_wp_order import _help_parser
 from tests.mx.held import open_marker
@@ -330,6 +331,31 @@ class DiscrepancyEpilogTests(unittest.TestCase):
         self.assertTrue(all(callable(args.func) for args in parsed))
         # and the group's own help shows an example of each of its leaves
         self.assertEqual(leaves, {"record", "clear", "show"})
+
+
+class DiscrepancyChoicesTests(unittest.TestCase):
+    """The parser offers exactly the ledger's closed sets, which it may not import.
+
+    `gzkit.cli` is a driving adapter and imports no module outside its region's row
+    (`docs/governance/hexagonal-architecture.md` § The dependency rules), so the parser
+    spells the members out; this holds them to `DiscrepancyGrade` and
+    `DiscrepancySource`, so a member ruled in or out of either set reaches the CLI.
+    """
+
+    def test_record_offers_every_grade_and_source_and_no_other(self) -> None:
+        # given the record leaf of `gz wp discrepancy`
+        record = _help_parser(_build_parser(), ["wp", "discrepancy", "record"])
+        # when its --grade and --source choices are read
+        offered = {
+            action.dest: set(action.choices or ())
+            for action in record._actions
+            if action.dest in {"grade", "source"}
+        }
+        # then they are the ledger's closed sets, member for member
+        self.assertEqual(
+            offered,
+            {"grade": set(get_args(DiscrepancyGrade)), "source": set(get_args(DiscrepancySource))},
+        )
 
 
 if __name__ == "__main__":
