@@ -1883,10 +1883,12 @@ class WorkPackageIssueClosedEvent(_EventBase):
 
 #: A dispatch id as the runtime mints it (RP-12 ruling 1): ``D-`` and 16 hex digits.
 DISPATCH_ID_PATTERN = "D-[0-9a-f]{16}"
+#: A slug, the last part of a tag's or an entry's id: lowercase words joined by hyphens.
+SLUG_PATTERN = "[a-z0-9]+(-[a-z0-9]+)*"
 #: A tag's id, in the grammar of orders and packages (RP-12 ruling 111): ``TAG-<NN>-<slug>``.
-TAG_ID_PATTERN = "TAG-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*"
+TAG_ID_PATTERN = f"TAG-[0-9]{{2,}}-{SLUG_PATTERN}"
 #: A maintenance-record entry's id, in the same grammar (RP-12 ruling 169): ``ENT-<NN>-<slug>``.
-ENTRY_ID_PATTERN = "ENT-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*"
+ENTRY_ID_PATTERN = f"ENT-[0-9]{{2,}}-{SLUG_PATTERN}"
 
 
 class WorkPackageDispatchedEvent(_EventBase):

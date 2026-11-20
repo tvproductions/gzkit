@@ -24,8 +24,9 @@ from typing import TYPE_CHECKING, NoReturn
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from gzkit.events import EntryBookedEvent, OrderTransitionedEvent
+from gzkit.events import SLUG_PATTERN, EntryBookedEvent, OrderTransitionedEvent
 from gzkit.ledger import ledger_row
+from gzkit.mx.series import next_series_id
 from gzkit.order_ledger import is_order_blocked, order_state
 from gzkit.work_package_run import (
     IMPLEMENTER,
@@ -36,7 +37,7 @@ from gzkit.work_package_run import (
 )
 
 if TYPE_CHECKING:
-    from gzkit.ledger import Ledger
+    from gzkit.ledger import Ledger, LedgerEvent
     from gzkit.work_package_run import DispatchRecord
 
 #: The roles that perform maintenance on an order, so book its entries (ruling 175).
@@ -44,7 +45,7 @@ PERFORMERS: tuple[str, ...] = (IMPLEMENTER, SINGLE_DRIVER, RESTORATION)
 #: The fields an entry requires written out, none blank (rulings 8 and 173).
 _REQUIRED_TEXT: tuple[str, ...] = ("description", "before", "after", "witness")
 #: An entry's slug: lowercase words joined by hyphens, as an order's or a tag's (ruling 169).
-_SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+_SLUG = re.compile(f"^{SLUG_PATTERN}$")
 
 
 class EntryError(ValueError):
@@ -68,6 +69,17 @@ def _refuse(message: str) -> NoReturn:
     raise EntryError(message)
 
 
+def _refuse_malformed(row: LedgerEvent, exc: ValidationError, reading: str) -> NoReturn:
+    """Refuse a row its event's shape does not admit, naming the void that recovers it."""
+    _refuse(
+        f"The ledger's {row.event} row {row.id!r} at {row.ts} does not parse "
+        f"({exc.error_count()} error(s)), so {reading} (RP-12 ruling 8). The ledger is "
+        f"append-only; void the row with `uv run gz ledger correct --subject-event {row.event} "
+        f"--subject-id {row.id} --subject-ts {row.ts} --disposition void --cause agent-error "
+        '--reason "<why>" --attestor g0`, then read it again.'
+    )
+
+
 def maintenance_record(ledger: Ledger) -> list[EntryBookedEvent]:
     """Read every entry the ledger books, oldest first: the maintenance record (ruling 8).
 
@@ -83,14 +95,7 @@ def maintenance_record(ledger: Ledger) -> list[EntryBookedEvent]:
         try:
             entries.append(EntryBookedEvent.model_validate(row.model_dump()))
         except ValidationError as exc:
-            _refuse(
-                f"The ledger's entry_booked row {row.id!r} at {row.ts} does not parse "
-                f"({exc.error_count()} error(s)), so the maintenance record cannot be read "
-                "(RP-12 ruling 8). The ledger is append-only; void the row with `uv run gz "
-                f"ledger correct --subject-event entry_booked --subject-id {row.id} "
-                f"--subject-ts {row.ts} --disposition void --cause agent-error --reason "
-                '"<why>" --attestor g0`, then book the entry again.'
-            )
+            _refuse_malformed(row, exc, "the maintenance record cannot be read")
     return entries
 
 
@@ -118,11 +123,15 @@ def record_view(ledger: Ledger) -> list[RecordedEntry]:
         or None while the order is not closed.
 
     """
-    closes = {
-        str(row.extra.get("order")): OrderTransitionedEvent.model_validate(row.model_dump())
-        for row in ledger.query(event_type="order_transitioned")
-        if row.extra.get("to_state") == "closed"
-    }
+    closes: dict[str, OrderTransitionedEvent] = {}
+    for row in ledger.query(event_type="order_transitioned"):
+        if row.extra.get("to_state") != "closed":
+            continue
+        try:
+            closed = OrderTransitionedEvent.model_validate(row.model_dump())
+        except ValidationError as exc:
+            _refuse_malformed(row, exc, "no entry's Gate 5 can be read")
+        closes[closed.order] = closed
     return [
         RecordedEntry(entry=entry, gate5=closes.get(entry.order))
         for entry in maintenance_record(ledger)
@@ -132,12 +141,14 @@ def record_view(ledger: Ledger) -> list[RecordedEntry]:
 def next_entry_id(ledger: Ledger, slug: str) -> str:
     """Return the next id in the one series (ruling 169): the highest number plus one.
 
+    The series is read from the ledger's history, a voided entry's number included,
+    so a number never returns (ruling 176).
+
     Returns:
-        `ENT-<NN>-<slug>`, numbered past every entry the ledger names.
+        `ENT-<NN>-<slug>`, numbered past every entry the ledger's history names.
 
     """
-    numbers = [int(entry.entry_id.split("-")[1]) for entry in maintenance_record(ledger)]
-    return f"ENT-{max(numbers, default=0) + 1:02d}-{slug}"
+    return next_series_id(ledger, "entry_booked", "ENT", slug)
 
 
 def _refuse_unstamped(dispatch_id: str, stamped_id: str | None) -> NoReturn:

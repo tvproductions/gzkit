@@ -36,7 +36,8 @@ _SHOW_EXIT_CODES = """Exit codes
     0   Shown, an empty record included
     1   User/config error: the project is not initialized
     2   Usage or System/IO error
-    3   Policy breach: an entry_booked row does not parse; void it
+    3   Policy breach: an entry_booked row, or an order's closing row, does not
+        parse; void it
 """
 #: Every refusal of the entry is the writer's or the marker's, and books nothing.
 _BOOK_EXIT_CODES = """Exit codes

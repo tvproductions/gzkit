@@ -15,10 +15,9 @@ from typing import TYPE_CHECKING
 
 from gzkit.cli.formatters import OutputFormatter
 from gzkit.commands.common import ensure_initialized, get_project_root
-from gzkit.commands.wp_tag import MARKER_RECOVERY
+from gzkit.commands.open_session import open_session_id
 from gzkit.core.exceptions import PolicyBreachError
 from gzkit.ledger import Ledger
-from gzkit.mx import marker
 from gzkit.mx.entries import EntryBook, EntryError, record_entry_book, record_view
 
 if TYPE_CHECKING:
@@ -28,30 +27,21 @@ if TYPE_CHECKING:
 
 
 def _open_session_id(root: Path, ledger_path: Path) -> str | None:
-    """Read the open MX session's id, or None when no marker is present.
-
-    A marker present but not on, unreadable, unbound to an open session or
-    exiting, records no entry either, and its recovery is not `gz mx enter`, which
-    a present marker refuses; so it is refused here with the recovery its cause names.
+    """Read the open MX session the entry records its work was done under.
 
     Returns:
-        The marker's session id while the condition is on, or None when it is absent.
-
-    Raises:
-        PolicyBreachError: A marker is present and the condition is not on.
+        The session's id, or None when no marker is present (`open_session_id`).
 
     """
-    held = marker.condition(root, ledger_path)
-    if held.on and held.marker is not None:
-        return held.marker.session_id
-    if held.cause in MARKER_RECOVERY:
-        msg = (
-            f"The MX marker is present but {held.cause}, so no session is open to record "
-            "the entry under. An entry records the MX session its work was done under "
-            f"(RP-12 ruling 8). {MARKER_RECOVERY[held.cause]}, then book the entry again."
-        )
-        raise PolicyBreachError(msg)
-    return None
+    return open_session_id(
+        root,
+        ledger_path,
+        why=(
+            "to record the entry under. An entry records the MX session its work was "
+            "done under (RP-12 ruling 8)"
+        ),
+        again="book the entry again",
+    )
 
 
 def wp_entry_book_cmd(
@@ -73,7 +63,7 @@ def wp_entry_book_cmd(
             the entry (no MX session open, the call not stamped with the dispatch
             named, a malformed slug or a blank field, the dispatch not a live
             Implementer, SingleDriver or Restoration on an order, the order not
-            commenced or blocked, a ledger row that does not parse); nothing is booked.
+            commenced or blocked); nothing is booked.
 
     """
     config = ensure_initialized()
@@ -147,7 +137,7 @@ def wp_entry_show_cmd(*, as_json: bool) -> None:
     subagent's call: a read is no one's act.
 
     Raises:
-        PolicyBreachError: An `entry_booked` row on the ledger does not parse; the
+        PolicyBreachError: An `entry_booked` row, or an order's closing row, does not parse; the
             refusal names the row and the void that recovers it.
 
     """

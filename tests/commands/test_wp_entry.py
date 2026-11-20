@@ -108,6 +108,7 @@ class _EntryCase(unittest.TestCase):
 
 class EntryBookWiringTests(_EntryCase):
     def test_the_named_dispatchs_stamped_call_books_the_entry(self) -> None:
+        # output-contract: docs/user/manpages/wp-entry-book.md, the line a booking prints
         # given an open MX session and the call stamped with the Restoration it names
         open_marker(Path.cwd())
         self.stamp_as(self.dispatch)
@@ -149,6 +150,7 @@ class EntryBookWiringTests(_EntryCase):
         )
 
     def test_an_unstamped_call_is_refused_and_books_nothing(self) -> None:
+        # output-contract: the refusal names its cause (guardrail-feedback-prose)
         # given an open MX session and the main session's call, carrying no stamp
         open_marker(Path.cwd())
         # when
@@ -159,6 +161,7 @@ class EntryBookWiringTests(_EntryCase):
         self.assertEqual(_entry_rows(), [])
 
     def test_with_no_mx_session_the_entry_is_refused_and_books_nothing(self) -> None:
+        # output-contract: the refusal names its cause (guardrail-feedback-prose)
         # given the dispatch's stamped call and no MX session open
         self.stamp_as(self.dispatch)
         # when

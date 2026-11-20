@@ -430,6 +430,23 @@ class TagLogTests(_TagCase):
             self.ledger.append(ledger_row(far.model_copy(update={"id": tag_id, "tag_id": tag_id})))
         self.assertEqual(next_tag_id(self.ledger, "next"), "TAG-101-next")
 
+    def test_a_voided_tags_number_is_never_reissued(self) -> None:
+        """Ruling 176: the series reads past every number the history names, a void included."""
+        voided = self.issue()
+        (subject,) = [row for row in _rows(self.path) if row.get("id") == voided.tag_id]
+        void = {
+            "schema": "gzkit.ledger.v1", "event": "ledger_event_corrected",
+            "id": voided.tag_id, "ts": "2099-01-01T00:00:00+00:00",
+            "subject_event": "tag_issued", "subject_id": voided.tag_id,
+            "subject_ts": subject["ts"], "disposition": "void", "cause": "agent-error",
+            "attestor": "g0", "reason": "issued in error",
+        }  # fmt: skip
+        with self.path.open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps(void) + "\n")
+        self.ledger = Ledger(self.path)
+        self.assertEqual(tag_log(self.ledger), [])
+        self.assertEqual(self.issue(slug="again").tag_id, "TAG-02-again")
+
     def test_a_malformed_issue_row_is_refused_with_its_void_not_a_crash(self) -> None:
         """Ruling 4: the log is ledger events; a row it cannot read stops it, named."""
         self.issue()

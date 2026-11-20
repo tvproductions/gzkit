@@ -41,11 +41,14 @@ holds the rulings cited here.
   175). The order and the package are read from the dispatch record, never
   typed (rulings 1 and 130).
 - The order is commenced, where its performers are dispatched, and not blocked
-  (rulings 57, 59 and 132).
+  (rulings 57, 59 and 132). An order stopped by an exit still takes entries: the
+  stop ends new work, not the record of the work done (ruling 177).
 - The entry says what was done and the measurement before and after, with the
   witness that measured them, none blank (ruling 173). Its id is the next
-  `ENT-<NN>-<slug>` (ruling 169), and the commit that lands the work names it in
-  its subject (ruling 170), so the event cites no commit.
+  `ENT-<NN>-<slug>`, numbered past every entry the ledger's history names, a
+  voided one included, so a number never returns (rulings 169 and 176), and the
+  commit that lands the work names it in its subject (ruling 170), so the event
+  cites no commit.
 - The open MX session is recorded with the entry (ruling 8). With no session
   open the entry is refused, and a marker present but unreadable, unbound or
   exiting is refused with the repair its cause names.
@@ -97,7 +100,7 @@ after, with the command or receipt that measured them (RP-12 rulings 8 and 173;
 | 0 | Booked |
 | 1 | The project is not initialized |
 | 2 | Usage error |
-| 3 | Refused: no MX session open or a marker present but not on (its repair named), the call not stamped with the dispatch named, a malformed slug or a blank field, the dispatch not a live `Implementer`, `SingleDriver` or `Restoration` on an order, the order not commenced, or blocked, or an `entry_booked` row that does not parse; nothing booked |
+| 3 | Refused: no MX session open or a marker present but not on (its repair named), the call not stamped with the dispatch named, a malformed slug or a blank field, the dispatch not a live `Implementer`, `SingleDriver` or `Restoration` on an order, or the order not commenced, or blocked; nothing booked |
 
 ## See also
 

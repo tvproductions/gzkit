@@ -32,15 +32,17 @@ from gzkit.mx.entries import (
     record_entry_book,
     record_view,
 )
-from gzkit.order_ledger import OrderMove, record_order_transition
+from gzkit.order_ledger import OrderMove, order_took_stopping_exit, record_order_transition
 from gzkit.work_package_ledger import TransitionRequest, record_work_package_transition
 from gzkit.work_package_run import (
     BlockRequest,
     DispatchRequest,
+    UnblockRequest,
     record_dispatch_end,
     record_dispatch_void,
     record_work_package_block,
     record_work_package_dispatch,
+    record_work_package_unblock,
 )
 
 if TYPE_CHECKING:
@@ -174,7 +176,7 @@ class _EntryCase(unittest.TestCase):
         )
         return str(record_work_package_dispatch(self.catalog, self.ledger, request).dispatch_id)
 
-    def seat_dispatch(self, role: str, order: str = _ORDER) -> str:
+    def seat_dispatch(self, role: str, order: str | None = _ORDER) -> str:
         """Seat a dispatch row by hand, a role the dispatch writer books on no commenced order.
 
         Returns:
@@ -189,7 +191,7 @@ class _EntryCase(unittest.TestCase):
                 "work_package": _REPAIR,
                 "role": role,
                 "model": "opus",
-                "subject": order,
+                "subject": order or _REPAIR,
                 "dispatch_id": dispatch_id,
                 "intended_root": Path(self._dir.name).resolve().as_posix(),
                 "order": order,
@@ -197,6 +199,12 @@ class _EntryCase(unittest.TestCase):
         )
         self.ledger.append(ledger_row(seated))
         return dispatch_id
+
+    def seat(self, row: dict[str, object]) -> None:
+        """Append a raw row and re-read the ledger, as a later call would (a void, a move)."""
+        with self.path.open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps({"schema": "gzkit.ledger.v1", **row}) + "\n")
+        self.ledger = Ledger(self.path)
 
     def entry(
         self,
@@ -272,6 +280,37 @@ class EntryTests(_EntryCase):
         second = self.booked(slug="stamp-docs")
         self.assertEqual(second.entry_id, "ENT-02-stamp-docs")
 
+    def test_the_series_is_numbered_not_spelled_past_99(self) -> None:
+        """Ruling 169: ENT-99 is followed by ENT-100, a number compared, never a string."""
+        first = self.booked()
+        row = {**_rows(self.path)[-1], "id": "ENT-99-early", "entry_id": "ENT-99-early"}
+        row.pop("schema")
+        self.seat(row)
+        self.assertEqual(first.entry_id, "ENT-01-stamp-import")
+        self.assertEqual(self.booked(slug="late").entry_id, "ENT-100-late")
+
+    def test_a_voided_entrys_number_is_never_reissued(self) -> None:
+        """Ruling 176: the series reads past every number the history names, a void included."""
+        voided = _rows(self.path)
+        self.booked()
+        (subject,) = [row for row in _rows(self.path) if row not in voided]
+        self.seat(
+            {
+                "event": "ledger_event_corrected",
+                "id": subject["id"],
+                "ts": "2099-01-01T00:00:00+00:00",
+                "subject_event": "entry_booked",
+                "subject_id": subject["id"],
+                "subject_ts": subject["ts"],
+                "disposition": "void",
+                "cause": "agent-error",
+                "attestor": "g0",
+                "reason": "booked in error",
+            }
+        )
+        self.assertEqual(maintenance_record(self.ledger), [])
+        self.assertEqual(self.booked(slug="again").entry_id, "ENT-02-again")
+
     def test_each_performing_role_books_its_entry(self) -> None:
         """Ruling 175: Implementer, SingleDriver and Restoration each perform maintenance."""
         for role in ("SingleDriver", "Restoration"):
@@ -325,6 +364,30 @@ class EntryRefusalTests(_EntryCase):
                 )
                 self.assertIn("Implementer, SingleDriver or Restoration", refusal)
 
+    def test_a_dispatch_on_no_order_is_refused(self) -> None:
+        """Ruling 175: an entry is booked by a dispatch that performs maintenance on an order."""
+        dispatch_id = self.seat_dispatch("Implementer", None)
+        refusal = self.assert_refused("on no order", lambda: self.entry(dispatch_id))
+        self.assertIn("Implementer, SingleDriver or Restoration", refusal)
+
+    def test_a_frozen_or_accepted_order_is_refused(self) -> None:
+        """Refusal 2, rulings 57 and 132: only a commenced order takes its maintenance."""
+        dispatch_id = self.seat_dispatch("Implementer", _OTHER)
+        for state in ("frozen", "accepted"):
+            with self.subTest(state=state):
+                self.seat(
+                    {
+                        "event": "order_transitioned",
+                        "id": _OTHER,
+                        "ts": "2026-11-20T00:00:00+00:00",
+                        "order": _OTHER,
+                        "work_package": _REPAIR,
+                        "to_state": state,
+                        "evidence": "e",
+                    }
+                )
+                self.assert_refused(f"Order {_OTHER} is {state}", lambda: self.entry(dispatch_id))
+
     def test_an_order_not_commenced_is_refused(self) -> None:
         """Refusal 2, rulings 57 and 132: maintenance is done on a commenced order."""
         self.move(_OTHER, "opened", operator_text="open it")
@@ -345,6 +408,33 @@ class EntryRefusalTests(_EntryCase):
             refutations={},
         )
         self.assert_refused("is blocked", self.entry)
+
+    def test_an_order_stopped_by_an_exit_still_takes_entries(self) -> None:
+        """Ruling 177: a stop ends new work, not the record of the work done."""
+        record_work_package_block(
+            self.catalog,
+            self.ledger,
+            BlockRequest(
+                work_package=_REPAIR,
+                reason="the operator holds it",
+                next_action="rule on the order",
+                order=_ORDER,
+            ),
+            refutations={},
+        )
+        record_work_package_unblock(
+            self.catalog,
+            self.ledger,
+            UnblockRequest(
+                work_package=_REPAIR,
+                ruling="terminate it",
+                operator="g0",
+                exit_taken="terminate",
+                order=_ORDER,
+            ),
+        )
+        self.assertTrue(order_took_stopping_exit(self.ledger, _ORDER))
+        self.assertEqual(self.booked().order, _ORDER)
 
 
 class MaintenanceRecordTests(_EntryCase):
@@ -413,6 +503,22 @@ class RecordViewTests(_EntryCase):
         ]
         self.assertEqual(unsigned, [None])
         self.assertEqual(signed, [(entry.entry_id, _ORDER, "g0", "proceed")])
+
+    def test_a_malformed_closing_row_is_refused_with_its_void(self) -> None:
+        """A closing row the event's shape does not admit is refused, never a crash."""
+        self.booked()
+        self.seat(
+            {
+                "event": "order_transitioned",
+                "id": _ORDER,
+                "ts": "2026-11-20T00:00:00+00:00",
+                "order": _ORDER,
+                "to_state": "closed",
+            }
+        )
+        raised = _raised(lambda: record_view(self.ledger))
+        self.assertIsInstance(raised, EntryError)
+        self.assertIn("gz ledger correct", str(raised))
 
 
 if __name__ == "__main__":

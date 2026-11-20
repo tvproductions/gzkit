@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING, NoReturn, Protocol, get_args
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.events import (
+    SLUG_PATTERN,
     TagCheckLevel,
     TagClass,
     TagClearanceAuthorizedEvent,
@@ -38,6 +39,7 @@ from gzkit.events import (
     WorkPackageBlockedEvent,
 )
 from gzkit.ledger import ledger_row
+from gzkit.mx.series import next_series_id
 from gzkit.mx.tag_rows import (
     TagOutError,
     tag_clearances,
@@ -97,7 +99,7 @@ LINE_ITEM: tuple[str, ...] = (
     "check_level",
 )
 #: A tag's slug: lowercase words joined by hyphens, as an order's (rulings 43 and 111).
-_SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+_SLUG = re.compile(f"^{SLUG_PATTERN}$")
 
 
 class SurfaceRegistry(Protocol):
@@ -157,14 +159,14 @@ def _refuse(message: str) -> NoReturn:
 def next_tag_id(ledger: Ledger, slug: str) -> str:
     """Return the next id in the one series (ruling 111): the highest number plus one.
 
-    The ledger is the log's only store (ruling 4), so the series is read from it.
+    The ledger is the log's only store (ruling 4), so the series is read from its
+    history, a voided issue's number included, so a number never returns (ruling 176).
 
     Returns:
-        `TAG-<NN>-<slug>`, numbered past every tag the ledger names.
+        `TAG-<NN>-<slug>`, numbered past every tag the ledger's history names.
 
     """
-    numbers = [int(issue.tag_id.split("-")[1]) for issue in tag_issues(ledger)]
-    return f"TAG-{max(numbers, default=0) + 1:02d}-{slug}"
+    return next_series_id(ledger, "tag_issued", "TAG", slug)
 
 
 def tag_log(ledger: Ledger) -> list[Tag]:

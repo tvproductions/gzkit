@@ -25,12 +25,12 @@ from typing import TYPE_CHECKING
 from gzkit.acceptance_store import refutation_counts
 from gzkit.cli.formatters import OutputFormatter
 from gzkit.commands.common import ensure_initialized, get_project_root
+from gzkit.commands.open_session import open_session_id
 from gzkit.commands.tag_surfaces import ProjectSurfaces
 from gzkit.core.exceptions import PolicyBreachError
 from gzkit.events import TagClearedEvent
 from gzkit.ledger import Ledger
 from gzkit.models.catalog import load_catalog
-from gzkit.mx import marker
 from gzkit.mx.tag_out import (
     TagIssue,
     TagOutError,
@@ -50,40 +50,22 @@ if TYPE_CHECKING:
     from gzkit.mx.tag_out import Tag
 
 
-#: The recovery for a marker present but not on, by its cause (`.gzkit/rules/mx-mode.md`).
-MARKER_RECOVERY = {
-    "unreadable": "Have the operator repair it through the gz-mx skill (`uv run gz mx repair`)",
-    "unbound": "Have the operator repair it through the gz-mx skill (`uv run gz mx repair`)",
-    "exiting": "Let the exit finish, then have the operator open a session through the gz-mx skill",
-}
-
-
 def _open_session_id(root: Path, ledger_path: Path) -> str | None:
-    """Read the open MX session's id, or None when no marker is present.
-
-    A marker present but not on, unreadable, unbound to an open session or
-    exiting, holds no tag either, and its recovery is not `gz mx enter`, which a
-    present marker refuses; so it is refused here with the recovery its cause names.
+    """Read the open MX session that holds the tag and is the coordinator's mark.
 
     Returns:
-        The marker's session id while the condition is on, or None when it is absent.
-
-    Raises:
-        PolicyBreachError: A marker is present and the condition is not on.
+        The session's id, or None when no marker is present (`open_session_id`).
 
     """
-    held = marker.condition(root, ledger_path)
-    if held.on and held.marker is not None:
-        return held.marker.session_id
-    if held.cause in MARKER_RECOVERY:
-        msg = (
-            f"The MX marker is present but {held.cause}, so no session is open to hold the "
-            "tag. A tag is held by the open MX session, whose id is the coordinator's mark "
-            f"(RP-12 rulings 3 and 114). {MARKER_RECOVERY[held.cause]}, then run this tag "
-            "act again."
-        )
-        raise PolicyBreachError(msg)
-    return None
+    return open_session_id(
+        root,
+        ledger_path,
+        why=(
+            "to hold the tag. A tag is held by the open MX session, whose id is the "
+            "coordinator's mark (RP-12 rulings 3 and 114)"
+        ),
+        again="run this tag act again",
+    )
 
 
 def wp_tag_issue_cmd(*, line_item: dict[str, str], called_by_subagent: bool, as_json: bool) -> None:

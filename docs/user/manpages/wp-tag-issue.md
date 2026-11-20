@@ -34,7 +34,8 @@ hangs it (ruling 6), and the verb books one `tag_issued` event carrying the whol
 line item (rulings 5 and 120). `docs/governance/harbor-ro12-contractor-kit.md`
 § Rulings holds the rulings cited here.
 
-- The id is `TAG-<NN>-<slug>`, numbered past every tag the ledger names (ruling 111).
+- The id is `TAG-<NN>-<slug>`, numbered past every tag the ledger's history names,
+  a voided issue included, so a number never returns (rulings 111 and 176).
 - The surface is `<kind>:<name>`, resolved against the registry that holds that
   kind today (rulings 112 and 123): `validator:` a `gz validate` scope in its
   flag's spelling, `validator:hexagon-tests`; `check:` a `gz check` step's name in
