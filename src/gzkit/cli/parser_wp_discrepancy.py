@@ -74,7 +74,8 @@ _RECORD_EXIT_CODES = """Exit codes
 #: A clear exits 2 when `gh` cannot read the issue it cites; every other refusal is 3.
 _CLEAR_EXIT_CODES = """Exit codes
     0   Cleared: the discrepancy_cleared event is booked
-    1   User/config error: the project is not initialized
+    1   User/config error: the project is not initialized, or --recurs was
+        given and data/recurrence_threshold.json is missing or malformed
     2   Usage or System/IO error, or the issue --ghi cites could not be read
         through gh; nothing is booked
     3   Policy breach: a subagent's call, no MX session or a marker present
@@ -82,7 +83,8 @@ _CLEAR_EXIT_CODES = """Exit codes
         entry or tag not of the line's package or a tag not cleared, an issue
         closed, a blank field, root cause and corrective action missing where
         the line blocks return to service or recurs, or --recurs on a blocking
-        line or short of the recurrence threshold; nothing is booked
+        line, short of the recurrence threshold or naming nothing; nothing is
+        booked
 """
 
 
