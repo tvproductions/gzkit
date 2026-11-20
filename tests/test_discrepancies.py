@@ -200,7 +200,7 @@ class _DiscrepancyCase(unittest.TestCase):
         )
         return str(record_work_package_dispatch(self.catalog, self.ledger, request).dispatch_id)
 
-    def seat_dispatch(self, role: str) -> str:
+    def seat_dispatch(self, role: str, order: str | None = _ORDER) -> str:
         """Seat a dispatch row by hand, a role the dispatch writer books on no commenced order.
 
         Returns:
@@ -218,7 +218,7 @@ class _DiscrepancyCase(unittest.TestCase):
                 "subject": _ORDER,
                 "dispatch_id": dispatch_id,
                 "intended_root": Path(self._dir.name).resolve().as_posix(),
-                "order": _ORDER,
+                "order": order,
             }
         )
         self.ledger.append(ledger_row(seated))
@@ -243,12 +243,14 @@ class _DiscrepancyCase(unittest.TestCase):
             }
         )
 
-    def seat_tag(self, tag_id: str, *, order: str = _ORDER, cleared: bool = False) -> None:
+    def seat_tag(
+        self, tag_id: str, *, order: str = _ORDER, cleared: bool = False, package: str = _REPAIR
+    ) -> None:
         """Seat a tag issued and hung on *order*, and its clear when *cleared*."""
         line = {
             "tag_id": tag_id,
             "order": order,
-            "work_package": _REPAIR,
+            "work_package": package,
             "tag_class": "Caution",
             "surface": "check:module-size",
             "surface_kind": "check",
@@ -276,7 +278,7 @@ class _DiscrepancyCase(unittest.TestCase):
                 "id": tag_id,
                 "tag_id": tag_id,
                 "order": order,
-                "work_package": _REPAIR,
+                "work_package": package,
                 "dispatch_id": "D-00000000000000bb",
                 "hanging_dispatch_id": "D-00000000000000aa",
                 "position_found": "advisory",
@@ -594,6 +596,38 @@ class RecordRefusalTests(_DiscrepancyCase):
         self.seat_state(_OTHER, "closed")
         self.assert_refused(f"Order {_OTHER} is closed", lambda: self.record(order=_OTHER))
 
+    def test_an_order_of_a_closed_package_is_refused(self) -> None:
+        """Rulings 2, 44 and 178: a package initiated and then closed takes no line."""
+        self.seat(
+            {
+                "event": "work_package_transitioned",
+                "id": _REPAIR,
+                "ts": "2099-01-01T00:00:00+00:00",
+                "work_package": _REPAIR,
+                "from_state": "initiated",
+                "to_state": "closed",
+                "evidence": "e",
+                "attestor": "g0",
+            }
+        )
+        self.assert_refused(f"Work package {_REPAIR} is closed", self.record)
+
+    def test_a_stamped_id_naming_no_booked_dispatch_is_refused(self) -> None:
+        """Rulings 1 and 42: the ledger says an unbooked dispatch may do nothing."""
+        unbooked = "D-0000000000000abc"
+        self.assert_refused(
+            "not booked",
+            lambda: self.record(stamped=unbooked, dispatch=unbooked, source="found-in-work"),
+        )
+
+    def test_a_performer_dispatch_on_no_order_is_refused(self) -> None:
+        """Rulings 172 and 175: a find in the work is on the order its performer works."""
+        orderless = self.seat_dispatch("Implementer", order=None)
+        self.assert_refused(
+            "on no order",
+            lambda: self.record(stamped=orderless, dispatch=orderless, source="found-in-work"),
+        )
+
     def test_an_order_of_a_package_not_initiated_is_refused(self) -> None:
         """Rulings 2, 44 and 178: an order of a repair package initiated and not closed."""
         self.seat_state(_IDLE_ORDER, "opened", _IDLE)
@@ -771,6 +805,23 @@ class ClearRefusalTests(_DiscrepancyCase):
         self.assert_refused("TAG-07-none", lambda: self.clear(self.line.id, tag="TAG-07-none"))
         self.seat_tag("TAG-01-size")
         self.assert_refused("not cleared", lambda: self.clear(self.line.id, tag="TAG-01-size"))
+
+    def test_a_cleared_tag_of_another_package_is_refused(self) -> None:
+        """Rulings 9 and 172: a line is cleared by work in its own package."""
+        self.seat_tag("TAG-02-elsewhere", order=_IDLE_ORDER, cleared=True, package=_IDLE)
+        self.assert_refused(
+            f"is not issued in {_REPAIR}",
+            lambda: self.clear(self.line.id, tag="TAG-02-elsewhere"),
+        )
+
+    def test_gh_is_asked_only_after_the_cause_check(self) -> None:
+        """Rulings 180 and 181: a blocking line missing its cause is refused offline."""
+        blocking = self.recorded(slug="blocking")
+        self.assert_refused(
+            "--root-cause and --corrective-action",
+            lambda: self.clear(blocking.id, ghi=1400),
+        )
+        self.assertEqual(self.witnesses.asked, [])
 
     def test_a_closed_issue_is_refused(self) -> None:
         """Ruling 180: the line leaves the list as an open problem report."""
