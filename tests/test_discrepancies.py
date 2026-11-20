@@ -772,6 +772,7 @@ class ListTests(_DiscrepancyCase):
         raised = _raised(lambda: discrepancy_list(self.ledger))
         self.assertIsInstance(raised, DiscrepancyError)
         self.assertIn("gz ledger correct", str(raised))
+        self.assertIn("RP-12 ruling 9)", str(raised))
 
 
 if __name__ == "__main__":

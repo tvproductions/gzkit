@@ -1588,12 +1588,12 @@ class _OfflineWitnesses:
     separation_hours = 24.0
 
     @staticmethod
-    def issue_state(number: int) -> str | None:  # noqa: ARG004 - no network in a probe
-        return None
+    def issue_state(number: int) -> str | None:
+        """Read no issue: the probe's clear cites an entry, never an issue."""
 
     @staticmethod
-    def cite_time(cite: str) -> datetime | None:  # noqa: ARG004 - no network in a probe
-        return None
+    def cite_time(cite: str) -> datetime | None:
+        """Resolve no citation: the probe's clear cites no recurrence."""
 
 
 def _probe_discrepancy(root: Path, event_type: str = "discrepancy_recorded") -> ProducerObservation:

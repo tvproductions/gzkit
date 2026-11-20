@@ -3,7 +3,7 @@
 import json
 import unittest
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 from unittest.mock import patch
 
 from gzkit import legacy_units, work_package_ledger, work_package_run
@@ -298,6 +298,111 @@ class DiscrepancyProducerProbeTests(unittest.TestCase):
         self.assertEqual(observation.status, "verified", observation.error)
         self.assertEqual(observation.producer, "gzkit.mx.discrepancies.record_discrepancy_clear")
         self.assertEqual(observation.subject, "DSC-01-producer-probe")
+
+    #: Each probe's writer, where it sits among the call's arguments, and its refusal's words.
+    _WRITERS: ClassVar[dict[str, tuple[str, int, str]]] = {
+        "discrepancy_recorded": ("record_discrepancy", 1, "a find in the work alone"),
+        "discrepancy_cleared": (
+            "record_discrepancy_clear",
+            0,
+            "the coordinator's unstamped call alone",
+        ),
+    }
+
+    def _observe(self, event_type: str, book: Callable[[Any], None]) -> Any:
+        """Probe *event_type* with a writer that books *book*'s rows once, then refuses.
+
+        Returns:
+            The probe's observation.
+
+        """
+        from gzkit.mx.discrepancies import DiscrepancyError  # noqa: PLC0415
+
+        name, ledger_at, refusal = self._WRITERS[event_type]
+        calls: list[int] = []
+
+        def write(*args: Any, **_fields: Any) -> None:
+            if calls:
+                raise DiscrepancyError(refusal)
+            calls.append(1)
+            book(args[ledger_at])
+
+        with patch(f"gzkit.mx.discrepancies.{name}", write):
+            return probe_producer(event_type)
+
+    @staticmethod
+    def _line(event_type: str, order: str = "ORD-01-producer-probe") -> Any:
+        from gzkit.events import DiscrepancyClearedEvent, DiscrepancyRecordedEvent  # noqa: PLC0415
+
+        common = {
+            "id": "DSC-01-producer-probe",
+            "discrepancy_id": "DSC-01-producer-probe",
+            "order": order,
+            "work_package": "WP-02-producer-probe",
+            "mx_session_id": "isolated-producer-probe",
+        }
+        if event_type == "discrepancy_cleared":
+            return DiscrepancyClearedEvent.model_validate(
+                {"event": event_type, **common, "entry_id": "ENT-01-producer-probe"}
+            )
+        return DiscrepancyRecordedEvent.model_validate(
+            {
+                "event": event_type,
+                **common,
+                "grade": "due-by-event",
+                "due_by": "probe",
+                "source": "left-broken",
+                "description": "probe",
+            }
+        )
+
+    def test_a_writer_that_books_twice_gets_no_credit(self) -> None:
+        from gzkit.ledger import ledger_row  # noqa: PLC0415
+
+        for event_type in self._WRITERS:
+            with self.subTest(event_type=event_type):
+
+                def twice(ledger: Any, event_type: str = event_type) -> None:
+                    for _ in range(2):
+                        ledger.append(ledger_row(self._line(event_type)))
+
+                observation = self._observe(event_type, twice)
+                self.assertEqual(observation.status, "failed")
+                self.assertIn("exactly one event", observation.error)
+
+    def test_a_writer_that_books_another_event_gets_no_credit(self) -> None:
+        from gzkit.events import WorkPackageChangedEvent  # noqa: PLC0415
+        from gzkit.ledger import ledger_row  # noqa: PLC0415
+
+        def other(ledger: Any) -> None:
+            event = WorkPackageChangedEvent(
+                event="work_package_changed",
+                id="WP-02-producer-probe",
+                work_package="WP-02-producer-probe",
+                rung="attachment",
+                approver="operator",
+                change="probe",
+            )
+            ledger.append(ledger_row(event))
+
+        for event_type in self._WRITERS:
+            with self.subTest(event_type=event_type):
+                observation = self._observe(event_type, other)
+                self.assertEqual(observation.status, "failed")
+                self.assertIn("wrong event type", observation.error)
+
+    def test_a_writer_that_books_another_order_gets_no_credit(self) -> None:
+        from gzkit.ledger import ledger_row  # noqa: PLC0415
+
+        for event_type in self._WRITERS:
+            with self.subTest(event_type=event_type):
+
+                def elsewhere(ledger: Any, event_type: str = event_type) -> None:
+                    ledger.append(ledger_row(self._line(event_type, "ORD-09-elsewhere")))
+
+                observation = self._observe(event_type, elsewhere)
+                self.assertEqual(observation.status, "failed")
+                self.assertIn("disagrees with the order", observation.error)
 
 
 if __name__ == "__main__":
