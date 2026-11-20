@@ -114,7 +114,7 @@ clear it again; nothing was written.
 | 0 | Cleared |
 | 1 | The project is not initialized, or `--recurs` was given and `data/recurrence_threshold.json` is missing or malformed |
 | 2 | Usage or System/IO error, or the issue `--ghi` cites could not be read through `gh`; nothing booked |
-| 3 | Refused: a subagent's call, no MX session open or a marker present but not on (its repair named), a line not recorded or already cleared, no evidence, an entry or tag not of the line's package or a tag not cleared, an issue closed, a blank field, root cause and corrective action missing where the line blocks return to service or recurs, or `--recurs` on a blocking line, short of the threshold or naming nothing; nothing booked |
+| 3 | Refused: a subagent's call, no MX session open or a marker present but not on (its repair named), a line not recorded or already cleared, no evidence, an entry or tag not of the line's package or a tag not cleared, an issue number below 1 or an issue closed, a blank field, root cause and corrective action missing where the line blocks return to service or recurs, or `--recurs` on a blocking line, short of the threshold or naming nothing; nothing booked |
 
 ## See also
 

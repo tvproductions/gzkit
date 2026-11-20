@@ -81,10 +81,10 @@ _CLEAR_EXIT_CODES = """Exit codes
     3   Policy breach: a subagent's call, no MX session or a marker present
         but not on, a line not recorded or already cleared, no evidence, an
         entry or tag not of the line's package or a tag not cleared, an issue
-        closed, a blank field, root cause and corrective action missing where
-        the line blocks return to service or recurs, or --recurs on a blocking
-        line, short of the recurrence threshold or naming nothing; nothing is
-        booked
+        number below 1 or an issue closed, a blank field, root cause and
+        corrective action missing where the line blocks return to service or
+        recurs, or --recurs on a blocking line, short of the recurrence
+        threshold or naming nothing; nothing is booked
 """
 
 

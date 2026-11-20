@@ -725,6 +725,17 @@ class ClearRefusalTests(_DiscrepancyCase):
         self.assertIsInstance(raised, DiscrepancyUnavailableError)
         self.assertEqual(_rows(self.path), before)
 
+    def test_an_issue_number_below_one_is_refused_before_gh_is_asked(self) -> None:
+        """Ruling 180: the clear cites an issue, numbered from 1 as its event requires; a
+        number no issue can carry is the caller's error, never a `gh` outage to retry."""
+        for number in (0, -5):
+            with self.subTest(number=number):
+                self.assert_refused(
+                    f"--ghi {number} is not an issue number",
+                    lambda number=number: self.clear(self.line.id, ghi=number),
+                )
+        self.assertEqual(self.witnesses.asked, [])
+
     def test_an_offline_refusal_never_asks_gh(self) -> None:
         """Ruling 180: the ledger's checks run first, so a refused clear calls no network."""
         self.assert_refused(

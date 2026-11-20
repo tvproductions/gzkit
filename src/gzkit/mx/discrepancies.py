@@ -429,32 +429,48 @@ def _check_evidence(ledger: Ledger, request: DiscrepancyClear, package: str) -> 
             "evidence the ledger resolves, an entry (--entry), a cleared tag (--tag) or the "
             "open issue it was filed as (--ghi) (RP-12 rulings 9, 172 and 180)."
         )
+    if request.ghi is not None and request.ghi < 1:
+        _refuse(
+            f"--ghi {request.ghi} is not an issue number; an issue is numbered from 1, and the "
+            "clear cites the open issue the line was filed as (RP-12 ruling 180). Clear it "
+            "again with that issue's number."
+        )
     if request.entry is not None:
-        entry = next((e for e in maintenance_record(ledger) if e.entry_id == request.entry), None)
-        if entry is None:
-            _refuse(
-                f"Entry {request.entry!r} is not in the maintenance record, so it cannot clear "
-                "the line (RP-12 ruling 172). Read the record with `uv run gz wp entry show`."
-            )
-        if entry.work_package != package:
-            _refuse(
-                f"{request.entry} is an entry of {entry.work_package}, and the line is "
-                f"{package}'s; a line is cleared by work in its own package, and one that "
-                "leaves it is filed as an issue (RP-12 rulings 9 and 180)."
-            )
+        _check_entry_evidence(ledger, request.entry, package)
     if request.tag is not None:
-        tag = next((t for t in tag_log(ledger) if t.issue.tag_id == request.tag), None)
-        if tag is None or tag.issue.work_package != package:
-            _refuse(
-                f"Tag {request.tag!r} is not issued in {package} in the ledger, so it cannot "
-                "clear the line (RP-12 ruling 172). Read the log with "
-                "`uv run gz wp tag show --all`."
-            )
-        if tag.clear is None:
-            _refuse(
-                f"Tag {request.tag} is not cleared; a tag clears a line once its Restoration "
-                "dispatch has cleared it (RP-12 rulings 6 and 172)."
-            )
+        _check_tag_evidence(ledger, request.tag, package)
+
+
+def _check_entry_evidence(ledger: Ledger, entry_id: str, package: str) -> None:
+    """Refuse an entry not in the maintenance record or not of the line's package."""
+    entry = next((e for e in maintenance_record(ledger) if e.entry_id == entry_id), None)
+    if entry is None:
+        _refuse(
+            f"Entry {entry_id!r} is not in the maintenance record, so it cannot clear "
+            "the line (RP-12 ruling 172). Read the record with `uv run gz wp entry show`."
+        )
+    if entry.work_package != package:
+        _refuse(
+            f"{entry_id} is an entry of {entry.work_package}, and the line is "
+            f"{package}'s; a line is cleared by work in its own package, and one that "
+            "leaves it is filed as an issue (RP-12 rulings 9 and 180)."
+        )
+
+
+def _check_tag_evidence(ledger: Ledger, tag_id: str, package: str) -> None:
+    """Refuse a tag not issued in the line's package, or not yet cleared."""
+    tag = next((t for t in tag_log(ledger) if t.issue.tag_id == tag_id), None)
+    if tag is None or tag.issue.work_package != package:
+        _refuse(
+            f"Tag {tag_id!r} is not issued in {package} in the ledger, so it cannot "
+            "clear the line (RP-12 ruling 172). Read the log with "
+            "`uv run gz wp tag show --all`."
+        )
+    if tag.clear is None:
+        _refuse(
+            f"Tag {tag_id} is not cleared; a tag clears a line once its Restoration "
+            "dispatch has cleared it (RP-12 rulings 6 and 172)."
+        )
 
 
 def _check_cause(
