@@ -281,6 +281,18 @@ Its verdict: both halves sound with findings. It reproduced the sweep's counts, 
 
 What it shows. Findings 1 to 3 and 8 changed code the trial swept or flew. The sweep was re-run after them; the flight was not re-flown. Ruling 161 restores a claim the flight's green runs lacked, without changing what they wrote or ended. Ruling 162 changes only which stop ends a claimed dispatch, and the flight had one agent per dispatch. The hang writer and the advisory reading are paths the flight did not take. Each fix is witnessed by its test, red-proved alone. Ruling 154 calls a second inspection only when a finding changes the trial's scope, form or red method, and then only on the operator's ruling. Finding 4 widened the code-path half's scope by `_bind`; ruling 164 reads that as ruling 151's own scope applied, so no second inspection is called. Recording the fixes found ruling 104's line stale, by `gz validate --hexagon-tests`: it now carries 71 held tests and two kinds of finding it had not listed, amended on the contract (`42580ab4e`). No O3 row is accepted by this record.
 
+### O4's task cut, approved 2026-11-20
+
+**Status: approved; task 1 open.** The operator's words, verbatim: *"Approve, start task 1 (Rec.)"* (a dated record). O4 lands the maintenance record and the list of discrepancies (rulings 8, 9 and 166 to 173) in five tasks, worked in order, each opening with its own questions one at a time and closing on an independent review:
+
+1. The entry: `entry_booked`, its writer and reducer, `gz wp entry book` stamped as a `Repair` or `Restoration` dispatch on the order, and `gz wp entry show` (rulings 8, 167, 169, 173).
+2. The discrepancy: `discrepancy_recorded` and `discrepancy_cleared`, their writer and reducer, and `gz wp discrepancy record`, `clear` and `show` (rulings 9, 169, 172).
+3. The carry: acceptance admitting a hung tag an open *due by a named event* discrepancy cites, Gate 5 then a pause alone, refusal 6 still holding the package's close (rulings 30, 142, 171).
+4. The MX log as the record's view: `gzkit.mx.log` rendering the entries by order and joining commits by the `(ENT-…)` in their subjects, its commit list kept, REQ-0.0.74-06-01 to -04 kept true (rulings 166, 170).
+5. The dock trial, then O4's Gate 5 under ruling 165 (rulings 27, 154's form).
+
+Outside O4: the carry of the contract's open lines, the three Gate 5 signatures and the passage log into the records, with § Records amended, at O9 (rulings 10, 165); a discrepancy from an inspector's rejection, at O6 (ruling 172).
+
 ### O1's Gate 5, attested 2026-11-20
 
 **Status: O1 closed, decision proceed.** O1's Gate 5, recorded here under ruling 165 until O4's maintenance record takes it (a dated record). Attestor: **g0**. The operator's words, verbatim: *"Proceed: O1 attested"*.
