@@ -1257,11 +1257,6 @@
       "score": 16
     },
     {
-      "file": "src/gzkit/validate_pkg/ledger_check.py",
-      "function": "_validate_ledger_field",
-      "score": 19
-    },
-    {
       "file": "src/gzkit/validate_pkg/manifest.py",
       "function": "validate_manifest",
       "score": 21

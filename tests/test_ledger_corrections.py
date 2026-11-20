@@ -1315,7 +1315,7 @@ class TestValidationAndReplayRefuseTheSameCorrections(unittest.TestCase):
     #: field their event declares — otherwise the assertion passes or fails on
     #: fixture shape rather than on the correction under test.
     LAUNCH_FIELDS = {
-        "nonce": "b8f1c2",
+        "nonce": "b8f1c2d3e4f5a6b7c8d9e0f1a2b3c4d5",
         "marker_path": ".gzkit/pipeline/OBPI-0.35.0-08.json",
         "lane": "lite",
     }
@@ -1528,7 +1528,7 @@ class TestAStoredRowsEnvelopeIsNeverManufactured(unittest.TestCase):
     #: Schema-complete, so a positive case asserting the validator reports
     #: NOTHING is answering about the correction rather than about the fixture.
     LAUNCH_FIELDS = {
-        "nonce": "b8f1c2",
+        "nonce": "b8f1c2d3e4f5a6b7c8d9e0f1a2b3c4d5",
         "marker_path": ".gzkit/pipeline/OBPI-0.35.0-08.json",
         "lane": "lite",
     }

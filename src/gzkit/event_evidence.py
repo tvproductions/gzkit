@@ -171,7 +171,9 @@ class ObpiReceiptEvidence(BaseModel):
     @field_validator("attestation_date")
     @classmethod
     def _valid_date_format(cls, v: str | None) -> str | None:
-        if v is not None and (not isinstance(v, str) or not re.match(r"^\d{4}-\d{2}-\d{2}$", v)):
+        # fullmatch: `re.match` with `$` also passed a trailing newline, which the
+        # schema's pattern refuses (RP-12 O4 task 2's re-review).
+        if v is not None and (not isinstance(v, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", v)):
             msg = "attestation_date must use YYYY-MM-DD when present"
             raise ValueError(msg)
         return v

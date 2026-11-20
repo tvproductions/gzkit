@@ -1484,7 +1484,9 @@ class TestDiscrepancySchemaHoldsTheModelsBounds(unittest.TestCase):
     RP-12 O4 task 2's review: `DiscrepancyRecordedEvent.due_by`, and
     `DiscrepancyClearedEvent.root_cause` and `corrective_action`, carry
     `min_length=1`, and `ghi` carries `ge=1`, while the schema declared only the
-    type, so such a row validated and then broke `gz wp discrepancy show`.
+    type, so such a row validated and then broke `gz wp discrepancy show`. Its
+    re-review: the id fields' `pattern` was declared and read by nothing, so a
+    malformed id validated the same way (operator, 2026-11-20: "fix pattern now").
     """
 
     _RECORDED: ClassVar[dict[str, object]] = {
@@ -1539,6 +1541,11 @@ class TestDiscrepancySchemaHoldsTheModelsBounds(unittest.TestCase):
             ("ghi", self._CLEARED | {"ghi": 0}),
             ("root_cause", self._CLEARED | {"root_cause": ""}),
             ("corrective_action", self._CLEARED | {"corrective_action": " "}),
+            ("discrepancy_id", self._RECORDED | {"discrepancy_id": "DSC-1-hook"}),
+            ("tag_id", self._RECORDED | {"tag_id": "TAG-01-Hook"}),
+            ("dispatch_id", self._RECORDED | {"dispatch_id": "D-xyz"}),
+            ("entry_id", self._CLEARED | {"entry_id": "bogus"}),
+            ("tag_id", self._CLEARED | {"tag_id": "TAG-01-hook\n"}),
         ]
         for field, row in table:
             with self.subTest(field=field):

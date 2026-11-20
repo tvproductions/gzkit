@@ -627,7 +627,7 @@ class PipelineLaunchedEvent(_EventBase):
     """
 
     event: Literal["pipeline_launched"]
-    nonce: str
+    nonce: str = Field(..., pattern=r"^[a-f0-9]{32}$", description="The marker's 32-hex nonce")
     marker_path: str
     lane: str
     entry: str | None = None

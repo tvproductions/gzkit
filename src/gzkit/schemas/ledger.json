@@ -291,10 +291,13 @@
           "properties": {
             "commit": {
               "type": "string",
-              "pattern": "^[a-f0-9]{7,40}$"
+              "pattern": "^[0-9a-f]{7,40}$"
             },
             "tag": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "semver": {
               "type": "string",
@@ -349,11 +352,17 @@
               "min_length": 1
             },
             "attestation_date": {
-              "type": "string",
+              "type": [
+                "string",
+                "null"
+              ],
               "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
             },
             "attestation_requirement": {
-              "type": "string",
+              "type": [
+                "string",
+                "null"
+              ],
               "enum": [
                 "required",
                 "optional"
@@ -364,14 +373,20 @@
               "min_length": 1
             },
             "parent_lane": {
-              "type": "string",
+              "type": [
+                "string",
+                "null"
+              ],
               "enum": [
                 "lite",
                 "heavy"
               ]
             },
             "scope_audit": {
-              "type": "object",
+              "type": [
+                "object",
+                "null"
+              ],
               "properties": {
                 "allowlist": {
                   "type": "array",
@@ -397,19 +412,34 @@
               }
             },
             "git_sync_state": {
-              "type": "object",
+              "type": [
+                "object",
+                "null"
+              ],
               "properties": {
                 "branch": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "remote": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "head": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "remote_head": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "dirty": {
                   "type": "boolean"
@@ -449,18 +479,27 @@
               }
             },
             "recorder_source": {
-              "type": "string",
+              "type": [
+                "string",
+                "null"
+              ],
               "min_length": 1
             },
             "recorder_warnings": {
-              "type": "array",
+              "type": [
+                "array",
+                "null"
+              ],
               "items": {
                 "type": "string",
                 "min_length": 1
               }
             },
             "req_proof_inputs": {
-              "type": "array",
+              "type": [
+                "array",
+                "null"
+              ],
               "items": {
                 "type": "object",
                 "required": [
@@ -531,10 +570,13 @@
           "properties": {
             "commit": {
               "type": "string",
-              "pattern": "^[a-f0-9]{7,40}$"
+              "pattern": "^[0-9a-f]{7,40}$"
             },
             "tag": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "semver": {
               "type": "string",

@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -164,7 +165,11 @@ def _validate_ledger_string(
     *,
     line_no: int,
 ) -> None:
-    """Apply the string predicates of one field rule: ``min_length`` and ``named``."""
+    """Apply the string predicates of one field rule: ``min_length``, ``named``, ``pattern``.
+
+    Canonical: JSON Schema 2020-12 Validation § 6.3.3 (``pattern``, ECMA-262, not
+    implicitly anchored).
+    """
     min_length = rule.get("min_length")
     # Measure the STRIPPED length. A raw character count is satisfied by
     # whitespace, so `"   "` passed every `min_length` guard in the schema
@@ -193,6 +198,83 @@ def _validate_ledger_string(
             f"Field '{field}' must name a person: at least one visible letter.",
             field=field,
         )
+    # `pattern` was declared on 27 fields and read by nothing, so a malformed id
+    # validated and then failed typed replay (RP-12 O4 task 2's re-review; operator,
+    # 2026-11-20: "fix pattern now"). Full-match, not search: every pattern is
+    # anchored `^...$`, where a full match is JSON Schema's answer, and Python's `$`
+    # alone would also pass a trailing newline that ECMA-262 and Pydantic refuse.
+    # `test_every_pattern_is_anchored` holds the schema to that. Blast radius
+    # measured before landing: zero of 20,720 live ledger rows fail.
+    pattern = rule.get("pattern")
+    if isinstance(pattern, str) and re.fullmatch(pattern, value) is None:
+        _append_ledger_error(
+            errors,
+            ledger_path,
+            line_no,
+            f"Field '{field}' must match the pattern {pattern}.",
+            field=field,
+        )
+
+
+def _validate_ledger_children(
+    value: object,
+    field: str,
+    rule: dict[str, Any],
+    errors: list[ValidationError],
+    ledger_path: Path,
+    *,
+    line_no: int,
+) -> None:
+    """Descend into an array's ``items`` and a nested object's ``properties``."""
+    # Descend into declared item types. The outer `isinstance(value, list)` check
+    # alone let `floor_moved_ids: [7]` pass the schema and then fail typed replay
+    # (GHI #883) — the failure surfacing far from the write that caused it. Every
+    # array field declaring `items` had the same hole.
+    items_rule = rule.get("items")
+    if isinstance(value, list) and isinstance(items_rule, dict):
+        for index, item in enumerate(value):
+            _validate_ledger_field(
+                item, f"{field}[{index}]", items_rule, errors, ledger_path, line_no=line_no
+            )
+    if isinstance(value, dict):
+        _validate_ledger_object(value, field, rule, errors, ledger_path, line_no=line_no)
+
+
+def _validate_ledger_object(
+    value: dict[str, Any],
+    field: str,
+    rule: dict[str, Any],
+    errors: list[ValidationError],
+    ledger_path: Path,
+    *,
+    line_no: int,
+) -> None:
+    """Apply a nested object's ``required`` and descend into its ``properties``."""
+    # A nested object's declared properties and required fields were never read
+    # either, so the receipt anchor's `commit` and `semver` held nothing while
+    # `EventAnchor` refused them (RP-12 O4 task 2's re-review). Zero live rows fail
+    # the descent once the 14 nested fields the models admit as None were widened.
+    for name in rule.get("required") or ():
+        if isinstance(name, str) and name not in value:
+            _append_ledger_error(
+                errors,
+                ledger_path,
+                line_no,
+                f"Missing required field: {field}.{name}",
+                field=f"{field}.{name}",
+            )
+    nested = rule.get("properties")
+    if isinstance(nested, dict):
+        for name, nested_rule in nested.items():
+            if name in value and isinstance(nested_rule, dict):
+                _validate_ledger_field(
+                    value[name],
+                    f"{field}.{name}",
+                    nested_rule,
+                    errors,
+                    ledger_path,
+                    line_no=line_no,
+                )
 
 
 def _validate_ledger_field(
@@ -244,21 +326,7 @@ def _validate_ledger_field(
                 field=field,
             )
 
-    # Descend into declared item types. The outer `isinstance(value, list)` check
-    # alone let `floor_moved_ids: [7]` pass the schema and then fail typed replay
-    # (GHI #883) — the failure surfacing far from the write that caused it. Every
-    # array field declaring `items` had the same hole.
-    items_rule = rule.get("items")
-    if isinstance(value, list) and isinstance(items_rule, dict):
-        for index, item in enumerate(value):
-            _validate_ledger_field(
-                item,
-                f"{field}[{index}]",
-                items_rule,
-                errors,
-                ledger_path,
-                line_no=line_no,
-            )
+    _validate_ledger_children(value, field, rule, errors, ledger_path, line_no=line_no)
 
     allowed = rule.get("enum")
     # An explicit null on a nullable field carries no value to enum-check. The

@@ -41,8 +41,11 @@ import tempfile
 import typing
 import unittest
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
 
+from pydantic import BaseModel
+
+from gzkit.event_evidence import ObpiReceiptEvidence
 from gzkit.events import TypedLedgerEvent, parse_typed_event
 from gzkit.validate_pkg.ledger_check import validate_ledger
 
@@ -121,6 +124,41 @@ def _model_item_type(annotation: Any) -> str | None:
             return "object"
         return _ELEMENT_JSON_TYPE.get(element)
     return None
+
+
+#: A nested object whose event model types it ``dict`` and whose authority is the
+#: model `validate_ledger` reads it with (`_validate_obpi_receipt_evidence`).
+_NESTED_AUTHORITY: dict[tuple[str, str], type[BaseModel]] = {
+    ("obpi_receipt_emitted", "evidence"): ObpiReceiptEvidence,
+}
+
+
+def _nullability_drift(
+    properties: dict[str, Any], model: type[BaseModel] | None, path: str
+) -> list[str]:
+    """Each nested field whose schema and model disagree on null, recursively.
+
+    Returns:
+        One line per disagreeing field.
+
+    """
+    drift: list[str] = []
+    for field, rule in sorted(properties.items()):
+        info = model.model_fields.get(field) if model else None
+        if not isinstance(rule, dict) or info is None:
+            continue
+        declared = rule.get("type")
+        schema_nullable = isinstance(declared, list) and "null" in declared
+        model_nullable = type(None) in typing.get_args(info.annotation)
+        if model_nullable != schema_nullable:
+            drift.append(f"{path}.{field}: schema={declared!r} model_null={model_nullable}")
+        if isinstance(rule.get("properties"), dict):
+            drift.extend(
+                _nullability_drift(
+                    rule["properties"], _model_of(info.annotation), f"{path}.{field}"
+                )
+            )
+    return drift
 
 
 def _ledger_verdict(row: dict[str, Any]) -> str:
@@ -257,6 +295,28 @@ class LedgerDeclarationCoherence(unittest.TestCase):
                         f"{event}.{field}: schema={declared!r} model_null={model_nullable}"
                     )
         self.assertEqual(drift, [], "schema and typed model disagree on nullability")
+
+    def test_nested_objects_agree_on_nullability(self) -> None:
+        """The same agreement one level down, now `validate_ledger` reads nested objects.
+
+        Until 2026-11-20 a nested object's ``properties`` were read by nothing, so
+        their drift was inert; `git_sync_state.head` declared a string while
+        `GitSyncState` admitted None, on 274 committed rows. A receipt's
+        ``evidence`` is held by `ObpiReceiptEvidence`, the model the validator reads it
+        with, not by the event model's ``dict``.
+        """
+        drift: list[str] = []
+        for event, spec in sorted(self.schema.items()):
+            model = self.models.get(event)
+            for field, rule in sorted((spec.get("properties") or {}).items()):
+                if not isinstance(rule, dict) or not isinstance(rule.get("properties"), dict):
+                    continue
+                inner = _NESTED_AUTHORITY.get((event, field))
+                if inner is None and model is not None and field in model.model_fields:
+                    inner = _model_of(model.model_fields[field].annotation)
+                self.assertIsNotNone(inner, f"{event}.{field} resolves to no model")
+                drift.extend(_nullability_drift(rule["properties"], inner, f"{event}.{field}"))
+        self.assertEqual(drift, [], "nested schema and model disagree on nullability")
 
 
 class LedgerReaderVerdictParity(unittest.TestCase):
@@ -460,6 +520,158 @@ class LedgerValidatorEnforcesDeclaredTypes(unittest.TestCase):
         """`{"type": ["string", "null"]}` accepted an integer before the repair."""
         row = {**self.BASE, **self.required, "attestor": 7}
         self.assertEqual(_ledger_verdict(row), "rejects")
+
+
+def _model_of(annotation: Any) -> type[BaseModel] | None:
+    """Return the model an annotation names, unwrapping one ``X | None``.
+
+    Returns:
+        The BaseModel subclass, or None when the annotation names none.
+
+    """
+    for candidate in (annotation, *typing.get_args(annotation)):
+        if isinstance(candidate, type) and issubclass(candidate, BaseModel):
+            return candidate
+    return None
+
+
+def _model_pattern(model: type[BaseModel], field: str) -> str | None:
+    """Return the ``pattern`` a model field declares through ``Field(pattern=...)``.
+
+    Returns:
+        The pattern, or None when the field declares none.
+
+    """
+    metadata = model.model_fields[field].metadata
+    return next((m.pattern for m in metadata if getattr(m, "pattern", None)), None)
+
+
+def _schema_patterns(
+    properties: dict[str, Any], model: type[BaseModel] | None, path: str
+) -> list[tuple[str, str, type[BaseModel] | None, str]]:
+    """Every ``pattern`` under *properties*, nested objects included, with its model.
+
+    Returns:
+        (path, field, the model holding the field or None, the schema's pattern).
+
+    """
+    found: list[tuple[str, str, type[BaseModel] | None, str]] = []
+    for field, rule in properties.items():
+        if not isinstance(rule, dict):
+            continue
+        if isinstance(rule.get("pattern"), str):
+            found.append((f"{path}.{field}", field, model, rule["pattern"]))
+        nested = rule.get("properties")
+        if isinstance(nested, dict):
+            held = model.model_fields.get(field) if model else None
+            inner = _model_of(held.annotation) if held else None
+            found.extend(_schema_patterns(nested, inner, f"{path}.{field}"))
+    return found
+
+
+class PatternsAgreeAcrossBothReaders(unittest.TestCase):
+    """The schema's ``pattern`` is enforced, and as the typed models enforce it.
+
+    `gz validate --ledger` read no ``pattern`` until 2026-11-20 (RP-12 O4 task 2's
+    re-review; operator: "fix pattern now"), so a malformed id validated and then
+    failed typed replay. Canonical: JSON Schema 2020-12 Validation § 6.3.3
+    (``pattern``, ECMA-262, not implicitly anchored); Pydantic's ``Field(pattern=)``.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        models = _typed_models()
+        cls.patterns = [
+            found
+            for event, rule in _schema_events().items()
+            for found in _schema_patterns(rule.get("properties", {}), models.get(event), event)
+        ]
+
+    def test_the_probe_finds_the_patterns(self) -> None:
+        """Guards the assertions below against a walk that silently finds nothing."""
+        self.assertGreaterEqual(len(self.patterns), 27)
+        self.assertIn("audit_receipt_emitted.anchor.commit", [p[0] for p in self.patterns])
+
+    def test_every_pattern_is_anchored(self) -> None:
+        """The validator full-matches, which is JSON Schema's answer only for ``^...$``."""
+        loose = [path for path, _, _, pattern in self.patterns if not pattern.startswith("^")]
+        loose += [path for path, _, _, pattern in self.patterns if not pattern.endswith("$")]
+        self.assertEqual(loose, [])
+
+    def test_every_pattern_is_its_models_pattern(self) -> None:
+        drift = [
+            f"{path}: schema={pattern!r} model={_model_pattern(model, field)!r}"
+            for path, field, model, pattern in self.patterns
+            if model is not None and _model_pattern(model, field) != pattern
+        ]
+        self.assertEqual(drift, [], "schema and typed model disagree on a pattern")
+
+    def test_a_pattern_the_models_hold_in_a_validator_names_its_field(self) -> None:
+        """The one pattern whose model checks it in a validator, not ``Field(pattern=)``."""
+        unmodelled = [path for path, _, model, _ in self.patterns if model is None]
+        self.assertEqual(unmodelled, ["obpi_receipt_emitted.evidence.attestation_date"])
+
+
+class PatternVerdictParity(unittest.TestCase):
+    """Both readers refuse a malformed id, a trailing newline included."""
+
+    BASE: ClassVar[dict[str, Any]] = {
+        "schema": "gzkit.ledger.v1",
+        "event": "discrepancy_recorded",
+        "id": "DSC-01-hook",
+        "ts": "2026-11-20T00:00:00+00:00",
+        "discrepancy_id": "DSC-01-hook",
+        "order": "ORD-01-import",
+        "work_package": "WP-01-stamp",
+        "grade": "due-by-event",
+        "due_by": "the fix",
+        "source": "left-broken",
+        "description": "The hook is left off.",
+        "tag_id": None,
+        "dispatch_id": "D-0123456789abcdef",
+        "mx_session_id": "mx-1",
+    }
+
+    def _assert_agree(self, row: dict[str, Any], expected: str) -> None:
+        ledger, typed = _ledger_verdict(row), _typed_verdict(row)
+        self.assertEqual(
+            (ledger, typed),
+            (expected, expected),
+            f"readers disagree: validate_ledger={ledger} parse_typed_event={typed}",
+        )
+
+    def test_a_well_formed_id_is_accepted_by_both(self) -> None:
+        self._assert_agree(self.BASE, "accepts")
+
+    def test_a_malformed_id_is_refused_by_both(self) -> None:
+        for value in ("D-xyz", "D-0123456789abcdef\n", "xD-0123456789abcdef"):
+            with self.subTest(value=value):
+                self._assert_agree({**self.BASE, "dispatch_id": value}, "rejects")
+
+    ANCHORED: ClassVar[dict[str, Any]] = {
+        "schema": "gzkit.ledger.v1",
+        "event": "audit_receipt_emitted",
+        "id": "ADR-0.1.0",
+        "ts": "2026-11-20T00:00:00+00:00",
+        "receipt_event": "validated",
+        "attestor": "g0",
+        "evidence": {},
+        "anchor": {"commit": "abc1234", "semver": "0.1.0"},
+    }
+
+    def test_a_nested_pattern_is_held_by_both(self) -> None:
+        """The validator descends a nested object's ``properties``, as the model does."""
+        self._assert_agree(self.ANCHORED, "accepts")
+        for anchor in (
+            {"commit": "ABC1234", "semver": "0.1.0"},
+            {"commit": "abc1234", "semver": "1"},
+        ):
+            with self.subTest(anchor=anchor):
+                self._assert_agree({**self.ANCHORED, "anchor": anchor}, "rejects")
+
+    def test_a_nested_required_field_is_held_by_both(self) -> None:
+        """A nested object's ``required`` is read with its ``properties``."""
+        self._assert_agree({**self.ANCHORED, "anchor": {"commit": "abc1234"}}, "rejects")
 
 
 if __name__ == "__main__":
