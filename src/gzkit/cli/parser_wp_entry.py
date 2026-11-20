@@ -1,4 +1,4 @@
-"""``gz wp entry`` subparser registrations (RP-12 O4 task 1).
+"""``gz wp entry`` subparser registrations (RP-12 O4 task 1, acts 2 and 3).
 
 The group the operator ruled on 2026-11-20 (RP-12 ruling 168, *"A: Two groups
 (Rec.)"*). Each leaf is written out literally, ``p_x = entry_commands.add_parser(...)``
@@ -30,6 +30,14 @@ _BOOK_EXAMPLES = [
         " --json"
     ),
 ]
+_SHOW_EXAMPLES = ["gz wp entry show", "gz wp entry show --json"]
+#: `show` writes nothing; it exits 3 only on a ledger row it cannot read.
+_SHOW_EXIT_CODES = """Exit codes
+    0   Shown, an empty record included
+    1   User/config error: the project is not initialized
+    2   Usage or System/IO error
+    3   Policy breach: an entry_booked row does not parse; void it
+"""
 #: Every refusal of the entry is the writer's or the marker's, and books nothing.
 _BOOK_EXIT_CODES = """Exit codes
     0   Booked: the entry_booked event is booked
@@ -43,7 +51,7 @@ _BOOK_EXIT_CODES = """Exit codes
 
 
 def _register_wp_entry(wp_commands: argparse._SubParsersAction) -> None:
-    """Register ``gz wp entry`` and its leaf ``book``."""
+    """Register ``gz wp entry`` and its leaves, ``book`` and ``show``."""
     p_entry = wp_commands.add_parser(
         "entry",
         help="The maintenance record: one entry per act of maintenance",
@@ -51,7 +59,7 @@ def _register_wp_entry(wp_commands: argparse._SubParsersAction) -> None:
             "Commands over the maintenance record, ledger events rendered as a\n"
             "view. An entry is ENT-<NN>-<slug> (RP-12 rulings 8, 168, 169)."
         ),
-        epilog=build_epilog(_BOOK_EXAMPLES[:1]),
+        epilog=build_epilog([*_BOOK_EXAMPLES[:1], _SHOW_EXAMPLES[0]]),
     )
     entry_commands = p_entry.add_subparsers(dest="entry_command")
     entry_commands.required = True
@@ -96,3 +104,16 @@ def _register_wp_entry(wp_commands: argparse._SubParsersAction) -> None:
             as_json=a.as_json,
         )
     )
+
+    p_entry_show = entry_commands.add_parser(
+        "show",
+        help="Show the maintenance record: every entry, with its order's Gate 5",
+        description=(
+            "Render the maintenance record from the ledger's entry events, a\n"
+            "read-only Layer 3 view, oldest first: each entry with its order's\n"
+            "Gate 5, the signature, once the order closes (RP-12 rulings 8, 168)."
+        ),
+        epilog=build_epilog(_SHOW_EXAMPLES, exit_codes=_SHOW_EXIT_CODES),
+    )
+    add_json_flag(p_entry_show)
+    p_entry_show.set_defaults(func=lambda a: _lazy("wp_entry_show_cmd")(as_json=a.as_json))

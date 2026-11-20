@@ -17,10 +17,21 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING
 
-from gzkit.events import BaselinedReq, EntryBookedEvent, WorkPackageDispatchedEvent
+from gzkit.events import (
+    BaselinedReq,
+    EntryBookedEvent,
+    OrderTransitionedEvent,
+    WorkPackageDispatchedEvent,
+)
 from gzkit.ledger import Ledger, ledger_row
 from gzkit.models.catalog import Catalog, Criterion, Order, RepairReq, WorkPackage
-from gzkit.mx.entries import EntryBook, EntryError, maintenance_record, record_entry_book
+from gzkit.mx.entries import (
+    EntryBook,
+    EntryError,
+    maintenance_record,
+    record_entry_book,
+    record_view,
+)
 from gzkit.order_ledger import OrderMove, record_order_transition
 from gzkit.work_package_ledger import TransitionRequest, record_work_package_transition
 from gzkit.work_package_run import (
@@ -355,6 +366,53 @@ class MaintenanceRecordTests(_EntryCase):
         raised = _raised(lambda: maintenance_record(self.ledger))
         self.assertIsInstance(raised, EntryError)
         self.assertIn("gz ledger correct", str(raised))
+
+
+class RecordViewTests(_EntryCase):
+    """Ruling 8: each entry is read with its order's Gate 5, the approver's signature."""
+
+    def close(self, order: str) -> OrderTransitionedEvent:
+        """Seat the order's Gate 5 row, the close a terminate or a proceed books.
+
+        Returns:
+            The closing event seated.
+
+        """
+        closed = OrderTransitionedEvent.model_validate(
+            {
+                "event": "order_transitioned",
+                "id": order,
+                "order": order,
+                "work_package": _REPAIR,
+                "from_state": "accepted",
+                "to_state": "closed",
+                "evidence": "inspected",
+                "decision": "proceed",
+                "attestor": "g0",
+                "attestation_text": "proceed",
+                "residual_risk": "none",
+            }
+        )
+        self.ledger.append(ledger_row(closed))
+        return closed
+
+    def test_an_entry_on_an_order_not_closed_reads_no_gate_5(self) -> None:
+        entry = self.booked()
+        views = record_view(self.ledger)
+        self.assertEqual([(v.entry.entry_id, v.gate5) for v in views], [(entry.entry_id, None)])
+
+    def test_an_entry_reads_its_own_orders_gate_5_and_no_other(self) -> None:
+        entry = self.booked()
+        self.close(_OTHER)
+        unsigned = [view.gate5 for view in record_view(self.ledger)]
+        self.close(_ORDER)
+        signed = [
+            (v.entry.entry_id, v.gate5.order, v.gate5.attestor, v.gate5.decision)
+            for v in record_view(self.ledger)
+            if v.gate5 is not None
+        ]
+        self.assertEqual(unsigned, [None])
+        self.assertEqual(signed, [(entry.entry_id, _ORDER, "g0", "proceed")])
 
 
 if __name__ == "__main__":

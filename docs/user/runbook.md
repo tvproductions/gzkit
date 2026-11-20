@@ -1083,6 +1083,15 @@ uv run gz wp entry book --dispatch D-<id> --slug stamp-import \
   --witness "<command or receipt>"
 ```
 
+Read the maintenance record with `gz wp entry show`: every entry, oldest first,
+each with its order's Gate 5 once the order closes, `not signed` until then. It
+writes nothing and any session may run it (RP-12 rulings 8 and 168):
+
+```bash
+uv run gz wp entry show
+uv run gz wp entry show --json
+```
+
 A repair requirement states what must hold again after the repair. It lives in
 `data/catalog/reqs.json` beside the catalog's, written only by `gz wp req new`
 on an open repair package, and names the issue it answers:

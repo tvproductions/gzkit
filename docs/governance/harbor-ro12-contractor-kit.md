@@ -285,7 +285,6 @@ What it shows. Findings 1 to 3 and 8 changed code the trial swept or flew. The s
 
 **Status: approved; task 1 open.** The operator's words, verbatim: *"Approve, start task 1 (Rec.)"* (a dated record). O4 lands the maintenance record and the list of discrepancies (rulings 8, 9 and 166 to 173) in five tasks, worked in order, each opening with its own questions one at a time and closing on an independent review:
 
-<!-- gz-validate-skip: command-shape -->
 1. The entry: `entry_booked`, its writer and reducer, `gz wp entry book` stamped as the `Implementer`, `SingleDriver` or `Restoration` dispatch on the order that did the work (amended 2026-11-20 under ruling 175; the cut as approved read *a `Repair` or `Restoration` dispatch*), and `gz wp entry show` (rulings 8, 167, 169, 173, 175).
 <!-- gz-validate-skip: command-shape -->
 2. The discrepancy: `discrepancy_recorded` and `discrepancy_cleared`, their writer and reducer, and `gz wp discrepancy record`, `clear` and `show` (rulings 9, 169, 172).

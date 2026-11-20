@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING, NoReturn
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from gzkit.events import EntryBookedEvent
+from gzkit.events import EntryBookedEvent, OrderTransitionedEvent
 from gzkit.ledger import ledger_row
 from gzkit.order_ledger import is_order_blocked, order_state
 from gzkit.work_package_run import (
@@ -92,6 +92,41 @@ def maintenance_record(ledger: Ledger) -> list[EntryBookedEvent]:
                 '"<why>" --attestor g0`, then book the entry again.'
             )
     return entries
+
+
+class RecordedEntry(BaseModel):
+    """One entry of the maintenance record as its view reads it, with its order's Gate 5."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    entry: EntryBookedEvent = Field(..., description="The entry the performer booked")
+    gate5: OrderTransitionedEvent | None = Field(
+        None, description="The entry's order closing at Gate 5, the signature (ruling 8)"
+    )
+
+
+def record_view(ledger: Ledger) -> list[RecordedEntry]:
+    """Read the maintenance record with each entry's signature: its order's Gate 5 (ruling 8).
+
+    Ruling 8 makes the order's Gate 5 event the signature that closes the record of
+    the work done on it, 14 CFR § 43.9(a)'s fourth element beside the description,
+    the date and the performer. The view joins it from the ledger; the entry carries
+    none, since the entry is booked before the order closes.
+
+    Returns:
+        Each entry, oldest first, with its order's `order_transitioned` to `closed`,
+        or None while the order is not closed.
+
+    """
+    closes = {
+        str(row.extra.get("order")): OrderTransitionedEvent.model_validate(row.model_dump())
+        for row in ledger.query(event_type="order_transitioned")
+        if row.extra.get("to_state") == "closed"
+    }
+    return [
+        RecordedEntry(entry=entry, gate5=closes.get(entry.order))
+        for entry in maintenance_record(ledger)
+    ]
 
 
 def next_entry_id(ledger: Ledger, slug: str) -> str:

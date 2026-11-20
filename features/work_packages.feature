@@ -64,6 +64,12 @@ Feature: Work packages run through the gz wp verbs
     Then the command exits with code 3
     And the output contains "This call is not stamped"
 
+  Scenario: the maintenance record with no entry booked says none has been
+    Given the workspace is initialized
+    When I run the gz command "wp entry show"
+    Then the command exits with code 0
+    And the output contains "No entry has been booked."
+
   Scenario: booking a maintenance-record entry from an unstamped call is a policy breach
     Given the workspace is initialized
     And the requirements catalog is seeded

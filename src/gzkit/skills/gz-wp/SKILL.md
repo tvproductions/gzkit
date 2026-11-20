@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-20
 metadata:
-  skill-version: "0.26.0"
+  skill-version: "0.26.1"
 model: sonnet
 ---
 
@@ -237,6 +237,7 @@ work, never the main session; the commit landing the work names the entry in its
 ```bash
 uv run gz wp entry book --dispatch D-<id> --slug <slug> --description "<what was done>" \
   --before "<measurement>" --after "<measurement>" --witness "<command or receipt>" [--json]
+uv run gz wp entry show [--json]
 ```
 
 The order's run is the package's run with `--order`: dispatch only against a REQ the

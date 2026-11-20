@@ -182,20 +182,69 @@ class EntryBookWiringTests(_EntryCase):
         self.assertEqual(_entry_rows(), [])
 
 
+class EntryShowWiringTests(_EntryCase):
+    def show(self, *args: str) -> tuple[int, str]:
+        result = self.runner.invoke(main, ["wp", "entry", "show", *args])
+        return result.exit_code, result.output
+
+    def booked(self) -> None:
+        open_marker(Path.cwd())
+        self.stamp_as(self.dispatch)
+        self.assertEqual(self.book()[0], 0)
+        for name in (STAMP_ROOT_ENV, STAMP_ID_ENV):
+            os.environ.pop(name, None)
+
+    def test_with_no_entry_booked_it_says_none_has_been(self) -> None:
+        # output-contract: docs/user/manpages/wp-entry-show.md, the empty record's line
+        # given no entry booked
+        # when
+        code, output = self.show()
+        # then
+        self.assertEqual((code, output.strip()), (0, "No entry has been booked."))
+
+    def test_show_writes_each_entry_as_a_block_with_its_gate_5(self) -> None:
+        # output-contract: docs/user/manpages/wp-entry-show.md, one labelled line per element
+        # given an entry booked on a commenced order, not yet closed at Gate 5
+        self.booked()
+        # when
+        code, output = self.show()
+        # then the whole entry reads, its signature not yet given (ruling 8)
+        self.assertEqual(code, 0, output)
+        lines = [line.strip() for line in output.splitlines()]
+        self.assertEqual(lines[0], "ENT-01-stamp-import on ORD-01-import (WP-01-stamp)")
+        self.assertIn(f"Performer:   {self.dispatch}", lines)
+        self.assertIn("Before:      tests.test_stamp fails: ImportError on the template", lines)
+        self.assertIn("Witness:     uv run -m unittest tests.test_stamp", lines)
+        self.assertIn("MX session:  test-session", lines)
+        self.assertIn("Gate 5:      not signed", lines)
+
+    def test_json_mode_prints_each_entry_with_its_gate_5(self) -> None:
+        # given an entry booked on an order not closed
+        self.booked()
+        # when
+        code, output = self.show("--json")
+        # then each entry is its booked event with its order's Gate 5, here none
+        self.assertEqual(code, 0, output)
+        (printed,) = json.loads(output)
+        (booked,) = _entry_rows()
+        self.assertEqual({k: v for k, v in printed.items() if k != "gate5"}, booked)
+        self.assertIsNone(printed["gate5"])
+
+
 class EntryEpilogTests(unittest.TestCase):
     def test_every_example_parses_as_a_real_invocation(self) -> None:
-        # given the help of `gz wp entry` and of `gz wp entry book`
+        # given the help of `gz wp entry` and of each of its leaves
         parser = _build_parser()
         examples = [
             line.strip()
-            for path in (["wp", "entry"], ["wp", "entry", "book"])
+            for path in (["wp", "entry"], ["wp", "entry", "book"], ["wp", "entry", "show"])
             for line in (_help_parser(parser, path).epilog or "").splitlines()
             if line.strip().startswith("gz ")
         ]
         # when
         parsed = [parser.parse_args(shlex.split(example)[1:]) for example in examples]
         # then each parses, every required flag present, onto a handler
-        self.assertGreaterEqual(len(examples), 3)
+        self.assertGreaterEqual(len(examples), 5)
         self.assertTrue(all(callable(args.func) for args in parsed))
 
 

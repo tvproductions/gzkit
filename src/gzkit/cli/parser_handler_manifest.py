@@ -87,6 +87,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "wp_tag_clear_cmd": "gzkit.commands.wp_tag",
     # --- wp entry group (parser_wp_entry, RP-12 O4 task 1) ---
     "wp_entry_book_cmd": "gzkit.commands.wp_entry",
+    "wp_entry_show_cmd": "gzkit.commands.wp_entry",
     # --- handoff group (parser_maintenance) ---
     "handoff_archive_cmd": "gzkit.commands.handoff_archive",
     "handoff_authorize_cmd": "gzkit.commands.handoff",
