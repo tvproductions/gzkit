@@ -678,6 +678,93 @@ class TagIssueProducerProbeTests(unittest.TestCase):
         self.assertIn("disagrees with the issue", observation.error)
 
 
+class EntryProducerProbeTests(unittest.TestCase):
+    """RP-12 O4 task 1: the entry writer gets credit only for one true entry."""
+
+    @staticmethod
+    def _writer(book: Callable[[Any], None]) -> Callable[..., None]:
+        """A writer that books ``book``'s rows once, then refuses as the real one does.
+
+        Returns:
+            The stand-in writer.
+
+        """
+        from gzkit.mx.entries import EntryError  # noqa: PLC0415
+
+        calls: list[int] = []
+
+        def write(ledger: Any, _request: Any, **_fields: Any) -> None:
+            if calls:
+                msg = "This call is not stamped"
+                raise EntryError(msg)
+            calls.append(1)
+            book(ledger)
+
+        return write
+
+    def _observe(self, book: Callable[[Any], None]) -> Any:
+        with patch("gzkit.mx.entries.record_entry_book", self._writer(book)):
+            return probe_producer("entry_booked")
+
+    @staticmethod
+    def _entry(order: str = "ORD-01-producer-probe") -> Any:
+        from gzkit.events import EntryBookedEvent  # noqa: PLC0415
+
+        return EntryBookedEvent(
+            event="entry_booked",
+            id="ENT-01-producer-probe",
+            entry_id="ENT-01-producer-probe",
+            order=order,
+            work_package="WP-02-producer-probe",
+            dispatch_id="D-0000000000000000",
+            description="probe",
+            before="probe",
+            after="probe",
+            witness="probe",
+            mx_session_id="isolated-producer-probe",
+        )
+
+    def test_a_writer_that_books_the_entry_twice_gets_no_credit(self) -> None:
+        from gzkit.ledger import ledger_row  # noqa: PLC0415
+
+        def twice(ledger: Any) -> None:
+            for _ in range(2):
+                ledger.append(ledger_row(self._entry()))
+
+        observation = self._observe(twice)
+        self.assertEqual(observation.status, "failed")
+        self.assertIn("exactly one entry", observation.error)
+
+    def test_a_writer_that_books_another_event_gets_no_credit(self) -> None:
+        from gzkit.events import WorkPackageChangedEvent  # noqa: PLC0415
+        from gzkit.ledger import ledger_row  # noqa: PLC0415
+
+        def other(ledger: Any) -> None:
+            event = WorkPackageChangedEvent(
+                event="work_package_changed",
+                id="WP-02-producer-probe",
+                work_package="WP-02-producer-probe",
+                rung="attachment",
+                approver="operator",
+                change="probe",
+            )
+            ledger.append(ledger_row(event))
+
+        observation = self._observe(other)
+        self.assertEqual(observation.status, "failed")
+        self.assertIn("wrong event type", observation.error)
+
+    def test_a_writer_that_books_another_order_gets_no_credit(self) -> None:
+        from gzkit.ledger import ledger_row  # noqa: PLC0415
+
+        def elsewhere(ledger: Any) -> None:
+            ledger.append(ledger_row(self._entry("ORD-09-elsewhere")))
+
+        observation = self._observe(elsewhere)
+        self.assertEqual(observation.status, "failed")
+        self.assertIn("disagrees with the dispatch", observation.error)
+
+
 class TagHangProducerProbeTests(unittest.TestCase):
     """RP-12 O3 task 3: the tag hang writer gets credit only for one true hang."""
 
