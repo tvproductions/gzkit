@@ -219,6 +219,13 @@ class TestGhIssueCreatedAt(unittest.TestCase):
             with self.subTest(out=out[:20]), self.assertRaises(GhUnansweredError):
                 self._call(1 if not out.startswith("HTTP/2.0 200") else 0, out)
 
+    def test_a_found_issue_with_no_usable_creation_time_raises(self) -> None:
+        # The API says the issue exists, so it cannot be read as naming nothing; with no
+        # time to measure the separation by, the answer is no answer (ruling 182).
+        for body in ('{"state": "open"}', '{"state": "closed", "created_at": "yesterday"}'):
+            with self.subTest(body=body), self.assertRaises(GhUnansweredError):
+                self._call(0, _api("200 OK", body))
+
     def test_recurrence_exits_two_when_gh_gives_no_answer(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():

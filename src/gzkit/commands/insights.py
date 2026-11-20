@@ -223,7 +223,8 @@ def gh_issue_created_at(number: str, project_root: Path) -> datetime | None:
 
     Raises:
         GhUnansweredError: The API gave no answer, so whether the issue exists is
-            unknown; a citation is never read as naming nothing on that account.
+            unknown, or it found the issue with no creation time to measure by; a
+            citation is never read as naming nothing on that account.
 
     """
     from gzkit.commands.reference_checker import (  # noqa: PLC0415 -- the CLI's lazy-import pattern
@@ -235,6 +236,11 @@ def gh_issue_created_at(number: str, project_root: Path) -> datetime | None:
     read = gh_issue_read(number, project_root)
     if read.answer is IssueAnswer.UNANSWERED:
         msg = f"#{number}: the GitHub API gave no answer; check `gh auth status` and the network"
+        raise GhUnansweredError(msg)
+    if read.answer is IssueAnswer.MISSING:
+        return None
+    if read.created_at is None:
+        msg = f"#{number}: the GitHub API found the issue but gave no creation time"
         raise GhUnansweredError(msg)
     return read.created_at
 

@@ -25,7 +25,8 @@ A GHI resolves to its `created_at` through `gh api` (GitHub's *Get an issue*). A
 citation that names no insight record, or a GHI the API says does not exist (404,
 410, or a pull request's number), exits 1. When the API gives no answer at all,
 the command exits 2: whether the GHI exists is unknown, so the citation is never
-read as naming nothing (RP-12 ruling 182).
+read as naming nothing (RP-12 ruling 182). A GHI the API finds with no readable
+`created_at` also exits 2, since it exists but has no time to measure by.
 
 ---
 
