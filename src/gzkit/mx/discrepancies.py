@@ -263,8 +263,14 @@ def _performer_order(ledger: Ledger, request: DiscrepancyRecord, stamped_id: str
         The order the live performing dispatch is bound to.
 
     """
+    if request.dispatch is None:
+        _refuse(
+            f"This call is stamped with {stamped_id} and names no --dispatch; a performer's "
+            "line names the dispatch that found it, the one its call is stamped with (RP-12 "
+            f"rulings 172 and 175). Record it again with --dispatch {stamped_id}."
+        )
     if request.dispatch != stamped_id:
-        _refuse_unstamped(request.dispatch or stamped_id, stamped_id)
+        _refuse_unstamped(request.dispatch, stamped_id)
     if request.source != FOUND_IN_WORK:
         _refuse(
             f"A stamped call records a find in the work alone, and this line's source is "

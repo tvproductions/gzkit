@@ -516,6 +516,16 @@ class RecordRefusalTests(_DiscrepancyCase):
             lambda: self.record(stamped=other, dispatch=self.dispatch, source="found-in-work"),
         )
 
+    def test_a_stamped_call_naming_no_dispatch_is_told_to_name_its_own(self) -> None:
+        """Rulings 172 and 175: a performer's line names the dispatch its call is stamped
+        with; a call that names none is told to name that one, never another subagent's."""
+        refusal = self.assert_refused(
+            "names no --dispatch",
+            lambda: self.record(stamped=self.dispatch, source="found-in-work"),
+        )
+        self.assertIn(f"--dispatch {self.dispatch}", refusal)
+        self.assertNotIn("own subagent", refusal)
+
     def test_a_performers_line_is_a_find_in_the_work_alone(self) -> None:
         """Ruling 172: a stamped call records only a find in the work."""
         self.assert_refused(
