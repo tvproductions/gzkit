@@ -1071,6 +1071,18 @@ uv run gz wp dispatch WP-01-stamp --order ORD-01-import --role Restoration --mod
 uv run gz wp tag clear TAG-01-stamp-hook --dispatch D-<id> --position-found off
 ```
 
+Each act of maintenance on a commenced order is booked in the maintenance record by
+the dispatch that did the work, an `Implementer`, `SingleDriver` or `Restoration`,
+from its own subagent's stamped call: what was done and the measurement before and
+after, with the witness that measured them. The commit that lands the work names
+the entry's id in its subject (RP-12 rulings 8, 167 and 169 to 175):
+
+```bash
+uv run gz wp entry book --dispatch D-<id> --slug stamp-import \
+  --description "<what was done>" --before "<measurement>" --after "<measurement>" \
+  --witness "<command or receipt>"
+```
+
 A repair requirement states what must hold again after the repair. It lives in
 `data/catalog/reqs.json` beside the catalog's, written only by `gz wp req new`
 on an open repair package, and names the issue it answers:

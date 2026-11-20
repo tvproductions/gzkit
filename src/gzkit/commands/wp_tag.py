@@ -51,7 +51,7 @@ if TYPE_CHECKING:
 
 
 #: The recovery for a marker present but not on, by its cause (`.gzkit/rules/mx-mode.md`).
-_MARKER_RECOVERY = {
+MARKER_RECOVERY = {
     "unreadable": "Have the operator repair it through the gz-mx skill (`uv run gz mx repair`)",
     "unbound": "Have the operator repair it through the gz-mx skill (`uv run gz mx repair`)",
     "exiting": "Let the exit finish, then have the operator open a session through the gz-mx skill",
@@ -75,11 +75,11 @@ def _open_session_id(root: Path, ledger_path: Path) -> str | None:
     held = marker.condition(root, ledger_path)
     if held.on and held.marker is not None:
         return held.marker.session_id
-    if held.cause in _MARKER_RECOVERY:
+    if held.cause in MARKER_RECOVERY:
         msg = (
             f"The MX marker is present but {held.cause}, so no session is open to hold the "
             "tag. A tag is held by the open MX session, whose id is the coordinator's mark "
-            f"(RP-12 rulings 3 and 114). {_MARKER_RECOVERY[held.cause]}, then run this tag "
+            f"(RP-12 rulings 3 and 114). {MARKER_RECOVERY[held.cause]}, then run this tag "
             "act again."
         )
         raise PolicyBreachError(msg)

@@ -124,6 +124,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz wp tag hang`](wp-tag-hang.md) | Hang an issued tag, as the Repair dispatch's stamped call (RP-12 O3) |
 | [`gz wp tag authorize`](wp-tag-authorize.md) | Authorize a hung tag's clearance, as the coordinator (RP-12 O3) |
 | [`gz wp tag clear`](wp-tag-clear.md) | Clear an authorized tag, as the Restoration dispatch's stamped call (RP-12 O3) |
+| [`gz wp entry book`](wp-entry-book.md) | Book a maintenance-record entry, as the stamped call of the dispatch that did the work (RP-12 O4) |
 | [`gz wp req new`](wp-req-new.md) | Write a repair requirement with the next `REQ-<n>`, held on its repair package (RP-12 O2) |
 | [`gz handoff authorize`](handoff-authorize.md) | Deprecated alias for `gz handoff decide` |
 | [`gz handoff archive`](handoff-archive.md) | Move handoffs older than a threshold into `.gzkit/handoffs/archive/` (move-not-delete) |

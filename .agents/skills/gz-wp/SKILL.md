@@ -5,9 +5,9 @@ description: Use to create, attach issues to, move, change, add evidence to or r
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-18
+last_reviewed: 2026-11-20
 metadata:
-  skill-version: "0.25.0"
+  skill-version: "0.26.0"
 model: sonnet
 ---
 
@@ -160,19 +160,16 @@ uv run gz wp req new <WP-id> --statement "<what must hold again>" \
   --criterion "<state>|<outcome>|<evidence>" --kind BEHAVIOR --problem-report <n>
 ```
 
-Once its repair requirements are written, freeze the order on them, then record
-commencement. The order moves one step at a time while its package is initiated
-(rulings 2, 44). Its baseline holds only repair REQs held on its package, each in
-one live order's baseline at a time, an accepted order holding its REQs until its
-Gate 5 (rulings 53 and 82). A REQ a proceed holds at that revision is refused, new
-work on it being a REQ that supersedes it (rulings 81 and 83), and so is a
-superseded REQ, the refusal naming each head of its chains (rulings 85 and 87).
-The freeze seals the package's
-footprint, which must be valid as a brief's Allowed Paths are, so a change order may
-then only add a path (ruling 56), and approves each planned alteration no earlier
-order's freeze approved (ruling 63). Commencement crosses the airlock (ruling 65).
-Commit the order's work under the package's `Task:` trailer, as step 3 says.
-Freeze the order:
+Once its repair requirements are written, freeze the order on at least one of them, then
+record commencement; the order moves one step at a time while its package is initiated
+(rulings 2, 44, 61). Its baseline holds only repair REQs held on its package, each in one
+live order's baseline at a time, an accepted order holding its REQs until its Gate 5
+(rulings 53, 82). A REQ a proceed holds at that revision is refused, new work on it being
+a REQ that supersedes it (rulings 81, 83), and so is a superseded REQ, the refusal naming
+each head of its chains (rulings 85, 87). The freeze seals the package's footprint, valid
+as a brief's Allowed Paths are, so a change order may then only add a path (ruling 56), and
+approves each planned alteration no earlier order's freeze approved (ruling 63).
+Commencement crosses the airlock (ruling 65); commit under the package's `Task:` (step 3):
 
 ```bash
 uv run gz wp order freeze <ORD-id> --baseline REQ-<n>@<rev> --risk-note "<risk>" \
@@ -232,17 +229,23 @@ uv run gz wp tag authorize <TAG-id> [--json]
 uv run gz wp tag clear <TAG-id> --dispatch D-<id> --position-found <off|advisory|recording|on> [--json]
 ```
 
-The order's run is the package's run with `--order`: dispatch only against a REQ
-the order's freeze holds, while the order is commenced (ruling 57). The craftsman's
-two roles name no REQ, their subject the order, and arm no fix cycle: `Repair`
-takes the order while it is frozen, to hang its tags, and `Restoration` once it is
-commenced (rulings 108, 109, 131 and 132); a stopping exit on the order holds
-neither (ruling 135). A block on the
-order holds that order alone, its dispatches and moves refused until the operator
-rules; the package's other orders carry on (ruling 59). A frozen order fences
-writes to its footprint until it commences (ruling 116); a blocked, accepted or
-stopped order fences production writes across the tree, as a package does
-(ruling 58):
+Each act of maintenance on a commenced order is booked in the maintenance record from
+the stamped call of the live `Implementer`, `SingleDriver` or `Restoration` that did the
+work, never the main session; the commit landing the work names the entry in its subject
+(RP-12 rulings 8, 167 and 169 to 175; `docs/user/manpages/wp-entry-book.md`):
+
+```bash
+uv run gz wp entry book --dispatch D-<id> --slug <slug> --description "<what was done>" \
+  --before "<measurement>" --after "<measurement>" --witness "<command or receipt>" [--json]
+```
+
+The order's run is the package's run with `--order`: dispatch only against a REQ the
+order's freeze holds, while the order is commenced (ruling 57). `Repair` and `Restoration`
+name no REQ, their subject the order, arm no fix cycle, and a stopping exit holds neither
+(rulings 109, 132, 135). A block holds that order alone, its dispatches and moves refused
+until the operator rules (ruling 59). A frozen order fences writes to its footprint until it
+commences (ruling 116); a blocked, accepted or stopped order fences production writes across
+the tree, as a package does (ruling 58):
 
 ```bash
 uv run gz wp dispatch <WP-id> --order <ORD-id> --role Implementer --model <tier> --req REQ-<n>
@@ -252,14 +255,13 @@ uv run gz wp block <WP-id> --order <ORD-id> --reason "<why>" --next-action "<dec
 uv run gz wp unblock <WP-id> --order <ORD-id> --ruling "<their exact words>" --operator g0
 ```
 
-Acceptance runs on the order, its obligations the order's frozen REQs and its
-proofs and reviews under its id; accept refuses until it reads ready and the
-package's sealed footprint holds, the order and requirement stores aside (ruling
-66), and a refusal names every blocker, the footprint among them (ruling 88). A
-stopped order is excused, but whether it read ready is booked, the fact its Gate
-5 reads (rulings 60 and 84); a tag the order hung and nobody cleared holds every
-order, stopped or not (refusal 6, ruling 142). Accept crosses the airlock outward.
-A freeze names at least one REQ (ruling 61):
+Acceptance runs on the order, its obligations the order's frozen REQs and its proofs and
+reviews under its id; accept refuses until it reads ready and the package's sealed footprint
+holds, the order and requirement stores aside (ruling 66), and a refusal names every blocker,
+the footprint among them (ruling 88). A stopped order is excused, but whether it read ready
+is booked, the fact its Gate 5 reads (rulings 60, 84); a tag the order hung and nobody
+cleared holds every order, stopped or not (refusal 6, ruling 142). Accept crosses the
+airlock outward:
 
 ```bash
 uv run gz wp acceptance <ORD-id> init --author <implementing session>
@@ -286,12 +288,10 @@ own approved specification; a difference from the prior shape is not one.
 
 ## Read
 
-`uv run gz wp order show <ORD-id>` prints an order's record, its package's kind, and
-its state, its baseline and the REQs a proceed holds from the ledger (ruling 78);
-`uv run gz wp show <WP-id>` prints the record, the state and the history;
-`uv run gz wp runs` reports what the ledger says every run in flight, a package's or
-an order's, has reached, a frozen order holding a live dispatch among them (RP-12
-ruling 136);
+`uv run gz wp order show <ORD-id>` prints an order's record, its package's kind, its state,
+its baseline and the REQs a proceed holds (ruling 78); `uv run gz wp show <WP-id>` the record,
+state and history; `uv run gz wp runs` what the ledger says every run in flight, a package's
+or an order's, has reached, a frozen order holding a live dispatch among them (ruling 136);
 `uv run gz validate --catalog` checks the store against RO-5's rulings.
 
 ## Common Rationalizations

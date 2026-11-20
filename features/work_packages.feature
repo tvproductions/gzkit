@@ -64,6 +64,14 @@ Feature: Work packages run through the gz wp verbs
     Then the command exits with code 3
     And the output contains "This call is not stamped"
 
+  Scenario: booking a maintenance-record entry from an unstamped call is a policy breach
+    Given the workspace is initialized
+    And the requirements catalog is seeded
+    When I run the gz command "mx enter --reason repair --attestor g0"
+    And I run the gz command "wp entry book --dispatch D-0000000000000000 --slug x --description d --before b --after a --witness w"
+    Then the command exits with code 3
+    And the output contains "This call is not stamped"
+
   Scenario: authorizing a clearance with no MX session open is a policy breach
     Given the workspace is initialized
     And the requirements catalog is seeded
