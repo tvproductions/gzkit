@@ -2346,7 +2346,7 @@ class DiscrepancyClearedEvent(_EventBase):
     corrective_action: str | None = Field(
         None, min_length=1, description="Its corrective action (ruling 181)"
     )
-    recurs: list[str] = Field(
+    recurs: list[Annotated[str, Field(min_length=1)]] = Field(
         default_factory=list,
         description="Insight timestamps or GHIs the recurrence check read (ruling 181)",
     )

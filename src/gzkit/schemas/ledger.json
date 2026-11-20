@@ -3294,7 +3294,8 @@
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "min_length": 1
         },
         "source": {
           "type": "string",
@@ -3312,13 +3313,15 @@
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "pattern": "^TAG-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*$"
         },
         "dispatch_id": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "pattern": "^D-[0-9a-f]{16}$"
         },
         "mx_session_id": {
           "type": "string",
@@ -3350,31 +3353,36 @@
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "pattern": "^ENT-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*$"
         },
         "tag_id": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "pattern": "^TAG-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*$"
         },
         "ghi": {
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "min": 1
         },
         "root_cause": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "min_length": 1
         },
         "corrective_action": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "min_length": 1
         },
         "recurs": {
           "type": "array",

@@ -4,9 +4,11 @@
 @covers ADR-0.17.0  OBPI-0.17.0-04 json-schemas-and-validation
 """
 
+import json
+import tempfile
 import unittest
 from pathlib import Path
-from typing import Literal, get_args, get_origin
+from typing import ClassVar, Literal, get_args, get_origin
 
 from pydantic import BaseModel, ValidationError
 
@@ -131,6 +133,7 @@ from gzkit.models.frontmatter import (
 from gzkit.pipeline_stage_fence import CANONICAL_STAGES
 from gzkit.schemas import get_schema_path, load_schema
 from gzkit.traceability import covers
+from gzkit.validate_pkg.ledger_check import validate_ledger
 
 # ---------------------------------------------------------------------------
 # Helper: extract Pydantic model's required field names (no defaults)
@@ -1473,3 +1476,73 @@ class TestMxSessionOpenedCarriesItsMode(unittest.TestCase):
                     "mode": "lenient",
                 }
             )
+
+
+class TestDiscrepancySchemaHoldsTheModelsBounds(unittest.TestCase):
+    """A discrepancy row the typed models refuse fails `gz validate --ledger` too.
+
+    RP-12 O4 task 2's review: `DiscrepancyRecordedEvent.due_by`, and
+    `DiscrepancyClearedEvent.root_cause` and `corrective_action`, carry
+    `min_length=1`, and `ghi` carries `ge=1`, while the schema declared only the
+    type, so such a row validated and then broke `gz wp discrepancy show`.
+    """
+
+    _RECORDED: ClassVar[dict[str, object]] = {
+        "schema": "gzkit.ledger.v1",
+        "event": "discrepancy_recorded",
+        "id": "DSC-01-hook",
+        "ts": "2026-11-20T00:00:00+00:00",
+        "discrepancy_id": "DSC-01-hook",
+        "order": "ORD-01-import",
+        "work_package": "WP-01-stamp",
+        "grade": "due-by-event",
+        "due_by": "the fix",
+        "source": "left-broken",
+        "description": "The hook is left off.",
+        "tag_id": None,
+        "dispatch_id": None,
+        "mx_session_id": "mx-1",
+    }
+    _CLEARED: ClassVar[dict[str, object]] = {
+        "schema": "gzkit.ledger.v1",
+        "event": "discrepancy_cleared",
+        "id": "DSC-01-hook",
+        "ts": "2026-11-20T01:00:00+00:00",
+        "discrepancy_id": "DSC-01-hook",
+        "order": "ORD-01-import",
+        "work_package": "WP-01-stamp",
+        "entry_id": None,
+        "tag_id": None,
+        "ghi": 1412,
+        "root_cause": "a typo",
+        "corrective_action": "a test",
+        "recurs": [],
+        "mx_session_id": "mx-1",
+    }
+
+    def _errors(self, *rows: dict[str, object]) -> list[str]:
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger = Path(tmp) / "ledger.jsonl"
+            ledger.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+            return [e.message for e in validate_ledger(ledger)]
+
+    def test_a_row_each_model_accepts_validates(self) -> None:
+        # given one row of each event the typed models accept
+        # when the ledger validator reads them
+        # then neither is refused (the control)
+        self.assertEqual(self._errors(self._RECORDED, self._CLEARED), [])
+
+    def test_the_bounds_the_models_enforce_fail_validation(self) -> None:
+        # given rows each breaking one bound a model enforces
+        table = [
+            ("due_by", self._RECORDED | {"due_by": " "}),
+            ("ghi", self._CLEARED | {"ghi": 0}),
+            ("root_cause", self._CLEARED | {"root_cause": ""}),
+            ("corrective_action", self._CLEARED | {"corrective_action": " "}),
+        ]
+        for field, row in table:
+            with self.subTest(field=field):
+                # when the ledger validator reads it
+                errors = self._errors(row)
+                # then it is refused, naming the field
+                self.assertTrue(any(f"'{field}'" in e for e in errors), errors)
