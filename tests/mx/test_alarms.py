@@ -116,7 +116,8 @@ class TestHookDeliveryNeverDemotes(unittest.TestCase):
             root = Path(tmp)
             (root / ".gzkit").mkdir()
             open_marker(root, Marker(session_id="safe-session", level="drydock"))
-            self.assertTrue(checkpoint.blocks("session-green-gate", level, root))
+            # The scope routes by its registry stem (validate_cmd `_run_scope_checks`).
+            self.assertTrue(checkpoint.blocks("session_green_gate", level, root))
 
     def test_the_session_green_gate_step_is_pinned_critical(self):
         self.assertEqual(_STEP_GUARD_META["Session green gate"][1], levels.CRITICAL)

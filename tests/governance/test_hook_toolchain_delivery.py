@@ -123,6 +123,23 @@ class TestTheRecoveryCanRunOnAFreshMachine(unittest.TestCase):
         self.assertIsNotNone(status)
         self.assertIn(expected, status or "")
 
+    def test_a_hooks_path_redirect_names_the_same_recovery(self):
+        """pre-commit refuses while `core.hooksPath` is set; the message still says how to recover.
+
+        Driven by the `gz arb red --commit 6f35e85ac` run, whose revert of this branch's
+        recovery left every test passing (receipt
+        arb-red-commit-6f35e85acca9-c29ec0590e0044b09a6ff718ca03b91a).
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._unhooked_worktree(tmp)
+            (root / ".git" / "config").write_text(
+                "[core]\n\thooksPath = elsewhere\n", encoding="utf-8"
+            )
+            status = init_cmd._install_pre_commit_hooks(root)
+            expected = install_recovery(declared_hook_types(root))
+        self.assertIn("core.hooksPath", status or "")
+        self.assertIn(expected, status or "")
+
     def test_gz_init_never_installs_hooks_from_an_ephemeral_environment(self):
         """Hooks installed by `uvx pre-commit` point into uv's cache, which a prune deletes.
 
