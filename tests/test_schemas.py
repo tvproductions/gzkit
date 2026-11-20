@@ -41,6 +41,8 @@ from gzkit.events import (
     CorpusEntryRetiredEvent,
     CorpusRetirementReconciledEvent,
     DiscoveredFromEvent,
+    DiscrepancyClearedEvent,
+    DiscrepancyRecordedEvent,
     DispatchClaimedEvent,
     DispatchEndedEvent,
     DispatchVoidedEvent,
@@ -422,6 +424,9 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "tag_cleared": TagClearedEvent,
     # The maintenance record's entry (RP-12 O4 task 1)
     "entry_booked": EntryBookedEvent,
+    # The list of discrepancies' line and its clear (RP-12 O4 task 2)
+    "discrepancy_recorded": DiscrepancyRecordedEvent,
+    "discrepancy_cleared": DiscrepancyClearedEvent,
     # Reversible retirement of OBPIs whose parent ADR demoted to pool (GHI #584)
     "obpi_parked": ObpiParkedEvent,
     "obpi_blocked_on_operator": ObpiBlockedOnOperatorEvent,

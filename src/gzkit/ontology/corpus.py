@@ -258,6 +258,10 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         # The maintenance record's entry (RP-12 O4 task 1), a performer's record of
         # one act on an order, a run record, not a node of this projection.
         "entry_booked",
+        # The list of discrepancies' line and its clear (RP-12 O4 task 2), run
+        # records of an order's open work, not nodes of this projection.
+        "discrepancy_recorded",
+        "discrepancy_cleared",
     }
 )
 

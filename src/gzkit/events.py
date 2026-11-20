@@ -1889,6 +1889,8 @@ SLUG_PATTERN = "[a-z0-9]+(-[a-z0-9]+)*"
 TAG_ID_PATTERN = f"TAG-[0-9]{{2,}}-{SLUG_PATTERN}"
 #: A maintenance-record entry's id, in the same grammar (RP-12 ruling 169): ``ENT-<NN>-<slug>``.
 ENTRY_ID_PATTERN = f"ENT-[0-9]{{2,}}-{SLUG_PATTERN}"
+#: A discrepancy's id, in the same grammar (RP-12 ruling 169): ``DSC-<NN>-<slug>``.
+DISCREPANCY_ID_PATTERN = f"DSC-[0-9]{{2,}}-{SLUG_PATTERN}"
 
 
 class WorkPackageDispatchedEvent(_EventBase):
@@ -2095,6 +2097,13 @@ DispatchOver = Literal["ended", "voided"]
 #: The position a clear finds its surface in: one a tag is hung in, or back `on`, a
 #: closed set admitted by RP-12 ruling 140; any but the hung one is out of position.
 TagPositionFound = Literal["off", "advisory", "recording", "on"]
+#: A discrepancy's grade, ruling 9's two, a closed set: it holds return to service, or
+#: it is due by an event its line names in text (RP-12 ruling 179).
+DiscrepancyGrade = Literal["blocks-return-to-service", "due-by-event"]
+#: Where a discrepancy comes from, ruling 9's three, a closed set: left broken, an
+#: inspector's rejection (refused by the writer until O6's QAI dispatch, ruling 172),
+#: or found in the work.
+DiscrepancySource = Literal["left-broken", "inspector-rejection", "found-in-work"]
 
 
 class TagIssuedEvent(_EventBase):
@@ -2271,6 +2280,79 @@ class EntryBookedEvent(_EventBase):
     mx_session_id: str = Field(..., min_length=1, description="The MX session open at the entry")
 
 
+class DiscrepancyRecordedEvent(_EventBase):
+    """discrepancy_recorded event — one line of the list of discrepancies (RP-12 O4 task 2).
+
+    The list is ledger events, rendered as a view (ruling 9). A line carries its grade,
+    the event it is due by in text on a *due by* line (ruling 179), its source, what is
+    wrong, its order and package (ruling 178) and the open MX session. The coordinator's
+    unstamped call records any source but an inspector's rejection, and may cite a tag
+    issued on the order (rulings 114, 171 and 172); a performer's stamped call records
+    a find in the work, its order read from its dispatch (rulings 172 and 175), and
+    carries the dispatch. Written only by ``gzkit.mx.discrepancies.record_discrepancy``.
+    ``id`` is the discrepancy id.
+    """
+
+    event: Literal["discrepancy_recorded"]
+    discrepancy_id: str = Field(
+        ..., pattern=f"^{DISCREPANCY_ID_PATTERN}$", description="DSC-<NN>-<slug>"
+    )
+    order: str = Field(..., min_length=1, description="The order the line is on (ruling 178)")
+    work_package: str = Field(..., min_length=1, description="The repair package of the order")
+    grade: DiscrepancyGrade = Field(..., description="Blocks return to service, or due by")
+    due_by: str | None = Field(
+        None, min_length=1, description="The event a due-by line is due by, in text (ruling 179)"
+    )
+    source: DiscrepancySource = Field(..., description="Where the line comes from (ruling 9)")
+    description: str = Field(..., min_length=1, description="What is wrong")
+    tag_id: str | None = Field(
+        None, pattern=f"^{TAG_ID_PATTERN}$", description="A tag on the order it cites (ruling 171)"
+    )
+    dispatch_id: str | None = Field(
+        None,
+        pattern=f"^{DISPATCH_ID_PATTERN}$",
+        description="The performer that found it, None for the coordinator's call (ruling 172)",
+    )
+    mx_session_id: str = Field(..., min_length=1, description="The MX session open at the record")
+
+
+class DiscrepancyClearedEvent(_EventBase):
+    """discrepancy_cleared event — a line cleared on its evidence (RP-12 O4 task 2).
+
+    The coordinator's unstamped call alone clears a line, citing evidence the ledger
+    resolves: an ``ENT`` entry, a cleared tag, or a GitHub issue the line was filed as,
+    confirmed open through ``gh`` at the clear (rulings 172 and 180). Root cause and
+    corrective action are carried on a line that blocks return to service, or one whose
+    ``recurs`` citations meet the recurrence threshold (rulings 9 and 181). Written only
+    by ``gzkit.mx.discrepancies.record_discrepancy_clear``. ``id`` is the discrepancy id.
+    """
+
+    event: Literal["discrepancy_cleared"]
+    discrepancy_id: str = Field(
+        ..., pattern=f"^{DISCREPANCY_ID_PATTERN}$", description="DSC-<NN>-<slug>"
+    )
+    order: str = Field(..., min_length=1, description="The line's order")
+    work_package: str = Field(..., min_length=1, description="The repair package of the order")
+    entry_id: str | None = Field(
+        None, pattern=f"^{ENTRY_ID_PATTERN}$", description="An entry it cites (ruling 172)"
+    )
+    tag_id: str | None = Field(
+        None, pattern=f"^{TAG_ID_PATTERN}$", description="A cleared tag it cites (ruling 172)"
+    )
+    ghi: int | None = Field(
+        None, ge=1, description="The open issue the line was filed as (ruling 180)"
+    )
+    root_cause: str | None = Field(None, min_length=1, description="Its root cause (ruling 181)")
+    corrective_action: str | None = Field(
+        None, min_length=1, description="Its corrective action (ruling 181)"
+    )
+    recurs: list[str] = Field(
+        default_factory=list,
+        description="Insight timestamps or GHIs the recurrence check read (ruling 181)",
+    )
+    mx_session_id: str = Field(..., min_length=1, description="The MX session open at the clear")
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -2376,7 +2458,9 @@ TypedLedgerEvent = Annotated[
     | TagHungEvent
     | TagClearanceAuthorizedEvent
     | TagClearedEvent
-    | EntryBookedEvent,
+    | EntryBookedEvent
+    | DiscrepancyRecordedEvent
+    | DiscrepancyClearedEvent,
     Field(discriminator="event"),
 ]
 

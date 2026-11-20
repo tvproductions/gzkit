@@ -282,6 +282,24 @@ class ReportProducerProbeTests(unittest.TestCase):
                 self.assertEqual(observation.record_count, 0)
 
 
+class DiscrepancyProducerProbeTests(unittest.TestCase):
+    """The list of discrepancies' two writers, each probed with a refusal (RP-12 O4 task 2)."""
+
+    def test_the_discrepancy_writer_is_verified_and_refuses_a_stamped_left_broken(self) -> None:
+        """RP-12 rulings 9, 172 and 178: one line on its order, a performer's non-find refused."""
+        observation = probe_producer("discrepancy_recorded")
+        self.assertEqual(observation.status, "verified", observation.error)
+        self.assertEqual(observation.producer, "gzkit.mx.discrepancies.record_discrepancy")
+        self.assertEqual(observation.subject, "DSC-01-producer-probe")
+
+    def test_the_discrepancy_clear_is_verified_and_refuses_a_stamped_clear(self) -> None:
+        """RP-12 rulings 172 and 181: one clear on an entry, a stamped clear refused."""
+        observation = probe_producer("discrepancy_cleared")
+        self.assertEqual(observation.status, "verified", observation.error)
+        self.assertEqual(observation.producer, "gzkit.mx.discrepancies.record_discrepancy_clear")
+        self.assertEqual(observation.subject, "DSC-01-producer-probe")
+
+
 if __name__ == "__main__":
     unittest.main()
 

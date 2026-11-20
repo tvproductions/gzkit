@@ -19,6 +19,8 @@ from gzkit.config import GzkitConfig, PathConfig
 from gzkit.events import (
     AcceptanceRecordedEvent,
     BaselinedReq,
+    DiscrepancyClearedEvent,
+    DiscrepancyRecordedEvent,
     EntryBookedEvent,
     LegacyUnitWithdrawnEvent,
     MxMarkerRepairedEvent,
@@ -1453,15 +1455,11 @@ def _probe_legacy_withdrawal(root: Path) -> ProducerObservation:
     )
 
 
-def _probe_entry_book(root: Path) -> ProducerObservation:
-    """Book a performer's entry on a commenced order, then again unstamped; refused (RP-12 O4).
+def _seat_performer(root: Path) -> tuple[Path, Ledger, Catalog, str]:
+    """Seat a repair package initiated, its order commenced and an Implementer on it (RP-12 O4).
 
     Returns:
-        The verified observation.
-
-    Raises:
-        TypeError: The writer persisted another event type.
-        ValueError: The writer booked the wrong record or the unstamped entry.
+        The ledger's path, the ledger, the catalog and the dispatch's id.
 
     """
     from gzkit import order_ledger  # noqa: PLC0415 - the writers; import only when probed
@@ -1469,7 +1467,6 @@ def _probe_entry_book(root: Path) -> ProducerObservation:
     from gzkit import work_package_run as run  # noqa: PLC0415
     from gzkit.ledger import Ledger  # noqa: PLC0415
     from gzkit.models.catalog import Criterion, Order, RepairReq  # noqa: PLC0415
-    from gzkit.mx import entries  # noqa: PLC0415
 
     order = Order(
         id=_ORDER, work_package=_REPAIR_PACKAGE, aliases=(), purpose=_STATEMENT, procedure="NA"
@@ -1528,6 +1525,23 @@ def _probe_entry_book(root: Path) -> ProducerObservation:
         ),
     )
     dispatch_id = str(dispatched.dispatch_id)
+    return ledger_path, ledger, catalog, dispatch_id
+
+
+def _probe_entry_book(root: Path) -> ProducerObservation:
+    """Book a performer's entry on a commenced order, then again unstamped; refused (RP-12 O4).
+
+    Returns:
+        The verified observation.
+
+    Raises:
+        TypeError: The writer persisted another event type.
+        ValueError: The writer booked the wrong record or the unstamped entry.
+
+    """
+    from gzkit.mx import entries  # noqa: PLC0415 - the writer; import only when probed
+
+    ledger_path, ledger, _, dispatch_id = _seat_performer(root)
     request = entries.EntryBook(
         slug="producer-probe",
         dispatch=dispatch_id,
@@ -1567,6 +1581,120 @@ def _probe_entry_book(root: Path) -> ProducerObservation:
     )
 
 
+class _OfflineWitnesses:
+    """The clear's witnesses with no network: no issue reads and no citation resolves."""
+
+    min_occurrences = 3
+    separation_hours = 24.0
+
+    @staticmethod
+    def issue_state(number: int) -> str | None:  # noqa: ARG004 - no network in a probe
+        return None
+
+    @staticmethod
+    def cite_time(cite: str) -> datetime | None:  # noqa: ARG004 - no network in a probe
+        return None
+
+
+def _probe_discrepancy(root: Path, event_type: str = "discrepancy_recorded") -> ProducerObservation:
+    """Record a line on a commenced order and clear it on an entry, each refused once (RP-12 O4).
+
+    The record probe refuses a performer's stamped call recording what it did not find
+    in the work (ruling 172); the clear probe refuses a stamped clear (rulings 114, 172).
+
+    Returns:
+        The verified observation.
+
+    Raises:
+        TypeError: The writer persisted another event type.
+        ValueError: The writer booked the wrong record or the refused act.
+
+    """
+    from gzkit.mx import discrepancies, entries  # noqa: PLC0415 - the writers; only when probed
+
+    ledger_path, ledger, catalog, dispatch_id = _seat_performer(root)
+    clearing = event_type == "discrepancy_cleared"
+    if clearing:
+        entries.record_entry_book(
+            ledger,
+            entries.EntryBook(
+                slug="producer-probe",
+                dispatch=dispatch_id,
+                description=_STATEMENT,
+                before=_AUTHOR,
+                after=_AUTHOR,
+                witness=_AUTHOR,
+            ),
+            stamped_id=dispatch_id,
+            mx_session_id=_AUTHOR,
+        )
+    line = discrepancies.DiscrepancyRecord(
+        slug="producer-probe",
+        grade="due-by-event",
+        due_by=_STATEMENT,
+        source="left-broken",
+        description=_STATEMENT,
+        order=_ORDER,
+    )
+
+    def record(stamped: str | None) -> object:
+        request = (
+            line
+            if stamped is None
+            else line.model_copy(update={"order": None, "dispatch": stamped})
+        )
+        return discrepancies.record_discrepancy(
+            catalog, ledger, request, stamped_id=stamped, mx_session_id=_AUTHOR
+        )
+
+    def clear(stamped: str | None) -> object:
+        return discrepancies.record_discrepancy_clear(
+            ledger,
+            discrepancies.DiscrepancyClear(
+                discrepancy="DSC-01-producer-probe", entry="ENT-01-producer-probe"
+            ),
+            stamped_id=stamped,
+            mx_session_id=_AUTHOR,
+            witnesses=_OfflineWitnesses(),
+        )
+
+    if clearing:
+        record(None)
+    act, case, reason = (
+        (clear, "a stamped clear", "coordinator's unstamped call alone")
+        if clearing
+        else (record, "a performer recording what it did not find", "a find in the work alone")
+    )
+    seated = ledger_path.read_bytes()
+    act(None)
+    _expect_refusal(lambda: act(dispatch_id), case, discrepancies.DiscrepancyError, reason)
+    persisted = ledger_path.read_bytes()
+    added = persisted[len(seated) :].decode("utf-8").splitlines()
+    if not persisted.startswith(seated) or len(added) != 1:
+        msg = "Writer must persist exactly one event and nothing for a refusal"
+        raise ValueError(msg)
+    event = parse_typed_event(json.loads(added[0]))
+    expected = DiscrepancyClearedEvent if clearing else DiscrepancyRecordedEvent
+    if not isinstance(event, expected):
+        msg = "Writer persisted the wrong event type"
+        raise TypeError(msg)
+    if (event.id, event.order, event.work_package) != (
+        "DSC-01-producer-probe",
+        _ORDER,
+        _REPAIR_PACKAGE,
+    ):
+        msg = "Discrepancy record disagrees with the order it names"
+        raise ValueError(msg)
+    return ProducerObservation(
+        event_type=event_type,
+        producer=_PRODUCERS[event_type],
+        status="verified",
+        ledger_sha256=hashlib.sha256(persisted).hexdigest(),
+        record_count=1,
+        subject=event.id,
+    )
+
+
 _PRODUCERS = {
     "acceptance_recorded": "gzkit.acceptance_store.initialize",
     "report_published": "gzkit.reports.publish_report",
@@ -1591,6 +1719,8 @@ _PRODUCERS = {
     "tag_clearance_authorized": "gzkit.mx.tag_out.record_tag_clearance",
     "tag_cleared": "gzkit.mx.tag_out.record_tag_clear",
     "entry_booked": "gzkit.mx.entries.record_entry_book",
+    "discrepancy_recorded": "gzkit.mx.discrepancies.record_discrepancy",
+    "discrepancy_cleared": "gzkit.mx.discrepancies.record_discrepancy_clear",
 }
 
 
@@ -1610,6 +1740,8 @@ _ROOT_PROBES = {
     "tag_clearance_authorized": lambda root: _probe_tag_hang(root, "tag_clearance_authorized"),
     "tag_cleared": lambda root: _probe_tag_hang(root, "tag_cleared"),
     "entry_booked": _probe_entry_book,
+    "discrepancy_recorded": _probe_discrepancy,
+    "discrepancy_cleared": lambda root: _probe_discrepancy(root, "discrepancy_cleared"),
     "legacy_unit_withdrawn": _probe_legacy_withdrawal,
     "dispatch_claimed": _probe_dispatch_claim,
     "dispatch_voided": lambda root: _probe_dispatch_claim(root, "dispatch_voided"),

@@ -3260,6 +3260,135 @@
         }
       }
     },
+    "discrepancy_recorded": {
+      "required": [
+        "discrepancy_id",
+        "order",
+        "work_package",
+        "grade",
+        "source",
+        "description",
+        "mx_session_id"
+      ],
+      "properties": {
+        "discrepancy_id": {
+          "type": "string",
+          "pattern": "^DSC-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "order": {
+          "type": "string",
+          "min_length": 1
+        },
+        "work_package": {
+          "type": "string",
+          "min_length": 1
+        },
+        "grade": {
+          "type": "string",
+          "enum": [
+            "blocks-return-to-service",
+            "due-by-event"
+          ]
+        },
+        "due_by": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "left-broken",
+            "inspector-rejection",
+            "found-in-work"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "min_length": 1
+        },
+        "tag_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dispatch_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mx_session_id": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
+    "discrepancy_cleared": {
+      "required": [
+        "discrepancy_id",
+        "order",
+        "work_package",
+        "mx_session_id"
+      ],
+      "properties": {
+        "discrepancy_id": {
+          "type": "string",
+          "pattern": "^DSC-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "order": {
+          "type": "string",
+          "min_length": 1
+        },
+        "work_package": {
+          "type": "string",
+          "min_length": 1
+        },
+        "entry_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tag_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ghi": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "root_cause": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "corrective_action": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "recurs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "min_length": 1
+          }
+        },
+        "mx_session_id": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
     "work_package_unblocked": {
       "required": [
         "work_package",
