@@ -68,13 +68,14 @@ sets one up: `TAG-01-stamp-hook` issued on `ORD-01-import` for
 clearance authorized, and `Restoration` dispatch `D-e11ff2aa6a9dbeb7` booked on
 the order. Its MX marker was opened by the test helper.
 
-From the main session, unstamped, exit 3:
+From the main session, unstamped, exit 3 (its wording re-captured 2026-11-20):
 
 ```console
 $ uv run gz wp tag clear TAG-01-stamp-hook --dispatch D-e11ff2aa6a9dbeb7 --position-found off
-This call is not stamped, and a clear is the stamped call of the Restoration
-dispatch it names, D-e11ff2aa6a9dbeb7 (RP-12 rulings 6 and 133). Run the clear
-from D-e11ff2aa6a9dbeb7's own subagent, its prompt carrying the dispatch line.
+This call is not stamped with a dispatch id, and a clear is the stamped call of
+the Restoration dispatch it names, D-e11ff2aa6a9dbeb7 (RP-12 rulings 6 and 133).
+Run the clear from D-e11ff2aa6a9dbeb7's own subagent, its prompt carrying the
+dispatch line.
 ```
 
 From the Restoration dispatch's stamped call, the surface found back `on`, exit 3

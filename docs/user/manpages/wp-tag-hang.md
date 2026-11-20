@@ -59,16 +59,16 @@ sets one up: `TAG-01-stamp-hook` issued on `ORD-01-import`, the order frozen and
 `Repair` dispatches booked on it. Its MX marker was opened by the test helper, and
 each stamped call was stamped as the stamp hook stamps that dispatch's subagent.
 
-From an unstamped call, exit 3:
+From an unstamped call, exit 3 (its wording re-captured 2026-11-20):
 
 ```console
 $ uv run gz wp tag hang TAG-01-stamp-hook --dispatch D-ccaaffb54630afa2
-This call is not stamped, and a hang is the stamped call of the Repair dispatch
-it names, D-ccaaffb54630afa2 (RP-12 ruling 133). If D-ccaaffb54630afa2 is a live
-Repair dispatch, run the hang from its own subagent, its prompt carrying the
-dispatch line; with none booked for the tag's order, have the coordinator book
-one: `uv run gz wp dispatch <WP-id> --order <ORD-id> --role Repair --model
-<tier>`.
+This call is not stamped with a dispatch id, and a hang is the stamped call of
+the Repair dispatch it names, D-ccaaffb54630afa2 (RP-12 ruling 133). If
+D-ccaaffb54630afa2 is a live Repair dispatch, run the hang from its own
+subagent, its prompt carrying the dispatch line; with none booked for the tag's
+order, have the coordinator book one: `uv run gz wp dispatch <WP-id> --order
+<ORD-id> --role Repair --model <tier>`.
 ```
 
 From a call stamped as the other `Repair` dispatch, `D-db80c08de7493108`, exit 3:

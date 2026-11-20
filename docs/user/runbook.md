@@ -1075,7 +1075,7 @@ Each act of maintenance on a commenced order is booked in the maintenance record
 the dispatch that did the work, an `Implementer`, `SingleDriver` or `Restoration`,
 from its own subagent's stamped call: what was done and the measurement before and
 after, with the witness that measured them. The commit that lands the work names
-the entry's id in its subject (RP-12 rulings 8, 167 and 169 to 175):
+the entry's id in its subject (RP-12 rulings 8, 167 and 169 to 177):
 
 ```bash
 uv run gz wp entry book --dispatch D-<id> --slug stamp-import \

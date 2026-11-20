@@ -281,13 +281,26 @@ class EntryTests(_EntryCase):
         self.assertEqual(second.entry_id, "ENT-02-stamp-docs")
 
     def test_the_series_is_numbered_not_spelled_past_99(self) -> None:
-        """Ruling 169: ENT-99 is followed by ENT-100, a number compared, never a string."""
-        first = self.booked()
-        row = {**_rows(self.path)[-1], "id": "ENT-99-early", "entry_id": "ENT-99-early"}
-        row.pop("schema")
-        self.seat(row)
-        self.assertEqual(first.entry_id, "ENT-01-stamp-import")
-        self.assertEqual(self.booked(slug="late").entry_id, "ENT-100-late")
+        """Ruling 169: past ENT-100 comes ENT-101, a number compared, never a string.
+
+        A string maximum reads ENT-99 above ENT-100 and would mint ENT-100 twice.
+        """
+        self.booked()
+        for number in ("99", "100"):
+            row = {
+                **_rows(self.path)[-1],
+                "id": f"ENT-{number}-far",
+                "entry_id": f"ENT-{number}-far",
+            }
+            row.pop("schema")
+            self.seat(row)
+        self.assertEqual(self.booked(slug="late").entry_id, "ENT-101-late")
+
+    def test_a_row_the_event_no_longer_admits_still_holds_its_number(self) -> None:
+        """Ruling 176: the series reads each row's id by its shape, a malformed row included."""
+        self.booked()
+        self.seat({"event": "entry_booked", "id": "ENT-05-bad", "ts": "2026-11-20T00:00:00+00:00"})
+        self.assertEqual(self.booked(slug="after").entry_id, "ENT-06-after")
 
     def test_a_voided_entrys_number_is_never_reissued(self) -> None:
         """Ruling 176: the series reads past every number the history names, a void included."""
@@ -327,7 +340,7 @@ class EntryRefusalTests(_EntryCase):
 
     def test_a_call_not_stamped_as_the_named_dispatch_is_refused(self) -> None:
         """Ruling 167: the performer books its own entry, stamped (ruling 133's form)."""
-        self.assert_refused("not stamped", lambda: self.entry(stamped=None))
+        self.assert_refused("not stamped with a dispatch id", lambda: self.entry(stamped=None))
         other = self.book("Implementer")
         refusal = self.assert_refused(f"stamped with {other}", lambda: self.entry(stamped=other))
         self.assertIn(f"--dispatch {other}", refusal)
@@ -435,6 +448,8 @@ class EntryRefusalTests(_EntryCase):
         )
         self.assertTrue(order_took_stopping_exit(self.ledger, _ORDER))
         self.assertEqual(self.booked().order, _ORDER)
+        restorer = self.book("Restoration")
+        self.assertEqual(self.booked(restorer, slug="restored").dispatch_id, restorer)
 
 
 class MaintenanceRecordTests(_EntryCase):

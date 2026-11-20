@@ -164,7 +164,7 @@ def _refuse_unstamped(dispatch_id: str, stamped_id: str | None) -> NoReturn:
             f"{stamped_id} ...`; otherwise the entry belongs to {dispatch_id}'s own subagent."
         )
     else:
-        stamp = "not stamped"
+        stamp = "not stamped with a dispatch id"
         step = (
             f"The entry is booked from {dispatch_id}'s own subagent, its prompt carrying the "
             "dispatch line; the coordinator relays nothing (14 CFR 43.9(a))."

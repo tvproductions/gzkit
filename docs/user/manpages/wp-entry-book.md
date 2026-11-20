@@ -67,14 +67,15 @@ again.' --before 'tests.test_stamp fails: ImportError on the template' --after
 'tests.test_stamp passes, 12 tests' --witness 'uv run -m unittest
 tests.test_stamp'`, shown below as `...`.
 
-From an unstamped call, exit 3:
+From an unstamped call, exit 3 (its wording re-captured 2026-11-20):
 
 ```console
 $ uv run gz wp entry book --dispatch D-8e6d349499f21f8f ...
-This call is not stamped, and a maintenance-record entry is the stamped call of
-the dispatch that did the work, D-8e6d349499f21f8f (RP-12 ruling 167). The entry
-is booked from D-8e6d349499f21f8f's own subagent, its prompt carrying the
-dispatch line; the coordinator relays nothing (14 CFR 43.9(a)).
+This call is not stamped with a dispatch id, and a maintenance-record entry is
+the stamped call of the dispatch that did the work, D-8e6d349499f21f8f (RP-12
+ruling 167). The entry is booked from D-8e6d349499f21f8f's own subagent, its
+prompt carrying the dispatch line; the coordinator relays nothing (14 CFR
+43.9(a)).
 ```
 
 From the `Restoration` dispatch's stamped call, exit 0:
@@ -99,7 +100,7 @@ after, with the command or receipt that measured them (RP-12 rulings 8 and 173;
 |------|---------|
 | 0 | Booked |
 | 1 | The project is not initialized |
-| 2 | Usage error |
+| 2 | Usage or System/IO error |
 | 3 | Refused: no MX session open or a marker present but not on (its repair named), the call not stamped with the dispatch named, a malformed slug or a blank field, the dispatch not a live `Implementer`, `SingleDriver` or `Restoration` on an order, or the order not commenced, or blocked; nothing booked |
 
 ## See also

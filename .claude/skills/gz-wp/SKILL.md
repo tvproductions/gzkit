@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-20
 metadata:
-  skill-version: "0.26.1"
+  skill-version: "0.26.2"
 model: sonnet
 ---
 
@@ -232,7 +232,7 @@ uv run gz wp tag clear <TAG-id> --dispatch D-<id> --position-found <off|advisory
 Each act of maintenance on a commenced order is booked in the maintenance record from
 the stamped call of the live `Implementer`, `SingleDriver` or `Restoration` that did the
 work, never the main session; the commit landing the work names the entry in its subject
-(RP-12 rulings 8, 167 and 169 to 175; `docs/user/manpages/wp-entry-book.md`):
+(RP-12 rulings 8, 167 and 169 to 177; `docs/user/manpages/wp-entry-book.md`):
 
 ```bash
 uv run gz wp entry book --dispatch D-<id> --slug <slug> --description "<what was done>" \

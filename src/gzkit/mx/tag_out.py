@@ -386,7 +386,7 @@ def _refuse_unstamped_hang(tag_id: str, dispatch_id: str, stamped_id: str | None
             "own subagent."
         )
     else:
-        stamp = "not stamped"
+        stamp = "not stamped with a dispatch id"
         step = (
             f"If {dispatch_id} is a live {REPAIR} dispatch, run the hang from its own subagent, "
             "its prompt carrying the dispatch line; with none booked for the tag's order, have "
@@ -729,7 +729,7 @@ def record_tag_clear(
             "the gz-mx skill (`uv run gz mx enter`), then clear the tag."
         )
     if stamped_id != dispatch_id:
-        stamp = f"stamped with {stamped_id}" if stamped_id else "not stamped"
+        stamp = f"stamped with {stamped_id}" if stamped_id else "not stamped with a dispatch id"
         _refuse(
             f"This call is {stamp}, and a clear is the stamped call of the {RESTORATION} "
             f"dispatch it names, {dispatch_id} (RP-12 rulings 6 and 133). Run the clear from "

@@ -102,7 +102,7 @@ $ uv run gz wp entry show --json
 |------|---------|
 | 0 | Shown, an empty record included |
 | 1 | The project is not initialized |
-| 2 | Usage error |
+| 2 | Usage or System/IO error |
 | 3 | An `entry_booked` row, or an order's closing `order_transitioned` row, does not parse; the refusal names the row and the `gz ledger correct` void that recovers it |
 
 ## See also

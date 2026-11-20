@@ -638,6 +638,7 @@ class HangRefusalTests(_HangCase):
             )
             self.assertNotIn(failed, refusal)
             self.assertIn("--role Repair", refusal)
+            self.assertIn("This call is not stamped with a dispatch id", refusal)
         other = self.book("Repair")
         with self.subTest(stamped="another dispatch"):
             refusal = self.assert_hang_refused(
@@ -1148,7 +1149,8 @@ class ClearRefusalTests(_ClearCase):
     def test_a_clear_not_stamped_with_the_dispatch_it_names_is_refused(self) -> None:
         """Rulings 6 and 133: the clear is the named Restoration dispatch's own call."""
         # output-contract: the refusal's what-failed part says which stamp, if any, it read
-        for stamped, read in ((None, "This call is not stamped"), ("D-00000000000000ff",
+        unstamped = "This call is not stamped with a dispatch id"
+        for stamped, read in ((None, unstamped), ("D-00000000000000ff",
                               "This call is stamped with D-00000000000000ff")):  # fmt: skip
             with self.subTest(stamped=stamped):
                 refusal = self.assert_clear_refused(
