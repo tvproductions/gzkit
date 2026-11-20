@@ -80,14 +80,16 @@ class ClearWitnesses(Protocol):
         ...
 
     def issue_state(self, number: int) -> str | None:
-        """Return the issue's state, `open` or `closed`, or None when it cannot be read."""
+        """Return `open`, `closed`, `missing`, or None when the API gives no answer (ruling 182)."""
         ...
 
     def resolve_cite(self, cite: str) -> tuple[str, datetime] | None:
         """Return a citation's label and full timestamp, or None when it names nothing.
 
         The label is `gz insights recurrence`'s, so one record cited two ways, ``1412``
-        and ``#1412``, is one record (ruling 181).
+        and ``#1412``, is one record (ruling 181). It raises `DiscrepancyUnavailableError`
+        when the API gives no answer about a cited GHI, never reading it as naming
+        nothing (ruling 182).
         """
         ...
 
@@ -571,6 +573,12 @@ def _check_issue(number: int, witnesses: ClearWitnesses) -> None:
             "then clear it again; nothing was written."
         )
         raise DiscrepancyUnavailableError(msg)
+    if state == "missing":
+        _refuse(
+            f"Issue #{number} does not exist in this repository, or is a pull request, so the "
+            "line cannot have been filed as it (RP-12 rulings 180 and 182). Cite the open "
+            "issue the line was filed as, or the entry that fixed it."
+        )
     if state != "open":
         _refuse(
             f"Issue #{number} is {state}; a line filed as an issue leaves the list as an open "

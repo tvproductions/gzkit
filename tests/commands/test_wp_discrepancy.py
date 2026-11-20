@@ -240,21 +240,76 @@ class ClearWiringTests(_DiscrepancyCase):
         self.assertIn("recurrence_threshold.json", output)
         self.assertEqual(_rows("discrepancy_cleared"), [])
 
-    @unittest.skipIf(os.name == "nt", "the stand-in gh is a POSIX shell script")
-    def test_an_issue_gh_reads_open_clears_the_line_citing_it(self) -> None:
-        # given a stand-in gh on the path that reports every issue open
+    def install_gh(self, status: str, body: str, rc: int) -> None:
+        """Put a stand-in `gh` on the path that answers `gh api --include` for issue 1412.
+
+        Any other call gets no answer, so a clear that asks about the wrong issue, or
+        not through the REST endpoint, reads as an outage and fails its test.
+        """
         bin_dir = Path("gh-bin")
         bin_dir.mkdir()
         gh = bin_dir / "gh"
-        gh.write_text('#!/bin/sh\necho \'{"state": "OPEN"}\'\n', encoding="utf-8")
+        answer = f"HTTP/2.0 {status}\\r\\nContent-Type: application/json\\r\\n\\r\\n{body}\\n"
+        gh.write_text(
+            "#!/bin/sh\n"
+            'if [ "$1 $2 $3" = "api --include repos/{owner}/{repo}/issues/1412" ]; then\n'
+            f"  printf '{answer}'\n"
+            f"  exit {rc}\n"
+            "fi\n"
+            "exit 1\n",
+            encoding="utf-8",
+        )
         gh.chmod(0o755)
         self.addCleanup(os.environ.__setitem__, "PATH", os.environ["PATH"])
         os.environ["PATH"] = bin_dir.resolve().as_posix()
+
+    @unittest.skipIf(os.name == "nt", "the stand-in gh is a POSIX shell script")
+    def test_an_issue_gh_reads_open_clears_the_line_citing_it(self) -> None:
+        # given a stand-in gh that answers issue 1412 open
+        self.install_gh("200 OK", '{"number": 1412, "state": "open"}', 0)
         # when
         code, output = self.run_gz("clear", "DSC-01-hook-left-off", "--ghi", "1412")
         # then the line leaves the list as the open issue it was filed as (ruling 180)
         self.assertEqual(code, 0, output)
         self.assertEqual([r["ghi"] for r in _rows("discrepancy_cleared")], [1412])
+
+    @unittest.skipIf(os.name == "nt", "the stand-in gh is a POSIX shell script")
+    def test_a_closed_issue_is_refused_and_books_nothing(self) -> None:
+        # given a stand-in gh that answers issue 1412 closed
+        self.install_gh("200 OK", '{"number": 1412, "state": "closed"}', 0)
+        # when
+        code, output = self.run_gz("clear", "DSC-01-hook-left-off", "--ghi", "1412")
+        # then a policy breach: a filed line leaves as an open problem report (ruling 180)
+        self.assertEqual(code, 3, output)
+        self.assertIn("#1412 is closed", output)
+        self.assertEqual(_rows("discrepancy_cleared"), [])
+
+    @unittest.skipIf(os.name == "nt", "the stand-in gh is a POSIX shell script")
+    def test_an_issue_the_api_says_does_not_exist_is_refused(self) -> None:
+        # given a stand-in gh whose API answers issue 1412 404 Not Found
+        self.install_gh("404 Not Found", '{"message": "Not Found"}', 1)
+        # when
+        code, output = self.run_gz("clear", "DSC-01-hook-left-off", "--ghi", "1412")
+        # then bad evidence, exit 3, never an outage to retry (ruling 182)
+        self.assertEqual(code, 3, output)
+        self.assertIn("#1412 does not exist", output)
+        self.assertEqual(_rows("discrepancy_cleared"), [])
+
+    def test_a_recurs_ghi_gh_cannot_answer_exits_2_and_books_nothing(self) -> None:
+        # given no gh on the path at all
+        empty = Path("no-gh")
+        empty.mkdir()
+        self.addCleanup(os.environ.__setitem__, "PATH", os.environ["PATH"])
+        os.environ["PATH"] = empty.resolve().as_posix()
+        # when the clear cites a GHI under --recurs
+        code, output = self.run_gz(
+            *("clear", "DSC-01-hook-left-off", "--entry", "ENT-01-stamp-import"),
+            *("--recurs", "#1412"),
+        )
+        # then an outage, exit 2, never "names nothing" at 3 (ruling 182)
+        self.assertEqual(code, 2, output)
+        self.assertNotIn("names no", output)
+        self.assertEqual(_rows("discrepancy_cleared"), [])
 
 
 class ShowWiringTests(_DiscrepancyCase):

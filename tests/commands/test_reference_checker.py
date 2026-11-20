@@ -14,13 +14,18 @@ the local one and the annotator stamped the step ``gz-skills#1 [settled]``.
 import json
 import tempfile
 import unittest
+from datetime import UTC, datetime
 from pathlib import Path
 from unittest import mock
 
 from gzkit.commands.common import _prefix_match_candidates
 from gzkit.commands.reference_checker import (
+    IssueAnswer,
+    IssueRead,
     _unique_prefix_entry,
     adr_ledger_state,
+    gh_issue_read,
+    gh_issue_state,
     live_reference_checker,
     obpi_ledger_state,
 )
@@ -774,3 +779,72 @@ class TestCitationExtractorRefusesWildcards(unittest.TestCase):
         )
         obpis = [r.identifier for r in refs if r.kind.name == "OBPI"]
         self.assertEqual(obpis, ["OBPI-0.35.0-08"])
+
+
+#: One issue as GitHub's REST API returns it to `gh api --include` (headers, a blank
+#: line, the body), observed 2026-11-20 against this repository.
+def _answer(status: str, body: str) -> str:
+    return f"HTTP/2.0 {status}\r\nContent-Type: application/json\r\n\r\n{body}"
+
+
+_ISSUE = '{"number": 1412, "state": "open", "created_at": "2026-10-18T13:00:00Z"}'
+
+
+class TestGhIssueReadTellsMissingFromUnanswered(unittest.TestCase):
+    """RP-12 ruling 182: an issue the API says does not exist is not an outage.
+
+    Canonical: `gh help exit-codes` (gh exits 1 for any failure, so the exit code
+    cannot tell them apart); https://docs.github.com/en/rest/issues/issues#get-an-issue
+    (404 "Resource not found", 410 "Gone", a pull request carries `pull_request`);
+    https://cli.github.com/manual/gh_api (`--include` prints the status line).
+    """
+
+    def _read(self, rc: int, out: str) -> IssueRead:
+        with mock.patch(
+            "gzkit.commands.reference_checker.run_exec", return_value=(rc, out, "")
+        ) as run:
+            read = gh_issue_read("1412", Path("."))
+        self.assertEqual(
+            run.call_args.args[0],
+            ["gh", "api", "--include", "repos/{owner}/{repo}/issues/1412"],
+        )
+        return read
+
+    def test_each_answer_the_api_gives(self) -> None:
+        closed = _ISSUE.replace('"open"', '"closed"')
+        pull = _ISSUE.replace("}", ', "pull_request": {}}')
+        table = [
+            ("open", 0, _answer("200 OK", _ISSUE), IssueAnswer.OPEN),
+            ("closed", 0, _answer("200 OK", closed), IssueAnswer.CLOSED),
+            (
+                "not found",
+                1,
+                _answer("404 Not Found", '{"message": "Not Found"}'),
+                IssueAnswer.MISSING,
+            ),
+            ("deleted", 1, _answer("410 Gone", '{"message": "Gone"}'), IssueAnswer.MISSING),
+            ("a pull request", 0, _answer("200 OK", pull), IssueAnswer.MISSING),
+            ("no answer", 1, "", IssueAnswer.UNANSWERED),
+            ("a server error", 1, _answer("502 Bad Gateway", "{}"), IssueAnswer.UNANSWERED),
+            ("an unreadable body", 0, _answer("200 OK", "not json"), IssueAnswer.UNANSWERED),
+        ]
+        for case, rc, out, expected in table:
+            with self.subTest(case=case):
+                self.assertEqual(self._read(rc, out).answer, expected)
+
+    def test_a_found_issue_carries_its_creation_time(self) -> None:
+        read = self._read(0, _answer("200 OK", _ISSUE))
+        self.assertEqual(read.created_at, datetime(2026, 10, 18, 13, tzinfo=UTC))
+
+    def test_the_handoff_verdict_reads_from_the_same_answer(self) -> None:
+        table = [
+            (_answer("200 OK", _ISSUE), 0, ReferenceState.LIVE),
+            (_answer("404 Not Found", "{}"), 1, ReferenceState.UNKNOWN),
+            ("", 1, ReferenceState.UNKNOWN),
+        ]
+        for out, rc, expected in table:
+            with (
+                self.subTest(out=out[:20]),
+                mock.patch("gzkit.commands.reference_checker.run_exec", return_value=(rc, out, "")),
+            ):
+                self.assertEqual(gh_issue_state("1412", Path(".")), expected)

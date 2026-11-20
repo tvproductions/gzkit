@@ -41,8 +41,10 @@ with its evidence (RP-12 ruling 9). `docs/governance/harbor-ro12-contractor-kit.
 - An issue is confirmed open through `gh` at the clear, and the clearing event
   cites it, so the line leaves the list as an open problem report and return to
   service reads the ledger alone (ruling 180). Every check the ledger answers runs
-  first; `gh` is asked last, and an issue it cannot read exits 2 with nothing
-  written.
+  first; `gh` is asked last. An issue the GitHub API says does not exist (404,
+  410, or a pull request's number) is refused, exit 3; when the API gives no
+  answer, about `--ghi` or a GHI cited by `--recurs`, the clear exits 2. Either
+  way nothing is written (ruling 182).
 - A line that blocks return to service carries `--root-cause` and
   `--corrective-action`. A `due-by-event` line may cite `--recurs`, read by the
   same check as `gz insights recurrence` against
@@ -113,8 +115,8 @@ clear it again; nothing was written.
 |------|---------|
 | 0 | Cleared |
 | 1 | The project is not initialized, or `--recurs` was given and `data/recurrence_threshold.json` is missing or malformed |
-| 2 | Usage or System/IO error, or the issue `--ghi` cites could not be read through `gh`; nothing booked |
-| 3 | Refused: a subagent's call, no MX session open or a marker present but not on (its repair named), a line not recorded or already cleared, no evidence, an entry or tag not of the line's package or a tag not cleared, an issue number below 1 or an issue closed, a blank field, root cause and corrective action missing where the line blocks return to service or recurs, `--recurs` on a blocking line, short of the threshold or naming nothing, or an entry or tag row the clear reads that does not parse (its void named); nothing booked |
+| 2 | Usage or System/IO error, or the GitHub API gave no answer about the issue `--ghi` cites or a GHI `--recurs` cites; nothing booked |
+| 3 | Refused: a subagent's call, no MX session open or a marker present but not on (its repair named), a line not recorded or already cleared, no evidence, an entry or tag not of the line's package or a tag not cleared, an issue number below 1, an issue the API says does not exist or an issue closed, a blank field, root cause and corrective action missing where the line blocks return to service or recurs, `--recurs` on a blocking line, short of the threshold or naming nothing, or an entry or tag row the clear reads that does not parse (its void named); nothing booked |
 
 ## See also
 

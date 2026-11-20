@@ -9,7 +9,6 @@ drifting past the schema the way hand-authored appends did.
 """
 
 import argparse
-import json
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
@@ -217,19 +216,27 @@ def remember(
 
 
 def gh_issue_created_at(number: str, project_root: Path) -> datetime | None:
-    """Return a GHI's creation time via the ``gh`` read verb, or None when unresolved."""
-    from gzkit.utils import run_exec  # noqa: PLC0415
+    """Return a GHI's creation time through the one `gh` issue reader (RP-12 ruling 182).
 
-    rc, out, _ = run_exec(
-        ["gh", "issue", "view", number, "--json", "createdAt"], project_root, timeout=10
+    Returns:
+        The creation time, or None when the API says the issue does not exist.
+
+    Raises:
+        GhUnansweredError: The API gave no answer, so whether the issue exists is
+            unknown; a citation is never read as naming nothing on that account.
+
+    """
+    from gzkit.commands.reference_checker import (  # noqa: PLC0415 -- the CLI's lazy-import pattern
+        GhUnansweredError,
+        IssueAnswer,
+        gh_issue_read,
     )
-    if rc != 0:
-        return None
-    try:
-        created = json.loads(out).get("createdAt")
-        return datetime.fromisoformat(created) if isinstance(created, str) else None
-    except json.JSONDecodeError, AttributeError, ValueError:
-        return None
+
+    read = gh_issue_read(number, project_root)
+    if read.answer is IssueAnswer.UNANSWERED:
+        msg = f"#{number}: the GitHub API gave no answer; check `gh auth status` and the network"
+        raise GhUnansweredError(msg)
+    return read.created_at
 
 
 def resolve_cite(cite: str, store: dict[str, str], root: Path) -> tuple[str, datetime] | None:
@@ -249,11 +256,13 @@ def recurrence(*, cites: list[str], as_json: bool) -> None:
 
     Exit 0 when the citations reach the threshold with every pair a session lease
     apart, 3 when they do not, 1 when a citation names no insight record or GHI
-    or the threshold registry is missing or malformed.
+    or the threshold registry is missing or malformed, 2 when the GitHub API gives
+    no answer about a cited GHI (RP-12 ruling 182).
     """
     from gzkit import lock_manager  # noqa: PLC0415
     from gzkit.cli.formatters import OutputFormatter  # noqa: PLC0415
     from gzkit.commands.common import get_project_root  # noqa: PLC0415
+    from gzkit.commands.reference_checker import GhUnansweredError  # noqa: PLC0415
     from gzkit.insights.append import DEFAULT_INSIGHTS_PATH  # noqa: PLC0415
     from gzkit.insights.ledger_ref import insight_lines_by_ts  # noqa: PLC0415
     from gzkit.insights.recurrence import (  # noqa: PLC0415
@@ -266,10 +275,14 @@ def recurrence(*, cites: list[str], as_json: bool) -> None:
     store = insight_lines_by_ts(root / DEFAULT_INSIGHTS_PATH)
     resolved: dict[str, datetime] = {}
     for cite in cites:
-        found = resolve_cite(cite, store, root)
+        code, failure = 1, f"{cite} names no insight record or resolvable GHI"
+        try:
+            found = resolve_cite(cite, store, root)
+        except GhUnansweredError as exc:
+            found, code, failure = None, 2, str(exc)
         if found is None:
-            print(f"Error: {cite} names no insight record or resolvable GHI.", file=sys.stderr)
-            sys.exit(1)
+            print(f"Error: {failure}.", file=sys.stderr)
+            sys.exit(code)
         resolved[found[0]] = found[1]
 
     try:

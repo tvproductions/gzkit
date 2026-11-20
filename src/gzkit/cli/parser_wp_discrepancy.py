@@ -77,16 +77,16 @@ _CLEAR_EXIT_CODES = """Exit codes
     0   Cleared: the discrepancy_cleared event is booked
     1   User/config error: the project is not initialized, or --recurs was
         given and data/recurrence_threshold.json is missing or malformed
-    2   Usage or System/IO error, or the issue --ghi cites could not be read
-        through gh; nothing is booked
+    2   Usage or System/IO error, or the GitHub API gave no answer about the
+        issue --ghi cites or a GHI --recurs cites; nothing is booked
     3   Policy breach: a subagent's call, no MX session or a marker present
         but not on, a line not recorded or already cleared, no evidence, an
         entry or tag not of the line's package or a tag not cleared, an issue
-        number below 1 or an issue closed, a blank field, root cause and
-        corrective action missing where the line blocks return to service or
-        recurs, --recurs on a blocking line, short of the recurrence threshold
-        or naming nothing, or an entry or tag row that does not parse; nothing
-        is booked
+        number below 1, an issue the API says does not exist or an issue
+        closed, a blank field, root cause and corrective action missing where
+        the line blocks return to service or recurs, --recurs on a blocking
+        line, short of the recurrence threshold or naming nothing, or an entry
+        or tag row that does not parse; nothing is booked
 """
 
 

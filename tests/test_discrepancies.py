@@ -120,6 +120,7 @@ class _Witnesses:
         self.issues = issues or {}
         self.times = times or {}
         self.asked: list[int] = []
+        self.unanswered: set[str] = set()
         self.min_occurrences = 3
         self.separation_hours = 24.0
 
@@ -129,6 +130,9 @@ class _Witnesses:
 
     def resolve_cite(self, cite: str) -> tuple[str, datetime] | None:
         """Label a GHI ``#<n>`` however it is spelled, as `gz insights recurrence` does."""
+        if cite in self.unanswered:
+            msg = f"{cite}: the GitHub API gave no answer"
+            raise DiscrepancyUnavailableError(msg)
         number = cite.removeprefix("#")
         label = f"#{number}" if number.isdigit() else cite
         stamp = self.times.get(label)
@@ -754,6 +758,28 @@ class ClearRefusalTests(_DiscrepancyCase):
         """Ruling 180: the line leaves the list as an open problem report."""
         self.witnesses.issues[1400] = "closed"
         self.assert_refused("#1400 is closed", lambda: self.clear(self.line.id, ghi=1400))
+
+    def test_an_issue_the_api_says_does_not_exist_is_refused(self) -> None:
+        """Ruling 182: an issue that does not exist is bad evidence, refused at 3, not an
+        outage to retry."""
+        self.witnesses.issues[1400] = "missing"
+        refusal = self.assert_refused(
+            "#1400 does not exist", lambda: self.clear(self.line.id, ghi=1400)
+        )
+        self.assertNotIsInstance(
+            _raised(lambda: self.clear(self.line.id, ghi=1400)), DiscrepancyUnavailableError
+        )
+        self.assertIn("pull request", refusal)
+
+    def test_a_recurs_citation_gh_cannot_answer_is_unavailable(self) -> None:
+        """Ruling 182: offline, a GHI cited by --recurs is unavailable, exit 2, never
+        refused as naming nothing; nothing is written."""
+        self.witnesses.unanswered.add("#1412")
+        before = _rows(self.path)
+        raised = _raised(lambda: self.clear(self.line.id, entry="ENT-01-fixed", recurs=["#1412"]))
+        self.assertIsInstance(raised, DiscrepancyUnavailableError)
+        self.assertNotIn("names no", str(raised))
+        self.assertEqual(_rows(self.path), before)
 
     def test_an_issue_gh_cannot_read_is_unavailable_and_writes_nothing(self) -> None:
         """Ruling 180: a failed gh call exits 2 and writes nothing."""

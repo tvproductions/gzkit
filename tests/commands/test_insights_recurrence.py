@@ -13,6 +13,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 from gzkit.cli.main import main
+from gzkit.commands.insights import gh_issue_created_at
+from gzkit.commands.reference_checker import GhUnansweredError
 from tests.commands.common import CliRunner
 
 _BASE = datetime(2026, 1, 1, tzinfo=UTC)
@@ -180,34 +182,44 @@ class TestInsightsRecurrenceCommand(unittest.TestCase):
             self.assertEqual(json.loads(result.output)["required"], 2)
 
 
+def _api(status: str, body: str) -> str:
+    """One `gh api --include` answer: the status line, a header, a blank line, the body."""
+    return f"HTTP/2.0 {status}\r\nContent-Type: application/json\r\n\r\n{body}"
+
+
 class TestGhIssueCreatedAt(unittest.TestCase):
-    """The gh adapter resolves createdAt, and anything unresolved is None."""
+    """The gh adapter resolves a found issue's creation time; a missing issue is None,
+    and an unanswered call raises, so it is never read as a citation naming nothing
+    (RP-12 ruling 182)."""
 
-    def _call(self, rc: int, out: str):
-        from gzkit.commands.insights import gh_issue_created_at
-
-        with patch("gzkit.utils.run_exec", return_value=(rc, out, "")) as run:
-            try:
-                value = gh_issue_created_at("1257", Path("."))
-            except Exception as exc:
-                self.fail(f"gh_issue_created_at raised {exc!r} on {out!r}")
-        self.assertEqual(run.call_args.args[0][:4], ["gh", "issue", "view", "1257"])
+    def _call(self, rc: int, out: str) -> datetime | None:
+        with patch("gzkit.commands.reference_checker.run_exec", return_value=(rc, out, "")) as run:
+            value = gh_issue_created_at("1257", Path("."))
+        self.assertEqual(run.call_args.args[0][:3], ["gh", "api", "--include"])
         return value
 
     def test_created_at_resolves(self) -> None:
+        body = '{"state": "open", "created_at": "2026-10-18T13:00:00Z"}'
         self.assertEqual(
-            self._call(0, '{"createdAt": "2026-10-18T13:00:00Z"}'),
-            datetime(2026, 10, 18, 13, tzinfo=UTC),
+            self._call(0, _api("200 OK", body)), datetime(2026, 10, 18, 13, tzinfo=UTC)
         )
 
-    def test_a_failed_gh_call_is_none(self) -> None:
-        # A non-zero exit is not trusted even when stdout parses.
-        self.assertIsNone(self._call(1, '{"createdAt": "2026-10-18T13:00:00Z"}'))
+    def test_an_issue_the_api_says_does_not_exist_is_none(self) -> None:
+        self.assertIsNone(self._call(1, _api("404 Not Found", '{"message": "Not Found"}')))
 
-    def test_malformed_payloads_are_none(self) -> None:
-        for out in ("not json", "[]", '{"createdAt": 7}', '{"createdAt": "yesterday"}'):
-            with self.subTest(out=out):
-                self.assertIsNone(self._call(0, out))
+    def test_an_unanswered_call_raises(self) -> None:
+        for out in ("", _api("502 Bad Gateway", "{}"), _api("200 OK", "not json")):
+            with self.subTest(out=out[:20]), self.assertRaises(GhUnansweredError):
+                self._call(1 if not out.startswith("HTTP/2.0 200") else 0, out)
+
+    def test_recurrence_exits_two_when_gh_gives_no_answer(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            with patch("gzkit.commands.reference_checker.run_exec", return_value=(1, "", "")):
+                result = runner.invoke(main, ["insights", "recurrence", "#1257"])
+            self.assertEqual(result.exit_code, 2, msg=result.output)
+            self.assertIn("#1257", result.output)
+            self.assertNotIn("names no insight record", result.output)
 
 
 if __name__ == "__main__":

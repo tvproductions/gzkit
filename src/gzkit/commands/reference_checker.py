@@ -8,15 +8,25 @@ for the "unknown is not live" contract to drift, so there is exactly one each.
 """
 
 import json
+import re
+from datetime import datetime
+from enum import StrEnum
+from http import HTTPStatus
 from pathlib import Path
 from typing import Any
+
+from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.artifact_prefix import active_prefix_matches
 from gzkit.handoff_api import ReferenceChecker, ReferenceKind, ReferenceState, StepReference
 from gzkit.utils import run_exec
 
 __all__ = [
+    "GhUnansweredError",
+    "IssueAnswer",
+    "IssueRead",
     "adr_ledger_state",
+    "gh_issue_read",
     "gh_issue_state",
     "live_reference_checker",
     "obpi_ledger_state",
@@ -29,32 +39,108 @@ _SETTLED_COMPLETIONS = frozenset({"completed", "attested_completed"})
 _CLOSED_OUT_LIFECYCLES = frozenset({"Validated", "Completed", "Abandoned"})
 
 
-def gh_issue_state(number: str, project_root: Path) -> ReferenceState:
-    """Resolve one GHI number to a live/settled verdict via the ``gh`` read verb.
+class IssueAnswer(StrEnum):
+    """What the GitHub API answered about one issue number (RP-12 ruling 182)."""
 
-    Any failure — ``gh`` absent, unauthenticated, offline, malformed payload —
-    resolves to ``UNKNOWN`` rather than to ``LIVE``. Degrading to "verified"
-    when the check could not run would reintroduce exactly the unverified
-    advisory this adapter exists to catch.
+    OPEN = "open"
+    CLOSED = "closed"
+    #: The API says no such issue: 404 or 410, or the number is a pull request's.
+    MISSING = "missing"
+    #: No answer about the issue: `gh` absent or offline, or a status that says nothing of it.
+    UNANSWERED = "unanswered"
+
+
+class IssueRead(BaseModel):
+    """One read of an issue: the API's answer, and when a found issue was created."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    answer: IssueAnswer = Field(..., description="What the API answered")
+    created_at: datetime | None = Field(None, description="A found issue's creation time")
+
+
+class GhUnansweredError(OSError):
+    """The GitHub API gave no answer about an issue, so whether it exists is unknown."""
+
+
+_STATUS_LINE = re.compile(r"^HTTP/\S+ (\d{3})")
+#: Get an issue: 404 "Resource not found", 410 "Gone" (a deleted issue).
+_NOT_AN_ISSUE = frozenset({404, 410})
+
+
+def gh_issue_read(number: str, project_root: Path) -> IssueRead:
+    """Read one issue through `gh api --include`, telling a missing issue from no answer.
+
+    `gh` exits 1 for any failure, so its exit code cannot tell an issue that does
+    not exist from an API it could not reach; the HTTP status line can (RP-12
+    ruling 182). A pull request is returned by the issues endpoint and is not an
+    issue, so it reads missing.
+
+    Canonical: `gh help exit-codes`; https://cli.github.com/manual/gh_api (`--include`);
+    https://docs.github.com/en/rest/issues/issues#get-an-issue (200, 301, 304, 404, 410;
+    the `pull_request` key).
 
     Returns:
-        ``SETTLED`` for a closed issue, ``LIVE`` for an open one, ``UNKNOWN`` when ``gh`` fails or
-        the payload is unrecognized.
+        The answer, with a found issue's creation time.
 
     """
     rc, out, _ = run_exec(
-        ["gh", "issue", "view", number, "--json", "state"], project_root, timeout=10
+        ["gh", "api", "--include", f"repos/{{owner}}/{{repo}}/issues/{number}"],
+        project_root,
+        timeout=10,
     )
-    if rc != 0:
-        return ReferenceState.UNKNOWN
+    head, _, body = out.replace("\r\n", "\n").partition("\n\n")
+    status = _STATUS_LINE.match(head)
+    if status is not None and int(status.group(1)) in _NOT_AN_ISSUE:
+        return IssueRead(answer=IssueAnswer.MISSING)
+    if status is None or int(status.group(1)) != HTTPStatus.OK or rc != 0:
+        return IssueRead(answer=IssueAnswer.UNANSWERED)
     try:
-        payload = json.loads(out)
+        payload = json.loads(body)
     except json.JSONDecodeError:
-        return ReferenceState.UNKNOWN
-    state = str(payload.get("state", "")).upper() if isinstance(payload, dict) else ""
-    if state == "CLOSED":
+        return IssueRead(answer=IssueAnswer.UNANSWERED)
+    return _issue_from(payload)
+
+
+def _issue_from(payload: object) -> IssueRead:
+    """Read an issue's answer from a 200 body.
+
+    Returns:
+        Open or closed with its creation time, missing for a pull request, or
+        unanswered for a body that is not an issue.
+
+    """
+    if not isinstance(payload, dict):
+        return IssueRead(answer=IssueAnswer.UNANSWERED)
+    if "pull_request" in payload:
+        return IssueRead(answer=IssueAnswer.MISSING)
+    state = str(payload.get("state", "")).lower()
+    if state not in {IssueAnswer.OPEN, IssueAnswer.CLOSED}:
+        return IssueRead(answer=IssueAnswer.UNANSWERED)
+    created = payload.get("created_at")
+    try:
+        stamp = datetime.fromisoformat(created) if isinstance(created, str) else None
+    except ValueError:
+        stamp = None
+    return IssueRead(answer=IssueAnswer(state), created_at=stamp)
+
+
+def gh_issue_state(number: str, project_root: Path) -> ReferenceState:
+    """Resolve one GHI number to a live/settled verdict through `gh_issue_read`.
+
+    Any failure — ``gh`` absent, unauthenticated, offline, malformed payload, an
+    issue that does not exist — resolves to ``UNKNOWN`` rather than to ``LIVE``.
+    Degrading to "verified" when the check could not run would reintroduce
+    exactly the unverified advisory this adapter exists to catch.
+
+    Returns:
+        ``SETTLED`` for a closed issue, ``LIVE`` for an open one, ``UNKNOWN`` otherwise.
+
+    """
+    answer = gh_issue_read(number, project_root).answer
+    if answer is IssueAnswer.CLOSED:
         return ReferenceState.SETTLED
-    if state == "OPEN":
+    if answer is IssueAnswer.OPEN:
         return ReferenceState.LIVE
     return ReferenceState.UNKNOWN
 

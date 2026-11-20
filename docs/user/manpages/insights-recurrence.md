@@ -21,8 +21,11 @@ recurrence means:
   `lock_manager.DEFAULT_LOCK_TTL_MINUTES`. Records written inside one lease count
   as one occurrence.
 
-A GHI resolves to its `createdAt` through `gh issue view`. A citation that names
-no insight record, or a GHI that cannot be resolved, exits 1.
+A GHI resolves to its `created_at` through `gh api` (GitHub's *Get an issue*). A
+citation that names no insight record, or a GHI the API says does not exist (404,
+410, or a pull request's number), exits 1. When the API gives no answer at all,
+the command exits 2: whether the GHI exists is unknown, so the citation is never
+read as naming nothing (RP-12 ruling 182).
 
 ---
 
@@ -45,7 +48,7 @@ gz insights recurrence [--json] CITE [CITE ...]
 |------|---------|
 | 0 | Met: enough citations, every pair at least a lease apart |
 | 1 | A citation names no insight record or resolvable GHI, or the threshold registry is missing or malformed |
-| 2 | Usage error |
+| 2 | Usage error, or the GitHub API gave no answer about a cited GHI |
 | 3 | Not met: too few citations, or a pair inside one lease |
 
 ---

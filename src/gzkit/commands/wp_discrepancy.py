@@ -22,7 +22,7 @@ from gzkit.cli.formatters import OutputFormatter
 from gzkit.commands.common import ensure_initialized, get_project_root
 from gzkit.commands.insights import resolve_cite
 from gzkit.commands.open_session import open_session_id
-from gzkit.commands.reference_checker import ReferenceState, gh_issue_state
+from gzkit.commands.reference_checker import GhUnansweredError, IssueAnswer, gh_issue_read
 from gzkit.core.exceptions import PolicyBreachError, TransientError, ValidationError
 from gzkit.insights.append import DEFAULT_INSIGHTS_PATH
 from gzkit.insights.ledger_ref import insight_lines_by_ts
@@ -54,12 +54,6 @@ if TYPE_CHECKING:
 #: parse with the void that recovers it. Each is a policy breach, exit 3.
 _REFUSALS = (DiscrepancyError, EntryError, TagOutError)
 
-#: How the reference checker's verdict reads as an issue's state.
-_ISSUE_STATES: dict[ReferenceState, str] = {
-    ReferenceState.LIVE: "open",
-    ReferenceState.SETTLED: "closed",
-}
-
 
 class GhClearWitnesses:
     """The clear's witnesses read through `gh` and the insight store (rulings 180 and 181)."""
@@ -80,13 +74,14 @@ class GhClearWitnesses:
         return load_min_occurrences(self._root)
 
     def issue_state(self, number: int) -> str | None:
-        """Return the issue's state, `open` or `closed`, or None when `gh` cannot read it.
+        """Return what the GitHub API answers about the issue (ruling 182).
 
         Returns:
-            The state `gh issue view` reports.
+            `open`, `closed` or `missing`, or None when the API gives no answer.
 
         """
-        return _ISSUE_STATES.get(gh_issue_state(str(number), self._root))
+        answer = gh_issue_read(str(number), self._root).answer
+        return None if answer is IssueAnswer.UNANSWERED else answer.value
 
     def resolve_cite(self, cite: str) -> tuple[str, datetime] | None:
         """Return a citation's label and full timestamp, as `gz insights recurrence` reads it.
@@ -94,9 +89,20 @@ class GhClearWitnesses:
         Returns:
             The label and timestamp, or None when the citation names nothing.
 
+        Raises:
+            DiscrepancyUnavailableError: The API gave no answer about a cited GHI
+                (ruling 182); nothing is written.
+
         """
         store = insight_lines_by_ts(self._root / DEFAULT_INSIGHTS_PATH)
-        return resolve_cite(cite, store, self._root)
+        try:
+            return resolve_cite(cite, store, self._root)
+        except GhUnansweredError as exc:
+            msg = (
+                f"--recurs {exc}, so the recurrence check cannot read it (RP-12 rulings 181 "
+                "and 182); clear it again once `gh` answers. Nothing was written."
+            )
+            raise DiscrepancyUnavailableError(msg) from exc
 
 
 def _open_session_id(root: Path, ledger_path: Path, act: str) -> str | None:
