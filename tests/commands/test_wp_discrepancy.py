@@ -207,6 +207,22 @@ class ClearWiringTests(_DiscrepancyCase):
         self.assertIn("recurrence_threshold.json", output)
         self.assertEqual(_rows("discrepancy_cleared"), [])
 
+    @unittest.skipIf(os.name == "nt", "the stand-in gh is a POSIX shell script")
+    def test_an_issue_gh_reads_open_clears_the_line_citing_it(self) -> None:
+        # given a stand-in gh on the path that reports every issue open
+        bin_dir = Path("gh-bin")
+        bin_dir.mkdir()
+        gh = bin_dir / "gh"
+        gh.write_text('#!/bin/sh\necho \'{"state": "OPEN"}\'\n', encoding="utf-8")
+        gh.chmod(0o755)
+        self.addCleanup(os.environ.__setitem__, "PATH", os.environ["PATH"])
+        os.environ["PATH"] = bin_dir.resolve().as_posix()
+        # when
+        code, output = self.run_gz("clear", "DSC-01-hook-left-off", "--ghi", "1412")
+        # then the line leaves the list as the open issue it was filed as (ruling 180)
+        self.assertEqual(code, 0, output)
+        self.assertEqual([r["ghi"] for r in _rows("discrepancy_cleared")], [1412])
+
 
 class DiscrepancyEpilogTests(unittest.TestCase):
     def test_every_example_parses_as_a_real_invocation(self) -> None:
