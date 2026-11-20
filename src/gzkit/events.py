@@ -1885,6 +1885,8 @@ class WorkPackageIssueClosedEvent(_EventBase):
 DISPATCH_ID_PATTERN = "D-[0-9a-f]{16}"
 #: A tag's id, in the grammar of orders and packages (RP-12 ruling 111): ``TAG-<NN>-<slug>``.
 TAG_ID_PATTERN = "TAG-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*"
+#: A maintenance-record entry's id, in the same grammar (RP-12 ruling 169): ``ENT-<NN>-<slug>``.
+ENTRY_ID_PATTERN = "ENT-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*"
 
 
 class WorkPackageDispatchedEvent(_EventBase):
@@ -2235,6 +2237,38 @@ class TagClearedEvent(_EventBase):
     )
 
 
+class EntryBookedEvent(_EventBase):
+    """entry_booked event — a performer's maintenance-record entry (RP-12 O4 task 1).
+
+    The maintenance record is ledger events, rendered as a view (ruling 8), each
+    element of 14 CFR § 43.9(a) a field: what was done (``description``), the
+    completion date (the event's ``ts``), the performer (``dispatch_id``); the
+    approver signs at the order's Gate 5. The performer books it (ruling 167): the
+    stamped call of a live ``Implementer``, ``SingleDriver`` or ``Restoration``
+    dispatch on its commenced, unblocked order (rulings 160 and 175), the order and
+    package read from the dispatch record (rulings 1 and 130). The measurement is
+    text before and after, with the witness that measured it (ruling 173). The commit
+    that lands the work names the entry in its subject (ruling 170), so the event
+    cites no commit. Written only by ``gzkit.mx.entries.record_entry_book``. ``id``
+    is the entry id.
+    """
+
+    event: Literal["entry_booked"]
+    entry_id: str = Field(..., pattern=f"^{ENTRY_ID_PATTERN}$", description="ENT-<NN>-<slug>")
+    order: str = Field(..., min_length=1, description="The order worked, read from the dispatch")
+    work_package: str = Field(..., min_length=1, description="The repair package of the order")
+    dispatch_id: str = Field(
+        ..., pattern=f"^{DISPATCH_ID_PATTERN}$", description="The performer, its dispatch"
+    )
+    description: str = Field(..., min_length=1, description="What was done (14 CFR 43.9(a)(1))")
+    before: str = Field(..., min_length=1, description="The measurement before (ruling 173)")
+    after: str = Field(..., min_length=1, description="The measurement after (ruling 173)")
+    witness: str = Field(
+        ..., min_length=1, description="The command or receipt that measured them (ruling 173)"
+    )
+    mx_session_id: str = Field(..., min_length=1, description="The MX session open at the entry")
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -2339,7 +2373,8 @@ TypedLedgerEvent = Annotated[
     | TagIssuedEvent
     | TagHungEvent
     | TagClearanceAuthorizedEvent
-    | TagClearedEvent,
+    | TagClearedEvent
+    | EntryBookedEvent,
     Field(discriminator="event"),
 ]
 

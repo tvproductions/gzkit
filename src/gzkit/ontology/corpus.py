@@ -255,6 +255,9 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         # The tag-out log's clear (RP-12 O3 task 4), the restoration dispatch's act
         # on an authorized tag, a run record, not a node of this projection.
         "tag_cleared",
+        # The maintenance record's entry (RP-12 O4 task 1), a performer's record of
+        # one act on an order, a run record, not a node of this projection.
+        "entry_booked",
     }
 )
 

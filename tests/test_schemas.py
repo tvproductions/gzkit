@@ -46,6 +46,7 @@ from gzkit.events import (
     DispatchVoidedEvent,
     DistributionBaselineRegeneratedEvent,
     EnforcementClaimVerifiedEvent,
+    EntryBookedEvent,
     FoundationGrandfatheredEvent,
     GateCheckedEvent,
     GuardCanaryReviewedEvent,
@@ -419,6 +420,8 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "tag_clearance_authorized": TagClearanceAuthorizedEvent,
     # The tag-out log's clear (RP-12 O3 task 4)
     "tag_cleared": TagClearedEvent,
+    # The maintenance record's entry (RP-12 O4 task 1)
+    "entry_booked": EntryBookedEvent,
     # Reversible retirement of OBPIs whose parent ADR demoted to pool (GHI #584)
     "obpi_parked": ObpiParkedEvent,
     "obpi_blocked_on_operator": ObpiBlockedOnOperatorEvent,

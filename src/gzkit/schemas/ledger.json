@@ -3209,6 +3209,57 @@
         }
       }
     },
+    "entry_booked": {
+      "required": [
+        "entry_id",
+        "order",
+        "work_package",
+        "dispatch_id",
+        "description",
+        "before",
+        "after",
+        "witness",
+        "mx_session_id"
+      ],
+      "properties": {
+        "entry_id": {
+          "type": "string",
+          "pattern": "^ENT-[0-9]{2,}-[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "order": {
+          "type": "string",
+          "min_length": 1
+        },
+        "work_package": {
+          "type": "string",
+          "min_length": 1
+        },
+        "dispatch_id": {
+          "type": "string",
+          "pattern": "^D-[0-9a-f]{16}$"
+        },
+        "description": {
+          "type": "string",
+          "min_length": 1
+        },
+        "before": {
+          "type": "string",
+          "min_length": 1
+        },
+        "after": {
+          "type": "string",
+          "min_length": 1
+        },
+        "witness": {
+          "type": "string",
+          "min_length": 1
+        },
+        "mx_session_id": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
     "work_package_unblocked": {
       "required": [
         "work_package",

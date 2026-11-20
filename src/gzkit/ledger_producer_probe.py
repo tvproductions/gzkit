@@ -19,6 +19,7 @@ from gzkit.config import GzkitConfig, PathConfig
 from gzkit.events import (
     AcceptanceRecordedEvent,
     BaselinedReq,
+    EntryBookedEvent,
     LegacyUnitWithdrawnEvent,
     MxMarkerRepairedEvent,
     MxSessionLeaseRenewedEvent,
@@ -1452,6 +1453,120 @@ def _probe_legacy_withdrawal(root: Path) -> ProducerObservation:
     )
 
 
+def _probe_entry_book(root: Path) -> ProducerObservation:
+    """Book a performer's entry on a commenced order, then again unstamped; refused (RP-12 O4).
+
+    Returns:
+        The verified observation.
+
+    Raises:
+        TypeError: The writer persisted another event type.
+        ValueError: The writer booked the wrong record or the unstamped entry.
+
+    """
+    from gzkit import order_ledger  # noqa: PLC0415 - the writers; import only when probed
+    from gzkit import work_package_ledger as wpl  # noqa: PLC0415
+    from gzkit import work_package_run as run  # noqa: PLC0415
+    from gzkit.ledger import Ledger  # noqa: PLC0415
+    from gzkit.models.catalog import Criterion, Order, RepairReq  # noqa: PLC0415
+    from gzkit.mx import entries  # noqa: PLC0415
+
+    order = Order(
+        id=_ORDER, work_package=_REPAIR_PACKAGE, aliases=(), purpose=_STATEMENT, procedure="NA"
+    )
+    req = RepairReq(
+        id=_REPAIR_REQ,
+        specialization="repair",
+        held_on=_REPAIR_PACKAGE,
+        problem_report=_ISSUE,
+        statement=_STATEMENT,
+        criteria=(Criterion(state_or_input="probe", required_outcome="probe", evidence="probe"),),
+        kind="BEHAVIOR",
+        revision=1,
+    )
+    seat = _seat_catalog(root)
+    catalog = seat.model_copy(update={"orders": (order,), "reqs": (*seat.reqs, req)})
+    ledger_path = root / ".gzkit/ledger.jsonl"
+    ledger = Ledger(ledger_path)
+    wpl.record_work_package_transition(
+        catalog,
+        ledger,
+        wpl.TransitionRequest(
+            work_package=_REPAIR_PACKAGE,
+            to_state="initiated",
+            evidence=_AUTHOR,
+            operator_text=_STATEMENT,
+        ),
+    )
+    for move in (
+        order_ledger.OrderMove(
+            order=_ORDER, to_state="opened", evidence=_AUTHOR, operator_text=_STATEMENT
+        ),
+        order_ledger.OrderMove(
+            order=_ORDER,
+            to_state="frozen",
+            evidence=_AUTHOR,
+            risk_note=_AUTHOR,
+            review_receipt=_AUTHOR,
+            baseline=(BaselinedReq(req=_REPAIR_REQ, revision=1),),
+        ),
+        order_ledger.OrderMove(
+            order=_ORDER, to_state="commenced", evidence=_AUTHOR, no_isolation=_STATEMENT
+        ),
+    ):
+        order_ledger.record_order_transition(catalog, ledger, move)
+    dispatched = run.record_work_package_dispatch(
+        catalog,
+        ledger,
+        run.DispatchRequest(
+            work_package=_REPAIR_PACKAGE,
+            role=run.IMPLEMENTER,
+            model=_AUTHOR,
+            req=_REPAIR_REQ,
+            root=root.resolve().as_posix(),
+            order=_ORDER,
+        ),
+    )
+    dispatch_id = str(dispatched.dispatch_id)
+    request = entries.EntryBook(
+        slug="producer-probe",
+        dispatch=dispatch_id,
+        description=_STATEMENT,
+        before=_AUTHOR,
+        after=_AUTHOR,
+        witness=_AUTHOR,
+    )
+    seated = ledger_path.read_bytes()
+    entries.record_entry_book(ledger, request, stamped_id=dispatch_id, mx_session_id=_AUTHOR)
+    _expect_refusal(
+        lambda: entries.record_entry_book(ledger, request, stamped_id=None, mx_session_id=_AUTHOR),
+        "an entry not stamped as its performer",
+        entries.EntryError,
+        "not stamped",
+    )
+    persisted = ledger_path.read_bytes()
+    added = persisted[len(seated) :].decode("utf-8").splitlines()
+    if not persisted.startswith(seated) or len(added) != 1:
+        msg = "Writer must persist exactly one entry and nothing for a refusal"
+        raise ValueError(msg)
+    event = parse_typed_event(json.loads(added[0]))
+    if not isinstance(event, EntryBookedEvent):
+        msg = "Writer persisted the wrong event type"
+        raise TypeError(msg)
+    observed = (event.id, event.order, event.work_package, event.dispatch_id)
+    if observed != ("ENT-01-producer-probe", _ORDER, _REPAIR_PACKAGE, dispatch_id):
+        msg = "Entry record disagrees with the dispatch it names"
+        raise ValueError(msg)
+    return ProducerObservation(
+        event_type="entry_booked",
+        producer=_PRODUCERS["entry_booked"],
+        status="verified",
+        ledger_sha256=hashlib.sha256(persisted).hexdigest(),
+        record_count=1,
+        subject=event.id,
+    )
+
+
 _PRODUCERS = {
     "acceptance_recorded": "gzkit.acceptance_store.initialize",
     "report_published": "gzkit.reports.publish_report",
@@ -1475,6 +1590,7 @@ _PRODUCERS = {
     "tag_hung": "gzkit.mx.tag_out.record_tag_hang",
     "tag_clearance_authorized": "gzkit.mx.tag_out.record_tag_clearance",
     "tag_cleared": "gzkit.mx.tag_out.record_tag_clear",
+    "entry_booked": "gzkit.mx.entries.record_entry_book",
 }
 
 
@@ -1493,6 +1609,7 @@ _ROOT_PROBES = {
     "tag_hung": _probe_tag_hang,
     "tag_clearance_authorized": lambda root: _probe_tag_hang(root, "tag_clearance_authorized"),
     "tag_cleared": lambda root: _probe_tag_hang(root, "tag_cleared"),
+    "entry_booked": _probe_entry_book,
     "legacy_unit_withdrawn": _probe_legacy_withdrawal,
     "dispatch_claimed": _probe_dispatch_claim,
     "dispatch_voided": lambda root: _probe_dispatch_claim(root, "dispatch_voided"),

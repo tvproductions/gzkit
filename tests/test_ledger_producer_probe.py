@@ -68,6 +68,13 @@ class ProducerProbeTests(unittest.TestCase):
         self.assertEqual(observation.producer, "gzkit.mx.tag_out.record_tag_issue")
         self.assertEqual(observation.subject, "TAG-01-producer-probe")
 
+    def test_the_entry_writer_is_verified_and_refuses_an_unstamped_entry(self) -> None:
+        """RP-12 rulings 8, 167 and 169: one entry booked by its performer, unstamped refused."""
+        observation = probe_producer("entry_booked")
+        self.assertEqual(observation.status, "verified", observation.error)
+        self.assertEqual(observation.producer, "gzkit.mx.entries.record_entry_book")
+        self.assertEqual(observation.subject, "ENT-01-producer-probe")
+
     def test_the_tag_hang_writer_is_verified_and_refuses_a_second_hang(self) -> None:
         """RP-12 rulings 6, 120 and 133: one hang booked, a second refused."""
         observation = probe_producer("tag_hung")
