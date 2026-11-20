@@ -63,7 +63,7 @@ class DiscrepancyError(ValueError):
 
 
 class DiscrepancyUnavailableError(DiscrepancyError):
-    """The issue a clear cites could not be read through `gh`; nothing was written."""
+    """The GitHub API gave no answer about an issue a clear cites; nothing was written."""
 
 
 class ClearWitnesses(Protocol):

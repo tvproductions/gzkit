@@ -189,8 +189,9 @@ def wp_discrepancy_clear_cmd(
         PolicyBreachError: A subagent's call, the marker present but not on, the
             writer's refusal, or an entry or tag row the clear reads that does not
             parse; nothing is booked.
-        TransientError: The issue cited could not be read through `gh`; nothing is
-            booked.
+        TransientError: The GitHub API gave no answer about the issue ``--ghi``
+            cites or a GHI ``--recurs`` cites (ruling 182; an issue it says does not
+            exist is a refusal); nothing is booked.
         ValidationError: ``--recurs`` was given and the recurrence threshold's registry
             is missing or malformed; nothing is booked.
 

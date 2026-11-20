@@ -72,7 +72,9 @@ _RECORD_EXIT_CODES = """Exit codes
         package not initiated, a tag not on the order, or a tag row that does
         not parse; nothing is booked
 """
-#: A clear exits 2 when `gh` cannot read the issue it cites; every other refusal is 3.
+#: A clear exits 2 only when the GitHub API gives no answer about an issue it cites, under
+#: --ghi or --recurs; an issue the API says does not exist is refused at 3 with every
+#: other refusal (RP-12 ruling 182), and a malformed threshold registry exits 1.
 _CLEAR_EXIT_CODES = """Exit codes
     0   Cleared: the discrepancy_cleared event is booked
     1   User/config error: the project is not initialized, or --recurs was
