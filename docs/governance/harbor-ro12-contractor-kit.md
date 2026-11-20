@@ -261,7 +261,7 @@ Disclosed. The flight flew on `226d63755`, before ruling 161: its green runs 1 t
 
 ### O3's dock trial, its inspection, 2026-11-19
 
-**Status: recorded; every finding closed by a fix red-proved alone or by an amendment of this page, each postdating the trial (ruling 154).** O3's task 7, ruling 154's one independent inspection of both halves (rulings 27, 154 and 161 to 164; a dated record). One reviewer subagent that did no part of the trial, briefed with the code, the two records and the rows rather than this page's conclusions, worked only in `git archive` copies under the session's scratchpad: of HEAD `f92f6bbcc`, of `b1352f917~1`, before ruling 160, and of `41e471c2f~1`, before ruling 157. It wrote nothing to the repository and ran no `gz` verb.
+**Status: recorded; every finding closed by a fix red-proved alone or by an amendment of this page, each postdating the trial (ruling 154); O3 closed at its Gate 5 (§ O3's Gate 5).** O3's task 7, ruling 154's one independent inspection of both halves (rulings 27, 154 and 161 to 164; a dated record). One reviewer subagent that did no part of the trial, briefed with the code, the two records and the rows rather than this page's conclusions, worked only in `git archive` copies under the session's scratchpad: of HEAD `f92f6bbcc`, of `b1352f917~1`, before ruling 160, and of `41e471c2f~1`, before ruling 157. It wrote nothing to the repository and ran no `gz` verb.
 
 Its verdict: both halves sound with findings. It reproduced the sweep's counts, its survivors and its restorations, killed 11 of 11 sampled rows alone against their recorded tests, and reproduced rulings 157 and 160 red then green. It found each red run of the flight differing from its green run by exactly the registration or guard it names, and every outcome checking against P's files and ledger.
 
@@ -280,6 +280,19 @@ Its verdict: both halves sound with findings. It reproduced the sweep's counts, 
 | 11 | note | the first run's red end-row baselines had no committed evidence | § its code-path half qualified |
 
 What it shows. Findings 1 to 3 and 8 changed code the trial swept or flew. The sweep was re-run after them; the flight was not re-flown. Ruling 161 restores a claim the flight's green runs lacked, without changing what they wrote or ended. Ruling 162 changes only which stop ends a claimed dispatch, and the flight had one agent per dispatch. The hang writer and the advisory reading are paths the flight did not take. Each fix is witnessed by its test, red-proved alone. Ruling 154 calls a second inspection only when a finding changes the trial's scope, form or red method, and then only on the operator's ruling. Finding 4 widened the code-path half's scope by `_bind`; ruling 164 reads that as ruling 151's own scope applied, so no second inspection is called. Recording the fixes found ruling 104's line stale, by `gz validate --hexagon-tests`: it now carries 71 held tests and two kinds of finding it had not listed, amended on the contract (`42580ab4e`). No O3 row is accepted by this record.
+
+### O3's Gate 5, attested 2026-11-20
+
+**Status: O3 closed, decision proceed.** O3's Gate 5, recorded here under ruling 165 until O4's maintenance record takes it (a dated record). Attestor: **g0**. The operator's words, verbatim: *"Proceed: O3 attested"*.
+
+The evidence it rests on:
+
+- The code-path half: `docs/governance/harbor-ro12-dock-trial-evidence/o3-sweep-2026-11-18.json`, 392 mutants, 387 killed by assertion and five survivors disclosed with their readings, its entries at `bdfb4313e` and, for `work_package_run.py`, `55549a807` (§ O3's dock trial, its code-path half).
+- The flight: `docs/governance/harbor-ro12-dock-trial-evidence/o3-flight-2026-11-19.json`, six runs against a real dispatched subagent at `226d63755`, each red run differing from its green run by the one registration or guard it names (§ O3's dock trial, its flight).
+- The one independent inspection (ruling 154), its eleven findings closed by rulings 161 to 163, the hang writer's fix `26ab1e394` and this page's amendments, and ruling 164 calling no second inspection (§ O3's dock trial, its inspection).
+- O3's rulings, 108 to 165 as this page books them.
+
+What the close does and leaves. Under ruling 26 the hand-kept log ends here: from this Gate 5 a new disconnection is issued and hung through O3's verbs, and the hand-kept lines still open ride O9's carry. The close accepts no Mode Contract row: under ruling 18 a row counts as accepted only through its red-witness (I) review, which O6 builds, so the rows that wait on O3's trial keep *not yet* in their Accepted column. Ruling 104's line on the contract's list of discrepancies stays open, graded *blocks return to service* and held by RP-11. O2's Gate 5 is put next, in this form.
 
 ## Mode Contract
 
