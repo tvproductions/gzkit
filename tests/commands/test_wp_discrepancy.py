@@ -168,6 +168,22 @@ class ClearWiringTests(_DiscrepancyCase):
             [("DSC-01-hook-left-off", "ENT-01-stamp-import")],
         )
 
+    def test_json_mode_prints_the_cleared_event_under_its_session(self) -> None:
+        # given the line and an entry of its package
+        # when the clear asks for JSON
+        code, output = self.run_gz(
+            "clear", "DSC-01-hook-left-off", "--entry", "ENT-01-stamp-import", "--json"
+        )
+        # then the event booked, never the human line, under the open MX session (ruling 9)
+        self.assertEqual(code, 0, output)
+        printed, (booked,) = json.loads(output), _rows("discrepancy_cleared")
+        self.assertEqual(
+            {k: v for k, v in printed.items() if k != "ts"},
+            {k: v for k, v in booked.items() if k != "ts"},
+        )
+        recorded = _rows("discrepancy_recorded")[0]["mx_session_id"]
+        self.assertEqual(booked["mx_session_id"], recorded)
+
     def test_a_malformed_entry_row_refuses_the_clear_naming_its_void(self) -> None:
         # given an entry_booked row the maintenance record cannot read
         _seat_malformed("entry_booked", "ENT-02-broken")
@@ -387,6 +403,17 @@ class ShowWiringTests(_DiscrepancyCase):
         (recorded,), (cleared,) = _rows("discrepancy_recorded"), _rows("discrepancy_cleared")
         self.assertEqual({k: v for k, v in printed.items() if k != "clear"}, recorded)
         self.assertEqual(printed["clear"], cleared)
+
+
+class ShowRefusalWiringTests(_DiscrepancyCase):
+    def test_a_malformed_discrepancy_row_exits_3_naming_its_void(self) -> None:
+        # given a discrepancy_recorded row the list cannot read
+        _seat_malformed("discrepancy_recorded", "DSC-01-broken")
+        # when the list is shown
+        result = self.runner.invoke(main, ["wp", "discrepancy", "show"])
+        # then a policy breach naming the void that recovers the row (ruling 9)
+        self.assertEqual(result.exit_code, 3, result.output)
+        self.assertIn("gz ledger correct", " ".join(result.output.split()))
 
 
 class DiscrepancyEpilogTests(unittest.TestCase):
