@@ -398,6 +398,22 @@ class RecordTests(_DiscrepancyCase):
         self.assertIsNone(line.due_by)
         self.assertIsNone(line.dispatch_id)
         self.assertEqual(line.mx_session_id, _SESSION)
+        self.assertEqual(
+            (line.source, line.description), ("left-broken", "The stamp hook is left off.")
+        )
+        # and the row written is the line returned, field for field (ruling 9)
+        envelope = {"schema", "ts"}
+        written = {k: v for k, v in rows[-1].items() if k not in envelope}
+        returned = {k: v for k, v in line.model_dump(mode="json").items() if k not in envelope}
+        self.assertEqual(written, returned)
+
+    def test_the_coordinator_records_each_source_it_may(self) -> None:
+        """Rulings 9 and 172: the line carries the source it was recorded with."""
+        for source in ("left-broken", "found-in-work"):
+            with self.subTest(source=source):
+                line = self.recorded(source=source, slug=f"from-{source}")
+                self.assertEqual(line.source, source)
+                self.assertEqual(_rows(self.path)[-1]["source"], source)
 
     def test_a_due_by_line_names_its_event_in_text(self) -> None:
         """Ruling 179: the event a due-by line is due by is text."""
@@ -442,6 +458,8 @@ class RecordTests(_DiscrepancyCase):
                     slug=f"found-{role.lower()}",
                 )
                 self.assertEqual((line.order, line.dispatch_id), (_ORDER, dispatch_id))
+                self.assertEqual(line.source, "found-in-work")
+                self.assertEqual(_rows(self.path)[-1]["source"], "found-in-work")
 
     def test_the_coordinator_records_on_any_order_state_but_closed(self) -> None:
         """Ruling 178: opened, frozen, commenced and accepted orders take lines."""
