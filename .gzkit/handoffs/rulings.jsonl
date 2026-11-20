@@ -2343,3 +2343,15 @@
 {"ts": "2026-11-19T08:57:52Z", "source": "20261119T085752Z-rp12-o3-task7-step1-closed.md", "text": "Write the record section and close step 1 (verbatim: \"yes write that section and close step 1\")."}
 {"ts": "2026-11-19T08:57:52Z", "source": "20261119T085752Z-rp12-o3-task7-step1-closed.md", "text": "Push the seven commits before the flight (verbatim: \"7 commits pushed first\")."}
 {"ts": "2026-11-19T08:57:52Z", "source": "20261119T085752Z-rp12-o3-task7-step1-closed.md", "text": "Close the session with a fresh handoff and a sync (verbatim: \"write fresh handoff & git sync\")."}
+{"ts": "2026-11-20T06:20:40Z", "source": "20261120T062039Z-rp12-o1-o3-closed.md", "text": "Ruling 158, the claim probe runs before the flight (verbatim: \"A: Probe first (Rec.)\")."}
+{"ts": "2026-11-20T06:20:40Z", "source": "20261120T062039Z-rp12-o1-o3-closed.md", "text": "Ruling 159, the flight opens its throwaway project's MX session with a real gz mx enter (verbatim: \"A: Real enter in P (Rec.)\")."}
+{"ts": "2026-11-20T06:20:40Z", "source": "20261120T062039Z-rp12-o1-o3-closed.md", "text": "Ruling 160, an ended dispatch is held as a voided one is (verbatim: \"A: End holds like a void (Rec.)\")."}
+{"ts": "2026-11-20T06:20:40Z", "source": "20261120T062039Z-rp12-o1-o3-closed.md", "text": "Ruling 161, an ended dispatch still takes its claim and no longer holds an undispatched subagent (verbatim: \"A: Both causes (Rec.)\")."}
+{"ts": "2026-11-20T06:20:40Z", "source": "20261120T062039Z-rp12-o1-o3-closed.md", "text": "Ruling 162, once a dispatch is claimed only its first claimant's stop ends it (verbatim: \"A: First claimant ends it (Rec.)\")."}
+{"ts": "2026-11-20T06:20:40Z", "source": "20261120T062039Z-rp12-o1-o3-closed.md", "text": "Ruling 163, an advisory reading that raises runs the full write fence and an import failure stays open (verbatim: \"B-path: close (b) only (Rec.)\")."}
+{"ts": "2026-11-20T06:20:40Z", "source": "20261120T062039Z-rp12-o1-o3-closed.md", "text": "Ruling 164, the inspection's finding 4 calls no second inspection of O3's dock trial (verbatim: \"A: No second (Rec.)\")."}
+{"ts": "2026-11-20T06:20:40Z", "source": "20261120T062039Z-rp12-o1-o3-closed.md", "text": "Ruling 165, an order's Gate 5 is recorded in the kit until O4's maintenance record takes it (verbatim: \"A: Kit now, O4 later (Rec.)\")."}
+{"ts": "2026-11-20T06:20:40Z", "source": "20261120T062039Z-rp12-o1-o3-closed.md", "text": "O3's Gate 5, decision proceed (verbatim: \"Proceed: O3 attested\")."}
+{"ts": "2026-11-20T06:20:40Z", "source": "20261120T062039Z-rp12-o1-o3-closed.md", "text": "O2's Gate 5, decision proceed (verbatim: \"Proceed: O2 attested\")."}
+{"ts": "2026-11-20T06:20:40Z", "source": "20261120T062039Z-rp12-o1-o3-closed.md", "text": "O1's Gate 5, decision proceed (verbatim: \"Proceed: O1 attested\")."}
+{"ts": "2026-11-20T06:20:40Z", "source": "20261120T062039Z-rp12-o1-o3-closed.md", "text": "The MX session lease is renewed (verbatim: \"Renew (Rec.)\")."}
