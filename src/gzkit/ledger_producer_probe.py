@@ -1596,6 +1596,34 @@ class _OfflineWitnesses:
         """Resolve no citation: the probe's clear cites no recurrence."""
 
 
+def _check_discrepancy_identity(
+    event: DiscrepancyRecordedEvent | DiscrepancyClearedEvent, line: object
+) -> None:
+    """Refuse a booked line that is not the act probed, its own fields included.
+
+    A record of another source or description, or a clear citing another entry,
+    names the right line and order but is not the act probed (task 2's review).
+
+    Raises:
+        ValueError: The booked event disagrees with the line or order probed.
+
+    """
+    if isinstance(event, DiscrepancyClearedEvent):
+        detail: object = event.entry_id
+        expected: object = "ENT-01-producer-probe"
+    else:
+        detail = (event.source, event.description)
+        expected = (getattr(line, "source", None), getattr(line, "description", None))
+    if (event.id, event.order, event.work_package, detail) != (
+        "DSC-01-producer-probe",
+        _ORDER,
+        _REPAIR_PACKAGE,
+        expected,
+    ):
+        msg = "Discrepancy record disagrees with the order it names"
+        raise ValueError(msg)
+
+
 def _probe_discrepancy(root: Path, event_type: str = "discrepancy_recorded") -> ProducerObservation:
     """Record a line on a commenced order and clear it on an entry, each refused once (RP-12 O4).
 
@@ -1678,13 +1706,7 @@ def _probe_discrepancy(root: Path, event_type: str = "discrepancy_recorded") -> 
     if not isinstance(event, expected):
         msg = "Writer persisted the wrong event type"
         raise TypeError(msg)
-    if (event.id, event.order, event.work_package) != (
-        "DSC-01-producer-probe",
-        _ORDER,
-        _REPAIR_PACKAGE,
-    ):
-        msg = "Discrepancy record disagrees with the order it names"
-        raise ValueError(msg)
+    _check_discrepancy_identity(event, line)
     return ProducerObservation(
         event_type=event_type,
         producer=_PRODUCERS[event_type],

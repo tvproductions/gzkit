@@ -309,8 +309,14 @@ class DiscrepancyProducerProbeTests(unittest.TestCase):
         ),
     }
 
-    def _observe(self, event_type: str, book: Callable[[Any], None]) -> Any:
-        """Probe *event_type* with a writer that books *book*'s rows once, then refuses.
+    def _observe(
+        self, event_type: str, book: Callable[[Any], None], *, then: str | None = "refuse"
+    ) -> Any:
+        """Probe *event_type* with a writer that books *book*'s rows once.
+
+        Its second call, the probed case, refuses with the ruled words (``then``
+        "refuse"), refuses for another reason ("refuse-otherwise"), or accepts
+        without writing (None).
 
         Returns:
             The probe's observation.
@@ -323,7 +329,12 @@ class DiscrepancyProducerProbeTests(unittest.TestCase):
 
         def write(*args: Any, **_fields: Any) -> None:
             if calls:
-                raise DiscrepancyError(refusal)
+                if then == "refuse":
+                    raise DiscrepancyError(refusal)
+                if then == "refuse-otherwise":
+                    otherwise = "the order is not held"
+                    raise DiscrepancyError(otherwise)
+                return
             calls.append(1)
             book(args[ledger_at])
 
@@ -404,9 +415,43 @@ class DiscrepancyProducerProbeTests(unittest.TestCase):
                 self.assertEqual(observation.status, "failed")
                 self.assertIn("disagrees with the order", observation.error)
 
+    def test_a_writer_that_never_refuses_or_refuses_otherwise_gets_no_credit(self) -> None:
+        """The probe's refusal leg: the probed case must be refused, for the ruled reason."""
+        from gzkit.ledger import ledger_row  # noqa: PLC0415
 
-if __name__ == "__main__":
-    unittest.main()
+        cases = {
+            "discrepancy_recorded": "a performer recording what it did not find",
+            "discrepancy_cleared": "a stamped clear",
+        }
+        for event_type in self._WRITERS:
+            for then in (None, "refuse-otherwise"):
+                with self.subTest(event_type=event_type, then=then):
+
+                    def once(ledger: Any, event_type: str = event_type) -> None:
+                        ledger.append(ledger_row(self._line(event_type)))
+
+                    observation = self._observe(event_type, once, then=then)
+                    self.assertEqual(observation.status, "failed")
+                    self.assertIn(cases[event_type], observation.error)
+
+    def test_a_writer_that_books_another_identity_gets_no_credit(self) -> None:
+        """The record's source and the clear's entry are checked, not the id alone."""
+        from gzkit.ledger import ledger_row  # noqa: PLC0415
+
+        wrong = {
+            "discrepancy_recorded": {"source": "found-in-work"},
+            "discrepancy_cleared": {"entry_id": "ENT-09-elsewhere"},
+        }
+        for event_type in self._WRITERS:
+            with self.subTest(event_type=event_type):
+
+                def miscast(ledger: Any, event_type: str = event_type) -> None:
+                    line = self._line(event_type).model_copy(update=wrong[event_type])
+                    ledger.append(ledger_row(line))
+
+                observation = self._observe(event_type, miscast)
+                self.assertEqual(observation.status, "failed")
+                self.assertIn("disagrees with the order", observation.error)
 
 
 class LockLeaseExpiryProducerProbeTests(unittest.TestCase):
@@ -979,3 +1024,7 @@ class TagHangProducerProbeTests(unittest.TestCase):
         observation = self._observe(elsewhere)
         self.assertEqual(observation.status, "failed")
         self.assertIn("disagrees with the hang", observation.error)
+
+
+if __name__ == "__main__":
+    unittest.main()
