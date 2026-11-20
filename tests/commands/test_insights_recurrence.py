@@ -13,7 +13,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from gzkit.cli.main import main
-from gzkit.commands.insights import gh_issue_created_at
+from gzkit.commands.insights import gh_issue_created_at, resolve_cite
 from gzkit.commands.reference_checker import GhUnansweredError
 from tests.commands.common import CliRunner
 
@@ -218,6 +218,17 @@ class TestGhIssueCreatedAt(unittest.TestCase):
         for out in ("", _api("502 Bad Gateway", "{}"), _api("200 OK", "not json")):
             with self.subTest(out=out[:20]), self.assertRaises(GhUnansweredError):
                 self._call(1 if not out.startswith("HTTP/2.0 200") else 0, out)
+
+    def test_a_ghi_cited_with_or_without_its_hash_is_one_label(self) -> None:
+        # The clear's --recurs counts a record once by this label (RP-12 ruling 181), so
+        # the bare and the hashed number must name the same occurrence.
+        out = _api("200 OK", '{"state": "open", "created_at": "2026-10-18T13:00:00Z"}')
+        with patch("gzkit.commands.reference_checker.run_exec", return_value=(0, out, "")):
+            bare = resolve_cite("1412", {}, Path("."))
+            hashed = resolve_cite("#1412", {}, Path("."))
+        self.assertIsNotNone(bare)
+        self.assertEqual(bare, hashed)
+        self.assertEqual(bare, ("#1412", datetime(2026, 10, 18, 13, tzinfo=UTC)))
 
     def test_a_found_issue_with_no_usable_creation_time_raises(self) -> None:
         # The API says the issue exists, so it cannot be read as naming nothing; with no
