@@ -2355,3 +2355,14 @@
 {"ts": "2026-11-20T06:20:40Z", "source": "20261120T062039Z-rp12-o1-o3-closed.md", "text": "O2's Gate 5, decision proceed (verbatim: \"Proceed: O2 attested\")."}
 {"ts": "2026-11-20T06:20:40Z", "source": "20261120T062039Z-rp12-o1-o3-closed.md", "text": "O1's Gate 5, decision proceed (verbatim: \"Proceed: O1 attested\")."}
 {"ts": "2026-11-20T06:20:40Z", "source": "20261120T062039Z-rp12-o1-o3-closed.md", "text": "The MX session lease is renewed (verbatim: \"Renew (Rec.)\")."}
+{"ts": "2026-11-20T08:29:49Z", "source": "20261120T082949Z-rp12-o4-task1-act1-landed.md", "text": "Ruling 166, O4's maintenance record subsumes the MX log (verbatim: \"A: Subsume (Rec.)\")."}
+{"ts": "2026-11-20T08:29:49Z", "source": "20261120T082949Z-rp12-o4-task1-act1-landed.md", "text": "Ruling 167, the performer books its maintenance-record entry (verbatim: \"A: Performer books (Rec.)\")."}
+{"ts": "2026-11-20T08:29:49Z", "source": "20261120T082949Z-rp12-o4-task1-act1-landed.md", "text": "Ruling 168, O4's verbs are gz wp entry and gz wp discrepancy (verbatim: \"A: Two groups (Rec.)\")."}
+{"ts": "2026-11-20T08:29:49Z", "source": "20261120T082949Z-rp12-o4-task1-act1-landed.md", "text": "Ruling 169, entries are ENT-<NN>-<slug> and discrepancies DSC-<NN>-<slug> (verbatim: \"A: ENT and DSC (Rec.)\")."}
+{"ts": "2026-11-20T08:29:49Z", "source": "20261120T082949Z-rp12-o4-task1-act1-landed.md", "text": "Ruling 170, the landing commit names its entry in its subject (verbatim: \"A: Name it in the subject (Rec.)\")."}
+{"ts": "2026-11-20T08:29:49Z", "source": "20261120T082949Z-rp12-o4-task1-act1-landed.md", "text": "Ruling 171, a discrepancy carries a hung tag past acceptance to a pause alone (verbatim: \"A: Carry, pause only (Rec.)\")."}
+{"ts": "2026-11-20T08:29:49Z", "source": "20261120T082949Z-rp12-o4-task1-act1-landed.md", "text": "Ruling 172, a discrepancy is recorded by its source's position and cleared by the coordinator on resolving evidence (verbatim: \"A: By source (Rec.)\")."}
+{"ts": "2026-11-20T08:29:49Z", "source": "20261120T082949Z-rp12-o4-task1-act1-landed.md", "text": "Ruling 173, an entry's measurement is text before and after with its witness (verbatim: \"A: Text plus witness (Rec.)\")."}
+{"ts": "2026-11-20T08:29:49Z", "source": "20261120T082949Z-rp12-o4-task1-act1-landed.md", "text": "O4's five-task cut approved, task 1 started (verbatim: \"Approve, start task 1 (Rec.)\")."}
+{"ts": "2026-11-20T08:29:49Z", "source": "20261120T082949Z-rp12-o4-task1-act1-landed.md", "text": "Ruling 174, the maintenance record lives in gzkit/mx/entries.py (verbatim: \"A: gzkit/mx/entries.py (Rec.)\")."}
+{"ts": "2026-11-20T08:29:49Z", "source": "20261120T082949Z-rp12-o4-task1-act1-landed.md", "text": "Ruling 175, an entry is booked by the dispatch that did the work, Implementer, SingleDriver or Restoration (verbatim: \"A: Who did the work (Rec.)\")."}
