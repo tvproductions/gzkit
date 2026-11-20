@@ -2366,3 +2366,10 @@
 {"ts": "2026-11-20T08:29:49Z", "source": "20261120T082949Z-rp12-o4-task1-act1-landed.md", "text": "O4's five-task cut approved, task 1 started (verbatim: \"Approve, start task 1 (Rec.)\")."}
 {"ts": "2026-11-20T08:29:49Z", "source": "20261120T082949Z-rp12-o4-task1-act1-landed.md", "text": "Ruling 174, the maintenance record lives in gzkit/mx/entries.py (verbatim: \"A: gzkit/mx/entries.py (Rec.)\")."}
 {"ts": "2026-11-20T08:29:49Z", "source": "20261120T082949Z-rp12-o4-task1-act1-landed.md", "text": "Ruling 175, an entry is booked by the dispatch that did the work, Implementer, SingleDriver or Restoration (verbatim: \"A: Who did the work (Rec.)\")."}
+{"ts": "2026-11-20T10:17:06Z", "source": "20261120T101706Z-rp12-o4-task1-closed.md", "text": "Handoff 20261120T082949Z resumed (verbatim: \"proceed with act 2\")."}
+{"ts": "2026-11-20T10:17:06Z", "source": "20261120T101706Z-rp12-o4-task1-closed.md", "text": "Act 3 started (verbatim: \"yes\")."}
+{"ts": "2026-11-20T10:17:06Z", "source": "20261120T101706Z-rp12-o4-task1-closed.md", "text": "Task 1's independent review dispatched (verbatim: \"dispatch the review\")."}
+{"ts": "2026-11-20T10:17:06Z", "source": "20261120T101706Z-rp12-o4-task1-closed.md", "text": "Ruling 176, an id series never reissues a voided number; next_entry_id and next_tag_id read the ledger's history (verbatim: \"a\")."}
+{"ts": "2026-11-20T10:17:06Z", "source": "20261120T101706Z-rp12-o4-task1-closed.md", "text": "Ruling 177, an order stopped by an exit still takes entries (verbatim: \"a\")."}
+{"ts": "2026-11-20T10:17:06Z", "source": "20261120T101706Z-rp12-o4-task1-closed.md", "text": "A spec re-review over the unreviewed half and the repairs (verbatim: \"yes\")."}
+{"ts": "2026-11-20T10:17:06Z", "source": "20261120T101706Z-rp12-o4-task1-closed.md", "text": "Successor handoff written before task 2 (verbatim: \"yes\")."}
