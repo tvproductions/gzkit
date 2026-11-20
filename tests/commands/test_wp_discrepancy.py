@@ -31,6 +31,13 @@ _LINE = (
 )
 
 
+def _seat_malformed(event: str, row_id: str) -> None:
+    """Append a row of *event* missing its fields, as a broken writer would leave it."""
+    row = {"schema": "gzkit.ledger.v1", "event": event, "id": row_id, "ts": "2026-11-20T00:00:00"}
+    with (Path(".gzkit") / "ledger.jsonl").open("a", encoding="utf-8") as stream:
+        stream.write(json.dumps(row) + "\n")
+
+
 def _rows(event: str) -> list[dict[str, Any]]:
     text = (Path(".gzkit") / "ledger.jsonl").read_text(encoding="utf-8")
     rows = [json.loads(line) for line in text.splitlines() if line.strip()]
@@ -122,6 +129,19 @@ class RecordWiringTests(_DiscrepancyCase):
         self.assertIn("--order is required", output)
         self.assertEqual(_rows("discrepancy_recorded"), [])
 
+    def test_a_malformed_tag_row_refuses_the_record_naming_its_void(self) -> None:
+        # given a tag_issued row the tag log cannot read
+        _seat_malformed("tag_issued", "TAG-01-size")
+        # when the coordinator's line cites a tag, so the record reads the tag log
+        code, output = self.run_gz(
+            *("record", "--order", "ORD-01-import", "--source", "left-broken", *_LINE),
+            *("--tag", "TAG-01-size"),
+        )
+        # then the reader's refusal is a policy breach naming its recovery, nothing booked
+        self.assertEqual(code, 3, output)
+        self.assertIn("gz ledger correct", output)
+        self.assertEqual(_rows("discrepancy_recorded"), [])
+
 
 class ClearWiringTests(_DiscrepancyCase):
     def setUp(self) -> None:
@@ -147,6 +167,18 @@ class ClearWiringTests(_DiscrepancyCase):
             [(r["discrepancy_id"], r["entry_id"]) for r in _rows("discrepancy_cleared")],
             [("DSC-01-hook-left-off", "ENT-01-stamp-import")],
         )
+
+    def test_a_malformed_entry_row_refuses_the_clear_naming_its_void(self) -> None:
+        # given an entry_booked row the maintenance record cannot read
+        _seat_malformed("entry_booked", "ENT-02-broken")
+        # when the clear cites an entry, so it reads the maintenance record
+        code, output = self.run_gz(
+            "clear", "DSC-01-hook-left-off", "--entry", "ENT-01-stamp-import"
+        )
+        # then the reader's refusal is a policy breach naming its recovery, nothing booked
+        self.assertEqual(code, 3, output)
+        self.assertIn("gz ledger correct", output)
+        self.assertEqual(_rows("discrepancy_cleared"), [])
 
     def test_a_subagents_call_is_refused(self) -> None:
         # given the call stamped as the dispatch's subagent

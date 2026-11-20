@@ -39,6 +39,8 @@ from gzkit.mx.discrepancies import (
     record_discrepancy,
     record_discrepancy_clear,
 )
+from gzkit.mx.entries import EntryError
+from gzkit.mx.tag_rows import TagOutError
 from gzkit.registries import RegistryError
 
 if TYPE_CHECKING:
@@ -46,6 +48,11 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from gzkit.mx.discrepancies import Discrepancy
+
+#: Every refusal a record or clear can raise: the writer's own, and the maintenance
+#: record's and the tag log's, which the writer reads and which refuse a row they cannot
+#: parse with the void that recovers it. Each is a policy breach, exit 3.
+_REFUSALS = (DiscrepancyError, EntryError, TagOutError)
 
 #: How the reference checker's verdict reads as an issue's state.
 _ISSUE_STATES: dict[ReferenceState, str] = {
@@ -129,7 +136,8 @@ def wp_discrepancy_record_cmd(
 
     Raises:
         PolicyBreachError: A subagent's call with no dispatch id, the marker present
-            but not on, or the writer's refusal; nothing is booked.
+            but not on, the writer's refusal, or a tag row the record reads that does
+            not parse; nothing is booked.
 
     """
     if called_by_subagent and not stamped_dispatch_id:
@@ -151,7 +159,7 @@ def wp_discrepancy_record_cmd(
             stamped_id=stamped_dispatch_id,
             mx_session_id=_open_session_id(root, ledger_path, "record"),
         )
-    except DiscrepancyError as exc:
+    except _REFUSALS as exc:
         raise PolicyBreachError(str(exc)) from exc
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     fmt.emit(event if as_json else f"Recorded {event.discrepancy_id} on {event.order}.")
@@ -172,8 +180,9 @@ def wp_discrepancy_clear_cmd(
     <ORD-id>.``, or with ``--json`` the `discrepancy_cleared` event booked.
 
     Raises:
-        PolicyBreachError: A subagent's call, the marker present but not on, or the
-            writer's refusal; nothing is booked.
+        PolicyBreachError: A subagent's call, the marker present but not on, the
+            writer's refusal, or an entry or tag row the clear reads that does not
+            parse; nothing is booked.
         TransientError: The issue cited could not be read through `gh`; nothing is
             booked.
         ValidationError: ``--recurs`` was given and the recurrence threshold's registry
@@ -202,7 +211,7 @@ def wp_discrepancy_clear_cmd(
         raise TransientError(str(exc)) from exc
     except RegistryError as exc:
         raise ValidationError(str(exc)) from exc
-    except DiscrepancyError as exc:
+    except _REFUSALS as exc:
         raise PolicyBreachError(str(exc)) from exc
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     fmt.emit(event if as_json else f"Cleared {event.discrepancy_id} on {event.order}.")

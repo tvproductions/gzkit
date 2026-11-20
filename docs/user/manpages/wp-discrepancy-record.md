@@ -112,7 +112,7 @@ Recorded DSC-02-stale-cache on ORD-01-import.
 | 0 | Recorded |
 | 1 | The project is not initialized |
 | 2 | Usage or System/IO error |
-| 3 | Refused: no MX session open or a marker present but not on (its repair named), a subagent's call with no dispatch id, a malformed slug or a blank description, a grade and `--due-by` that disagree, an inspector's rejection, the coordinator's line with no `--order` or naming `--dispatch`, a performer's call not stamped as its dispatch, not a find in the work, typing `--order` or `--tag`, or its dispatch not a live `Implementer`, `SingleDriver` or `Restoration` on an order, an order not held, never opened or closed, or of a package not initiated, or a tag not issued on the order; nothing booked |
+| 3 | Refused: no MX session open or a marker present but not on (its repair named), a subagent's call with no dispatch id, a malformed slug or a blank description, a grade and `--due-by` that disagree, an inspector's rejection, the coordinator's line with no `--order` or naming `--dispatch`, a performer's call not stamped as its dispatch, not a find in the work, typing `--order` or `--tag`, or its dispatch not a live `Implementer`, `SingleDriver` or `Restoration` on an order, an order not held, never opened or closed, or of a package not initiated, a tag not issued on the order, or a tag row the record reads that does not parse (its void named); nothing booked |
 
 ## See also
 
