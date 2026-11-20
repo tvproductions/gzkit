@@ -125,8 +125,12 @@ class _Witnesses:
         self.asked.append(number)
         return self.issues.get(number)
 
-    def cite_time(self, cite: str) -> datetime | None:
-        return self.times.get(cite)
+    def resolve_cite(self, cite: str) -> tuple[str, datetime] | None:
+        """Label a GHI ``#<n>`` however it is spelled, as `gz insights recurrence` does."""
+        number = cite.removeprefix("#")
+        label = f"#{number}" if number.isdigit() else cite
+        stamp = self.times.get(label)
+        return (label, stamp) if stamp is not None else None
 
 
 def _raised(act: Callable[[], object]) -> Exception | None:
@@ -636,6 +640,26 @@ class ClearTests(_DiscrepancyCase):
             corrective_action="a test",
         )
         self.assertEqual(clear.recurs, cites)
+
+    def test_one_record_cited_twice_is_read_once(self) -> None:
+        """Ruling 181: the clear reads `gz insights recurrence`'s check, which keys a GHI by
+        its label, so `1412` and `#1412` are one record, counted and stored once."""
+        line = self.recorded(grade="due-by-event", due_by="the fix")
+        self.seat_entry("ENT-01-fixed")
+        self.witnesses.times = {c: _NOW + timedelta(days=i) for i, c in enumerate(["#1", "#2"])}
+        self.assert_refused(
+            "2 cited of 3 required",
+            lambda: self.clear(line.id, entry="ENT-01-fixed", recurs=["1", "#1", "#2"]),
+        )
+        self.witnesses.times["#3"] = _NOW + timedelta(days=2)
+        clear = self.cleared(
+            line.id,
+            entry="ENT-01-fixed",
+            recurs=["1", "#1", "#2", "3"],
+            root_cause="a typo",
+            corrective_action="a test",
+        )
+        self.assertEqual(clear.recurs, ["#1", "#2", "#3"])
 
     def test_a_due_by_line_takes_the_fields_optionally_without_recurrence(self) -> None:
         """Ruling 181: otherwise the two fields are optional."""

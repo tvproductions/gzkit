@@ -47,7 +47,9 @@ with its evidence (RP-12 ruling 9). `docs/governance/harbor-ro12-contractor-kit.
   `--corrective-action`. A `due-by-event` line may cite `--recurs`, read by the
   same check as `gz insights recurrence` against
   `data/recurrence_threshold.json`: met, both fields are required; short, the
-  citation is refused naming the shortfall. Otherwise the fields are optional, and
+  citation is refused naming the shortfall. A record is read by its label, as that
+  check reads it, so `1412` and `#1412` are one record, counted and stored once
+  as `#1412`. Otherwise the fields are optional, and
   a field given is never blank (rulings 9 and 181). `--recurs` on a blocking line
   is refused.
 - A line is cleared once.

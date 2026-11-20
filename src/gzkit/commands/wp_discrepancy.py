@@ -81,16 +81,15 @@ class GhClearWitnesses:
         """
         return _ISSUE_STATES.get(gh_issue_state(str(number), self._root))
 
-    def cite_time(self, cite: str) -> datetime | None:
-        """Return an insight record's or a GHI's full timestamp, as `gz insights recurrence` does.
+    def resolve_cite(self, cite: str) -> tuple[str, datetime] | None:
+        """Return a citation's label and full timestamp, as `gz insights recurrence` reads it.
 
         Returns:
-            The timestamp, or None when the citation names nothing.
+            The label and timestamp, or None when the citation names nothing.
 
         """
         store = insight_lines_by_ts(self._root / DEFAULT_INSIGHTS_PATH)
-        found = resolve_cite(cite, store, self._root)
-        return found[1] if found else None
+        return resolve_cite(cite, store, self._root)
 
 
 def _open_session_id(root: Path, ledger_path: Path, act: str) -> str | None:

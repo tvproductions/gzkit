@@ -1592,7 +1592,7 @@ class _OfflineWitnesses:
         """Read no issue: the probe's clear cites an entry, never an issue."""
 
     @staticmethod
-    def cite_time(cite: str) -> datetime | None:
+    def resolve_cite(cite: str) -> tuple[str, datetime] | None:
         """Resolve no citation: the probe's clear cites no recurrence."""
 
 

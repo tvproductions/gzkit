@@ -83,8 +83,12 @@ class ClearWitnesses(Protocol):
         """Return the issue's state, `open` or `closed`, or None when it cannot be read."""
         ...
 
-    def cite_time(self, cite: str) -> datetime | None:
-        """Return an insight record's or a GHI's full timestamp, or None when it names nothing."""
+    def resolve_cite(self, cite: str) -> tuple[str, datetime] | None:
+        """Return a citation's label and full timestamp, or None when it names nothing.
+
+        The label is `gz insights recurrence`'s, so one record cited two ways, ``1412``
+        and ``#1412``, is one record (ruling 181).
+        """
         ...
 
 
@@ -455,8 +459,13 @@ def _check_evidence(ledger: Ledger, request: DiscrepancyClear, package: str) -> 
 
 def _check_cause(
     request: DiscrepancyClear, grade: DiscrepancyGrade, witnesses: ClearWitnesses
-) -> None:
-    """Refuse a clear whose root cause and corrective action ruling 181 requires and lacks."""
+) -> tuple[str, ...]:
+    """Refuse a clear whose root cause and corrective action ruling 181 requires and lacks.
+
+    Returns:
+        The records ``--recurs`` cites, each by its label once, or none.
+
+    """
     for flag, given in (
         ("--root-cause", request.root_cause),
         ("--corrective-action", request.corrective_action),
@@ -464,6 +473,7 @@ def _check_cause(
         if given is not None and not given.strip():
             _refuse(f"{flag} is blank. A field given is written out (RP-12 ruling 181).")
     required = grade == BLOCKS
+    labels: tuple[str, ...] = ()
     if request.recurs:
         if grade != DUE_BY:
             _refuse(
@@ -471,7 +481,8 @@ def _check_cause(
                 "return to service carries its root cause and corrective action whether it "
                 "recurs or not (RP-12 ruling 181). Clear it again without --recurs."
             )
-        required = _recurs(request.recurs, witnesses)
+        labels = _recurs(request.recurs, witnesses)
+        required = True
     if required and not (request.root_cause and request.corrective_action):
         why = "blocks return to service" if grade == BLOCKS else "recurs"
         _refuse(
@@ -479,24 +490,29 @@ def _check_cause(
             "line carries the fuller record (RP-12 rulings 9 and 181; JFMM I-9.3.1.a). Clear "
             "it again with both written out."
         )
+    return labels
 
 
-def _recurs(cites: Sequence[str], witnesses: ClearWitnesses) -> bool:
+def _recurs(cites: Sequence[str], witnesses: ClearWitnesses) -> tuple[str, ...]:
     """Read the recurrence threshold over *cites*, refusing a shortfall (ruling 181).
 
+    Each record is keyed by its label, as `gz insights recurrence` keys it, so one
+    record cited two ways counts once.
+
     Returns:
-        True: the threshold is met, so the line recurs.
+        The records cited, each by its label once, in the order first cited; the
+        threshold is met, so the line recurs.
 
     """
     resolved: dict[str, datetime] = {}
     for cite in cites:
-        stamp = witnesses.cite_time(cite)
-        if stamp is None:
+        found = witnesses.resolve_cite(cite)
+        if found is None:
             _refuse(
                 f"--recurs {cite} names no insight record or resolvable GHI, so the "
                 "recurrence check cannot read it (RP-12 ruling 181; `gz insights recurrence`)."
             )
-        resolved[cite] = stamp
+        resolved.setdefault(found[0], found[1])
     verdict = check_recurrence(
         resolved,
         min_occurrences=witnesses.min_occurrences,
@@ -514,7 +530,7 @@ def _recurs(cites: Sequence[str], witnesses: ClearWitnesses) -> bool:
             "data/recurrence_threshold.json). "
             "Clear it again without --recurs, or cite records of the same failure a lease apart."
         )
-    return True
+    return tuple(resolved)
 
 
 def _check_issue(number: int, witnesses: ClearWitnesses) -> None:
@@ -560,7 +576,7 @@ def record_discrepancy_clear(
     _check_session(mx_session_id, "clear")
     line = _open_line(ledger, request.discrepancy)
     _check_evidence(ledger, request, line.work_package)
-    _check_cause(request, line.grade, witnesses)
+    recurs = _check_cause(request, line.grade, witnesses)
     if request.ghi is not None:
         _check_issue(request.ghi, witnesses)
     event = DiscrepancyClearedEvent.model_validate(
@@ -575,7 +591,7 @@ def record_discrepancy_clear(
             "ghi": request.ghi,
             "root_cause": request.root_cause,
             "corrective_action": request.corrective_action,
-            "recurs": list(request.recurs),
+            "recurs": list(recurs),
             "mx_session_id": mx_session_id,
         }
     )
