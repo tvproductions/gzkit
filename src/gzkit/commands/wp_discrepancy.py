@@ -10,7 +10,9 @@ with root cause and corrective action where ruling 181 requires them. The open M
 session is read from the marker here and passed as a parameter, and `gh` and the
 insight store reach the writer through `GhClearWitnesses`, the `ClearWitnesses`
 port's adapter; the writer reads none of them. A refusal exits 3 and books nothing;
-an issue `gh` cannot read exits 2 and books nothing.
+an issue `gh` cannot read exits 2 and books nothing. `show` renders the list from
+the ledger, read-only: the open lines, or every line with `--all`, as `gz wp tag
+show` renders the tag-out log (ruling 110's form).
 """
 
 from typing import TYPE_CHECKING
@@ -32,6 +34,8 @@ from gzkit.mx.discrepancies import (
     DiscrepancyError,
     DiscrepancyRecord,
     DiscrepancyUnavailableError,
+    discrepancy_list,
+    open_discrepancies,
     record_discrepancy,
     record_discrepancy_clear,
 )
@@ -40,6 +44,8 @@ from gzkit.registries import RegistryError
 if TYPE_CHECKING:
     from datetime import datetime
     from pathlib import Path
+
+    from gzkit.mx.discrepancies import Discrepancy
 
 #: How the reference checker's verdict reads as an issue's state.
 _ISSUE_STATES: dict[ReferenceState, str] = {
@@ -201,3 +207,93 @@ def wp_discrepancy_clear_cmd(
         raise PolicyBreachError(str(exc)) from exc
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     fmt.emit(event if as_json else f"Cleared {event.discrepancy_id} on {event.order}.")
+
+
+def _cleared_line(line: Discrepancy) -> str:
+    """Write a line's clear: when, and the evidence it cites (rulings 172 and 180).
+
+    Returns:
+        ``<ts> on <evidence>`` once cleared, else ``open``.
+
+    """
+    clear = line.clear
+    if clear is None:
+        return "open"
+    cited = [
+        cite
+        for cite in (clear.entry_id, clear.tag_id, f"#{clear.ghi}" if clear.ghi else None)
+        if cite
+    ]
+    return f"{clear.ts} on {', '.join(cited)}"
+
+
+def _line_block(line: Discrepancy, *, every: bool) -> str:
+    """Write one line as a block of labelled lines, each field legible (ruling 126's form).
+
+    Returns:
+        The line's id, order and package, its state under ``--all``, then each field.
+
+    """
+    record = line.record
+    state = f" ({'open' if line.is_open else 'cleared'})" if every else ""
+    cleared = line.clear
+    fields = (
+        ("Grade", record.grade),
+        ("Due by", record.due_by),
+        ("Source", record.source),
+        ("Description", record.description),
+        ("Tag", record.tag_id),
+        ("Recorded", f"{record.ts} by {record.dispatch_id or 'the coordinator'}"),
+        ("MX session", record.mx_session_id),
+        ("Cleared", _cleared_line(line)),
+        ("Root cause", cleared.root_cause if cleared else None),
+        ("Corrective", cleared.corrective_action if cleared else None),
+        ("Recurs", ", ".join(cleared.recurs) if cleared else None),
+    )
+    return "\n".join(
+        (
+            f"{record.discrepancy_id} on {record.order} ({record.work_package}){state}",
+            *(f"  {label + ':':<13}{value}" for label, value in fields if value),
+        )
+    )
+
+
+def wp_discrepancy_show_cmd(*, every: bool, as_json: bool) -> None:
+    """Show the list of discrepancies: the open lines, or every line with ``--all`` (ruling 9).
+
+    The list is a Layer 3 view rendered from the ledger's `discrepancy_recorded` and
+    `discrepancy_cleared` events through `gzkit.mx.discrepancies` (`open_discrepancies`,
+    or `discrepancy_list` for ``every``; rulings 9 and 168). The human form is a block
+    of labelled lines per line, ruling 126's form for the tag-out log, and a plain line
+    when there is none; ``--json`` prints the list, each line its record's fields with
+    ``clear``, the `discrepancy_cleared` event or None.
+
+    The verb writes nothing, needs no MX session and is not refused from a subagent's
+    call: a read is no one's act.
+
+    Raises:
+        PolicyBreachError: A discrepancy row does not parse; the refusal names the row
+            and the void that recovers it.
+
+    """
+    config = ensure_initialized()
+    ledger = Ledger(get_project_root() / config.paths.ledger)
+    try:
+        lines = discrepancy_list(ledger) if every else open_discrepancies(ledger)
+    except DiscrepancyError as exc:
+        raise PolicyBreachError(str(exc)) from exc
+    fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
+    if as_json:
+        fmt.emit(
+            [
+                {
+                    **line.record.model_dump(mode="json"),
+                    "clear": line.clear.model_dump(mode="json") if line.clear else None,
+                }
+                for line in lines
+            ]
+        )
+    elif not lines:
+        fmt.emit("No discrepancy has been recorded." if every else "No discrepancy is open.")
+    else:
+        fmt.emit("\n\n".join(_line_block(line, every=every) for line in lines))

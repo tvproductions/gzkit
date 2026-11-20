@@ -1108,6 +1108,15 @@ uv run gz wp discrepancy clear DSC-01-hook-left-off --entry ENT-01-stamp-import 
   --root-cause "<cause>" --corrective-action "<action>"
 ```
 
+Read the list with `gz wp discrepancy show`: the open lines by default, every line
+with `--all`, each with its clear. It writes nothing and any session may run it
+(RP-12 rulings 9 and 168):
+
+```bash
+uv run gz wp discrepancy show
+uv run gz wp discrepancy show --all --json
+```
+
 A repair requirement states what must hold again after the repair. It lives in
 `data/catalog/reqs.json` beside the catalog's, written only by `gz wp req new`
 on an open repair package, and names the issue it answers:

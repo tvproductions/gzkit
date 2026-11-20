@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-20
 metadata:
-  skill-version: "0.27.0"
+  skill-version: "0.27.1"
 model: sonnet
 ---
 
@@ -237,6 +237,7 @@ a blocking or recurring line carries root cause and corrective action (rulings 1
 ```bash
 uv run gz wp discrepancy record --order <ORD-id> --slug <slug> --grade <grade> --source <source> --description "<what is wrong>" [--due-by "<event>"] [--tag <TAG-id>]
 uv run gz wp discrepancy clear <DSC-id> (--entry <ENT-id> | --tag <TAG-id> | --ghi <n>) [--root-cause "<text>" --corrective-action "<text>"] [--recurs <cite>]
+uv run gz wp discrepancy show [--all] [--json]
 ```
 
 The order's run is the package's run with `--order`: dispatch only against a REQ the

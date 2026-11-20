@@ -91,6 +91,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     # --- wp discrepancy group (parser_wp_discrepancy, RP-12 O4 task 2) ---
     "wp_discrepancy_record_cmd": "gzkit.commands.wp_discrepancy",
     "wp_discrepancy_clear_cmd": "gzkit.commands.wp_discrepancy",
+    "wp_discrepancy_show_cmd": "gzkit.commands.wp_discrepancy",
     # --- handoff group (parser_maintenance) ---
     "handoff_archive_cmd": "gzkit.commands.handoff_archive",
     "handoff_authorize_cmd": "gzkit.commands.handoff",

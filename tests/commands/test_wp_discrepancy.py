@@ -224,13 +224,90 @@ class ClearWiringTests(_DiscrepancyCase):
         self.assertEqual([r["ghi"] for r in _rows("discrepancy_cleared")], [1412])
 
 
+class ShowWiringTests(_DiscrepancyCase):
+    def show(self, *args: str) -> tuple[int, str]:
+        result = self.runner.invoke(main, ["wp", "discrepancy", "show", *args])
+        return result.exit_code, result.output
+
+    def record_and_clear(self) -> None:
+        """Record a blocking line, book an entry and clear the line on it."""
+        code, output = self.run_gz(
+            "record",
+            *("--order", "ORD-01-import", "--source", "left-broken", "--slug", "hook-left-off"),
+            *("--grade", "blocks-return-to-service", "--description", "The hook is left off."),
+        )
+        self.assertEqual(code, 0, output)
+        self.stamp_as(self.dispatch)
+        self.assertEqual(self.book()[0], 0)
+        self.unstamp()
+        code, output = self.run_gz(
+            "clear",
+            *("DSC-01-hook-left-off", "--entry", "ENT-01-stamp-import"),
+            *("--root-cause", "Disabled for the repair.", "--corrective-action", "Restored."),
+        )
+        self.assertEqual(code, 0, output)
+
+    def test_with_no_line_it_says_none_is_open_or_recorded(self) -> None:
+        # output-contract: docs/user/manpages/wp-discrepancy-show.md, the empty list's lines
+        # given no line recorded
+        # when
+        shown, every = self.show(), self.show("--all")
+        # then
+        self.assertEqual((shown[0], shown[1].strip()), (0, "No discrepancy is open."))
+        self.assertEqual((every[0], every[1].strip()), (0, "No discrepancy has been recorded."))
+
+    def test_show_writes_each_open_line_as_a_block(self) -> None:
+        # output-contract: docs/user/manpages/wp-discrepancy-show.md, an open line's block
+        # given a due-by line recorded by the coordinator
+        code, output = self.run_gz(
+            "record", "--order", "ORD-01-import", "--source", "left-broken", *_LINE
+        )
+        self.assertEqual(code, 0, output)
+        # when
+        code, output = self.show()
+        # then the line, its grade, event and recorder, and no clear
+        lines = output.splitlines()
+        self.assertEqual(code, 0, output)
+        self.assertEqual(lines[0], "DSC-01-hook-left-off on ORD-01-import (WP-01-stamp)")
+        self.assertIn("  Grade:       due-by-event", lines)
+        self.assertIn("  Due by:      the restoration", lines)
+        self.assertIn("  Cleared:     open", lines)
+        self.assertTrue(any(line.endswith("by the coordinator") for line in lines), output)
+
+    def test_a_cleared_line_leaves_the_default_view_and_shows_under_all(self) -> None:
+        # output-contract: docs/user/manpages/wp-discrepancy-show.md, a cleared line's block
+        # given a blocking line cleared on an entry
+        self.record_and_clear()
+        # when
+        default, every = self.show(), self.show("--all")
+        # then the open view is empty, and --all marks the line cleared with its evidence
+        self.assertEqual(default[1].strip(), "No discrepancy is open.")
+        lines = every[1].splitlines()
+        self.assertEqual(lines[0], "DSC-01-hook-left-off on ORD-01-import (WP-01-stamp) (cleared)")
+        self.assertTrue(any(line.endswith("on ENT-01-stamp-import") for line in lines), every[1])
+        self.assertIn("  Root cause:  Disabled for the repair.", lines)
+        self.assertIn("  Corrective:  Restored.", lines)
+
+    def test_json_mode_prints_each_line_with_its_clear(self) -> None:
+        # given a blocking line cleared on an entry
+        self.record_and_clear()
+        # when
+        code, output = self.show("--all", "--json")
+        # then each line is its record's fields with its clear event
+        self.assertEqual(code, 0, output)
+        (printed,) = json.loads(output)
+        (recorded,), (cleared,) = _rows("discrepancy_recorded"), _rows("discrepancy_cleared")
+        self.assertEqual({k: v for k, v in printed.items() if k != "clear"}, recorded)
+        self.assertEqual(printed["clear"], cleared)
+
+
 class DiscrepancyEpilogTests(unittest.TestCase):
     def test_every_example_parses_as_a_real_invocation(self) -> None:
         # given the help of `gz wp discrepancy` and of each of its leaves
         parser = _build_parser()
         paths = (
             ["wp", "discrepancy"],
-            *(["wp", "discrepancy", leaf] for leaf in ("record", "clear")),
+            *(["wp", "discrepancy", leaf] for leaf in ("record", "clear", "show")),
         )
         examples = [
             line.strip()
@@ -249,10 +326,10 @@ class DiscrepancyEpilogTests(unittest.TestCase):
             parser.parse_args(shlex.split(example)[1:]).discrepancy_command for example in group
         }
         # then each parses, every required flag present, onto a handler
-        self.assertGreaterEqual(len(examples), 7)
+        self.assertGreaterEqual(len(examples), 10)
         self.assertTrue(all(callable(args.func) for args in parsed))
         # and the group's own help shows an example of each of its leaves
-        self.assertEqual(leaves, {"record", "clear"})
+        self.assertEqual(leaves, {"record", "clear", "show"})
 
 
 if __name__ == "__main__":

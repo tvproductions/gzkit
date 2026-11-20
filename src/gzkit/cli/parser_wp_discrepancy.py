@@ -34,6 +34,14 @@ _RECORD_EXAMPLES = [
         " --description 'The cache is never invalidated.'"
     ),
 ]
+_SHOW_EXAMPLES = ["gz wp discrepancy show", "gz wp discrepancy show --all --json"]
+#: `show` writes nothing; it exits 3 only on a ledger row it cannot read.
+_SHOW_EXIT_CODES = """Exit codes
+    0   Shown, an empty list included
+    1   User/config error: the project is not initialized
+    2   Usage or System/IO error
+    3   Policy breach: a discrepancy row does not parse; void it
+"""
 _CLEAR_EXAMPLES = [
     "gz wp discrepancy clear DSC-02-size-gate --entry ENT-03-size-restored",
     (
@@ -73,7 +81,7 @@ _CLEAR_EXIT_CODES = """Exit codes
 
 
 def _register_wp_discrepancy(wp_commands: argparse._SubParsersAction) -> None:
-    """Register ``gz wp discrepancy`` and its leaves, ``record`` and ``clear``."""
+    """Register ``gz wp discrepancy`` and its leaves, ``record``, ``clear`` and ``show``."""
     p_discrepancy = wp_commands.add_parser(
         "discrepancy",
         help="The list of discrepancies: one line per discrepancy, cleared with evidence",
@@ -81,7 +89,7 @@ def _register_wp_discrepancy(wp_commands: argparse._SubParsersAction) -> None:
             "Commands over the list of discrepancies, ledger events rendered as a\n"
             "view. A line is DSC-<NN>-<slug> (RP-12 rulings 9, 168, 169)."
         ),
-        epilog=build_epilog([_RECORD_EXAMPLES[0], _CLEAR_EXAMPLES[0]]),
+        epilog=build_epilog([_RECORD_EXAMPLES[0], _CLEAR_EXAMPLES[0], _SHOW_EXAMPLES[0]]),
     )
     discrepancy_commands = p_discrepancy.add_subparsers(dest="discrepancy_command")
     discrepancy_commands.required = True
@@ -186,4 +194,25 @@ def _register_wp_discrepancy(wp_commands: argparse._SubParsersAction) -> None:
             called_by_subagent=bool(getattr(a, "called_by_subagent", False)),
             as_json=a.as_json,
         )
+    )
+
+    p_discrepancy_show = discrepancy_commands.add_parser(
+        "show",
+        help="Show the list of discrepancies: the open lines, or every line with --all",
+        description=(
+            "Render the list of discrepancies from the ledger's discrepancy events,\n"
+            "a read-only Layer 3 view, oldest first: the open lines by default,\n"
+            "every line with --all, each with its clear (RP-12 rulings 9, 168)."
+        ),
+        epilog=build_epilog(_SHOW_EXAMPLES, exit_codes=_SHOW_EXIT_CODES),
+    )
+    p_discrepancy_show.add_argument(
+        "--all",
+        dest="every",
+        action="store_true",
+        help="Every line recorded, open and cleared, each marked which",
+    )
+    add_json_flag(p_discrepancy_show)
+    p_discrepancy_show.set_defaults(
+        func=lambda a: _lazy("wp_discrepancy_show_cmd")(every=a.every, as_json=a.as_json)
     )
