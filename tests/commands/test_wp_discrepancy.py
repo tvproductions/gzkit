@@ -265,7 +265,8 @@ class ClearWiringTests(_DiscrepancyCase):
         bin_dir = Path("gh-bin")
         bin_dir.mkdir()
         gh = bin_dir / "gh"
-        answer = f"HTTP/2.0 {status}\\r\\nContent-Type: application/json\\r\\n\\r\\n{body}\\n"
+        # gh's own line endings (observed 2026-11-20): LF after the status, CRLF headers
+        answer = f"HTTP/2.0 {status}\\nContent-Type: application/json\\r\\n\\r\\n{body}\\n"
         gh.write_text(
             "#!/bin/sh\n"
             'if [ "$1 $2 $3" = "api --include repos/{owner}/{repo}/issues/1412" ]; then\n'

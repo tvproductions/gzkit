@@ -183,8 +183,15 @@ class TestInsightsRecurrenceCommand(unittest.TestCase):
 
 
 def _api(status: str, body: str) -> str:
-    """One `gh api --include` answer: the status line, a header, a blank line, the body."""
-    return f"HTTP/2.0 {status}\r\nContent-Type: application/json\r\n\r\n{body}"
+    """One `gh api --include` answer: the status line (LF), a header (CRLF), a blank line, the body.
+
+    gh's own line endings, observed 2026-11-20.
+
+    Returns:
+        The stdout `gh api --include` prints for *status* and *body*.
+
+    """
+    return f"HTTP/2.0 {status}\nContent-Type: application/json\r\n\r\n{body}"
 
 
 class TestGhIssueCreatedAt(unittest.TestCase):

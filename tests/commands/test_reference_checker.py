@@ -784,7 +784,15 @@ class TestCitationExtractorRefusesWildcards(unittest.TestCase):
 #: One issue as GitHub's REST API returns it to `gh api --include` (headers, a blank
 #: line, the body), observed 2026-11-20 against this repository.
 def _answer(status: str, body: str) -> str:
-    return f"HTTP/2.0 {status}\r\nContent-Type: application/json\r\n\r\n{body}"
+    """One `gh api --include` answer in gh's own line endings (observed 2026-11-20).
+
+    The status line ends LF and each header CRLF, then a blank CRLF line and the body.
+
+    Returns:
+        The stdout `gh api --include` prints for *status* and *body*.
+
+    """
+    return f"HTTP/2.0 {status}\nContent-Type: application/json\r\n\r\n{body}"
 
 
 _ISSUE = '{"number": 1412, "state": "open", "created_at": "2026-10-18T13:00:00Z"}'
@@ -827,6 +835,9 @@ class TestGhIssueReadTellsMissingFromUnanswered(unittest.TestCase):
             ("no answer", 1, "", IssueAnswer.UNANSWERED),
             ("a server error", 1, _answer("502 Bad Gateway", "{}"), IssueAnswer.UNANSWERED),
             ("an unreadable body", 0, _answer("200 OK", "not json"), IssueAnswer.UNANSWERED),
+            ("a body not an object", 0, _answer("200 OK", "[]"), IssueAnswer.UNANSWERED),
+            ("a body with no state", 0, _answer("200 OK", "{}"), IssueAnswer.UNANSWERED),
+            ("a 200 the call failed on", 1, _answer("200 OK", _ISSUE), IssueAnswer.UNANSWERED),
         ]
         for case, rc, out, expected in table:
             with self.subTest(case=case):
@@ -835,6 +846,13 @@ class TestGhIssueReadTellsMissingFromUnanswered(unittest.TestCase):
     def test_a_found_issue_carries_its_creation_time(self) -> None:
         read = self._read(0, _answer("200 OK", _ISSUE))
         self.assertEqual(read.created_at, datetime(2026, 10, 18, 13, tzinfo=UTC))
+
+    def test_an_unusable_creation_time_is_none_and_the_answer_stands(self) -> None:
+        for created in ("7", '"yesterday"', "null"):
+            body = _ISSUE.replace('"2026-10-18T13:00:00Z"', created)
+            with self.subTest(created=created):
+                read = self._read(0, _answer("200 OK", body))
+                self.assertEqual((read.answer, read.created_at), (IssueAnswer.OPEN, None))
 
     def test_the_handoff_verdict_reads_from_the_same_answer(self) -> None:
         table = [
