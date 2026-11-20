@@ -61,6 +61,8 @@ _IDLE = "WP-02-idle"
 _ORDER = "ORD-01-import"
 _OTHER = "ORD-02-other"
 _IDLE_ORDER = "ORD-03-idle"
+_DELIVERY = "WP-03-deliver"
+_DELIVERY_ORDER = "ORD-04-deliver"
 _NOW = datetime(2026, 11, 20, tzinfo=UTC)
 
 
@@ -565,6 +567,31 @@ class RecordRefusalTests(_DiscrepancyCase):
         self.seat_state(_IDLE_ORDER, "opened", _IDLE)
         self.assert_refused(
             f"Work package {_IDLE} is not initiated", lambda: self.record(order=_IDLE_ORDER)
+        )
+
+    def test_an_order_of_a_delivery_package_is_refused(self) -> None:
+        """Rulings 2, 44 and 178: a line is recorded on an order of a repair package; a
+        delivery package's order, its package initiated and the order opened, takes none."""
+        delivery = _package(_DELIVERY).model_copy(
+            update={"kind": "delivery", "outcome": "A1", "issues": (), "lane": None}
+        )
+        self.catalog = self.catalog.model_copy(
+            update={
+                "work_packages": (*self.catalog.work_packages, delivery),
+                "orders": (*self.catalog.orders, _order(_DELIVERY_ORDER, _DELIVERY)),
+            }
+        )
+        record_work_package_transition(
+            self.catalog,
+            self.ledger,
+            TransitionRequest(
+                work_package=_DELIVERY, to_state="initiated", evidence="e", operator_text="go"
+            ),
+        )
+        self.seat_state(_DELIVERY_ORDER, "opened", _DELIVERY)
+        self.assert_refused(
+            f"sits in {_DELIVERY}, a delivery package",
+            lambda: self.record(order=_DELIVERY_ORDER),
         )
 
     def test_a_tag_not_issued_on_the_order_is_refused(self) -> None:

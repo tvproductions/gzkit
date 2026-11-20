@@ -314,7 +314,7 @@ def _coordinator_order(request: DiscrepancyRecord) -> str:
 
 
 def _check_order(catalog: Catalog, ledger: Ledger, order_id: str) -> str:
-    """Refuse an order not held, of a package not initiated, or not opened or closed.
+    """Refuse an order not held, not a repair package's, not initiated, opened or closed.
 
     Returns:
         The order's repair package.
@@ -326,6 +326,13 @@ def _check_order(catalog: Catalog, ledger: Ledger, order_id: str) -> str:
             f"Order {order_id!r} is not in data/catalog/orders.json, and a discrepancy is "
             "recorded against an order the store holds (RP-12 rulings 47 and 178). Name an "
             "order `uv run gz wp order show <ORD-id>` finds."
+        )
+    package = next((held for held in catalog.work_packages if held.id == order.work_package), None)
+    if package is not None and package.kind != "repair":
+        _refuse(
+            f"Order {order_id} sits in {package.id}, a {package.kind} package. A line is "
+            "recorded on an order of a repair package (RP-12 rulings 2, 44 and 178). Record "
+            "it on an order of the repair package that owns the work."
         )
     package_state = work_package_state(ledger, order.work_package)
     if package_state != "initiated":

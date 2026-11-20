@@ -68,8 +68,9 @@ _RECORD_EXIT_CODES = """Exit codes
         no --order or with --dispatch, a performer's call not stamped as its
         dispatch, not a find in the work, typing --order or --tag, or its
         dispatch not a live Implementer, SingleDriver or Restoration, an order
-        not held, not opened or closed, or of a package not initiated, a tag
-        not on the order, or a tag row that does not parse; nothing is booked
+        not held, not a repair package's, not opened or closed, or of a
+        package not initiated, a tag not on the order, or a tag row that does
+        not parse; nothing is booked
 """
 #: A clear exits 2 when `gh` cannot read the issue it cites; every other refusal is 3.
 _CLEAR_EXIT_CODES = """Exit codes
