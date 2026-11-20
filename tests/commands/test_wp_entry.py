@@ -241,11 +241,19 @@ class EntryEpilogTests(unittest.TestCase):
             for line in (_help_parser(parser, path).epilog or "").splitlines()
             if line.strip().startswith("gz ")
         ]
+        group = [
+            line.strip()
+            for line in (_help_parser(parser, ["wp", "entry"]).epilog or "").splitlines()
+            if line.strip().startswith("gz ")
+        ]
         # when
         parsed = [parser.parse_args(shlex.split(example)[1:]) for example in examples]
+        leaves = {parser.parse_args(shlex.split(example)[1:]).entry_command for example in group}
         # then each parses, every required flag present, onto a handler
         self.assertGreaterEqual(len(examples), 5)
         self.assertTrue(all(callable(args.func) for args in parsed))
+        # and the group's own help shows an example of each of its leaves
+        self.assertEqual(leaves, {"book", "show"})
 
 
 if __name__ == "__main__":
