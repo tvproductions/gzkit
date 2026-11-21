@@ -20,7 +20,7 @@ from gzkit.events import EntryBookedEvent
 from gzkit.ledger import Ledger, ledger_row
 from gzkit.mx import log, marker
 from gzkit.mx.entries import EntryError
-from gzkit.mx.git_commits import CommitsUnreadableError
+from gzkit.mx.git_commits import CommitsUnreadableError, git_log
 from gzkit.traceability import covers
 from tests.commands.common import SilencedConsoleTestCase, _isolated_git_env
 
@@ -512,6 +512,27 @@ class TestUnreadableGit(unittest.TestCase):
         self.assertEqual((window.fixes, window.unrecorded), ([], []))
 
 
+class TestGitReader(unittest.TestCase):
+    """The one git reader both views call (rulings 192 and 193)."""
+
+    def test_a_git_that_cannot_run_is_named_never_read_as_no_commit(self) -> None:
+        with TemporaryDirectory() as tmp:
+            missing = Path(tmp) / "no-such-project"
+            with self.assertRaises(CommitsUnreadableError) as raised:
+                git_log(missing, [], ("%s",))
+        self.assertIn("git could not run", str(raised.exception))
+
+    @covers("REQ-0.0.74-06-01")
+    def test_a_session_never_opened_reads_no_commit(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _init_git_repo(root)
+            _commit(root, "f.txt", "fix: a commit outside any window")
+            _write_ledger(root, [])
+            window = log.assemble_window(root, "never-opened")
+        self.assertEqual((window.fixes, window.commits_unread), ([], None))
+
+
 class TestUnreadableGitRendering(unittest.TestCase):
     def test_each_section_names_the_cause_in_place_of_its_commits(self) -> None:
         # output-contract: docs/user/manpages/mx-exit.md, the view of commits not read
@@ -597,6 +618,20 @@ class TestExitRefusesWhatItCannotRead(unittest.TestCase):
         self.assertEqual(code, 3)
         self.assertIn("ENT-03-x", printed)
         self.assertIn("gz ledger correct", printed)
+
+    def test_the_log_prints_brackets_as_written_never_as_markup(self) -> None:
+        # output-contract: docs/user/manpages/mx-exit.md, the log printed as plain text
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _init_git_repo(root)
+            _commit(root, "seed.txt", "chore: seed")
+            mx_enter_cmd(
+                reason="repair", attestor="g0", inspection_scope=["ADR-0.0.74"], project_root=root
+            )
+            _commit(root, "fix.txt", "fix(ci): keep the [skip ci] tag and [/tmp] path")
+            with console.capture() as captured:
+                mx_exit_cmd(attestor="g0", project_root=root, _run_guards=lambda r: 0)
+        self.assertIn("fix(ci): keep the [skip ci] tag and [/tmp] path", captured.get())
 
     def test_a_git_it_cannot_read_refuses_at_3_naming_the_cause(self) -> None:
         with TemporaryDirectory() as tmp:
