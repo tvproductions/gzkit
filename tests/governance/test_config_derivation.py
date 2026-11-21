@@ -232,6 +232,26 @@ class DirectDataReachIsRostered(unittest.TestCase):
         rel = self._module("m.py", 'def f(root):\n    return root / "data" / "x.json"\n')
         self.assertEqual([e.artifact for e in audit_direct_data_reach(self.root)], [rel])
 
+    def test_data_slash_form_is_caught(self) -> None:
+        """GHI #1336 (a): a path begun from a "data" literal is still a reach."""
+        self._roster([])
+        rel = self._module("m.py", 'def f():\n    return "data" / Path("x.json")\n')
+        self.assertEqual([e.artifact for e in audit_direct_data_reach(self.root)], [rel])
+
+    def test_a_data_key_or_call_argument_is_not_a_reach(self) -> None:
+        """GHI #1336 (b): a "data" mapping key or argument names no path into data/."""
+        self._roster([])
+        for body in (
+            'data = payload.get("data")\n',
+            'data = payload.pop("data")\n',
+            'value = getattr(response, "data")\n',
+            'logger.info("data")\n',
+            'data = response["data"]\n',
+        ):
+            with self.subTest(body=body):
+                self._module("m.py", body)
+                self.assertEqual(audit_direct_data_reach(self.root), [])
+
     def test_rostered_module_is_permitted(self) -> None:
         rel = self._module("m.py", 'P = "data/x.json"\n')
         self._roster([rel])

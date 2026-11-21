@@ -55,9 +55,13 @@ _REACH_SCAN_EXEMPT = (
 
 #: A module naming a `data/` registry path resolves its own config location.
 #: `gzkit.registries.load_registry` is the one place that may (GHI #1067).
+#: A bare "data" literal is a path only where a path is built from it: a `Path` call's
+#: argument or a `/` operand. Any other call's argument or a mapping key, such as
+#: `payload.get("data")` for a GraphQL answer, names no `data/` path (GHI #1336).
 _DATA_REACH_RE = re.compile(
     r"""["']data/[\w.-]+\.json["']"""  # "data/x.json"
-    r"""|["']data["']\s*[/)]"""  # "data" / ...  or  Path("data")
+    r"""|["']data["']\s*/"""  # "data" / ...
+    r"""|\bPath\(\s*["']data["']\s*\)"""  # Path("data"), PurePosixPath("data")
     r"""|/\s*["']data["']"""  # root / "data"
 )
 _RECOVER = "uv run gz validate --config-registry"
