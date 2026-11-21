@@ -699,7 +699,10 @@ def _block_out_of_position(
     request = BlockRequest(
         work_package=hang.work_package, reason=reason, next_action=decision, order=hang.order
     )
-    return record_work_package_block(catalog, ledger, request, refutations=refutations or {})
+    # Ruling 188: a paused order holding a carried tag takes the block its find books.
+    return record_work_package_block(
+        catalog, ledger, request, refutations=refutations or {}, paused_find=True
+    )
 
 
 def record_tag_clear(

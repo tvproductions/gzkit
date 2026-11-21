@@ -885,8 +885,13 @@ def record_work_package_block(
     request: BlockRequest,
     *,
     refutations: Mapping[str, int],
+    paused_find: bool = False,
 ) -> WorkPackageBlockedEvent:
     """Book that the package awaits the operator, with the runtime's own facts.
+
+    ``paused_find`` is set by the tag clear alone, for the block an out-of-position
+    find books on an order Gate 5 paused with a carried tag still hung (ruling 188);
+    every other block of a closed order stays refused.
 
     The counts come from the ledger, never the caller, so an escalation's
     recommendation sits beside facts the agent did not frame (ruling 8).
@@ -898,7 +903,7 @@ def record_work_package_block(
     """
     package = _package(catalog, request.work_package)
     order = request.order
-    _check_blockable(catalog, ledger, package, order)
+    _check_blockable(catalog, ledger, package, order, paused_find=paused_find)
     if not request.reason.strip() or not request.next_action.strip():
         _refuse("A block names its reason and the decision the operator owes.")
     baseline = order_baseline(ledger, order) if order else frozen_baseline(ledger, package.id)
@@ -942,7 +947,12 @@ _ACCEPTED_NOTE = (
 
 
 def _check_blockable(
-    catalog: Catalog, ledger: Ledger, package: WorkPackage, order: str | None
+    catalog: Catalog,
+    ledger: Ledger,
+    package: WorkPackage,
+    order: str | None,
+    *,
+    paused_find: bool = False,
 ) -> None:
     """Refuse a block on a package or order not open, accepted, or already blocked.
 
@@ -961,9 +971,18 @@ def _check_blockable(
             _refuse(f"Work package {package.id} is already blocked on the operator.")
         return
     _package_order(catalog, package, order)
+    _check_order_blockable(ledger, order, paused_find=paused_find)
+
+
+def _check_order_blockable(ledger: Ledger, order: str, *, paused_find: bool) -> None:
+    """Refuse a block on an order not open, accepted, or already blocked (rulings 59, 69).
+
+    Ruling 188: an order Gate 5 paused with a carried tag still hung takes the block
+    its out-of-position find books, and no other block.
+    """
     state = order_state(ledger, order)
-    # Ruling 188: a paused order still holding a carried tag takes the block its find books.
-    if state in _UNBLOCKABLE and not holds_paused_carry(ledger, order):
+    paused_carry = paused_find and holds_paused_carry(ledger, order)
+    if state in _UNBLOCKABLE and not paused_carry:
         _refuse(
             f"Order {order} is {state or 'not opened'}; it takes no block"
             f"{_ACCEPTED_NOTE if state == 'accepted' else '.'}"

@@ -1055,6 +1055,17 @@ class PausedCarryTests(_ClearanceCase):
         self.assertIsNone(_raised(lambda: booked.append(self.book("Restoration"))))
         return booked[0] if booked else ""
 
+    def test_the_coordinators_own_block_on_a_paused_order_is_refused(self) -> None:
+        """Ruling 188 admits the block an out-of-position find books, and no other block."""
+        self.pause()
+        request = BlockRequest(
+            work_package=_REPAIR, reason="stuck", next_action="rule on it", order=_ORDER
+        )
+        raised = _raised(
+            lambda: record_work_package_block(self.catalog, self.ledger, request, refutations={})
+        )
+        self.assertIsInstance(raised, WorkPackageLedgerError)
+
     def test_a_repair_dispatch_does_not_ride_the_exit(self) -> None:
         """Ruling 187 admits the Restoration that clears; a Repair dispatch hangs, never here."""
         self.pause()
