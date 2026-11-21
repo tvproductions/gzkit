@@ -18,7 +18,7 @@ import re
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from pathlib import Path
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 import yaml
 from pydantic import BaseModel, ConfigDict, computed_field
@@ -43,6 +43,9 @@ from gzkit.handoff_validation import (
     validate_handoff_document,
 )
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
 __all__ = [
     "Decision",
     "DecisionAttribution",
@@ -51,6 +54,7 @@ __all__ = [
     "ObservedState",
     "ReferenceChecker",
     "ReferenceKind",
+    "ReferencePrefetcher",
     "ReferenceState",
     "ResumeResult",
     "StalenessLevel",
@@ -59,6 +63,7 @@ __all__ = [
     "list_handoffs",
     "load_handoff_chain",
     "parse_decisions",
+    "prefetch_references",
     "resolve_continues_from",
     "resume_handoff",
     "scaffold_handoff",
@@ -195,6 +200,34 @@ class ReferenceChecker(Protocol):
     def __call__(self, reference: StepReference, /) -> ReferenceState:
         """Resolve one step reference to its observed state."""
         ...
+
+
+@runtime_checkable
+class ReferencePrefetcher(Protocol):
+    """Port extension: an adapter that can answer many references in one read (GHI #1334).
+
+    A caller that knows every reference it is about to check hands them over
+    first, so an adapter whose transport costs a round trip per reference can
+    answer them together. Prefetching changes no verdict, only how many reads
+    produce it; an adapter without the capability is checked one reference at
+    a time, as before. Domain-typed like :class:`ReferenceChecker`.
+    """
+
+    def prefetch(self, references: Iterable[StepReference], /) -> None:
+        """Resolve *references* ahead of the calls that will ask for them."""
+        ...
+
+
+def prefetch_references(
+    checker: ReferenceChecker | None, references: Iterable[StepReference]
+) -> None:
+    """Hand *references* to *checker* when it can batch them; otherwise do nothing.
+
+    *references* is consumed only when the checker prefetches, so a caller may
+    pass a generator whose reading it should not pay for otherwise.
+    """
+    if isinstance(checker, ReferencePrefetcher):
+        checker.prefetch(tuple(references))
 
 
 class ObservedState(BaseModel):
@@ -919,6 +952,15 @@ def _annotate_settled_citations(
     if checker is None:
         return sections
     annotated = dict(sections)
+    prefetch_references(
+        checker,
+        (
+            reference
+            for section in PROSPECTIVE_SECTIONS
+            for reference in _extract_references(annotated.get(section, ""))
+            if reference.kind is ReferenceKind.GHI
+        ),
+    )
     for section in PROSPECTIVE_SECTIONS:
         body = annotated.get(section, "")
         if not body:
@@ -943,7 +985,9 @@ def _build_steps(content: str, checker: ReferenceChecker | None) -> list[NextSte
 
     """
     steps: list[NextStep] = []
-    for text in _extract_next_steps(content):
+    texts = _extract_next_steps(content)
+    prefetch_references(checker, (ref for text in texts for ref in _extract_references(text)))
+    for text in texts:
         references = _extract_references(text)
         if checker is not None:
             references = tuple(ref.model_copy(update={"state": checker(ref)}) for ref in references)

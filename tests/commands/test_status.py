@@ -9,7 +9,6 @@ from gzkit.cli import main
 from gzkit.commands.status_render import TABLE_TITLE_FEATURE
 from gzkit.config import GzkitConfig
 from gzkit.event_evidence import EventAnchor
-from gzkit.handoff_api import ReferenceState
 from gzkit.ledger import (
     Ledger,
     adr_created_event,
@@ -28,6 +27,8 @@ from tests.commands.common import (
     _isolated_git_env,
     _quick_init,
     _write_obpi,
+    gh_calls,
+    gh_stand_in,
 )
 
 
@@ -745,13 +746,7 @@ class TestStatusCommand(unittest.TestCase):
             # Live state contradicts BOTH authored tokens (GHI #966): #11 has
             # closed since the line was written, #12 was reopened. The view
             # reports what GitHub says and keeps the authored token beside it.
-            with patch(
-                "gzkit.commands.reference_checker.gh_issue_state",
-                side_effect=lambda number, _root: {
-                    "11": ReferenceState.SETTLED,
-                    "12": ReferenceState.LIVE,
-                }[number],
-            ):
+            with gh_stand_in({"11": "closed", "12": "open"}):
                 result = runner.invoke(main, ["obpi", "status", "OBPI-0.1.0-01-demo", "--json"])
 
             self.assertEqual(result.exit_code, 0)
@@ -1654,13 +1649,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                 env=_isolated_git_env(),
             )
 
-            with patch(
-                "gzkit.commands.reference_checker.gh_issue_state",
-                side_effect=lambda number, _root: {
-                    "11": ReferenceState.LIVE,
-                    "12": ReferenceState.SETTLED,
-                }[number],
-            ):
+            with gh_stand_in({"11": "open", "12": "closed"}):
                 result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])
 
             self.assertEqual(result.exit_code, 0)
@@ -1698,10 +1687,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
 
-            with patch(
-                "gzkit.commands.reference_checker.gh_issue_state",
-                side_effect=lambda number, _root: ReferenceState.SETTLED,
-            ):
+            with gh_stand_in({"737": "closed"}):
                 result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])
 
             self.assertEqual(result.exit_code, 0)
@@ -1730,10 +1716,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
 
-            with patch(
-                "gzkit.commands.reference_checker.gh_issue_state",
-                side_effect=lambda number, _root: ReferenceState.UNKNOWN,
-            ):
+            with gh_stand_in({}):
                 result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])
 
             self.assertEqual(result.exit_code, 0)
@@ -1747,8 +1730,9 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
     def test_status_summary_never_resolves_tracked_defects_live(self) -> None:
         """The all-ADR summary carries refs as `unresolved` and never shells out.
 
-        One `gh` call per cited GHI across the whole corpus is the cost the
-        summary must not pay (GHI #966); only the single-ADR drilldown resolves.
+        A `gh` read for every cited GHI across the whole corpus is the cost the
+        summary must not pay (GHI #966), batched or not (GHI #1334); only the
+        single-ADR drilldown resolves.
         """
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -1767,11 +1751,12 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
 
-            with patch("gzkit.commands.reference_checker.gh_issue_state") as gh_state:
+            with gh_stand_in({"737": "open"}) as calls:
                 result = runner.invoke(main, ["status", "--json"])
+                asked = gh_calls(calls)
 
             self.assertEqual(result.exit_code, 0)
-            gh_state.assert_not_called()
+            self.assertEqual(asked, [])
             payload = json.loads(result.output)
             entry = payload["adrs"]["ADR-0.1.0-f"]
             self.assertEqual(entry["obpis"][0]["tracked_defects"][0]["state"], "unresolved")

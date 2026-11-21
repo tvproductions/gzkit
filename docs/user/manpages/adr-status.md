@@ -72,9 +72,11 @@ in both directions: `GHI-11 (closed; brief says open)` for a GHI closed after
 the line was authored, `GHI-12 (open; brief says closed)` for one reopened. A
 ref that cannot be resolved — `gh` absent, unauthenticated, offline — renders
 `(unresolved)` (or `(unresolved; brief says closed)`), never bare and never as
-live: not having checked is not the same as having checked. Resolution costs
-one `gh` call per distinct GHI cited under the ADR; the first failure switches
-the resolver off for the rest of the run, so an offline drilldown pays one
+live: not having checked is not the same as having checked. Resolution reads
+every distinct GHI cited under the ADR in one batched `gh api graphql` call (up
+to 50 issues a call, GHI #1334); a GHI GitHub says does not exist renders
+`(unresolved)` and leaves the resolver on, while a call that gets no answer
+switches the resolver off for the rest of the run, so an offline drilldown pays one
 failed call. In `--json`, each `tracked_defects[]` entry carries `state`
 (`open` / `closed` / `unresolved`) and `authored_state` (the brief's token, or
 `null`).

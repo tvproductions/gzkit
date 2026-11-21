@@ -20,11 +20,13 @@ from unittest import mock
 
 from gzkit.commands.common import _prefix_match_candidates
 from gzkit.commands.reference_checker import (
+    ISSUES_PER_QUERY,
     IssueAnswer,
     IssueRead,
     _unique_prefix_entry,
     adr_ledger_state,
     gh_issue_read,
+    gh_issue_reads,
     gh_issue_state,
     live_reference_checker,
     obpi_ledger_state,
@@ -96,10 +98,6 @@ class TestForeignRepositoryReferencesAreNotResolvedLocally(unittest.TestCase):
 
         self.assertEqual(local, ReferenceState.SETTLED)
         self.assertEqual(foreign, ReferenceState.UNKNOWN)
-
-
-if __name__ == "__main__":
-    unittest.main()
 
 
 class TestObpiCitationsResolveFromTheLedger(unittest.TestCase):
@@ -866,3 +864,216 @@ class TestGhIssueReadTellsMissingFromUnanswered(unittest.TestCase):
                 mock.patch("gzkit.commands.reference_checker.run_exec", return_value=(rc, out, "")),
             ):
                 self.assertEqual(gh_issue_state("1412", Path(".")), expected)
+
+
+#: The GraphQL answer GitHub gives `gh api graphql` for an issueOrPullRequest batch,
+#: observed 2026-11-20 against this repository: an Issue node carries its state and
+#: creation time, a pull request is typed PullRequest, and a number with neither is
+#: null beside a NOT_FOUND error whose path names the alias.
+def _batch_answer(nodes: dict[str, object], not_found: tuple[str, ...] = ()) -> str:
+    """One `gh api graphql` stdout for *nodes*, keyed by alias.
+
+    Returns:
+        The JSON gh prints, errors included when *not_found* names an alias.
+
+    """
+    payload: dict[str, object] = {"data": {"repository": nodes}}
+    if not_found:
+        payload["errors"] = [
+            {"type": "NOT_FOUND", "path": ["repository", alias], "message": "Could not resolve"}
+            for alias in not_found
+        ]
+    return json.dumps(payload)
+
+
+def _issue_node(state: str, created: str | None = "2026-10-18T13:00:00Z") -> dict[str, object]:
+    return {"__typename": "Issue", "state": state, "createdAt": created}
+
+
+class TestGhIssueReadsAnswerManyIssuesInOneCall(unittest.TestCase):
+    """GHI #1334: many issue numbers are answered by one `gh` call, not one call each.
+
+    `gz adr status ADR-0.35.0` made 31 serial `gh api` round trips, ~0.63 s each, and
+    took ~21 s, past the SessionStart hook's 15 s timeout. The batch must keep RP-12
+    ruling 182's distinction: a number the API says is no issue is MISSING, and a
+    call that gave no answer is UNANSWERED, never either read as the other.
+    """
+
+    def _reads(self, numbers: list[str], *outs: str) -> tuple[dict[str, IssueRead], mock.Mock]:
+        answers = [(1 if '"errors"' in out else 0, out, "") for out in outs]
+        with mock.patch("gzkit.commands.reference_checker.run_exec", side_effect=answers) as run:
+            reads = gh_issue_reads(numbers, Path("."))
+        return reads, run
+
+    def test_each_answer_one_query_gives(self) -> None:
+        # given one query's answer covering every shape GitHub returns
+        out = _batch_answer(
+            {
+                "i11": _issue_node("OPEN"),
+                "i12": _issue_node("CLOSED"),
+                "i13": {"__typename": "PullRequest"},
+                "i14": None,
+                "i15": None,
+                "i16": {"__typename": "Discussion"},
+                "i17": _issue_node("LOCKED"),
+            },
+            not_found=("i14",),
+        )
+        # when the numbers are read together
+        reads, run = self._reads(["11", "12", "13", "14", "15", "16", "17"], out)
+        # then one call answered all of them, each as the API said
+        self.assertEqual(run.call_count, 1)
+        expected = {
+            "11": IssueAnswer.OPEN,
+            "12": IssueAnswer.CLOSED,
+            "13": IssueAnswer.MISSING,
+            "14": IssueAnswer.MISSING,
+            "15": IssueAnswer.UNANSWERED,
+            "16": IssueAnswer.UNANSWERED,
+            "17": IssueAnswer.UNANSWERED,
+        }
+        self.assertEqual({n: read.answer for n, read in reads.items()}, expected)
+        self.assertEqual(reads["11"].created_at, datetime(2026, 10, 18, 13, tzinfo=UTC))
+
+    def test_the_call_asks_this_repository_through_graphql(self) -> None:
+        _, run = self._reads(["11"], _batch_answer({"i11": _issue_node("OPEN")}))
+        argv = run.call_args.args[0]
+        self.assertEqual(argv[:3], ["gh", "api", "graphql"])
+        self.assertIn("owner={owner}", argv)
+        self.assertIn("name={repo}", argv)
+
+    def test_no_usable_answer_leaves_every_number_unanswered(self) -> None:
+        for out in (
+            "",
+            "not json",
+            "[]",
+            '{"data": null, "errors": [{"type": "RATE_LIMITED"}]}',
+            '{"data": {"repository": null}}',
+        ):
+            with self.subTest(out=out):
+                reads, _ = self._reads(["11", "12"], out)
+                self.assertEqual({read.answer for read in reads.values()}, {IssueAnswer.UNANSWERED})
+                self.assertEqual(set(reads), {"11", "12"})
+
+    def test_a_null_node_is_missing_only_when_its_own_alias_was_not_found(self) -> None:
+        # given a NOT_FOUND error that names a different alias
+        out = _batch_answer({"i14": None, "i15": None}, not_found=("i14",))
+        # when both are read
+        reads, _ = self._reads(["14", "15"], out)
+        # then only the named one is missing
+        self.assertEqual(reads["14"].answer, IssueAnswer.MISSING)
+        self.assertEqual(reads["15"].answer, IssueAnswer.UNANSWERED)
+
+    def test_many_numbers_are_asked_in_bounded_batches(self) -> None:
+        # given more numbers than one query carries, some repeated
+        numbers = [str(n) for n in range(1, 121)] + ["5", "7"]
+        size = ISSUES_PER_QUERY
+        chunks = [list(range(start, min(start + size, 121))) for start in range(1, 121, size)]
+        outs = [_batch_answer({f"i{n}": _issue_node("OPEN") for n in chunk}) for chunk in chunks]
+        # when they are read
+        reads, run = self._reads(numbers, *outs)
+        # then each number is asked once, in ceil(120 / size) calls
+        self.assertEqual(run.call_count, len(chunks))
+        self.assertEqual(set(reads), {str(n) for n in range(1, 121)})
+        self.assertEqual({read.answer for read in reads.values()}, {IssueAnswer.OPEN})
+
+    def test_an_identifier_that_is_not_a_number_never_reaches_the_query(self) -> None:
+        reads, run = self._reads(["12){x}", "١٢"])
+        run.assert_not_called()
+        self.assertEqual({read.answer for read in reads.values()}, {IssueAnswer.UNANSWERED})
+
+
+class TestLiveCheckerPrefetchesCitationsInOneRead(unittest.TestCase):
+    """GHI #1334: the live checker answers a known set of GHI citations in one read.
+
+    ``prefetch`` hands the batch transport every GHI the caller is about to check,
+    so the per-citation calls that follow are answered from the memo. It never
+    changes a verdict: the same answer maps to the same state on either transport.
+    """
+
+    def setUp(self) -> None:
+        self.batches: list[list[str]] = []
+        self.answers: dict[str, IssueAnswer] = {}
+        reads = mock.patch(
+            "gzkit.commands.reference_checker.gh_issue_reads", side_effect=self._reads
+        )
+        single = mock.patch("gzkit.commands.reference_checker.gh_issue_state")
+        reads.start()
+        self.single = single.start()
+        self.addCleanup(reads.stop)
+        self.addCleanup(single.stop)
+
+    def _reads(self, numbers, _root: Path) -> dict[str, IssueRead]:
+        asked = list(numbers)
+        self.batches.append(asked)
+        return {n: IssueRead(answer=self.answers.get(n, IssueAnswer.UNANSWERED)) for n in asked}
+
+    @staticmethod
+    def _ghi(number: str, repo: str | None = None) -> StepReference:
+        return StepReference(kind=ReferenceKind.GHI, identifier=number, repo=repo)
+
+    def test_every_prefetched_citation_is_answered_from_one_read(self) -> None:
+        # given three local GHI citations GitHub answers closed, open and missing
+        self.answers = {"11": IssueAnswer.CLOSED, "12": IssueAnswer.OPEN, "13": IssueAnswer.MISSING}
+        check = live_reference_checker(Path("."))
+        refs = [self._ghi("11"), self._ghi("12"), self._ghi("13")]
+        # when the checker prefetches them and then checks each
+        check.prefetch(refs)
+        states = [check(ref) for ref in refs]
+        # then one batch answered all three and no per-citation call was made
+        self.assertEqual(self.batches, [["11", "12", "13"]])
+        self.single.assert_not_called()
+        self.assertEqual(
+            states, [ReferenceState.SETTLED, ReferenceState.LIVE, ReferenceState.UNKNOWN]
+        )
+
+    def test_only_uncached_local_numeric_ghi_citations_are_asked(self) -> None:
+        # given a checker that has already answered #11
+        self.answers = {"11": IssueAnswer.CLOSED, "14": IssueAnswer.OPEN}
+        check = live_reference_checker(Path("."))
+        check.prefetch([self._ghi("11")])
+        # when it prefetches #11 again beside citations it cannot or need not ask
+        check.prefetch(
+            [
+                self._ghi("11"),
+                self._ghi("14"),
+                self._ghi("15", repo="gz-skills"),
+                self._ghi("x7"),
+                StepReference(kind=ReferenceKind.OBPI, identifier="OBPI-0.1.0-01"),
+            ]
+        )
+        # then the second batch asked only #14
+        self.assertEqual(self.batches, [["11"], ["14"]])
+
+    def test_a_batch_with_nothing_to_ask_makes_no_call(self) -> None:
+        check = live_reference_checker(Path("."))
+        check.prefetch([self._ghi("15", repo="gz-skills")])
+        self.assertEqual(self.batches, [])
+
+    def test_a_batch_that_got_no_answer_latches_the_ghi_arm_off(self) -> None:
+        # given gh offline: every number in the batch is unanswered
+        check = live_reference_checker(Path("."))
+        # when the checker prefetches and then checks
+        check.prefetch([self._ghi("11"), self._ghi("12")])
+        state = check(self._ghi("12"))
+        check.prefetch([self._ghi("16")])
+        # then the offline run cost one call, and the citation is unknown, never live
+        self.assertEqual(state, ReferenceState.UNKNOWN)
+        self.assertEqual(self.batches, [["11", "12"]])
+        self.single.assert_not_called()
+
+    def test_a_missing_issue_in_a_batch_does_not_latch_the_arm_off(self) -> None:
+        # given a batch that answered, one of its numbers no issue
+        self.answers = {"11": IssueAnswer.MISSING, "12": IssueAnswer.CLOSED}
+        check = live_reference_checker(Path("."))
+        check.prefetch([self._ghi("11"), self._ghi("12")])
+        # when a later citation is prefetched
+        self.answers["16"] = IssueAnswer.OPEN
+        check.prefetch([self._ghi("16")])
+        # then it is still asked and answered
+        self.assertEqual(self.batches, [["11", "12"], ["16"]])
+        self.assertEqual(check(self._ghi("16")), ReferenceState.LIVE)
+
+
+if __name__ == "__main__":
+    unittest.main()

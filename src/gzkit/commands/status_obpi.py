@@ -26,6 +26,7 @@ from gzkit.commands.status_obpi_inspect import (
     _section_body,
     _section_body_with_prefix,
     _tracked_defect_refs,
+    prefetch_tracked_defects,
 )
 from gzkit.config import GzkitConfig
 from gzkit.handoff_api import ReferenceChecker
@@ -199,6 +200,7 @@ def _adr_obpi_status_rows(
     from gzkit.hooks.obpi import ObpiValidator
 
     authored_validator = ObpiValidator(project_root)
+    prefetch_tracked_defects(reference_checker, obpi_files.values())
     for obpi_id, obpi_file in sorted(obpi_files.items()):
         inspection = _inspect_obpi_brief(
             project_root,

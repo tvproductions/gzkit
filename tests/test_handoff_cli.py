@@ -38,7 +38,7 @@ from gzkit.handoff_api import (
 from gzkit.handoff_rulings import read_rulings
 from gzkit.handoff_validation import REQUIRED_SECTIONS, parse_frontmatter
 from gzkit.traceability import covers
-from tests.commands.common import SilencedConsoleTestCase
+from tests.commands.common import SilencedConsoleTestCase, gh_stand_in
 
 _NEXT_STEPS = "## Immediate Next Steps\n\n1. Land the adapter and its unit tests.\n"
 # Seeded past the walk's ceiling to force saturation. Read from the owning
@@ -59,13 +59,9 @@ class _HandoffCliCase(unittest.TestCase):
         # authoring time, so any fixture carrying a `#123` would shell out for
         # real — and the tier's hermeticity would depend on nobody ever writing a
         # GHI number into a `--next-steps` fixture. A case needing specific states
-        # nests its own `mock.patch` over this one.
-        self.enterContext(
-            mock.patch(
-                "gzkit.commands.reference_checker.gh_issue_state",
-                side_effect=lambda _number, _root: ReferenceState.UNKNOWN,
-            )
-        )
+        # nests its own `gh_stand_in` over this one: a stand-in `gh` first on PATH
+        # answers the batched and the single read alike (GHI #1334).
+        self.enterContext(gh_stand_in({}))
 
     def _seed(
         self,
@@ -240,10 +236,12 @@ class TestHandoffResumeReferenceRendering(_HandoffCliCase):
             timestamp="2026-07-14T09:00:00Z",
             next_steps=next_steps,
         )
-        with mock.patch(
-            "gzkit.commands.reference_checker.gh_issue_state",
-            side_effect=lambda number, _root: states.get(number, ReferenceState.UNKNOWN),
-        ):
+        answers = {
+            number: "closed" if state is ReferenceState.SETTLED else "open"
+            for number, state in states.items()
+            if state is not ReferenceState.UNKNOWN
+        }
+        with gh_stand_in(answers):
             return self._capture_console(
                 lambda: handoff_resume_cmd(
                     adr="ADR-0.0.65", now="2026-07-14T11:00:00Z", base_path=self.base

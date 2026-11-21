@@ -30,6 +30,7 @@ from gzkit.handoff_api import (
     list_handoffs,
     load_handoff_chain,
     parse_decisions,
+    prefetch_references,
     resume_handoff,
     scaffold_handoff,
 )
@@ -1670,6 +1671,99 @@ class TestForeignRepositoryCitations(unittest.TestCase):
         self.assertIn(f"close #1 {SETTLED_MARKER}", marked)
         self.assertIn("gz-skills#1 and", marked)
         self.assertNotIn(f"gz-skills#1 {SETTLED_MARKER}", marked)
+
+
+class _RecordingPrefetcher:
+    """A port fake that batches: records prefetches and checks in the order they came."""
+
+    def __init__(self, settled: tuple[str, ...] = ()) -> None:
+        self.events: list[tuple[str, tuple[str, ...]]] = []
+        self._settled = set(settled)
+
+    def prefetch(self, references) -> None:
+        self.events.append(("prefetch", tuple(r.identifier for r in references)))
+
+    def __call__(self, reference: StepReference) -> ReferenceState:
+        self.events.append(("check", (reference.identifier,)))
+        if reference.identifier in self._settled:
+            return ReferenceState.SETTLED
+        return ReferenceState.LIVE
+
+
+class TestCitationsAreHandedToAPrefetcherBeforeAnyCheck(unittest.TestCase):
+    """GHI #1334: a handoff's citations reach a batching adapter as one set, first.
+
+    Authoring and resume each knew every citation before checking any, and
+    checked them one at a time; against `gh` that is a round trip apiece.
+    """
+
+    def _prefetched(self, checker: _RecordingPrefetcher) -> list[tuple[str, ...]]:
+        return [ids for kind, ids in checker.events if kind == "prefetch"]
+
+    def test_resume_prefetches_every_step_citation_once_before_checking(self) -> None:
+        # given a handoff whose two steps cite three GHIs
+        checker = _RecordingPrefetcher(settled=("693",))
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            handoff_dir = base / ".gzkit" / "handoffs"
+            handoff_dir.mkdir(parents=True)
+            (handoff_dir / "h.md").write_text(
+                "---\nmode: CREATE\nadr_id: ADR-0.0.65\nbranch: main\n"
+                "timestamp: 2026-07-18T10:00:00Z\nagent: test-agent\n---\n\n"
+                "## Immediate Next Steps\n\n1. Rule on GHI #693 and GHI #691.\n"
+                "2. Close GHI #700.\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            # when it is resumed
+            result = resume_handoff(
+                adr_id="ADR-0.0.65",
+                base_path=base,
+                now="2026-07-18T11:00:00Z",
+                reference_checker=checker,
+            )
+        # then one prefetch carried all three, ahead of every check
+        self.assertEqual(self._prefetched(checker), [("693", "691", "700")])
+        self.assertEqual(checker.events[0][0], "prefetch")
+        self.assertTrue(result.steps[0].cites_settled)
+
+    def test_authoring_prefetches_every_prospective_citation_once_before_checking(self) -> None:
+        # given sections citing GHIs in both prospective sections
+        checker = _RecordingPrefetcher(settled=("573",))
+        sections = {
+            **_SEVEN_SECTIONS,
+            "Immediate Next Steps": "1. Rule on GHI #693 before pulling.",
+            "Pending Work / Open Loops": "- GHI #573 is still open.",
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            # when the handoff is written
+            create_handoff(
+                adr_id="ADR-0.0.65",
+                branch="main",
+                agent="test-agent",
+                slug="prefetched",
+                sections=sections,
+                base_path=Path(tmp),
+                timestamp="2026-08-08T10:00:00Z",
+                reference_checker=checker,
+            )
+        # then one prefetch carried both, ahead of every check
+        prefetched = self._prefetched(checker)
+        self.assertEqual(len(prefetched), 1)
+        self.assertEqual(set(prefetched[0]), {"693", "573"})
+        self.assertEqual(checker.events[0][0], "prefetch")
+
+    def test_a_checker_that_cannot_batch_is_checked_one_reference_at_a_time(self) -> None:
+        # given a plain function checker and a generator that must not be read
+        def consumed():
+            message = "references were read for a checker that cannot batch"
+            raise AssertionError(message)
+            yield  # pragma: no cover
+
+        # when each is offered references
+        prefetch_references(lambda _reference: ReferenceState.LIVE, consumed())
+        prefetch_references(None, consumed())
+        # then nothing was read, and nothing raised
 
 
 if __name__ == "__main__":

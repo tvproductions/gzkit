@@ -9,16 +9,23 @@ token as the defect's truth. It resolves live state through the
 ``unresolved`` is never rendered as live, and never rendered bare.
 """
 
+import tempfile
 import unittest
+from pathlib import Path
 from unittest import mock
 
+from gzkit.commands.status_obpi import _adr_obpi_status_rows
 from gzkit.commands.status_obpi_inspect import (
     _extract_tracked_defects,
     _issue_details,
     _resolve_tracked_defects,
     _tracked_defect_refs,
+    prefetch_tracked_defects,
 )
+from gzkit.config import GzkitConfig
 from gzkit.handoff_api import ReferenceKind, ReferenceState, StepReference
+from gzkit.ledger import Ledger
+from tests.commands.common import CliRunner, _quick_init, _write_obpi
 
 
 def _brief(*bullets: str) -> str:
@@ -137,6 +144,99 @@ class TestTrackedDefectResolution(unittest.TestCase):
             _issue_details(["ledger proof of completion is missing"], defects),
             ["ledger proof of completion is missing [tracked defects: GHI-737 (closed)]"],
         )
+
+
+class _Prefetcher:
+    """A batching port fake: records each prefetch and each check, in order."""
+
+    def __init__(self) -> None:
+        self.events: list[tuple[str, tuple[str, ...]]] = []
+
+    def prefetch(self, references) -> None:
+        self.events.append(("prefetch", tuple(r.identifier for r in references)))
+
+    def __call__(self, reference: StepReference) -> ReferenceState:
+        self.events.append(("check", (reference.identifier,)))
+        return ReferenceState.SETTLED
+
+
+class TestTrackedDefectsAreBatchedBeforeTheyAreChecked(unittest.TestCase):
+    """GHI #1334: a brief's tracked GHIs reach a batching adapter as one set, first."""
+
+    def test_one_brief_prefetches_its_defects_ahead_of_checking_them(self) -> None:
+        # given a brief tracking two GHIs and a checker that batches
+        checker = _Prefetcher()
+        defects = _extract_tracked_defects(_brief("GHI #11 (open): a", "GHI #12 (open): b"))
+        # when they are resolved
+        resolved = _resolve_tracked_defects(defects, checker)
+        # then one prefetch carried both before either was checked
+        self.assertEqual(
+            checker.events,
+            [("prefetch", ("11", "12")), ("check", ("11",)), ("check", ("12",))],
+        )
+        self.assertEqual([d["state"] for d in resolved], ["closed", "closed"])
+
+    def test_many_briefs_prefetch_all_their_defects_in_one_set(self) -> None:
+        # given two brief files tracking three GHIs between them
+        checker = _Prefetcher()
+        with tempfile.TemporaryDirectory() as tmp:
+            first = Path(tmp) / "a.md"
+            first.write_text(_brief("GHI #11 (open): a", "GHI #12 (open): b"), encoding="utf-8")
+            second = Path(tmp) / "b.md"
+            second.write_text(_brief("GHI #13 (open): c"), encoding="utf-8")
+            # when the view prefetches across them
+            prefetch_tracked_defects(checker, [first, second])
+        # then one prefetch carried all three
+        self.assertEqual(checker.events, [("prefetch", ("11", "12", "13"))])
+
+
+class TestAnAdrsBriefsAreBatchedAsOneSet(unittest.TestCase):
+    """GHI #1334: an ADR's status rows hand every brief's tracked GHIs over in one set.
+
+    `gz adr status ADR-0.35.0` read its 20 briefs' 31 tracked GHIs one round trip
+    at a time (~21 s); one prefetch across the briefs makes that one batch.
+    """
+
+    def test_every_briefs_defects_are_prefetched_before_any_is_checked(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            # given an ADR whose two briefs track three GHIs between them
+            _quick_init()
+            root = Path.cwd()
+            first = root / "OBPI-0.1.0-01-demo.md"
+            _write_obpi(
+                path=first,
+                status="Active",
+                brief_status="In Progress",
+                implementation_line="src/module.py",
+                tracked_defects=["GHI #11 (open): one", "GHI #12 (open): two"],
+            )
+            second = root / "OBPI-0.1.0-02-other.md"
+            _write_obpi(
+                path=second,
+                status="Active",
+                brief_status="In Progress",
+                implementation_line="src/other.py",
+                tracked_defects=["GHI #13 (open): three"],
+            )
+            index = [
+                ("OBPI-0.1.0-01-demo", "ADR-0.1.0-f", first),
+                ("OBPI-0.1.0-02-other", "ADR-0.1.0-f", second),
+            ]
+            checker = _Prefetcher()
+            # when the ADR's status rows are built
+            rows = _adr_obpi_status_rows(
+                root,
+                GzkitConfig.load(root / ".gzkit.json"),
+                Ledger(root / ".gzkit" / "ledger.jsonl"),
+                "ADR-0.1.0-f",
+                obpi_index=index,
+                reference_checker=checker,
+            )
+        # then the first event is one prefetch carrying all three
+        self.assertEqual(checker.events[0][0], "prefetch")
+        self.assertEqual(sorted(checker.events[0][1]), ["11", "12", "13"])
+        self.assertEqual(sum(1 for d in rows for _ in d["tracked_defects"]), 3)
 
 
 if __name__ == "__main__":

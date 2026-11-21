@@ -117,8 +117,8 @@ and does not alter `adrs`, gates, readiness, or `pending_attestations`.
 If an OBPI brief records a `## Tracked Defects` section, the corresponding
 closeout blockers carry those linked `GHI-*` refs so summary drilldowns keep
 defect-level traceability. Each ref carries a state: the all-ADR summary never
-resolves it live — one `gh` call per cited GHI across the whole corpus is the
-cost it must not pay — so here every ref renders `(unresolved)` and, when the
+resolves it live — a `gh` read for every cited GHI across the whole corpus is
+the cost it must not pay — so here every ref renders `(unresolved)` and, when the
 brief authored an `(open)`/`(closed)` token, `(unresolved; brief says open)`.
 An authored token is a dated record of the day the line was written, never the
 defect's truth. The single-ADR drilldown (`gz adr status <ADR-ID>`) and

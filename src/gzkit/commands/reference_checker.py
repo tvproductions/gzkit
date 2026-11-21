@@ -5,6 +5,11 @@ shared by every command that renders a citation against live state — handoff
 authoring and resume (GHI #696), and the OBPI status view's tracked-defect
 annotation (GHI #966). A second resolver for either kind would be a second place
 for the "unknown is not live" contract to drift, so there is exactly one each.
+
+The GHI resolver has two transports, one issue at a time (:func:`gh_issue_read`,
+REST) and many in one call (:func:`gh_issue_reads`, GraphQL; GHI #1334), and one
+verdict: both return an :class:`IssueAnswer`, and :func:`_state_of` alone maps an
+answer to a :class:`ReferenceState`.
 """
 
 import json
@@ -13,20 +18,26 @@ from datetime import datetime
 from enum import StrEnum
 from http import HTTPStatus
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.artifact_prefix import active_prefix_matches
-from gzkit.handoff_api import ReferenceChecker, ReferenceKind, ReferenceState, StepReference
+from gzkit.handoff_api import ReferenceKind, ReferenceState, StepReference
 from gzkit.utils import run_exec
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
 __all__ = [
+    "ISSUES_PER_QUERY",
     "GhUnansweredError",
     "IssueAnswer",
     "IssueRead",
+    "LiveReferenceChecker",
     "adr_ledger_state",
     "gh_issue_read",
+    "gh_issue_reads",
     "gh_issue_state",
     "live_reference_checker",
     "obpi_ledger_state",
@@ -137,12 +148,144 @@ def gh_issue_state(number: str, project_root: Path) -> ReferenceState:
         ``SETTLED`` for a closed issue, ``LIVE`` for an open one, ``UNKNOWN`` otherwise.
 
     """
-    answer = gh_issue_read(number, project_root).answer
+    return _state_of(gh_issue_read(number, project_root).answer)
+
+
+def _state_of(answer: IssueAnswer) -> ReferenceState:
+    """Map one API answer to its verdict; the one mapping both transports share.
+
+    Returns:
+        ``SETTLED`` for a closed issue, ``LIVE`` for an open one, ``UNKNOWN`` otherwise.
+
+    """
     if answer is IssueAnswer.CLOSED:
         return ReferenceState.SETTLED
     if answer is IssueAnswer.OPEN:
         return ReferenceState.LIVE
     return ReferenceState.UNKNOWN
+
+
+#: Issue numbers asked of GitHub in one GraphQL query (GHI #1334). GitHub bounds a
+#: query by node count and complexity, not by alias; 50 one-node aliases stay far
+#: inside both, and one query answered in ~0.7 s on 2026-11-20.
+ISSUES_PER_QUERY = 50
+
+#: A number put into the query text. ASCII digits only: ``str.isdigit`` admits
+#: other scripts' digits, and anything else would be query text a citation wrote.
+_ISSUE_NUMBER = re.compile(r"[0-9]+")
+
+_UNANSWERED = IssueRead(answer=IssueAnswer.UNANSWERED)
+_MISSING = IssueRead(answer=IssueAnswer.MISSING)
+
+
+def gh_issue_reads(numbers: Iterable[str], project_root: Path) -> dict[str, IssueRead]:
+    """Read many issues through `gh api graphql`, one call per batch (GHI #1334).
+
+    One ``issueOrPullRequest`` alias per number, :data:`ISSUES_PER_QUERY` to a
+    query, so an ADR whose briefs track 31 GHIs costs one round trip, not 31. The
+    answers keep RP-12 ruling 182's distinction, read from what GraphQL returns in
+    place of a status line: an ``Issue`` node is open or closed; a ``PullRequest``
+    node is no issue, so MISSING; a null node is MISSING only when a ``NOT_FOUND``
+    error names its own alias, and UNANSWERED otherwise. `gh` exits 1 whenever the
+    answer carries errors, a not-found number included, so the exit code says
+    nothing here and is not read. A number that is not ASCII digits is never put
+    into the query and reads UNANSWERED.
+
+    Canonical: https://cli.github.com/manual/gh_api (graphql, the ``{owner}`` and
+    ``{repo}`` placeholders in fields); https://docs.github.com/en/graphql/reference/objects#repository
+    (``issueOrPullRequest``); the shapes observed against this repository 2026-11-20.
+
+    Returns:
+        One read per distinct number asked.
+
+    """
+    wanted = list(dict.fromkeys(numbers))
+    reads = {number: _UNANSWERED for number in wanted if not _ISSUE_NUMBER.fullmatch(number)}
+    queried = [number for number in wanted if number not in reads]
+    for start in range(0, len(queried), ISSUES_PER_QUERY):
+        reads.update(_read_batch(queried[start : start + ISSUES_PER_QUERY], project_root))
+    return reads
+
+
+def _read_batch(numbers: list[str], project_root: Path) -> dict[str, IssueRead]:
+    """Ask one GraphQL query for *numbers*; every number UNANSWERED when no answer came.
+
+    Returns:
+        One read per number.
+
+    """
+    aliases = " ".join(
+        f"i{number}:issueOrPullRequest(number:{number})"
+        "{__typename ... on Issue{state createdAt}}"
+        for number in numbers
+    )
+    query = (
+        f"query($owner:String!,$name:String!){{repository(owner:$owner,name:$name){{{aliases}}}}}"
+    )
+    _, out, _ = run_exec(
+        [
+            "gh",
+            "api",
+            "graphql",
+            "-f",
+            f"query={query}",
+            "-F",
+            "owner={owner}",
+            "-F",
+            "name={repo}",
+        ],
+        project_root,
+        timeout=10,
+    )
+    try:
+        payload = json.loads(out)
+    except json.JSONDecodeError:
+        return dict.fromkeys(numbers, _UNANSWERED)
+    match payload:
+        case {"data": {"repository": dict() as repository}}:
+            errors = payload.get("errors")
+        case _:
+            return dict.fromkeys(numbers, _UNANSWERED)
+    not_found = {_not_found_alias(error) for error in errors} if isinstance(errors, list) else set()
+    return {
+        number: _node_read(repository.get(f"i{number}"), not_found=f"i{number}" in not_found)
+        for number in numbers
+    }
+
+
+def _not_found_alias(error: object) -> str | None:
+    """Return the alias a ``NOT_FOUND`` error names under ``repository``, else None.
+
+    Returns:
+        The alias, or None for any other error.
+
+    """
+    if not isinstance(error, dict) or error.get("type") != "NOT_FOUND":
+        return None
+    match error.get("path"):
+        case ["repository", str() as alias]:
+            return alias
+        case _:
+            return None
+
+
+def _node_read(node: object, *, not_found: bool) -> IssueRead:
+    """Read one alias's node; an Issue goes through :func:`_issue_from`, as REST does.
+
+    Returns:
+        The node's answer.
+
+    """
+    if node is None:
+        return _MISSING if not_found else _UNANSWERED
+    if not isinstance(node, dict):
+        return _UNANSWERED
+    kind = node.get("__typename")
+    if kind == "PullRequest":
+        return _MISSING
+    if kind != "Issue":
+        return _UNANSWERED
+    return _issue_from({"state": node.get("state", ""), "created_at": node.get("createdAt")})
 
 
 def _unique_prefix_entry(
@@ -299,7 +442,7 @@ _LEDGER_ARMS = {
 }
 
 
-def live_reference_checker(project_root: Path) -> ReferenceChecker:
+def live_reference_checker(project_root: Path) -> LiveReferenceChecker:
     """Adapter: resolve cited references against live state (GHI #696, GHI #1076).
 
     Each kind is asked of its own Layer-2 authority. GHI state is read through
@@ -330,30 +473,76 @@ def live_reference_checker(project_root: Path) -> ReferenceChecker:
     per-reference rather than a broken transport. Build one checker per command
     invocation so the memo spans every citation that invocation renders.
 
+    The checker is also a :class:`~gzkit.handoff_api.ReferencePrefetcher`
+    (GHI #1334): ``prefetch`` answers every uncached local GHI citation through
+    one :func:`gh_issue_reads` batch, so a caller that knows its citations pays
+    one round trip for them, not one each (`gz adr status ADR-0.35.0` asked 31
+    serially, ~21 s). Both transports map their answer through :func:`_state_of`,
+    so a citation's verdict does not depend on which one produced it.
+
     Returns:
         A memoizing checker that maps a :class:`StepReference` to its :class:`ReferenceState`.
 
     """
-    cache: dict[tuple[ReferenceKind, str], ReferenceState] = {}
-    reachable = True
+    return LiveReferenceChecker(project_root)
 
-    def check(reference: StepReference) -> ReferenceState:
-        nonlocal reachable
+
+class LiveReferenceChecker:
+    """The memoizing checker :func:`live_reference_checker` builds; see its docstring."""
+
+    def __init__(self, project_root: Path) -> None:
+        """Build an empty memo for one command invocation over *project_root*."""
+        self._project_root = project_root
+        self._cache: dict[tuple[ReferenceKind, str], ReferenceState] = {}
+        self._reachable = True
+
+    def __call__(self, reference: StepReference, /) -> ReferenceState:
+        """Resolve one reference, from the memo when it was already answered.
+
+        Returns:
+            The reference's state; ``UNKNOWN`` for a foreign or unreachable one.
+
+        """
         if reference.repo is not None:
             return ReferenceState.UNKNOWN
         key = (reference.kind, reference.identifier)
         ledger_arm = _LEDGER_ARMS.get(reference.kind)
         if ledger_arm is not None:
-            if key not in cache:
-                cache[key] = ledger_arm(reference.identifier, project_root)
-            return cache[key]
-        if reference.kind is not ReferenceKind.GHI or not reachable:
+            if key not in self._cache:
+                self._cache[key] = ledger_arm(reference.identifier, self._project_root)
+            return self._cache[key]
+        if key in self._cache:
+            return self._cache[key]
+        if reference.kind is not ReferenceKind.GHI or not self._reachable:
             return ReferenceState.UNKNOWN
-        if key not in cache:
-            state = gh_issue_state(reference.identifier, project_root)
-            if state is ReferenceState.UNKNOWN:
-                reachable = False
-            cache[key] = state
-        return cache[key]
+        state = gh_issue_state(reference.identifier, self._project_root)
+        if state is ReferenceState.UNKNOWN:
+            self._reachable = False
+        self._cache[key] = state
+        return state
 
-    return check
+    def prefetch(self, references: Iterable[StepReference], /) -> None:
+        """Answer every uncached local numeric GHI citation in *references* in one batch.
+
+        A batch in which no number was answered is an unreachable ``gh``, and
+        latches the arm off as a failed single read does. A number answered
+        MISSING is an answer, so it does not.
+        """
+        if not self._reachable:
+            return
+        pending = [
+            reference.identifier
+            for reference in references
+            if reference.kind is ReferenceKind.GHI
+            and reference.repo is None
+            and _ISSUE_NUMBER.fullmatch(reference.identifier)
+            and (ReferenceKind.GHI, reference.identifier) not in self._cache
+        ]
+        if not pending:
+            return
+        reads = gh_issue_reads(pending, self._project_root)
+        if all(read.answer is IssueAnswer.UNANSWERED for read in reads.values()):
+            self._reachable = False
+            return
+        for number, read in reads.items():
+            self._cache[ReferenceKind.GHI, number] = _state_of(read.answer)

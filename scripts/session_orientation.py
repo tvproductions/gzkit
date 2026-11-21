@@ -37,8 +37,9 @@ _ADR_REF_RE = re.compile(r"\bADR-\d+\.\d+\.\d+\b")
 # Which plan governs is read from `data/active_campaign.json`, never parsed out
 # of a plan's `Status:` prose — see `collect_campaign`.
 # One `gz adr status` per ADR named in the sequencing line. Three keeps the added
-# boot cost near 2.4s at ~0.8s each; raising it raises session-start latency
-# linearly, so it is a budget, not a formality.
+# boot cost near 3.6s at ~1.2s each (measured 2026-11-20, after GHI #1334 batched
+# the drilldown's `gh` reads; it was ~21s before and timed out); raising it raises
+# session-start latency linearly, so it is a budget, not a formality.
 CAMPAIGN_ADR_REF_LIMIT = 3
 ADR_STATUS_TIMEOUT_SEC = 15
 # Commits named individually in the account before it summarizes the remainder.
@@ -190,8 +191,11 @@ def collect_live_adr_counts(adr_ids: list[str]) -> list[dict]:
 
     One subprocess per ADR, bounded by ``CAMPAIGN_ADR_REF_LIMIT``. The batch
     alternative was measured and rejected: ``gz status --json`` walks every ADR
-    at ~9.6s, over five times this whole hook's runtime, while a single
-    ``gz adr status`` is ~0.8s.
+    (~9.6s when this was written; ~4.9s on 2026-11-20), while a single
+    ``gz adr status`` is ~1.2s (2026-11-20). That figure is a dated record, not a
+    budget: before GHI #1334 batched its ``gh`` reads, ``gz adr status`` on the
+    campaign ADR took ~21s, past ``ADR_STATUS_TIMEOUT_SEC``, and this line was
+    silently dropped at every session start for about a month.
 
     Every failure shape — missing binary, timeout, non-zero exit, unparseable or
     unexpected JSON — drops that ADR from the result. A boot hook must never

@@ -3,6 +3,7 @@ import io
 import json
 import os
 import subprocess
+import sys
 import tempfile
 import unittest
 from collections.abc import Generator, Mapping
@@ -20,6 +21,107 @@ from gzkit.git_spawn_boundary import isolated_git_env
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+
+
+#: A stand-in `gh` for the CLI tier (GHI #1334). It answers the two issue reads the
+#: live reference checker makes -- `gh api --include repos/{owner}/{repo}/issues/N`
+#: and the batched `gh api graphql` query -- from a number-to-state table, in the
+#: shapes GitHub returned on 2026-11-20, and logs each argv. `gh` is not gzkit's,
+#: so the stand-in sits at the adapter's outer edge (.gzkit/rules/tests.md
+#: § Hexagon tests); no gzkit function is patched. A number the table omits gets
+#: no answer, and a call answering none of its numbers prints nothing and exits 1,
+#: as `gh` does offline.
+_GH_STAND_IN = """\
+import json
+import re
+import sys
+from pathlib import Path
+
+table = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+args = sys.argv[2:]
+with Path(sys.argv[1] + ".calls").open("a", encoding="utf-8") as log:
+    log.write(json.dumps(args) + "\\n")
+created = "2026-10-18T13:00:00Z"
+if args[:2] == ["api", "--include"]:
+    number = args[2].rsplit("/", 1)[-1]
+    state = table.get(number)
+    head = "HTTP/2.0 {}\\nContent-Type: application/json\\r\\n\\r\\n"
+    if state in ("open", "closed"):
+        body = {"number": int(number), "state": state, "created_at": created}
+        sys.stdout.write(head.format("200 OK") + json.dumps(body))
+        sys.exit(0)
+    if state == "missing":
+        sys.stdout.write(head.format("404 Not Found") + '{"message": "Not Found"}')
+    sys.exit(1)
+if args[:2] == ["api", "graphql"]:
+    query = next(arg[len("query="):] for arg in args if arg.startswith("query="))
+    numbers = re.findall(r"i(\\d+):issueOrPullRequest", query)
+    if not any(number in table for number in numbers):
+        sys.exit(1)
+    nodes, errors = {}, []
+    for number in numbers:
+        state = table.get(number)
+        node = None
+        if state in ("open", "closed"):
+            node = {"__typename": "Issue", "state": state.upper(), "createdAt": created}
+        elif state == "missing":
+            errors.append({"type": "NOT_FOUND", "path": ["repository", "i" + number]})
+        nodes["i" + number] = node
+    payload = {"data": {"repository": nodes}}
+    if errors:
+        payload["errors"] = errors
+    sys.stdout.write(json.dumps(payload))
+    sys.exit(1 if errors else 0)
+sys.exit(1)
+"""
+
+
+@contextmanager
+def gh_stand_in(answers: Mapping[str, str]) -> Generator[Path]:
+    """Put a stand-in `gh` first on PATH answering issue reads from *answers*.
+
+    *answers* maps an issue number to ``open``, ``closed`` or ``missing``; any
+    other number gets no answer. A POSIX script runs the stand-in through this
+    interpreter; on Windows a ``gh.cmd`` does, found through ``PATHEXT`` as
+    ``gzkit.executables`` resolves.
+
+    Yields:
+        The call log, one JSON argv per line; read it with :func:`gh_calls`
+        before the context exits, which deletes it.
+
+    """
+    with tempfile.TemporaryDirectory() as made:
+        bin_dir = Path(made)
+        table = bin_dir / "answers.json"
+        table.write_text(json.dumps(dict(answers)), encoding="utf-8")
+        script = bin_dir / "gh_stand_in.py"
+        script.write_text(_GH_STAND_IN, encoding="utf-8")
+        if os.name == "nt":
+            (bin_dir / "gh.cmd").write_text(
+                f'@"{sys.executable}" "{script}" "{table}" %*\r\n', encoding="utf-8"
+            )
+        else:
+            launcher = bin_dir / "gh"
+            launcher.write_text(
+                f'#!/bin/sh\nexec "{sys.executable}" "{script}" "{table}" "$@"\n',
+                encoding="utf-8",
+            )
+            launcher.chmod(0o755)
+        calls = Path(f"{table}.calls")
+        calls.touch()
+        path = os.pathsep.join([str(bin_dir), os.environ.get("PATH", "")])
+        with patch.dict(os.environ, {"PATH": path}):
+            yield calls
+
+
+def gh_calls(log: Path) -> list[list[str]]:
+    """Read the argvs a :func:`gh_stand_in` logged.
+
+    Returns:
+        One argv per call, in the order the calls came.
+
+    """
+    return [json.loads(line) for line in log.read_text(encoding="utf-8").splitlines()]
 
 
 class SilencedConsoleTestCase(unittest.TestCase):

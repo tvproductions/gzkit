@@ -575,8 +575,9 @@ def _build_adr_status_result(adr: str) -> dict[str, Any]:
         "observed_post_validation_gate_failures": observed_post_validation_failures,
     }
     # The single-ADR drilldown resolves tracked defects against live state
-    # (GHI #966). The all-ADR summary deliberately does not: at one `gh` call
-    # per cited GHI it would pay for every reference in the corpus, so its rows
+    # (GHI #966), all of an ADR's in one batched `gh` read (GHI #1334). The
+    # all-ADR summary deliberately does not: it would pay a read for every
+    # reference in the corpus, so its rows
     # carry `unresolved` rather than a state they did not check.
     obpi_rows = _adr_obpi_status_rows(
         project_root,

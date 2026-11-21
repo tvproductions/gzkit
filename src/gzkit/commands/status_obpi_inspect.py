@@ -5,13 +5,21 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from gzkit.governance.brief_structure import is_terminal_brief_status
-from gzkit.handoff_api import ReferenceChecker, ReferenceKind, ReferenceState, StepReference
+from gzkit.handoff_api import (
+    ReferenceChecker,
+    ReferenceKind,
+    ReferenceState,
+    StepReference,
+    prefetch_references,
+)
 from gzkit.ledger import (
     derive_obpi_semantics,
     parse_frontmatter_value,
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from gzkit.hooks.obpi import ObpiValidator
 
 # ---------------------------------------------------------------------------
@@ -275,14 +283,41 @@ def _resolve_tracked_defects(
         :class:`ReferenceState` (``unresolved`` when unchecked or unknown).
 
     """
+    prefetch_references(checker, (_defect_reference(defect) for defect in tracked_defects))
     resolved: list[dict[str, Any]] = []
     for defect in tracked_defects:
         state = ReferenceState.UNKNOWN
         if checker is not None:
-            reference = StepReference(kind=ReferenceKind.GHI, identifier=str(defect["number"]))
-            state = checker(reference)
+            state = checker(_defect_reference(defect))
         resolved.append({**defect, "state": _REFERENCE_STATE_LABELS[state]})
     return resolved
+
+
+def _defect_reference(defect: dict[str, Any]) -> StepReference:
+    """Return the GHI citation one tracked defect makes.
+
+    Returns:
+        A local GHI reference to the defect's issue number.
+
+    """
+    return StepReference(kind=ReferenceKind.GHI, identifier=str(defect["number"]))
+
+
+def prefetch_tracked_defects(checker: ReferenceChecker | None, brief_files: Iterable[Path]) -> None:
+    """Hand every brief's tracked-defect citations to *checker* in one prefetch (GHI #1334).
+
+    A view that resolves many briefs knows all their citations before it checks
+    any; a batching adapter then answers them in one read instead of one per
+    brief. The briefs are read only when the checker can batch.
+    """
+    prefetch_references(
+        checker,
+        (
+            _defect_reference(defect)
+            for path in brief_files
+            for defect in _extract_tracked_defects(path.read_text(encoding="utf-8"))
+        ),
+    )
 
 
 def _tracked_defect_refs(tracked_defects: list[dict[str, Any]]) -> str:
