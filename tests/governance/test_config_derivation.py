@@ -238,6 +238,19 @@ class DirectDataReachIsRostered(unittest.TestCase):
         rel = self._module("m.py", 'def f():\n    return "data" / Path("x.json")\n')
         self.assertEqual([e.artifact for e in audit_direct_data_reach(self.root)], [rel])
 
+    def test_a_path_built_by_a_path_call_is_caught(self) -> None:
+        """GHI #1336 review: a "data" argument of a path-building call is a reach."""
+        for body in (
+            'P = PurePosixPath("data")\n',
+            'P = Path(root, "data")\n',
+            'P = os.path.join(root, "data")\n',
+            'P = root.joinpath("data", "x.json")\n',
+        ):
+            with self.subTest(body=body):
+                self._roster([])
+                rel = self._module("m.py", body)
+                self.assertEqual([e.artifact for e in audit_direct_data_reach(self.root)], [rel])
+
     def test_a_data_key_or_call_argument_is_not_a_reach(self) -> None:
         """GHI #1336 (b): a "data" mapping key or argument names no path into data/."""
         self._roster([])
