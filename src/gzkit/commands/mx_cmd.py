@@ -18,6 +18,8 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 
+from rich.markup import escape
+
 from gzkit import lock_manager
 
 # The mx door CONSUMES the SHARED airlock primitive extracted by OBPI-02/03 — it
@@ -33,6 +35,7 @@ from gzkit.lock_manager import LockData
 from gzkit.mx import hardening, lease, log, marker
 from gzkit.mx.contract import contract_pin_for
 from gzkit.mx.entries import EntryError
+from gzkit.mx.git_commits import CommitsUnreadableError
 from gzkit.mx.marker import Marker
 
 
@@ -467,17 +470,17 @@ def mx_exit_cmd(
         # All-green — assemble the complete-by-construction MX log and render it for
         # operator review BEFORE the close signature is taken (REQ-06-03). The log is
         # derived from the ledger events + commits in the enter→exit window, so it
-        # cannot be hand-narrated or forgotten. It is the maintenance record's view, and
-        # a record it cannot read takes no signature (RP-12 rulings 166 and 190).
+        # cannot be hand-narrated or forgotten. It is the maintenance record's view, and a
+        # record or a git it cannot read takes no signature (RP-12 rulings 166, 190, 193).
+        # Its text is performers' and commit authors', so it prints as text, never markup.
         try:
             rendered = log.assemble_and_render(root, m.session_id)
-        except EntryError as exc:
-            console.print(f"[red]ERROR:[/red] {exc}")
-            console.print(
-                "[red]The maintenance record cannot be read. MX session remains open.[/red]"
-            )
+        except (EntryError, CommitsUnreadableError) as exc:
+            what = "maintenance record" if isinstance(exc, EntryError) else "window's commits"
+            console.print("[red]ERROR:[/red]", escape(str(exc)))
+            console.print(f"[red]The {what} cannot be read. MX session remains open.[/red]")
             sys.exit(3)
-        console.print(rendered)
+        console.print(rendered, markup=False)
 
         # airlock-OUT fires (co-equal exit membrane, ADR-0.33.0) — ADDITIVE to the hard
         # guard-gate above, never a replacement: it runs only after the guards pass,

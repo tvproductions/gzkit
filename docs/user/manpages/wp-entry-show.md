@@ -31,11 +31,16 @@ rulings cited here.
   session, the commits that landed it and its Gate 5, one line each. The block is
   the record's one block: the MX log that [`gz mx exit`](mx-exit.md) renders
   writes each entry with it too (ruling 191).
-- The Landed line names each commit whose subject names the entry,
-  `(ENT-<NN>-<slug>)` (ruling 170), as `<sha12> <subject>`, a second commit on
-  the line under the first, read from git's history; an entry no commit names
-  reads `not landed` (rulings 167 and 192), and so does every entry outside a git
-  working tree. The MX log joins the same way, so the two views agree.
+- The Landed line names each commit in HEAD's ancestry whose subject names the
+  entry, `(ENT-<NN>-<slug>)` (ruling 170), as `<sha12> <subject>`, newest first,
+  a second commit on the line under the first. The subject is read as git reads
+  it, the message's first paragraph with its lines joined; an id in the body
+  alone lands nothing. An entry no commit names reads `not landed` (rulings 167
+  and 192). The MX log joins the same way over its window's commits, through the
+  same git reader and the same join.
+- When git cannot be read (not installed, the project not a repository, or one
+  with no commit yet), every Landed line reads `commits could not be read:
+  <cause>` in place of `not landed`, and the verb still exits 0 (ruling 193).
 - The Gate 5 line is the signature 14 CFR § 43.9(a) asks of the approver: the
   order's close at Gate 5, as `<attestor>, <decision>, <when>`, once
   [`gz wp order close`](wp-order-close.md) closes the order, and `not signed`
@@ -45,8 +50,8 @@ rulings cited here.
 - `--json` prints a list, oldest first: each entry's `entry_booked` event, as
   `gz wp entry book` booked it, with `gate5`, the order's `order_transitioned`
   event to `closed` or `null`, and `landed`, a list of the landing commits, each
-  its `commit_sha` and `subject`, empty when not landed. An empty record prints
-  `[]`.
+  its `commit_sha` and `subject`, empty when not landed and `null` when git could
+  not be read. An empty record prints `[]`.
 
 The verb writes nothing and needs no MX session, and it is not refused from a
 subagent's call: a read is no one's act.

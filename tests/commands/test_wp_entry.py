@@ -230,8 +230,10 @@ class EntryShowWiringTests(_EntryCase):
 
     def test_show_writes_each_entry_as_a_block_with_its_gate_5(self) -> None:
         # output-contract: docs/user/manpages/wp-entry-show.md, one labelled line per element
-        # given an entry booked on a commenced order, not yet closed at Gate 5
+        # given an entry booked on a commenced order, not yet closed at Gate 5, and no
+        # commit naming it
         self.booked()
+        _land("chore: an unrelated commit")
         # when
         code, output = self.show()
         # then the whole entry reads, its signature not yet given (ruling 8)
@@ -258,8 +260,9 @@ class EntryShowWiringTests(_EntryCase):
         self.assertIn(f"Landed: {sha[:12]} {subject} Gate 5:", " ".join(output.split()))
 
     def test_json_mode_prints_each_entry_with_its_gate_5(self) -> None:
-        # given an entry booked on an order not closed
+        # given an entry booked on an order not closed, and no commit naming it
         self.booked()
+        _land("chore: an unrelated commit")
         # when
         code, output = self.show("--json")
         # then each entry is its booked event with its order's Gate 5, here none
@@ -269,6 +272,31 @@ class EntryShowWiringTests(_EntryCase):
         self.assertEqual({k: v for k, v in printed.items() if k not in {"gate5", "landed"}}, booked)
         self.assertIsNone(printed["gate5"])
         self.assertEqual(printed["landed"], [])
+
+    def test_an_entry_named_in_a_commit_body_alone_reads_not_landed(self) -> None:
+        # output-contract: docs/user/manpages/wp-entry-show.md, the subject alone (ruling 170)
+        # given an entry booked and a commit naming it in its body, not its subject
+        self.booked()
+        _land("fix(stamp): the template imports again\n\nLands ENT-01-stamp-import.")
+        # when
+        code, output = self.show()
+        # then the view reads it not landed
+        self.assertEqual(code, 0, output)
+        self.assertIn("Landed: not landed", " ".join(output.split()))
+
+    def test_outside_a_git_repository_each_landed_line_names_why(self) -> None:
+        # output-contract: docs/user/manpages/wp-entry-show.md, git not read (ruling 193)
+        # given an entry booked in a project that is no git repository
+        self.booked()
+        # when
+        code, output = self.show()
+        json_code, json_output = self.show("--json")
+        # then the Landed line names the cause, and JSON reads landed as unknown
+        flat = " ".join(output.split())
+        self.assertEqual((code, json_code), (0, 0), output)
+        self.assertIn("Landed: commits could not be read: `git log` exited", flat)
+        self.assertNotIn("not landed", flat)
+        self.assertIsNone(json.loads(json_output)[0]["landed"])
 
     def test_json_mode_lists_each_landing_commit(self) -> None:
         # given an entry booked and a commit naming it

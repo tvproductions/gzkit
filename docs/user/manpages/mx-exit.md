@@ -37,19 +37,27 @@ gz mx exit --attestor ATTESTOR
   from the ledger and the commits between the session's enter and now (OBPI-0.0.74-06). The
   log is the maintenance record's view (RP-12 rulings 166, 189 to 191,
   `docs/governance/harbor-ro12-contractor-kit.md`):
-    - **Maintenance record**: the entries booked under this session
+    - **Maintenance record**: the entries booked under this session within its window
       ([`gz wp entry book`](wp-entry-book.md)), grouped by order, each in the block
       [`gz wp entry show`](wp-entry-show.md) writes, its Landed line naming the window commits
-      whose subjects name it, `(ENT-<NN>-<slug>)`, or `not landed`.
-    - **Unrecorded work**: every window commit that names no entry the record holds; one that
-      names an entry the record does not hold (a mistyped id, a voided entry, another
-      session's) says `names <id>, which the record does not hold`.
+      whose subjects name it, `(ENT-<NN>-<slug>)`, or `not landed`. A subject is read as git
+      reads it, the first paragraph with its lines joined; an id in the body alone lands nothing.
+    - **Unrecorded work**: every window commit whose subject names no entry this session's
+      record holds, and every one naming an entry it does not hold (a mistyped id, a voided
+      entry, another session's), which says `names <id>, which this session's record does not
+      hold`. A commit naming one held and one unheld entry shows in both places: on the held
+      entry's Landed line, and here with the unheld id named (rulings 189 and 194).
     - **Fixes**: every window commit with the ADRs, OBPIs and REQs it names, then the
       artifacts touched and the count of ledger events in the window.
 - If the maintenance record cannot be read (an `entry_booked` row, or an order's closing
   `order_transitioned` row, does not parse): names the row and the `gz ledger correct` void
   that recovers it, puts the marker back as it was and exits 3. No signature is taken over a
   record that could not be read (ruling 190).
+- If git cannot be read (not installed, the project not a repository, or one with no commit
+  yet): names the cause (`` `git log` exited <code>: <git's message> ``), says the window's
+  commits cannot be read, puts the marker back and exits 3. The view is never taken as an
+  empty window (ruling 193).
+- The log is printed as plain text: brackets in an entry or a commit subject read as written.
 
 **There is no `--force` flag.** You cannot narrow your way out of a red guard.
 **Exit is the ONLY path that clears the marker.** A marker removed without a matching
@@ -62,7 +70,7 @@ gz mx exit --attestor ATTESTOR
 | 0 | Hangar closed successfully |
 | 1 | Validation failure: empty attestor or no active session |
 | 2 | System/IO error |
-| 3 | Guards reported red, or the maintenance record cannot be read — hangar remains open |
+| 3 | Guards reported red, the maintenance record cannot be read, or git cannot be read — hangar remains open |
 
 ## Examples
 

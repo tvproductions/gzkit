@@ -917,7 +917,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
             "inspection scope, green-or-grounded, no --force. "
             "On all-green, the MX log, the maintenance record's view, is rendered for "
             "review; then the operator signs and the tool writes mx_session_closed "
-            "and removes the marker. A record that cannot be read refuses the exit. "
+            "and removes the marker. A record or a git that cannot be read refuses the exit. "
             "Exit is the only path that closes a session."
         ),
         epilog=build_epilog(["gz mx exit --attestor g0"]),

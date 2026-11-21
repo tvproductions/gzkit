@@ -59,7 +59,7 @@ _REQUIRED_TEXT: tuple[str, ...] = ("description", "before", "after", "witness")
 #: An entry's slug: lowercase words joined by hyphens, as an order's or a tag's (ruling 169).
 _SLUG = re.compile(f"^{SLUG_PATTERN}$")
 #: An entry id as a commit subject names it: the whole token, never part of one (ruling 170).
-_CITED = re.compile(f"(?<![A-Za-z0-9-])({ENTRY_ID_PATTERN})(?![a-z0-9-])")
+_CITED = re.compile(f"(?<![A-Za-z0-9_-])({ENTRY_ID_PATTERN})(?![A-Za-z0-9_-])")
 #: Where an entry block's values start, after the widest label and its colon (ruling 126's form).
 _LABEL_WIDTH = 13
 
@@ -176,8 +176,8 @@ def landings(
     commits are a parameter, read from git by the adapter that calls it.
 
     Returns:
-        Each id in *entry_ids* with the commits naming it, in the order given; an
-        empty list is an entry not landed.
+        Each id in *entry_ids* with the commits naming it, in *commits*' order (git's
+        newest first); an empty list is an entry not landed.
 
     """
     landed: dict[str, list[LandingCommit]] = {entry_id: [] for entry_id in entry_ids}
@@ -201,29 +201,35 @@ def _gate5_line(view: RecordedEntry) -> str:
     return f"{closed.attestor}, {closed.decision}, {closed.ts}"
 
 
-def _landed_lines(landed: Sequence[LandingCommit]) -> list[str]:
+def _landed_lines(landed: Sequence[LandingCommit], commits_unread: str | None) -> list[str]:
     """Write the commits that landed an entry, one a line, or ``not landed`` (ruling 167).
 
     Returns:
-        ``<sha12> <subject>`` for each commit, else the one line ``not landed``.
+        ``<sha12> <subject>`` for each commit, else the one line ``not landed``; when
+        git could not be read, the one line naming why (ruling 193).
 
     """
+    if commits_unread:
+        return [f"commits could not be read: {commits_unread}"]
     return [f"{commit.commit_sha[:12]} {commit.subject}" for commit in landed] or ["not landed"]
 
 
-def entry_block(view: RecordedEntry, landed: Sequence[LandingCommit]) -> str:
+def entry_block(
+    view: RecordedEntry, landed: Sequence[LandingCommit], *, commits_unread: str | None = None
+) -> str:
     """Write one entry as a block of labelled lines, each element legible (rulings 126 and 191).
 
     The one block both views of the record write: its id, order and package, then each
-    element of 14 CFR 43.9(a) on its own line, the commits that landed it, and its
-    order's Gate 5, the signature.
+    element of 14 CFR 43.9(a) on its own line, the commits that landed it in *landed*'s
+    order, or why git could not be read (ruling 193), and its order's Gate 5, the
+    signature.
 
     Returns:
         The entry's block, a value continued on the next line under its first.
 
     """
     entry = view.entry
-    first, *more = _landed_lines(landed)
+    first, *more = _landed_lines(landed, commits_unread)
     fields = (
         ("Booked", entry.ts),
         ("Performer", entry.dispatch_id),

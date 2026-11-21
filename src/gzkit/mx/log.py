@@ -19,12 +19,14 @@ entries, by order, each with the window commits whose subjects name it (ruling
 (ruling 191). Every window commit that names no entry the record holds is listed
 as unrecorded work, and one naming an entry the record does not hold says so
 (ruling 189); the commit list stays beside them. A record that cannot be read
-refuses the assembly, so the exit takes no signature over it (ruling 190).
+refuses the assembly, so the exit takes no signature over it (ruling 190), and a
+git that cannot be read is named in each section in place of the commits, the
+assembler's caller refusing the exit on it (ruling 193). Commits are read through
+`gzkit.mx.git_commits`, the one git reader both of the record's views call.
 """
 
 import json
 import re
-import subprocess
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -35,7 +37,6 @@ from gzkit.core.models import (
     REQ_ID_BODY_PLAIN,
     REQ_SHORT_ID_BODY,
 )
-from gzkit.executables import resolve_argv
 from gzkit.ledger import Ledger
 from gzkit.mx.entries import (
     LandingCommit,
@@ -45,6 +46,7 @@ from gzkit.mx.entries import (
     landings,
     record_view,
 )
+from gzkit.mx.git_commits import CommitsUnreadableError, git_log
 
 _LEDGER_RELPATH = (".gzkit", "ledger.jsonl")
 
@@ -56,11 +58,6 @@ _ADR_RE = re.compile(ADR_SHORT_ID_BODY)
 # module's contract that nothing in the window is "narrated away".
 _OBPI_RE = re.compile(OBPI_SHORT_ID_BODY)
 _REQ_RE = re.compile(rf"{REQ_ID_BODY_PLAIN}|{REQ_SHORT_ID_BODY}")
-
-# git log record/field separators (ASCII unit/record separators — never appear
-# in commit text, so parsing is unambiguous).
-_FIELD_SEP = "\x1f"
-_RECORD_SEP = "\x1e"
 
 
 def _unique(values: list[str]) -> list[str]:
@@ -93,13 +90,11 @@ def parse_artifacts(message: str) -> dict[str, list[str]]:
     }
 
 
-class FixEntry(BaseModel):
-    """One fix in the window — a commit and the artifacts it touched."""
+class FixEntry(LandingCommit):
+    """One fix in the window: a commit as the record's views read it, and its artifacts."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    commit_sha: str = Field(..., description="Full commit SHA")
-    subject: str = Field(..., description="Commit subject line")
     adrs: list[str] = Field(default_factory=list)
     obpis: list[str] = Field(default_factory=list)
     reqs: list[str] = Field(default_factory=list)
@@ -140,6 +135,9 @@ class MxLog(BaseModel):
     unrecorded: list[UnrecordedWork] = Field(
         default_factory=list, description="The window commits no held entry accounts for"
     )
+    commits_unread: str | None = Field(
+        None, description="Why git could not be read, the exit's refusal (ruling 193)"
+    )
 
 
 def _read_ledger_lines(root: Path) -> list[dict]:
@@ -162,73 +160,24 @@ def _read_ledger_lines(root: Path) -> list[dict]:
     return out
 
 
-def _git_log(root: Path, selection: list[str], field: str) -> list[tuple[str, str]]:
-    """Read ``git log`` over *selection*, each commit's SHA and its *field* (``%B`` or ``%s``).
-
-    Tolerant of a non-git working tree (returns ``[]``), so git's absence never
-    raises into the exit path.
-
-    Returns:
-        One ``(sha, text)`` pair per commit, newest first; empty when git cannot run or fails.
-
-    """
-    cmd = ["git", "log", *selection, f"--pretty=format:%H{_FIELD_SEP}{field}{_RECORD_SEP}"]
-    try:
-        result = subprocess.run(  # noqa: S603 — the git log argv this module builds
-            resolve_argv(cmd),
-            cwd=root,
-            capture_output=True,
-            text=True,
-            errors="replace",
-            check=False,
-        )
-    except OSError:
-        return []
-    if result.returncode != 0:
-        return []
-    pairs: list[tuple[str, str]] = []
-    for record in result.stdout.split(_RECORD_SEP):
-        record = record.strip()
-        if record:
-            sha, _, text = record.partition(_FIELD_SEP)
-            pairs.append((sha.strip(), text))
-    return pairs
-
-
-def commits_citing_entries(root: Path) -> list[LandingCommit]:
-    """Read every commit in the history whose subject may name an entry (RP-12 ruling 192).
-
-    `gz wp entry show` joins the record to these through `gzkit.mx.entries.landings`,
-    which reads the whole id from each subject; git narrows to subjects carrying
-    ``ENT-`` only to keep the read small.
-
-    Returns:
-        Each such commit, newest first; empty outside a git working tree.
-
-    """
-    return [
-        LandingCommit(commit_sha=sha, subject=subject.strip())
-        for sha, subject in _git_log(root, ["--fixed-strings", "--grep", "ENT-"], "%s")
-        if "ENT-" in subject
-    ]
-
-
 def _git_commits_since(root: Path, since_ts: str, until_ts: str | None) -> list[FixEntry]:
-    """Return the commits in (since_ts, until_ts] as FixEntries.
+    """Return the commits in (since_ts, until_ts] as FixEntries, the subject as git reads it.
+
+    `gzkit.mx.git_commits.git_log`'s `CommitsUnreadableError` propagates when git
+    cannot be read (ruling 193).
 
     Returns:
-        One fix entry per commit in the window; empty when git cannot run or fails.
+        One fix entry per commit in the window, newest first.
 
     """
     selection = ["--since", since_ts, *(["--until", until_ts] if until_ts else [])]
     fixes: list[FixEntry] = []
-    for sha, body in _git_log(root, selection, "%B"):
-        subject = body.strip().splitlines()[0] if body.strip() else ""
+    for sha, subject, body in git_log(root, selection, ("%s", "%B")):
         named = parse_artifacts(body)
         fixes.append(
             FixEntry(
                 commit_sha=sha,
-                subject=subject,
+                subject=subject.strip(),
                 adrs=named["ADR"],
                 obpis=named["OBPI"],
                 reqs=named["REQ"],
@@ -237,7 +186,7 @@ def _git_commits_since(root: Path, since_ts: str, until_ts: str | None) -> list[
     return fixes
 
 
-def _unrecorded(commits: list[LandingCommit], held: set[str]) -> list[UnrecordedWork]:
+def _unrecorded(commits: list[FixEntry], held: set[str]) -> list[UnrecordedWork]:
     """List the commits no held entry accounts for, naming what each cites (rulings 166, 189).
 
     Returns:
@@ -267,9 +216,11 @@ def assemble_window(root: Path, session_id: str) -> MxLog:
     Returns:
         The MX log naming the session's window bounds, reason and attestor, the ledger event types
         inside it, its fixes, and the ADRs, OBPIs and REQs they touched, with the session's
-        entries, their landing commits and the unrecorded work. A maintenance record
-        that cannot be read propagates `record_view`'s `EntryError`, naming the row and
-        the void that recovers it, so no view is returned over it (RP-12 ruling 190).
+        entries, their landing commits and the unrecorded work; a git that cannot be
+        read leaves no commit and names its cause in ``commits_unread`` (RP-12 ruling
+        193). A maintenance record that cannot be read propagates `record_view`'s
+        `EntryError`, naming the row and the void that recovers it, so no view is
+        returned over it (RP-12 ruling 190).
 
     """
     events = _read_ledger_lines(root)
@@ -302,7 +253,7 @@ def assemble_window(root: Path, session_id: str) -> MxLog:
         if isinstance(kind, str):
             window_event_types.append(kind)
 
-    fixes = _git_commits_since(root, opened_at, closed_at) if opened_at else []
+    fixes, commits_unread = _window_commits(root, opened_at, closed_at)
 
     artifacts = {
         "ADR": _unique([a for f in fixes for a in f.adrs]),
@@ -310,7 +261,7 @@ def assemble_window(root: Path, session_id: str) -> MxLog:
         "REQ": _unique([r for f in fixes for r in f.reqs]),
     }
 
-    entries, landed, unrecorded = _session_record(root, session_id, fixes)
+    entries, landed, unrecorded = _session_record(root, session_id, (opened_at, closed_at), fixes)
     return MxLog(
         session_id=session_id,
         opened_at=opened_at,
@@ -323,27 +274,51 @@ def assemble_window(root: Path, session_id: str) -> MxLog:
         entries=entries,
         landed=landed,
         unrecorded=unrecorded,
+        commits_unread=commits_unread,
     )
 
 
+def _window_commits(
+    root: Path, opened_at: str, closed_at: str | None
+) -> tuple[list[FixEntry], str | None]:
+    """Read the window's commits, or why git could not be read (ruling 193).
+
+    Returns:
+        The window's fixes and None, or no fix and the cause; no window, no commit.
+
+    """
+    if not opened_at:
+        return [], None
+    try:
+        return _git_commits_since(root, opened_at, closed_at), None
+    except CommitsUnreadableError as exc:
+        return [], str(exc)
+
+
 def _session_record(
-    root: Path, session_id: str, fixes: list[FixEntry]
+    root: Path, session_id: str, window: tuple[str, str | None], fixes: list[FixEntry]
 ) -> tuple[list[RecordedEntry], dict[str, list[LandingCommit]], list[UnrecordedWork]]:
     """Read the session's maintenance record and join it to the window's commits (ruling 166).
+
+    An entry is the session's when it records the session's id and was booked in the
+    window, so a reopened id's earlier span stays outside it as its commits do
+    (REQ-0.0.74-06-01; GHI #1273).
 
     Returns:
         The session's entries, each entry's landing commits, and the unrecorded work.
 
     """
+    opened_at, closed_at = window
     record = [
         view
         for view in record_view(Ledger(root.joinpath(*_LEDGER_RELPATH)))
         if view.entry.mx_session_id == session_id
+        and view.entry.ts >= opened_at
+        and (closed_at is None or view.entry.ts <= closed_at)
     ]
-    commits = [LandingCommit(commit_sha=f.commit_sha, subject=f.subject) for f in fixes]
     held = {view.entry.entry_id for view in record}
-    joined = landings((view.entry.entry_id for view in record), commits)
-    return record, joined, _unrecorded(commits, held)
+    joined = landings((view.entry.entry_id for view in record), fixes)
+    return record, joined, _unrecorded(fixes, held)
 
 
 def _record_lines(log: MxLog) -> list[str]:
@@ -362,7 +337,8 @@ def _record_lines(log: MxLog) -> list[str]:
     for (order, package), views in by_order.items():
         lines.append(f"  {order} ({package}):")
         for view in views:
-            block = entry_block(view, log.landed.get(view.entry.entry_id, []))
+            landed = log.landed.get(view.entry.entry_id, [])
+            block = entry_block(view, landed, commits_unread=log.commits_unread)
             lines.extend(f"    {line}" for line in block.splitlines())
     if not log.entries:
         lines.append("  (no entry booked in this session)")
@@ -370,9 +346,11 @@ def _record_lines(log: MxLog) -> list[str]:
     for work in log.unrecorded:
         line = f"  - {work.commit.commit_sha[:12]} {work.commit.subject}"
         if work.unheld:
-            line += f" — names {', '.join(work.unheld)}, which the record does not hold"
+            line += f" — names {', '.join(work.unheld)}, which this session's record does not hold"
         lines.append(line)
-    if not log.unrecorded:
+    if log.commits_unread:
+        lines.append(f"  (commits could not be read: {log.commits_unread})")
+    elif not log.unrecorded:
         lines.append("  (none)")
     return [*lines, ""]
 
@@ -393,6 +371,8 @@ def render(log: MxLog) -> str:
         for fix in log.fixes:
             named = ", ".join(fix.adrs + fix.obpis + fix.reqs) or "(no artifacts named)"
             lines.append(f"  - {fix.commit_sha[:12]} {fix.subject} [{named}]")
+    elif log.commits_unread:
+        lines.append(f"  (commits could not be read: {log.commits_unread})")
     else:
         lines.append("  (no commits in window)")
     lines.extend(
@@ -410,5 +390,17 @@ def render(log: MxLog) -> str:
 
 
 def assemble_and_render(root: Path, session_id: str) -> str:
-    """Assemble the window and render it — the single entry point used at exit."""
-    return render(assemble_window(root, session_id))
+    """Assemble the window and render it — the single entry point used at exit.
+
+    Returns:
+        The rendered log, for the operator's review before the signature.
+
+    Raises:
+        CommitsUnreadableError: git could not be read, so the exit takes no signature
+            over a view short of its commits (RP-12 ruling 193).
+
+    """
+    window = assemble_window(root, session_id)
+    if window.commits_unread:
+        raise CommitsUnreadableError(window.commits_unread)
+    return render(window)

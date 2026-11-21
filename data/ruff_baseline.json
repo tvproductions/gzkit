@@ -7879,7 +7879,7 @@
     {
       "file": "src/gzkit/mx/log.py",
       "rule": "PLW2901",
-      "count": 2
+      "count": 1
     },
     {
       "file": "src/gzkit/mx/log.py",

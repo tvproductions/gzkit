@@ -28,7 +28,7 @@ from gzkit.mx.entries import (
     record_entry_book,
     record_view,
 )
-from gzkit.mx.log import commits_citing_entries
+from gzkit.mx.git_commits import CommitsUnreadableError, commits_citing_entries
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -102,7 +102,8 @@ def wp_entry_show_cmd(*, as_json: bool) -> None:
     192). The human form is the record's one entry block (ruling 191), and a plain
     line when there is none; ``--json`` prints the list, each entry its event's
     fields with ``gate5``, the closing `order_transitioned` or None, and ``landed``,
-    its landing commits.
+    its landing commits, or None when git could not be read, which the human form
+    names on each Landed line (ruling 193).
 
     The verb writes nothing, needs no MX session and is not refused from a
     subagent's call: a read is no one's act.
@@ -119,7 +120,11 @@ def wp_entry_show_cmd(*, as_json: bool) -> None:
         views = record_view(ledger)
     except EntryError as exc:
         raise PolicyBreachError(str(exc)) from exc
-    landed = landings((view.entry.entry_id for view in views), commits_citing_entries(root))
+    try:
+        commits, commits_unread = commits_citing_entries(root), None
+    except CommitsUnreadableError as exc:
+        commits, commits_unread = [], str(exc)
+    landed = landings((view.entry.entry_id for view in views), commits)
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     if as_json:
         fmt.emit(
@@ -127,7 +132,9 @@ def wp_entry_show_cmd(*, as_json: bool) -> None:
                 {
                     **view.entry.model_dump(mode="json"),
                     "gate5": view.gate5.model_dump(mode="json") if view.gate5 else None,
-                    "landed": [c.model_dump(mode="json") for c in landed[view.entry.entry_id]],
+                    "landed": None
+                    if commits_unread
+                    else [c.model_dump(mode="json") for c in landed[view.entry.entry_id]],
                 }
                 for view in views
             ]
@@ -135,4 +142,9 @@ def wp_entry_show_cmd(*, as_json: bool) -> None:
     elif not views:
         fmt.emit("No entry has been booked.")
     else:
-        fmt.emit("\n\n".join(entry_block(view, landed[view.entry.entry_id]) for view in views))
+        fmt.emit(
+            "\n\n".join(
+                entry_block(view, landed[view.entry.entry_id], commits_unread=commits_unread)
+                for view in views
+            )
+        )

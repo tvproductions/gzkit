@@ -23,11 +23,13 @@ from gzkit.commands import mx_cmd
 from gzkit.mx import marker
 from gzkit.traceability import covers
 from tests.commands.common import SilencedConsoleTestCase
+from tests.mx.held import git_project
 
 
 def _mk_root(tmp: str) -> Path:
     root = Path(tmp)
     (root / ".gzkit").mkdir(parents=True, exist_ok=True)
+    git_project(root)
     return root
 
 

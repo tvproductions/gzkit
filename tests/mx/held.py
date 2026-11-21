@@ -1,10 +1,12 @@
 """Open MX conditions for tests: a marker only counts when the ledger backs it (GHI #1273)."""
 
 import json
+import subprocess
 from typing import TYPE_CHECKING
 
 from gzkit.mx import marker
 from gzkit.mx.marker import Marker
+from tests.commands.common import _isolated_git_env
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -23,6 +25,22 @@ def bind_session(root: Path, session_id: str) -> None:
     }
     with ledger.open("a", encoding="utf-8") as stream:
         stream.write(json.dumps(row) + "\n")
+
+
+def git_project(root: Path) -> None:
+    """Make *root* a git repository with one commit, so the exit can read its commits.
+
+    `gz mx exit` refuses a git it cannot read (RP-12 ruling 193), and a repository with
+    no commit is one it cannot read, so a fixture that exits green needs a commit.
+    """
+    env = _isolated_git_env()
+    for args in (
+        ["init", "-q"],
+        ["config", "user.email", "t@e.st"],
+        ["config", "user.name", "tester"],
+        ["commit", "-q", "--allow-empty", "-m", "chore: the fixture's first commit"],
+    ):
+        subprocess.run(["git", *args], cwd=root, check=True, env=env)  # noqa: S603 — a temp repo
 
 
 def open_marker(root: Path, held: Marker | None = None) -> Marker:

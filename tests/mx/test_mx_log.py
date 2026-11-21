@@ -14,10 +14,13 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from gzkit.commands.common import console
+from gzkit.commands.mx_cmd import mx_enter_cmd, mx_exit_cmd
 from gzkit.events import EntryBookedEvent
 from gzkit.ledger import Ledger, ledger_row
 from gzkit.mx import log, marker
 from gzkit.mx.entries import EntryError
+from gzkit.mx.git_commits import CommitsUnreadableError
 from gzkit.traceability import covers
 from tests.commands.common import SilencedConsoleTestCase, _isolated_git_env
 
@@ -64,14 +67,22 @@ def _session_row(kind: str, ts: str, session_id: str) -> dict:
     }
 
 
-def _book_entry(root: Path, entry_id: str, session_id: str) -> None:
+def _book_entry(
+    root: Path,
+    entry_id: str,
+    session_id: str,
+    *,
+    order: str = "ORD-01-import",
+    ts: str | None = None,
+) -> None:
     """Seat one maintenance-record entry, as the performer's writer books it (RP-12 ruling 8)."""
     entry = EntryBookedEvent.model_validate(
         {
             "event": "entry_booked",
             "id": entry_id,
+            **({"ts": ts} if ts else {}),
             "entry_id": entry_id,
-            "order": "ORD-01-import",
+            "order": order,
             "work_package": "WP-01-stamp",
             "dispatch_id": "D-0000000000000000",
             "description": "The stamp generator imports its template again.",
@@ -389,6 +400,15 @@ class TestTheLogIsTheRecordsView(unittest.TestCase):
         )
         self.assertEqual(window.landed, {"ENT-01-stamp-import": []})
 
+    def test_a_commit_naming_a_held_and_an_unheld_entry_shows_in_both_places(self) -> None:
+        mixed = "fix(stamp): two acts (ENT-01-stamp-import, ENT-09-typo)"
+        with TemporaryDirectory() as tmp:
+            window = log.assemble_window(_record_window(tmp, [mixed]), "s")
+        self.assertEqual([c.subject for c in window.landed["ENT-01-stamp-import"]], [mixed])
+        self.assertEqual(
+            [(u.commit.subject, u.unheld) for u in window.unrecorded], [(mixed, ["ENT-09-typo"])]
+        )
+
     def test_an_unreadable_record_is_refused_with_its_void(self) -> None:
         with TemporaryDirectory() as tmp:
             root = _record_window(tmp, [])
@@ -396,6 +416,46 @@ class TestTheLogIsTheRecordsView(unittest.TestCase):
             with self.assertRaises(EntryError) as raised:
                 log.assemble_window(root, "s")
         self.assertIn("gz ledger correct", str(raised.exception))
+        self.assertIn("ENT-03-x", str(raised.exception))
+        self.assertIn("2026-11-21T00:00:00+00:00", str(raised.exception))
+
+    @covers("REQ-0.0.74-06-01")
+    def test_an_entry_from_an_earlier_span_of_a_reopened_id_is_outside_the_window(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _write_ledger(
+                root,
+                [
+                    _session_row("mx_session_opened", "2026-10-01T00:00:00+00:00", "s"),
+                    _session_row("mx_session_closed", "2026-10-02T00:00:00+00:00", "s"),
+                    _session_row("mx_session_opened", "2026-10-03T00:00:00+00:00", "s"),
+                ],
+            )
+            _book_entry(root, "ENT-01-earlier", "s", ts="2026-10-01T12:00:00+00:00")
+            _book_entry(root, "ENT-02-current", "s", ts="2026-10-03T12:00:00+00:00")
+            window = log.assemble_window(root, "s")
+        self.assertEqual([view.entry.entry_id for view in window.entries], ["ENT-02-current"])
+
+    def test_a_wrapped_subject_names_its_entry_as_git_reads_the_subject(self) -> None:
+        wrapped = (
+            "fix(stamp): the template generator imports its template\nagain (ENT-01-stamp-import)"
+        )
+        with TemporaryDirectory() as tmp:
+            window = log.assemble_window(_record_window(tmp, [wrapped]), "s")
+        self.assertEqual(
+            [c.subject for c in window.landed["ENT-01-stamp-import"]],
+            ["fix(stamp): the template generator imports its template again (ENT-01-stamp-import)"],
+        )
+        self.assertEqual(window.unrecorded, [])
+
+    def test_an_entry_named_in_the_body_alone_is_not_landed(self) -> None:
+        in_body = "fix(stamp): imports again\n\nLands ENT-01-stamp-import."
+        with TemporaryDirectory() as tmp:
+            window = log.assemble_window(_record_window(tmp, [in_body]), "s")
+        self.assertEqual(window.landed, {"ENT-01-stamp-import": []})
+        self.assertEqual(
+            [u.commit.subject for u in window.unrecorded], ["fix(stamp): imports again"]
+        )
 
 
 class TestRecordViewRendering(unittest.TestCase):
@@ -411,8 +471,64 @@ class TestRecordViewRendering(unittest.TestCase):
         self.assertIn("  ORD-01-import (WP-01-stamp):", record.splitlines())
         self.assertIn("    ENT-01-stamp-import on ORD-01-import (WP-01-stamp)", record.splitlines())
         self.assertIn(landing, record)
-        self.assertIn("names ENT-07-ghost, which the record does not hold", unrecorded)
+        self.assertIn("names ENT-07-ghost, which this session's record does not hold", unrecorded)
         self.assertIn("Fixes (2):", unrecorded)
+
+    def test_entries_of_two_orders_render_under_each_order_once(self) -> None:
+        # output-contract: docs/user/manpages/mx-exit.md, the record by order (ruling 191)
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _write_ledger(
+                root, [_session_row("mx_session_opened", "1970-01-01T00:00:00+00:00", "s")]
+            )
+            _book_entry(root, "ENT-01-first", "s")
+            _book_entry(root, "ENT-02-second", "s", order="ORD-02-other")
+            _book_entry(root, "ENT-03-third", "s")
+            lines = log.render(log.assemble_window(root, "s")).splitlines()
+        headers = [line for line in lines if line.startswith("  ORD-")]
+        ids = [line.split()[0] for line in lines if line.startswith("    ENT-")]
+        self.assertEqual(
+            headers, ["  ORD-01-import (WP-01-stamp):", "  ORD-02-other (WP-01-stamp):"]
+        )
+        self.assertEqual(ids, ["ENT-01-first", "ENT-03-third", "ENT-02-second"])
+
+
+class TestUnreadableGit(unittest.TestCase):
+    """Ruling 193: a git that cannot be read is named, never read as no commit."""
+
+    def test_the_log_names_why_the_commits_could_not_be_read(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _write_ledger(
+                root, [_session_row("mx_session_opened", "1970-01-01T00:00:00+00:00", "s")]
+            )
+            _book_entry(root, "ENT-01-stamp-import", "s")
+            window = log.assemble_window(root, "s")
+            with self.assertRaises(CommitsUnreadableError) as raised:
+                log.assemble_and_render(root, "s")
+        assert window.commits_unread is not None
+        self.assertIn("`git log` exited", window.commits_unread)
+        self.assertEqual(str(raised.exception), window.commits_unread)
+        self.assertEqual((window.fixes, window.unrecorded), ([], []))
+
+
+class TestUnreadableGitRendering(unittest.TestCase):
+    def test_each_section_names_the_cause_in_place_of_its_commits(self) -> None:
+        # output-contract: docs/user/manpages/mx-exit.md, the view of commits not read
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _write_ledger(
+                root, [_session_row("mx_session_opened", "1970-01-01T00:00:00+00:00", "s")]
+            )
+            _book_entry(root, "ENT-01-stamp-import", "s")
+            window = log.assemble_window(root, "s")
+        assert window.commits_unread is not None
+        named = f"commits could not be read: {window.commits_unread}"
+        lines = log.render(window).splitlines()
+        self.assertIn(f"      Landed:      {named}", lines)
+        self.assertEqual(lines.count(f"  ({named})"), 2)
+        self.assertNotIn("  (none)", lines)
+        self.assertNotIn("  (no commits in window)", lines)
 
 
 class TestEmptyRecordRendering(unittest.TestCase):
@@ -426,32 +542,6 @@ class TestEmptyRecordRendering(unittest.TestCase):
         unrecorded = lines.index("Unrecorded work (0):")
         self.assertEqual(lines[record + 1], "  (no entry booked in this session)")
         self.assertEqual(lines[unrecorded + 1], "  (none)")
-
-
-class TestExitRefusesAnUnreadableRecord(SilencedConsoleTestCase):
-    """Ruling 190: the operator never signs over a record that could not be read."""
-
-    def test_exit_refuses_at_3_writes_no_close_and_releases_the_hold(self) -> None:
-        from gzkit.commands.mx_cmd import mx_enter_cmd, mx_exit_cmd  # noqa: PLC0415
-
-        with TemporaryDirectory() as tmp:
-            root = _mk_root(tmp)
-            mx_enter_cmd(
-                reason="repair", attestor="g0", inspection_scope=["ADR-0.0.74"], project_root=root
-            )
-            _seat_unreadable_entry(root)
-            with self.assertRaises(SystemExit) as exited:
-                mx_exit_cmd(attestor="g0", project_root=root, _run_guards=lambda r: 0)
-            held = marker.read(root)
-            closes = _read_ledger_events(root, "mx_session_closed")
-        self.assertEqual(exited.exception.code, 3)
-        self.assertEqual(closes, [])
-        assert held is not None
-        self.assertFalse(held.exiting)
-
-
-if __name__ == "__main__":
-    unittest.main()
 
 
 class TestParseArtifactsRefusesWildcards(unittest.TestCase):
@@ -477,3 +567,49 @@ class TestParseArtifactsRefusesWildcards(unittest.TestCase):
         got = parse_artifacts("fix(x): OBPI-0.35.0-08 and OBPI-0.1.0-10-templates")
         self.assertIn("OBPI-0.35.0-08", got["OBPI"])
         self.assertIn("OBPI-0.1.0-10", got["OBPI"])
+
+
+class TestExitRefusesWhatItCannotRead(unittest.TestCase):
+    """Rulings 190 and 193: the operator never signs over a record or commits it could not read."""
+
+    def _exit(self, root: Path) -> tuple[int | str | None, str]:
+        with console.capture() as captured, self.assertRaises(SystemExit) as exited:
+            mx_exit_cmd(attestor="g0", project_root=root, _run_guards=lambda r: 0)
+        return exited.exception.code, " ".join(captured.get().split())
+
+    def _assert_held_open(self, root: Path) -> None:
+        held = marker.read(root)
+        assert held is not None
+        self.assertFalse(held.exiting)
+        self.assertEqual(_read_ledger_events(root, "mx_session_closed"), [])
+
+    def test_an_unreadable_record_refuses_at_3_naming_its_row_and_void(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _init_git_repo(root)
+            _commit(root, "seed.txt", "chore: seed")
+            mx_enter_cmd(
+                reason="repair", attestor="g0", inspection_scope=["ADR-0.0.74"], project_root=root
+            )
+            _seat_unreadable_entry(root)
+            code, printed = self._exit(root)
+            self._assert_held_open(root)
+        self.assertEqual(code, 3)
+        self.assertIn("ENT-03-x", printed)
+        self.assertIn("gz ledger correct", printed)
+
+    def test_a_git_it_cannot_read_refuses_at_3_naming_the_cause(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            mx_enter_cmd(
+                reason="repair", attestor="g0", inspection_scope=["ADR-0.0.74"], project_root=root
+            )
+            code, printed = self._exit(root)
+            self._assert_held_open(root)
+        self.assertEqual(code, 3)
+        self.assertIn("`git log` exited", printed)
+        self.assertIn("window's commits cannot be read", printed)
+
+
+if __name__ == "__main__":
+    unittest.main()

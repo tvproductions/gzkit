@@ -18,6 +18,7 @@ from gzkit.lock_manager import LockData
 from gzkit.mx import marker
 from gzkit.mx.marker import SESSION_LOCK_KEY, Marker
 from tests.commands.common import SilencedConsoleTestCase
+from tests.mx.held import git_project
 
 _BASE = datetime(2026, 1, 1, 0, 0, 0, tzinfo=UTC)
 _LEASE = timedelta(minutes=lock_manager.DEFAULT_LOCK_TTL_MINUTES)
@@ -185,6 +186,7 @@ class TestOneLeaseKey(SilencedConsoleTestCase):
         ):
             root = Path(tmp)
             (root / ".gzkit").mkdir()
+            git_project(root)
             mx_enter_cmd(reason="r", attestor="g0", inspection_scope=[], project_root=root)
             claimed = lock_manager.read_lock(root, "lease-under-test")
             mx_exit_cmd(attestor="g0", project_root=root, _run_guards=lambda _r: 0)

@@ -576,6 +576,9 @@ class EntryCitationTests(unittest.TestCase):
             "fix(x): one digit ENT-1-a": [],
             "fix(x): glued XENT-01-a": [],
             "fix(x): a dangling hyphen ENT-01-a-": [],
+            "fix(x): an upper-case tail ENT-01-fooX": [],
+            "fix(x): an underscore tail ENT-01-foo_bar": [],
+            "fix(x): an underscore head _ENT-01-a": [],
             "fix(x): no entry (GHI #1301)": [],
         }
         for subject, cited in cases.items():
@@ -590,6 +593,14 @@ class EntryCitationTests(unittest.TestCase):
         )
         joined = landings(["ENT-01-stamp-import", "ENT-03-unlanded"], [first, other, stray])
         self.assertEqual(joined, {"ENT-01-stamp-import": [first], "ENT-03-unlanded": []})
+
+    def test_an_entry_landed_by_two_commits_keeps_both_in_the_order_given(self) -> None:
+        newer, older = (
+            _commit("a", "test(stamp): the import is witnessed (ENT-01-stamp-import)"),
+            _commit("b", "fix(stamp): imports again (ENT-01-stamp-import)"),
+        )
+        joined = landings(["ENT-01-stamp-import"], [newer, older])
+        self.assertEqual(joined, {"ENT-01-stamp-import": [newer, older]})
 
 
 class EntryBlockRendering(unittest.TestCase):

@@ -1032,11 +1032,6 @@
       "score": 18
     },
     {
-      "file": "src/gzkit/mx/log.py",
-      "function": "assemble_window",
-      "score": 16
-    },
-    {
       "file": "src/gzkit/ontology/source.py",
       "function": "_assemble_coupling_edges",
       "score": 19
