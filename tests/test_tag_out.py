@@ -57,15 +57,21 @@ from gzkit.mx.tag_out import (
     tag_log,
 )
 from gzkit.order_ledger import OrderMove, record_order_transition
-from gzkit.work_package_ledger import TransitionRequest, record_work_package_transition
+from gzkit.work_package_ledger import (
+    TransitionRequest,
+    WorkPackageLedgerError,
+    record_work_package_transition,
+)
 from gzkit.work_package_run import (
     BlockRequest,
     DispatchRequest,
+    UnblockRequest,
     record_dispatch_claim,
     record_dispatch_end,
     record_dispatch_void,
     record_work_package_block,
     record_work_package_dispatch,
+    record_work_package_unblock,
 )
 
 if TYPE_CHECKING:
@@ -1037,6 +1043,54 @@ class PausedCarryTests(_ClearanceCase):
         """Ruling 187 admits the tags the acceptance carried, not every tag of a paused order."""
         self.reset_without_carry()
         self.assert_clearance_refused("a tag's clearance is authorized on a commenced order")
+
+    def booked_restoration(self) -> str:
+        """Book a Restoration dispatch on the order, asserting it is admitted (ruling 187).
+
+        Returns:
+            The dispatch id, or "" after the failed assertion records the refusal.
+
+        """
+        booked: list[str] = []
+        self.assertIsNone(_raised(lambda: booked.append(self.book("Restoration"))))
+        return booked[0] if booked else ""
+
+    def test_a_repair_dispatch_does_not_ride_the_exit(self) -> None:
+        """Ruling 187 admits the Restoration that clears; a Repair dispatch hangs, never here."""
+        self.pause()
+        self.assertIsInstance(_raised(lambda: self.book("Repair")), WorkPackageLedgerError)
+
+    def test_an_out_of_position_find_blocks_the_paused_order(self) -> None:
+        """Ruling 188: a find out of position books its block on the paused order (ruling 137),
+        and once the operator rules the block off, the tag clears in position."""
+        self.pause()
+        self.authorize()
+        restorer = self.booked_restoration()
+
+        def clear(found: str, dispatch_id: str) -> object:
+            return record_tag_clear(
+                self.catalog,
+                self.ledger,
+                self.tag.tag_id,
+                dispatch_id,
+                found,
+                stamped_id=dispatch_id,
+                mx_session_id=_SESSION,
+                read_refutations=_Refutations(),
+            )
+
+        held: list[object] = []
+        self.assertIsNone(_raised(lambda: held.append(clear("advisory", restorer))))
+        self.assertIsInstance(held[0], WorkPackageBlockedEvent)
+        unblock = UnblockRequest(
+            work_package=_REPAIR, order=_ORDER, ruling="put it back", operator="g0"
+        )
+        self.assertIsNone(
+            _raised(lambda: record_work_package_unblock(self.catalog, self.ledger, unblock))
+        )
+        again: list[object] = []
+        self.assertIsNone(_raised(lambda: again.append(clear("off", self.booked_restoration()))))
+        self.assertIsInstance(again[0], TagClearedEvent)
 
     def test_a_carry_closed_other_than_as_a_pause_clears_nothing(self) -> None:
         """Ruling 187 admits a paused order alone; a carry seated as closed otherwise is not."""

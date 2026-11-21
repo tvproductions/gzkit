@@ -55,14 +55,13 @@ from gzkit.events import (
     WorkPackageUnblockedEvent,
 )
 from gzkit.ledger import Ledger, ledger_row
-from gzkit.mx.tag_rows import order_tags
 from gzkit.order_ledger import (
     STOPPING_EXITS,
+    holds_paused_carry,
     is_order_blocked,
     order_baseline,
     order_rows,
     order_state,
-    paused_carried_tags,
 )
 from gzkit.pipeline_dispatch import MAX_REVIEW_FIX_CYCLES
 from gzkit.work_package_ledger import (
@@ -434,8 +433,6 @@ def _craftsman_subject(
         The subject, the order's id.
 
     """
-    if request.role != REPAIR and _carried_tag_hangs(ledger, order.id):
-        state = "commenced"  # ruling 187: the paused order clears the tags it carried
     wanted, cited, step = (
         (
             "frozen",
@@ -449,7 +446,9 @@ def _craftsman_subject(
             f"Commence the order first: `uv run gz wp order commence {order.id} --evidence <ref>`.",
         )
     )
-    if state != wanted:
+    # Ruling 187: a paused order still holding a carried tag takes the Restoration that clears it.
+    paused_restoration = request.role != REPAIR and holds_paused_carry(ledger, order.id)
+    if state != wanted and not paused_restoration:
         _refuse(
             f"Order {order.id} is {state or 'not opened'}; a {request.role} dispatch takes a "
             f"{wanted} order alone (RP-12 {cited}). {step}"
@@ -460,12 +459,6 @@ def _craftsman_subject(
             f"130 and {cited}). Re-run the call without --req {request.req}."
         )
     return order.id
-
-
-def _carried_tag_hangs(ledger: Ledger, order_id: str) -> bool:
-    """Whether a tag the paused order's acceptance carried still hangs (ruling 187)."""
-    carried = paused_carried_tags(ledger, order_id)
-    return bool(carried & set(order_tags(ledger, order_id).hung_uncleared))
 
 
 def _order_subject(ledger: Ledger, order: Order, request: DispatchRequest) -> str:
@@ -969,7 +962,8 @@ def _check_blockable(
         return
     _package_order(catalog, package, order)
     state = order_state(ledger, order)
-    if state in _UNBLOCKABLE:
+    # Ruling 188: a paused order still holding a carried tag takes the block its find books.
+    if state in _UNBLOCKABLE and not holds_paused_carry(ledger, order):
         _refuse(
             f"Order {order} is {state or 'not opened'}; it takes no block"
             f"{_ACCEPTED_NOTE if state == 'accepted' else '.'}"

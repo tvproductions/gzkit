@@ -50,8 +50,9 @@ found the surface in (ruling 6). `docs/governance/harbor-ro12-contractor-kit.md`
 - Found in any other position, `on` among them, it books no clear. It books one
   `work_package_blocked` on the tag's order instead, its reason and the decision
   owed written from the tag, its surface and both positions, prints the block and
-  exits 3 with the tag still hung (ruling 137). The order's acts are held, its
-  clears among them, until the operator's `gz wp unblock`. Until O5 lands the
+  exits 3 with the tag still hung (ruling 137); on an order Gate 5 paused with
+  the tag carried, the paused order takes that block too (ruling 188). The order's
+  acts are held, its clears among them, until the operator's `gz wp unblock`. Until O5 lands the
   stop, the block holds the order alone, not the surface across every order that
   touches it.
 - Limit: the checks read the ledger before the append takes the ledger's lock, so

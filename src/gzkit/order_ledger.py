@@ -486,12 +486,38 @@ def paused_carried_tags(ledger: Ledger, order_id: str) -> frozenset[str]:
     return frozenset(carry.tag_id for carry in carried_tags(ledger, order_id))
 
 
+def carried_tags_hung(ledger: Ledger, order_id: str) -> tuple[CarriedTag, ...]:
+    """Read the carries the order's acceptance booked whose tag still hangs (ruling 171).
+
+    The one reading of "a carried tag still hangs": Gate 5's pause reads it, and so do
+    the paused order's Restoration dispatch and block (rulings 187 and 188).
+
+    Returns:
+        Each booked carry whose tag is hung and not cleared, in booked order.
+
+    """
+    hung = set(order_tags(ledger, order_id).hung_uncleared)
+    return tuple(carry for carry in carried_tags(ledger, order_id) if carry.tag_id in hung)
+
+
+def holds_paused_carry(ledger: Ledger, order_id: str) -> bool:
+    """Whether Gate 5 paused the order with a tag its acceptance carried still hung.
+
+    Such an order still takes the Restoration dispatch that clears it (ruling 187) and
+    the block an out-of-position find books on it (ruling 188).
+
+    Returns:
+        True when the order is paused and one of its carried tags still hangs.
+
+    """
+    return bool(paused_carried_tags(ledger, order_id)) and bool(carried_tags_hung(ledger, order_id))
+
+
 def _check_carry_pause(ledger: Ledger, order: Order, move: OrderMove) -> None:
     """Refuse every decision but pause while a tag acceptance carried still hangs (ruling 171)."""
     if move.decision == "pause":
         return
-    hung = set(order_tags(ledger, order.id).hung_uncleared)
-    if still := [c for c in carried_tags(ledger, order.id) if c.tag_id in hung]:
+    if still := carried_tags_hung(ledger, order.id):
         named = ", ".join(f"{c.tag_id} (carried by {c.discrepancy_id})" for c in still)
         _refuse(
             f"Order {order.id}'s acceptance carried tag(s) that still hang: {named}. While a "

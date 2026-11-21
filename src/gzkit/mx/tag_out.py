@@ -499,8 +499,9 @@ def _check_clearable(ledger: Ledger, issue: TagIssuedEvent, act: str = "clearanc
     """Refuse a clearance or a clear on an order not commenced, or blocked.
 
     A Restoration dispatch clears on a commenced order, a stopped one included
-    (rulings 132 and 135), so its clearance is authorized there; a blocked order's
-    acts are held, an out-of-position find's block among them (rulings 59 and 137).
+    (rulings 132 and 135), so its clearance is authorized there, and on a paused one
+    for the tags its acceptance carried (ruling 187); a blocked order's acts are
+    held, an out-of-position find's block among them (rulings 59, 137 and 188).
     """
     order_now = order_state(ledger, issue.order)
     done = "authorized" if act == "clearance" else "made"
