@@ -54,7 +54,12 @@ def _land(subject: str) -> str:
     ):
         subprocess.run(["git", *args], check=True, env=env)  # noqa: S603 — git in a temp repo
     head = subprocess.run(
-        ["git", "rev-parse", "HEAD"], check=True, env=env, capture_output=True, text=True
+        ["git", "rev-parse", "HEAD"],
+        check=True,
+        env=env,
+        capture_output=True,
+        text=True,
+        errors="replace",
     )
     return head.stdout.strip()
 
