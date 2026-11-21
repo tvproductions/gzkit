@@ -958,6 +958,10 @@ class CarryClearTests(_DiscrepancyCase):
         """Ruling 185: once its tag is cleared, the line clears citing that tag."""
         self.clear_the_tag()
         self.assert_refused("ruling 185", lambda: self.clear(self.line.id, entry="ENT-01-fixed"))
+        # Ruling 185 refused option C: the carried tag beside a filed GHI is still refused.
+        self.assert_refused(
+            "ruling 185", lambda: self.clear(self.line.id, tag="TAG-01-size", ghi=1400)
+        )
         self.assertEqual(self.cleared(self.line.id, tag="TAG-01-size").tag_id, "TAG-01-size")
 
     def test_a_line_no_acceptance_carried_clears_as_before(self) -> None:

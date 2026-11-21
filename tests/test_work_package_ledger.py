@@ -358,6 +358,17 @@ class RepairLifecycleTests(_LedgerCase):
         self.assertNotIn(cleared, str(raised))
         self.assertEqual(_rows(self.path), before)
 
+    def test_the_hung_tag_refusal_names_the_clear_as_its_recovery(self) -> None:
+        """Rulings 30 and 171: a carry ends at the tag's clear, so the refusal names the clear."""
+        self.withdraw_an_order()
+        seat_issue(self.ledger, 1, order="ORD-01-x")
+        seat_hang(self.ledger, 1, order="ORD-01-x")
+        raised = _raised(self.close)
+        self.assertIsInstance(raised, WorkPackageLedgerError)
+        # output-contract: the recovery is the clear, never a carry that waits on a later order
+        self.assertIn("gz wp tag authorize", str(raised))
+        self.assertIn("171", str(raised))
+
     def test_every_tag_cleared_lets_the_close_pass(self) -> None:
         """Refusal 6: with each hung tag cleared, the package closes."""
         self.withdraw_an_order()

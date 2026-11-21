@@ -955,24 +955,36 @@ class CarryTests(_OrderCase):
         words = {"attestor": "g0", "attestation_text": "ruled"}
         return self.move("closed", decision=decision, **words, **fields)
 
-    def test_a_carried_tag_still_hung_admits_a_pause_alone(self) -> None:
-        """Ruling 171: while a carried tag hangs, Gate 5 refuses every decision but pause."""
+    def carried_and_accepted(self) -> None:
+        """A fresh ledger with the order accepted on a carry of its hung tag."""
+        self.setUp()
         self.line()
         self.move("accepted", acceptance_ready=True)
+
+    def test_a_carried_tag_still_hung_admits_a_pause_alone(self) -> None:
+        """Ruling 171: while a carried tag hangs, Gate 5 refuses every decision but pause."""
         words = {"attestor": "g0", "attestation_text": "ruled"}
         for decision, fields in (
             ("proceed", {"residual_risk": "none"}),
             ("terminate", {}),
         ):
             with self.subTest(decision=decision):
+                self.carried_and_accepted()  # a fresh ledger, so one failing case spoils no other
                 refusal = self.assert_refused("closed", decision=decision, **words, **fields)
                 self.assertIn("ruling 171", refusal)
                 self.assertIn(self.hung, refusal)
-        self.assertEqual(self.close("pause", revisit_condition="O9's carry").decision, "pause")
+        self.carried_and_accepted()
+        closed: list[OrderTransitionedEvent] = []
+        paused = _raised(lambda: closed.append(self.close("pause", revisit_condition="O9's carry")))
+        self.assertIsNone(paused)
+        self.assertEqual([event.decision for event in closed], ["pause"])
 
     def test_a_carried_tag_cleared_before_gate_5_admits_any_decision(self) -> None:
         """Ruling 171: the pause binds only while the carried tag is still hung."""
-        self.line()
-        self.move("accepted", acceptance_ready=True)
+        self.carried_and_accepted()
         seat_clear(self.ledger, 1)
-        self.assertEqual(self.close("proceed", residual_risk="none").decision, "proceed")
+        closed: list[OrderTransitionedEvent] = []
+        self.assertIsNone(
+            _raised(lambda: closed.append(self.close("proceed", residual_risk="none")))
+        )
+        self.assertEqual([event.decision for event in closed], ["proceed"])
