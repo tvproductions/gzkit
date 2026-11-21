@@ -1649,10 +1649,13 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                 env=_isolated_git_env(),
             )
 
-            with gh_stand_in({"11": "open", "12": "closed"}):
+            with gh_stand_in({"11": "open", "12": "closed"}) as calls:
                 result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])
+                asked = gh_calls(calls)
 
             self.assertEqual(result.exit_code, 0)
+            # GHI #1334: both tracked GHIs are answered by one batched read, not one each.
+            self.assertEqual([argv[:2] for argv in asked], [["api", "graphql"]])
             payload = json.loads(result.output)
             # Anchor superseded by later commits — not a closeout blocker
             self.assertEqual(payload["closeout_blockers"], [])
