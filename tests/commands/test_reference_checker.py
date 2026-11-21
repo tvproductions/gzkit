@@ -44,15 +44,15 @@ class TestForeignRepositoryReferencesAreNotResolvedLocally(unittest.TestCase):
         self.root = Path(self._root.name)
         self.calls: list[str] = []
         patcher = mock.patch(
-            "gzkit.commands.reference_checker.gh_issue_state",
+            "gzkit.commands.reference_checker.gh_issue_read",
             side_effect=self._record,
         )
         self.gh = patcher.start()
         self.addCleanup(patcher.stop)
 
-    def _record(self, number: str, _root: Path) -> ReferenceState:
+    def _record(self, number: str, _root: Path) -> IssueRead:
         self.calls.append(number)
-        return ReferenceState.SETTLED
+        return IssueRead(answer=IssueAnswer.CLOSED)
 
     def test_foreign_citation_is_never_asked_of_the_local_repository(self) -> None:
         check = live_reference_checker(self.root)
@@ -1013,7 +1013,7 @@ class TestLiveCheckerPrefetchesCitationsInOneRead(unittest.TestCase):
         reads = mock.patch(
             "gzkit.commands.reference_checker.gh_issue_reads", side_effect=self._reads
         )
-        single = mock.patch("gzkit.commands.reference_checker.gh_issue_state")
+        single = mock.patch("gzkit.commands.reference_checker.gh_issue_read")
         reads.start()
         self.single = single.start()
         self.addCleanup(reads.stop)
@@ -1080,7 +1080,7 @@ class TestLiveCheckerPrefetchesCitationsInOneRead(unittest.TestCase):
 
     def test_a_citation_already_answered_is_not_asked_again(self) -> None:
         # given a single read that answers #11 closed
-        self.single.return_value = ReferenceState.SETTLED
+        self.single.return_value = IssueRead(answer=IssueAnswer.CLOSED)
         check = live_reference_checker(Path("."))
         # when #11 is checked twice
         states = [check(self._ghi("11")), check(self._ghi("11"))]
@@ -1090,7 +1090,7 @@ class TestLiveCheckerPrefetchesCitationsInOneRead(unittest.TestCase):
 
     def test_a_single_read_with_no_answer_latches_the_arm_off(self) -> None:
         # given gh unreachable for a single read
-        self.single.return_value = ReferenceState.UNKNOWN
+        self.single.return_value = IssueRead(answer=IssueAnswer.UNANSWERED)
         check = live_reference_checker(Path("."))
         # when two different citations are checked
         states = [check(self._ghi("11")), check(self._ghi("12"))]
@@ -1101,7 +1101,7 @@ class TestLiveCheckerPrefetchesCitationsInOneRead(unittest.TestCase):
     def test_a_number_an_answering_batch_left_unanswered_is_asked_singly(self) -> None:
         # given a batch that answered #11 and said nothing of #12
         self.answers = {"11": IssueAnswer.CLOSED}
-        self.single.return_value = ReferenceState.LIVE
+        self.single.return_value = IssueRead(answer=IssueAnswer.OPEN)
         check = live_reference_checker(Path("."))
         check.prefetch([self._ghi("11"), self._ghi("12")])
         # when both are checked
@@ -1121,6 +1121,35 @@ class TestLiveCheckerPrefetchesCitationsInOneRead(unittest.TestCase):
         # then it is still asked and answered
         self.assertEqual(self.batches, [["11", "12"], ["16"]])
         self.assertEqual(check(self._ghi("16")), ReferenceState.LIVE)
+
+    def test_a_missing_issue_in_a_single_read_does_not_latch_the_arm_off(self) -> None:
+        """GHI #1335: a MISSING read is an answer, so later citations are still asked."""
+        # given single reads answering #999999 no issue and #12 open
+        answers = {"999999": IssueAnswer.MISSING, "12": IssueAnswer.OPEN}
+        self.single.side_effect = lambda number, _root: IssueRead(answer=answers[number])
+        check = live_reference_checker(Path("."))
+        # when the missing number is checked, then the open one
+        states = [check(self._ghi("999999")), check(self._ghi("12"))]
+        # then the missing one is unknown, never live, and the open one was asked and is live
+        self.assertEqual(states, [ReferenceState.UNKNOWN, ReferenceState.LIVE])
+        self.assertEqual([c.args[0] for c in self.single.call_args_list], ["999999", "12"])
+
+    def test_both_transports_latch_on_the_same_answers(self) -> None:
+        """GHI #1335 and RP-12 ruling 182: one answer gives one verdict and one latch."""
+        for answer, latched in ((IssueAnswer.MISSING, False), (IssueAnswer.UNANSWERED, True)):
+            with self.subTest(answer=answer):
+                # given #11 answered `answer` and #12 open, on each transport
+                self.answers = {"11": answer, "12": IssueAnswer.OPEN}
+                self.single.side_effect = lambda n, _r: IssueRead(answer=self.answers[n])
+                batch, single = live_reference_checker(Path(".")), live_reference_checker(Path("."))
+                # when #11 is read first, then #12
+                batch.prefetch([self._ghi("11")])
+                batch_states = [batch(self._ghi("11")), batch(self._ghi("12"))]
+                single_states = [single(self._ghi("11")), single(self._ghi("12"))]
+                # then both give #11 the same verdict and latch, or not, the same way
+                self.assertEqual(batch_states, single_states)
+                expected = ReferenceState.UNKNOWN if latched else ReferenceState.LIVE
+                self.assertEqual(single_states[1], expected)
 
 
 if __name__ == "__main__":

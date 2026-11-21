@@ -515,8 +515,10 @@ class LiveReferenceChecker:
         elif reference.kind is not ReferenceKind.GHI or not self._reachable:
             return ReferenceState.UNKNOWN
         else:
-            state = gh_issue_state(reference.identifier, self._project_root)
-            self._reachable = state is not ReferenceState.UNKNOWN
+            answer = gh_issue_read(reference.identifier, self._project_root).answer
+            state = _state_of(answer)
+            # GHI #1335: only no answer latches the arm off; MISSING is an answer (ruling 182).
+            self._reachable = answer is not IssueAnswer.UNANSWERED
         self._cache[key] = state
         return state
 
