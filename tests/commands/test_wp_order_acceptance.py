@@ -28,7 +28,8 @@ from gzkit.acceptance_store import (
 )
 from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV
-from gzkit.ledger import Ledger
+from gzkit.events import DiscrepancyRecordedEvent
+from gzkit.ledger import Ledger, ledger_row
 from gzkit.registries import RegistryError
 from tests.commands.test_wp_acceptance import _receipt
 from tests.commands.test_wp_order_run import _ORDER, _PACKAGE, _CommencedOrder
@@ -215,6 +216,39 @@ class TestTheOrdersGate(_OrderAcceptance):
             output = self.accept(code=3)
         self.assertNotIn("outside the footprint", output)
         self.assertNotIn(f"gz wp acceptance {_ORDER} status", output)
+
+    def carry(self, tag: str) -> str:
+        """Seat an open coordinator line graded due by a named event citing *tag* (ruling 171)."""
+        line = DiscrepancyRecordedEvent.model_validate(
+            {
+                "event": "discrepancy_recorded",
+                "id": "DSC-01-carry",
+                "discrepancy_id": "DSC-01-carry",
+                "order": _ORDER,
+                "work_package": _PACKAGE,
+                "grade": "due-by-event",
+                "due_by": "O9's carry",
+                "source": "left-broken",
+                "description": "The surface stays isolated past acceptance.",
+                "tag_id": tag,
+                "mx_session_id": "mx-1",
+            }
+        )
+        Ledger(Path(".gzkit") / "ledger.jsonl").append(ledger_row(line))
+        return line.discrepancy_id
+
+    def test_a_carried_tag_is_accepted_and_the_verb_names_the_carry(self) -> None:
+        """Rulings 171 and 184: the verb books the carry and names it in its output."""
+        self.terminate()
+        tag = self.hang_a_tag()
+        line = self.carry(tag)
+        with mock.patch(_FOOTPRINT, return_value=None):
+            output = self.accept()
+        self.assertEqual(self.state(), "accepted")
+        booked = self.rows("order_transitioned")[-1]["carried"]
+        self.assertEqual(booked, [{"tag_id": tag, "discrepancy_id": line}])
+        # output-contract: acceptance names each carry (ruling 171)
+        self.assertIn(f"carried: {tag} on {line}", output)
 
     def test_a_terminated_order_with_a_hung_tag_is_refused(self) -> None:
         """Rulings 135 and 142: a stopping exit excuses readiness, never a hung tag."""

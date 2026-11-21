@@ -34,14 +34,12 @@ from gzkit.ledger import Ledger, ledger_row
 from gzkit.models.catalog import Catalog, Criterion, Order, RepairReq, WorkPackage
 from gzkit.mx.discrepancies import (
     DiscrepancyClear,
-    DiscrepancyError,
     DiscrepancyRecord,
     DiscrepancyUnavailableError,
-    discrepancy_list,
-    open_discrepancies,
     record_discrepancy,
     record_discrepancy_clear,
 )
+from gzkit.mx.record_rows import DiscrepancyError, discrepancy_list, open_discrepancies
 from gzkit.order_ledger import OrderMove, record_order_transition
 from gzkit.work_package_ledger import TransitionRequest, record_work_package_transition
 from gzkit.work_package_run import (
@@ -917,6 +915,55 @@ class ClearRefusalTests(_DiscrepancyCase):
             "--root-cause is blank",
             lambda: self.clear(self.line.id, entry="ENT-01-fixed", root_cause=" "),
         )
+
+
+class CarryClearTests(_DiscrepancyCase):
+    """Ruling 185: a line acceptance carried a tag on is cleared only by that tag's clear."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.seat_tag("TAG-01-size")
+        self.line = self.recorded(
+            grade="due-by-event", due_by="O9's carry", tag="TAG-01-size", slug="carry"
+        )
+        self.move(_ORDER, "accepted", acceptance_ready=True)
+        self.seat_entry("ENT-01-fixed")
+
+    def clear_the_tag(self) -> None:
+        clear = {
+            "event": "tag_cleared",
+            "id": "TAG-01-size",
+            "tag_id": "TAG-01-size",
+            "order": _ORDER,
+            "work_package": _REPAIR,
+            "dispatch_id": "D-00000000000000bb",
+            "hanging_dispatch_id": "D-00000000000000aa",
+            "position_found": "advisory",
+            "authorized_by_session": _SESSION,
+            "mx_session_id": _SESSION,
+        }
+        self.ledger.append(ledger_row(TagClearedEvent.model_validate(clear)))
+
+    def test_other_evidence_is_refused_while_the_tag_hangs(self) -> None:
+        """Ruling 185: an entry or a filed GHI does not take a carrying line off the list."""
+        self.assert_refused("ruling 185", lambda: self.clear(self.line.id, entry="ENT-01-fixed"))
+        self.assert_refused("ruling 185", lambda: self.clear(self.line.id, ghi=1400))
+
+    def test_another_cleared_tag_is_refused(self) -> None:
+        """Ruling 185: the evidence is the carried tag's own clear."""
+        self.seat_tag("TAG-02-other", cleared=True)
+        self.assert_refused("ruling 185", lambda: self.clear(self.line.id, tag="TAG-02-other"))
+
+    def test_the_carried_tags_clear_clears_the_line(self) -> None:
+        """Ruling 185: once its tag is cleared, the line clears citing that tag."""
+        self.clear_the_tag()
+        self.assert_refused("ruling 185", lambda: self.clear(self.line.id, entry="ENT-01-fixed"))
+        self.assertEqual(self.cleared(self.line.id, tag="TAG-01-size").tag_id, "TAG-01-size")
+
+    def test_a_line_no_acceptance_carried_clears_as_before(self) -> None:
+        """Ruling 185 binds only a carrying line; another line clears on any evidence."""
+        other = self.recorded(grade="due-by-event", due_by="the fix", slug="other")
+        self.assertEqual(self.cleared(other.id, entry="ENT-01-fixed").entry_id, "ENT-01-fixed")
 
 
 class ListTests(_DiscrepancyCase):

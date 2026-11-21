@@ -380,10 +380,12 @@ def _check_repair_close(ledger: Ledger, package: WorkPackage, move: TransitionRe
     ]:
         _refuse(
             f"Repair package {package.id} closes only once every tag its orders hung is "
-            f"cleared; {', '.join(hung)} still hangs (refusal 6, RP-12 rulings 30 "
-            "and 142). Acceptance refuses an order over a hung tag, so a closed order holding "
-            "one was accepted before that refusal: its clear or carry waits on O4's "
-            "discrepancy record, and the package stays open until then."
+            f"cleared; {', '.join(hung)} still hangs (refusal 6, RP-12 rulings 30, 142 "
+            "and 171). A closed order holds one when its acceptance carried the tag on an "
+            "open due-by line and its Gate 5 paused it, or when it was accepted before the "
+            "hung-tag refusal landed: clear the tag through a Restoration dispatch (`uv run "
+            "gz wp tag authorize <TAG-id>`, then `uv run gz wp tag clear`), and the package "
+            "stays open until then."
         )
 
 

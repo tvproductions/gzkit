@@ -2843,6 +2843,9 @@
             "string",
             "null"
           ]
+        },
+        "carried": {
+          "type": "array"
         }
       },
       "conditional": [

@@ -23,7 +23,7 @@ refusal writes nothing, and every check the ledger can answer runs before `gh` i
 import re
 from typing import TYPE_CHECKING, NoReturn, Protocol
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.events import (
     SLUG_PATTERN,
@@ -34,10 +34,11 @@ from gzkit.events import (
 )
 from gzkit.insights.recurrence import check_recurrence
 from gzkit.ledger import ledger_row
-from gzkit.mx.entries import PERFORMERS, maintenance_record, malformed_row_message
+from gzkit.mx.entries import PERFORMERS, maintenance_record
+from gzkit.mx.record_rows import DUE_BY, DiscrepancyError, discrepancy_list
 from gzkit.mx.series import next_series_id
 from gzkit.mx.tag_out import tag_log
-from gzkit.order_ledger import TERMINATED, order_state
+from gzkit.order_ledger import TERMINATED, carried_tags, order_state
 from gzkit.work_package_ledger import work_package_state
 from gzkit.work_package_run import dispatch_over, find_dispatch
 
@@ -45,21 +46,15 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from datetime import datetime
 
-    from gzkit.ledger import Ledger, LedgerEvent
+    from gzkit.ledger import Ledger
     from gzkit.models.catalog import Catalog
 
 #: The grade that holds return to service (ruling 9).
 BLOCKS: DiscrepancyGrade = "blocks-return-to-service"
-#: The grade a line is due by a named event under (rulings 9 and 179).
-DUE_BY: DiscrepancyGrade = "due-by-event"
 #: The source a performer's stamped call records (ruling 172).
 FOUND_IN_WORK: DiscrepancySource = "found-in-work"
 #: A discrepancy's slug: lowercase words joined by hyphens, as an entry's (ruling 169).
 _SLUG = re.compile(f"^{SLUG_PATTERN}$")
-
-
-class DiscrepancyError(ValueError):
-    """A list-of-discrepancies act the ruled grammar refuses; nothing was written."""
 
 
 class DiscrepancyUnavailableError(DiscrepancyError):
@@ -123,66 +118,8 @@ class DiscrepancyClear(BaseModel):
     recurs: tuple[str, ...] = Field((), description="Citations the recurrence check reads")
 
 
-class Discrepancy(BaseModel):
-    """One line of the list as its view reads it: the record, its clear, whether open."""
-
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    record: DiscrepancyRecordedEvent = Field(..., description="The line as recorded")
-    clear: DiscrepancyClearedEvent | None = Field(None, description="Its clear, None while open")
-
-    @property
-    def is_open(self) -> bool:
-        """Whether the line is still on the list: it has no clear."""
-        return self.clear is None
-
-
 def _refuse(message: str) -> NoReturn:
     raise DiscrepancyError(message)
-
-
-def _parsed[T: BaseModel](ledger: Ledger, event_type: str, model: type[T]) -> list[T]:
-    rows: list[T] = []
-    for row in ledger.query(event_type=event_type):
-        try:
-            rows.append(model.model_validate(row.model_dump()))
-        except ValidationError as exc:
-            _refuse(_malformed(row, exc))
-    return rows
-
-
-def _malformed(row: LedgerEvent, exc: ValidationError) -> str:
-    return malformed_row_message(row, exc, "the list of discrepancies cannot be read", ruling=9)
-
-
-def discrepancy_list(ledger: Ledger) -> list[Discrepancy]:
-    """Read every line the ledger records, oldest first, each with its clear (ruling 9).
-
-    A void correction drops a row from the live stream, so a malformed row is
-    recovered by voiding it, never by editing the ledger. A line's first clear is its
-    clear; the writer refuses a second.
-
-    Returns:
-        Each line the live ledger holds.
-
-    """
-    clears: dict[str, DiscrepancyClearedEvent] = {}
-    for clear in _parsed(ledger, "discrepancy_cleared", DiscrepancyClearedEvent):
-        clears.setdefault(clear.discrepancy_id, clear)
-    return [
-        Discrepancy(record=record, clear=clears.get(record.discrepancy_id))
-        for record in _parsed(ledger, "discrepancy_recorded", DiscrepancyRecordedEvent)
-    ]
-
-
-def open_discrepancies(ledger: Ledger) -> list[Discrepancy]:
-    """Read the lines still open, the list's default view.
-
-    Returns:
-        The lines with no clear, oldest first.
-
-    """
-    return [line for line in discrepancy_list(ledger) if line.is_open]
 
 
 def next_discrepancy_id(ledger: Ledger, slug: str) -> str:
@@ -587,6 +524,25 @@ def _check_issue(number: int, witnesses: ClearWitnesses) -> None:
         )
 
 
+def _check_carry_clear(
+    ledger: Ledger, line: DiscrepancyRecordedEvent, request: DiscrepancyClear
+) -> None:
+    """Refuse a carrying line's clear on any evidence but its carried tag's clear (ruling 185)."""
+    carry = next(
+        (c for c in carried_tags(ledger, line.order) if c.discrepancy_id == line.discrepancy_id),
+        None,
+    )
+    if carry is None:
+        return
+    if request.tag != carry.tag_id or request.ghi is not None:
+        _refuse(
+            f"{line.discrepancy_id} carries {carry.tag_id} past {line.order}'s acceptance, so "
+            "it stays on the list while the surface is isolated and is cleared only by that "
+            f"tag's clear (RP-12 ruling 185). Once {carry.tag_id} is cleared, clear the line "
+            f"with `uv run gz wp discrepancy clear {line.discrepancy_id} --tag {carry.tag_id}`."
+        )
+
+
 def record_discrepancy_clear(
     ledger: Ledger,
     request: DiscrepancyClear,
@@ -612,6 +568,7 @@ def record_discrepancy_clear(
         )
     _check_session(mx_session_id, "clear")
     line = _open_line(ledger, request.discrepancy)
+    _check_carry_clear(ledger, line, request)
     _check_evidence(ledger, request, line.work_package)
     recurs = _check_cause(request, line.grade, witnesses)
     if request.ghi is not None:

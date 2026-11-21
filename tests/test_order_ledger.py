@@ -16,8 +16,14 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING
 
-from gzkit.events import BaselinedReq, OrderTransitionedEvent, parse_typed_event
-from gzkit.ledger import Ledger
+from gzkit.events import (
+    BaselinedReq,
+    DiscrepancyClearedEvent,
+    DiscrepancyRecordedEvent,
+    OrderTransitionedEvent,
+    parse_typed_event,
+)
+from gzkit.ledger import Ledger, ledger_row
 from gzkit.models.catalog import (
     Alteration,
     Catalog,
@@ -27,6 +33,7 @@ from gzkit.models.catalog import (
     RepairReq,
     WorkPackage,
 )
+from gzkit.mx.discrepancies import DiscrepancyRecord, record_discrepancy
 from gzkit.mx.tag_rows import TagOutError
 from gzkit.ontology.corpus import project_corpus
 from gzkit.order_ledger import (
@@ -843,3 +850,129 @@ class AcceptanceTagTests(_OrderCase):
         seat_issue(self.ledger, 2, order="ORD-09-other")
         seat_hang(self.ledger, 2, order="ORD-09-other")
         self.assertEqual(self.move("accepted", acceptance_ready=True).to_state, "accepted")
+
+
+def seat_cleared_line(ledger: Ledger, discrepancy_id: str) -> None:
+    """Seat a line's clear directly, so a test reads a line off the list (ruling 9)."""
+    clear = DiscrepancyClearedEvent.model_validate(
+        {
+            "event": "discrepancy_cleared",
+            "id": discrepancy_id,
+            "discrepancy_id": discrepancy_id,
+            "order": "ORD-01-import",
+            "work_package": "WP-01-stamp",
+            "ghi": 1301,
+            "mx_session_id": "mx-1",
+        }
+    )
+    ledger.append(ledger_row(clear))
+
+
+class CarryTests(_OrderCase):
+    """Rulings 30, 142, 171, 184 and 186: a due-by line carries a hung tag past acceptance."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.walk_to("frozen")
+        self.hung = seat_issue(self.ledger, 1)
+        seat_hang(self.ledger, 1)
+        self.move("commenced")
+
+    def line(self, slug: str = "carry", **fields: object) -> str:
+        """Record a coordinator line on the order citing the hung tag, by default."""
+        request = DiscrepancyRecord.model_validate(
+            {
+                "slug": slug,
+                "grade": "due-by-event",
+                "source": "left-broken",
+                "description": "The surface stays isolated past acceptance.",
+                "due_by": "O9's carry",
+                "order": "ORD-01-import",
+                "tag": self.hung,
+                **fields,
+            }
+        )
+        recorded = record_discrepancy(
+            self.catalog, self.ledger, request, stamped_id=None, mx_session_id="mx-1"
+        )
+        return recorded.discrepancy_id
+
+    def test_a_carried_tag_is_accepted_and_the_carry_is_booked(self) -> None:
+        """Rulings 171 and 184: the accepted move books each hung tag with the line carrying it."""
+        carrying = self.line()
+        event = self.move("accepted", acceptance_ready=True)
+        self.assertEqual(event.to_state, "accepted")
+        self.assertEqual(
+            [(carry.tag_id, carry.discrepancy_id) for carry in event.carried],
+            [(self.hung, carrying)],
+        )
+
+    def test_two_lines_on_one_tag_hold_acceptance_and_both_are_named(self) -> None:
+        """Ruling 186: one line carries a tag, so two qualifying lines refuse it."""
+        first, second = self.line("first"), self.line("second", due_by="the RP-12 exit")
+        refusal = self.assert_refused("accepted", acceptance_ready=True)
+        self.assertIn("ruling 186", refusal)
+        self.assertIn(first, refusal)
+        self.assertIn(second, refusal)
+
+    def test_only_an_open_coordinator_due_by_line_carries(self) -> None:
+        """Ruling 171: a blocking line does not carry, and neither does a cleared one."""
+        self.line(grade="blocks-return-to-service", due_by=None)
+        self.assertIn(self.hung, self.assert_refused("accepted", acceptance_ready=True))
+
+    def test_a_performers_line_does_not_carry(self) -> None:
+        """Ruling 171: the carry is the coordinator's unstamped line; a stamped one is not."""
+        stamped = DiscrepancyRecordedEvent.model_validate(
+            {
+                "event": "discrepancy_recorded",
+                "id": "DSC-01-found",
+                "discrepancy_id": "DSC-01-found",
+                "order": "ORD-01-import",
+                "work_package": "WP-01-stamp",
+                "grade": "due-by-event",
+                "due_by": "O9's carry",
+                "source": "found-in-work",
+                "description": "Found while repairing.",
+                "tag_id": self.hung,
+                "dispatch_id": "D-0123456789abcdef",
+                "mx_session_id": "mx-1",
+            }
+        )
+        self.ledger.append(ledger_row(stamped))
+        self.assertIn(self.hung, self.assert_refused("accepted", acceptance_ready=True))
+
+    def test_a_cleared_line_carries_nothing(self) -> None:
+        """Ruling 171: the carry reads open lines; a cleared one is off the list."""
+        carrying = self.line()
+        seat_cleared_line(self.ledger, carrying)
+        self.assertIn(self.hung, self.assert_refused("accepted", acceptance_ready=True))
+
+    def test_an_order_with_no_hung_tag_books_no_carry(self) -> None:
+        seat_clear(self.ledger, 1)
+        self.assertEqual(self.move("accepted", acceptance_ready=True).carried, ())
+
+    def close(self, decision: str, **fields: object) -> OrderTransitionedEvent:
+        words = {"attestor": "g0", "attestation_text": "ruled"}
+        return self.move("closed", decision=decision, **words, **fields)
+
+    def test_a_carried_tag_still_hung_admits_a_pause_alone(self) -> None:
+        """Ruling 171: while a carried tag hangs, Gate 5 refuses every decision but pause."""
+        self.line()
+        self.move("accepted", acceptance_ready=True)
+        words = {"attestor": "g0", "attestation_text": "ruled"}
+        for decision, fields in (
+            ("proceed", {"residual_risk": "none"}),
+            ("terminate", {}),
+        ):
+            with self.subTest(decision=decision):
+                refusal = self.assert_refused("closed", decision=decision, **words, **fields)
+                self.assertIn("ruling 171", refusal)
+                self.assertIn(self.hung, refusal)
+        self.assertEqual(self.close("pause", revisit_condition="O9's carry").decision, "pause")
+
+    def test_a_carried_tag_cleared_before_gate_5_admits_any_decision(self) -> None:
+        """Ruling 171: the pause binds only while the carried tag is still hung."""
+        self.line()
+        self.move("accepted", acceptance_ready=True)
+        seat_clear(self.ledger, 1)
+        self.assertEqual(self.close("proceed", residual_risk="none").decision, "proceed")

@@ -54,6 +54,11 @@ with its evidence (RP-12 ruling 9). `docs/governance/harbor-ro12-contractor-kit.
   as `#1412`. Otherwise the fields are optional, and
   a field given is never blank (rulings 9 and 181). `--recurs` on a blocking line
   is refused.
+- A line an order's acceptance carried a tag on (the accepted move's `carried`,
+  rulings 171 and 184) stays on the list while the surface is isolated: it is
+  cleared only by that tag's clear, citing it with `--tag` once its
+  `Restoration` dispatch has cleared it. An entry, another tag or `--ghi` is
+  refused (ruling 185).
 - A line is cleared once.
 
 A refusal names what failed, why and what to do, and books nothing.
@@ -116,7 +121,7 @@ clear it again; nothing was written.
 | 0 | Cleared |
 | 1 | The project is not initialized, or `--recurs` was given and `data/recurrence_threshold.json` is missing or malformed |
 | 2 | Usage or System/IO error, or the GitHub API gave no answer about the issue `--ghi` cites or a GHI `--recurs` cites; nothing booked |
-| 3 | Refused: a subagent's call, no MX session open or a marker present but not on (its repair named), a line not recorded or already cleared, no evidence, an entry or tag not of the line's package or a tag not cleared, an issue number below 1, an issue the API says does not exist or an issue closed, a blank field, root cause and corrective action missing where the line blocks return to service or recurs, `--recurs` on a blocking line, short of the threshold or naming nothing, or an entry or tag row the clear reads that does not parse (its void named); nothing booked |
+| 3 | Refused: a subagent's call, no MX session open or a marker present but not on (its repair named), a line not recorded or already cleared, no evidence, an entry or tag not of the line's package or a tag not cleared, a carrying line cleared by anything but its carried tag's clear, an issue number below 1, an issue the API says does not exist or an issue closed, a blank field, root cause and corrective action missing where the line blocks return to service or recurs, `--recurs` on a blocking line, short of the threshold or naming nothing, or an entry or tag row the clear reads that does not parse (its void named); nothing booked |
 
 ## See also
 

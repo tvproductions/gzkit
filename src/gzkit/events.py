@@ -2035,6 +2035,19 @@ class WorkPackageUnblockedEvent(_EventBase):
 OrderState = Literal["opened", "frozen", "commenced", "accepted", "closed"]
 
 
+class CarriedTag(BaseModel):
+    """One hung tag an order's acceptance carries, and the line that carries it (ruling 184)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    tag_id: str = Field(..., pattern=f"^{TAG_ID_PATTERN}$", description="The hung tag carried")
+    discrepancy_id: str = Field(
+        ...,
+        pattern=f"^{DISCREPANCY_ID_PATTERN}$",
+        description="The open due-by line that carries it (ruling 171)",
+    )
+
+
 class OrderTransitionedEvent(_EventBase):
     """order_transitioned event — an order moved in its lifecycle (RP-12 O2 task 3).
 
@@ -2076,6 +2089,9 @@ class OrderTransitionedEvent(_EventBase):
     )
     no_isolation: str | None = Field(
         None, description="Why an order with no tag isolates nothing, at commenced (ruling 117)"
+    )
+    carried: tuple[CarriedTag, ...] = Field(
+        (), description="Each hung tag acceptance carries and its line, at accepted (ruling 184)"
     )
 
 

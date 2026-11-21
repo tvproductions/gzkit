@@ -37,12 +37,21 @@ a file outside the footprint and a hung tag beside the others (ruling 88):
    freeze sealed it (ruling 56). The order and requirement stores, which `gz wp
    order new` and `gz wp req new` write, never count, as the work-package store
    and the ledger do not (ruling 66).
-3. Every tag the order hung is cleared (refusal 6, rulings 129 and 142): a tag
-   hung and not cleared would leave its surface isolated past acceptance, so the
-   refusal names each such tag and the clear's steps, [`gz wp tag
-   authorize`](wp-tag-authorize.md), a `Restoration` dispatch and its subagent's
-   [`gz wp tag clear`](wp-tag-clear.md). Until O4's discrepancy record admits a
-   carry, no order is accepted over a hung tag, whatever its stop.
+3. Every tag the order hung is cleared or carried (refusal 6, rulings 129, 142
+   and 171): a tag hung and not cleared would leave its surface isolated past
+   acceptance unrecorded, so the refusal names each such tag and both recoveries.
+   The clear is [`gz wp tag authorize`](wp-tag-authorize.md), a `Restoration`
+   dispatch and its subagent's [`gz wp tag clear`](wp-tag-clear.md). The carry is
+   one open line on the order, graded `due-by-event`, recorded by the
+   coordinator's unstamped [`gz wp discrepancy record`](wp-discrepancy-record.md)
+   and citing the tag with `--tag`; a performer's line, a blocking line and a
+   cleared line carry nothing. Two such lines on one tag refuse it, each named,
+   until all but one is cleared (ruling 186). The accepted move books each carry
+   as `carried`, the tag with its line, and the verb prints it (ruling 184); the
+   order's Gate 5 then takes a pause alone while a carried tag hangs (ruling 171,
+   [`gz wp order close`](wp-order-close.md)), and the line is cleared only by
+   that tag's clear (ruling 185, [`gz wp discrepancy
+   clear`](wp-discrepancy-clear.md)). The rule holds whatever the order's stop.
 
 A move that passes crosses the airlock outward on the repair package's slice: it
 books one `airlock_out` and prints the verdict, as [`gz wp accept`](wp-accept.md)
@@ -92,19 +101,29 @@ ORD-02-matcher: commenced -> accepted
 ```
 
 Captured in-process from the acceptance wiring fixture
-(`tests/commands/test_wp_order_acceptance.py`), `ORD-01-import` read ready with
-`TAG-01-stamp` hung on it and not cleared:
+(`tests/commands/test_wp_order_acceptance.py`), `ORD-01-import` stopped by a
+`terminate` exit with `TAG-01-stamp` hung on it and not cleared, then with an
+open `due-by-event` line, `DSC-01-carry`, citing the tag (line breaks added to
+the refusal):
 
 ```console
 $ uv run gz wp order accept ORD-01-import --evidence final-inspection
-Order ORD-01-import has tag(s) hung and not cleared: TAG-01-stamp. It is
-accepted only once every tag it hung is cleared, so no surface is left isolated
-past acceptance (refusal 6; RP-12 rulings 129 and 142). For each, the
-coordinator authorizes the clearance (`uv run gz wp tag authorize
-TAG-01-stamp`), books a Restoration dispatch (`uv run gz wp dispatch WP-01-stamp
---order ORD-01-import --role Restoration --model <tier>`), and its subagent runs
-`uv run gz wp tag clear TAG-01-stamp --dispatch D-<id> --position-found
-<position>`; then accept.
+Order ORD-01-import has tag(s) hung, not cleared and not carried: TAG-01-stamp.
+It is accepted only once every tag it hung is cleared or carried, so no surface
+is left isolated past acceptance unrecorded (refusal 6; RP-12 rulings 129, 142
+and 171). To clear one, the coordinator authorizes the clearance (`uv run gz wp
+tag authorize TAG-01-stamp`), books a Restoration dispatch (`uv run gz wp
+dispatch WP-01-stamp --order ORD-01-import --role Restoration --model <tier>`),
+and its subagent runs `uv run gz wp tag clear TAG-01-stamp --dispatch D-<id>
+--position-found <position>`. To carry one, the coordinator records a line
+graded due by a named event that cites it (`uv run gz wp discrepancy record
+--order ORD-01-import --tag TAG-01-stamp --grade due-by-event --due-by
+"<event>" --source left-broken --slug <slug> --description "<what>"`), and its
+Gate 5 then takes a pause alone while the tag hangs. Then accept.
+$ uv run gz wp order accept ORD-01-import --evidence final-inspection
+ORD-01-import: commenced -> accepted
+  carried: TAG-01-stamp on DSC-01-carry (Gate 5: pause alone)
+  airlock out: unobserved
 ```
 
 ## Exit codes
@@ -114,7 +133,7 @@ TAG-01-stamp`), books a Restoration dispatch (`uv run gz wp dispatch WP-01-stamp
 | 0 | Accepted |
 | 1 | The order, or its work package, is not in the store |
 | 2 | Usage error |
-| 3 | The move is refused: a booked order has lost its record, the lifecycle refuses it, the order is blocked on the operator, the package is not initiated or is closed, acceptance does not read ready, the round limit is used, a file lies outside the footprint, or a tag the order hung is not cleared; nothing booked |
+| 3 | The move is refused: a booked order has lost its record, the lifecycle refuses it, the order is blocked on the operator, the package is not initiated or is closed, acceptance does not read ready, the round limit is used, a file lies outside the footprint, a tag the order hung is neither cleared nor carried, or two open lines carry one tag; nothing booked |
 
 ## See also
 

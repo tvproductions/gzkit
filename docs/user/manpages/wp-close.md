@@ -32,9 +32,9 @@ only `initiated` to `closed`, its orders carrying the run (RP-12 ruling 44). Gat
 sits at each of its orders, [`gz wp order close`](wp-order-close.md), so the
 package's close is refused until at least one order is closed and while any is
 not (ruling 79), and while a tag any of its orders hung is not cleared (refusal
-6, rulings 30 and 142); since acceptance refuses an order over a hung tag, that
-state arises only from an order accepted before the refusal landed, and its
-clear or carry waits on O4's discrepancy record. The close carries no `--decision`
+6, rulings 30, 142 and 171): a closed order holds one when its acceptance carried
+the tag on an open due-by line and its Gate 5 paused it, or when it was accepted
+before the hung-tag refusal landed, and its clear is the recovery. The close carries no `--decision`
 of its own, and records each order's decision as the ledger holds it in
 `order_decisions` (ruling 76) and each repair REQ a `proceed` holds in `held_reqs`
 (ruling 78), both printed after the move; it keeps the attestor, the residual risk, the
@@ -71,18 +71,22 @@ still stands open. Close each through Gate 5 with `uv run gz wp order close
 <ORD-id>` first (RP-12 ruling 76).
 ```
 
-Captured in-process from the order wiring fixture
-(`tests/commands/test_wp_order_run.py`), `ORD-01-import` closed with
-`TAG-01-stamp` still hung on it, its accepted and closed moves seated by hand
-since acceptance now refuses that state:
+Captured in-process from the acceptance wiring fixture
+(`tests/commands/test_wp_order_acceptance.py`), `ORD-01-import` stopped by a
+`terminate` exit, accepted with `TAG-01-stamp` hung and carried on the open
+`due-by-event` line `DSC-01-carry`, and closed through Gate 5 as a `pause`
+([`gz wp order close`](wp-order-close.md)), the tag still hung (line breaks
+added):
 
 ```console
 $ uv run gz wp close WP-01-stamp --attestor g0 --residual-risk none --evidence closeout
 Repair package WP-01-stamp closes only once every tag its orders hung is
-cleared; TAG-01-stamp (ORD-01-import) still hangs (refusal 6, RP-12 rulings 30
-and 142). Acceptance refuses an order over a hung tag, so a closed order holding
-one was accepted before that refusal: its clear or carry waits on O4's
-discrepancy record, and the package stays open until then.
+cleared; TAG-01-stamp (ORD-01-import) still hangs (refusal 6, RP-12 rulings 30,
+142 and 171). A closed order holds one when its acceptance carried the tag on an
+open due-by line and its Gate 5 paused it, or when it was accepted before the
+hung-tag refusal landed: clear the tag through a Restoration dispatch (`uv run
+gz wp tag authorize <TAG-id>`, then `uv run gz wp tag clear`), and the package
+stays open until then.
 ```
 
 Once `ORD-01-import` is closed through Gate 5 too:

@@ -26,6 +26,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from gzkit.events import SLUG_PATTERN, EntryBookedEvent, OrderTransitionedEvent
 from gzkit.ledger import ledger_row
+from gzkit.mx.record_rows import malformed_row_message
 from gzkit.mx.series import next_series_id
 from gzkit.order_ledger import is_order_blocked, order_state
 from gzkit.work_package_run import (
@@ -67,26 +68,6 @@ class EntryBook(BaseModel):
 
 def _refuse(message: str) -> NoReturn:
     raise EntryError(message)
-
-
-def malformed_row_message(
-    row: LedgerEvent, exc: ValidationError, reading: str, *, ruling: int = 8
-) -> str:
-    """Name a row its event's shape does not admit and the void that recovers it.
-
-    Shared by the maintenance record and the list of discrepancies (rulings 8 and 9).
-
-    Returns:
-        The refusal's text.
-
-    """
-    return (
-        f"The ledger's {row.event} row {row.id!r} at {row.ts} does not parse "
-        f"({exc.error_count()} error(s)), so {reading} (RP-12 ruling {ruling}). The ledger is "
-        f"append-only; void the row with `uv run gz ledger correct --subject-event {row.event} "
-        f"--subject-id {row.id} --subject-ts {row.ts} --disposition void --cause agent-error "
-        '--reason "<why>" --attestor g0`, then read it again.'
-    )
 
 
 def _refuse_malformed(row: LedgerEvent, exc: ValidationError, reading: str) -> NoReturn:

@@ -70,8 +70,13 @@ is refused (ruling 77). A booked order that lost its record refuses the close
 (ruling 70), an order blocked on the operator does not move (ruling 59), and the
 repair package must be initiated and not closed (rulings 2 and 44).
 
-The tag-out log a `pause` clears or carries (ruling 30) does not exist yet, so a
-pause records its revisit condition alone.
+A tag the order's acceptance carried (rulings 171 and 184, [`gz wp order
+accept`](wp-order-accept.md)) holds Gate 5 to a `pause` while it hangs: every
+other decision is refused, naming each carried tag and its line, since the surface
+is still isolated (ruling 171, on ruling 30's pause). Once the tag is cleared,
+any decision is admitted. The paused order stays closed with its tag hung, and the
+repair package's close stays refused over the tag until its clear (refusal 6,
+[`gz wp close`](wp-close.md)).
 
 A refusal names what failed, why, and the call to re-run, and books nothing.
 
@@ -128,6 +133,26 @@ ledger:
 {"schema":"gzkit.ledger.v1","event":"order_transitioned","id":"ORD-01-import","ts":"2026-11-08T10:00:25.236618+00:00","work_package":"WP-01-stamp","from_state":"accepted","decision":"terminate","baseline":[],"to_state":"closed","attestor":"g0","modules":[],"order":"ORD-01-import","approved_alterations":[],"attestation_text":"the stop stands","evidence":"gate 5"}
 ```
 
+Captured in-process from the acceptance wiring fixture
+(`tests/commands/test_wp_order_acceptance.py`), `ORD-01-import` stopped by a
+`terminate` exit and accepted with `TAG-01-stamp` hung and carried on the open
+`due-by-event` line `DSC-01-carry` ([`gz wp order accept`](wp-order-accept.md)),
+the tag still hung (line breaks added to the refusal):
+
+```console
+$ uv run gz wp order close ORD-01-import --decision terminate --attestor g0 --attestation-text ruled --evidence e
+Order ORD-01-import's acceptance carried tag(s) that still hang: TAG-01-stamp
+(carried by DSC-01-carry). While a carried tag hangs, Gate 5 takes a pause
+alone, since the surface is still isolated (RP-12 ruling 171, on ruling 30's
+pause). Close it as `pause` with --revisit-condition, or clear the tag first.
+Nothing was written; correct the call and re-run `uv run gz wp order close
+<ORD-id> --decision <proceed|redirect|pause|terminate> --attestor g0
+--attestation-text <words> --evidence <text> [--residual-risk <text> |
+--superseded-by <ORD-id> | --revisit-condition <text>]`.
+$ uv run gz wp order close ORD-01-import --decision pause --revisit-condition "O9's carry" --attestor g0 --attestation-text ruled --evidence e
+ORD-01-import: accepted -> closed
+```
+
 ## Exit codes
 
 | Code | Meaning |
@@ -135,7 +160,7 @@ ledger:
 | 0 | Closed |
 | 1 | The order is not in the store |
 | 2 | Usage error |
-| 3 | The close is refused: a subagent's call, a booked order that lost its record, the lifecycle, the order's block, the package's state, a proceed on an order that delivered nothing or on a REQ another proceed holds, missing words or decision, a decision's field missing or another's given, or a redirect's successor; nothing booked |
+| 3 | The close is refused: a subagent's call, a booked order that lost its record, the lifecycle, the order's block, the package's state, a proceed on an order that delivered nothing or on a REQ another proceed holds, missing words or decision, a decision's field missing or another's given, a redirect's successor, or any decision but pause while a carried tag hangs; nothing booked |
 
 ## See also
 

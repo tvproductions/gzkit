@@ -302,6 +302,10 @@ def _emit_move(event: OrderTransitionedEvent, crossed: str | None, *, as_json: b
     fmt.emit(
         event if as_json else f"{event.id}: {event.from_state or 'nothing'} -> {event.to_state}"
     )
+    if not as_json:
+        # Ruling 171: acceptance names each carry; its Gate 5 then takes a pause alone.
+        for carry in event.carried:
+            fmt.emit(f"  carried: {carry.tag_id} on {carry.discrepancy_id} (Gate 5: pause alone)")
     if crossed and not as_json:
         fmt.emit(f"  {crossed}")
 
