@@ -2388,3 +2388,5 @@
 {"ts": "2026-11-20T20:45:09Z", "source": "20261120T204504Z-rp12-o4-ghis-filed.md", "text": "Delete the partial pack left by the timed-out fetch (verbatim: \"get rid of it\")."}
 {"ts": "2026-11-20T20:45:09Z", "source": "20261120T204504Z-rp12-o4-ghis-filed.md", "text": "The status line shows directory and git branch, model and context used, effort and rate limits (by selection: \"Directory and git branch (Rec.), Model and context used (Rec.), Effort and rate limits\")."}
 {"ts": "2026-11-20T23:23:07Z", "source": "20261120T232304Z-rp12-o4-resumed-paused.md", "text": "Pause the resumed handoff: write the successor handoff and git sync rather than open O4 task 3 (verbatim: \"create handoff and git sync\")."}
+{"ts": "2026-11-21T05:20:05Z", "source": "20261121T052003Z-ghi1334-batched-reads.md", "text": "Fix the slow-start defect the orientation timing found (verbatim: \"fix GHI #1334\")."}
+{"ts": "2026-11-21T05:20:05Z", "source": "20261121T052003Z-ghi1334-batched-reads.md", "text": "File the two independent discoveries as GHIs, write a fresh handoff and sync (verbatim: \"file GHIs for the two insights, fresh handoff, git sync\")."}
