@@ -415,6 +415,19 @@ class TestRecordViewRendering(unittest.TestCase):
         self.assertIn("Fixes (2):", unrecorded)
 
 
+class TestEmptyRecordRendering(unittest.TestCase):
+    """A session with no entry and no unrecorded commit says so in each section (ruling 166)."""
+
+    def test_an_empty_record_and_no_unrecorded_work_each_read_as_none(self) -> None:
+        # output-contract: docs/user/manpages/mx-exit.md, the record's view with nothing in it
+        window = log.MxLog(session_id="s", opened_at="1970-01-01T00:00:00+00:00")
+        lines = log.render(window).splitlines()
+        record = lines.index("Maintenance record (0 entries):")
+        unrecorded = lines.index("Unrecorded work (0):")
+        self.assertEqual(lines[record + 1], "  (no entry booked in this session)")
+        self.assertEqual(lines[unrecorded + 1], "  (none)")
+
+
 class TestExitRefusesAnUnreadableRecord(SilencedConsoleTestCase):
     """Ruling 190: the operator never signs over a record that could not be read."""
 

@@ -609,6 +609,27 @@ class EntryBlockRendering(unittest.TestCase):
         self.assertEqual(lines[at + 1], f"{'':15}{continued}")
         self.assertEqual(lines[at + 2], "  Gate 5:      not signed")
 
+    def test_a_signed_entry_names_its_orders_gate_5(self) -> None:
+        # output-contract: docs/user/manpages/wp-entry-show.md, the Gate 5 line (ruling 8)
+        closed = OrderTransitionedEvent.model_validate(
+            {
+                "event": "order_transitioned",
+                "id": _ORDER,
+                "ts": "2026-11-21T10:00:00+00:00",
+                "order": _ORDER,
+                "work_package": _REPAIR,
+                "from_state": "accepted",
+                "to_state": "closed",
+                "evidence": "inspected",
+                "decision": "pause",
+                "attestor": "g0",
+                "attestation_text": "pause",
+                "residual_risk": "none",
+            }
+        )
+        lines = entry_block(RecordedEntry(entry=_entry(), gate5=closed), []).splitlines()
+        self.assertEqual(lines[-1], "  Gate 5:      g0, pause, 2026-11-21T10:00:00+00:00")
+
     def test_an_entry_no_commit_names_reads_not_landed(self) -> None:
         # output-contract: docs/user/manpages/wp-entry-show.md, ruling 167's reading
         lines = entry_block(RecordedEntry(entry=_entry()), []).splitlines()
