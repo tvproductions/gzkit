@@ -56,7 +56,7 @@ from gzkit.mx.tag_out import (
     record_tag_issue,
     tag_log,
 )
-from gzkit.order_ledger import OrderMove, record_order_transition
+from gzkit.order_ledger import OrderMove, is_order_blocked, record_order_transition
 from gzkit.work_package_ledger import (
     TransitionRequest,
     WorkPackageLedgerError,
@@ -1104,6 +1104,40 @@ class PausedCarryTests(_ClearanceCase):
         again: list[object] = []
         self.assertIsNone(_raised(lambda: again.append(clear("off", self.booked_restoration()))))
         self.assertIsInstance(again[0], TagClearedEvent)
+
+    def test_a_paused_orders_find_block_takes_no_exit(self) -> None:
+        """Ruling 199: the paused order's find block lifts with no exit; a stop is refused."""
+        self.pause()
+        self.authorize()
+        restorer = self.booked_restoration()
+        record_tag_clear(
+            self.catalog,
+            self.ledger,
+            self.tag.tag_id,
+            restorer,
+            "advisory",
+            stamped_id=restorer,
+            mx_session_id=_SESSION,
+            read_refutations=_Refutations(),
+        )
+        stop = UnblockRequest(
+            work_package=_REPAIR,
+            order=_ORDER,
+            ruling="stop it",
+            operator="g0",
+            exit_taken="terminate",
+        )
+        raised = _raised(lambda: record_work_package_unblock(self.catalog, self.ledger, stop))
+        self.assertIsInstance(raised, WorkPackageLedgerError)
+        # output-contract: the refusal cites ruling 199 and names the lift with no exit
+        self.assertIn("RP-12 ruling 199", str(raised))
+        self.assertTrue(is_order_blocked(self.ledger, _ORDER))
+        lift = UnblockRequest(
+            work_package=_REPAIR, order=_ORDER, ruling="put it back", operator="g0"
+        )
+        self.assertIsNone(
+            _raised(lambda: record_work_package_unblock(self.catalog, self.ledger, lift))
+        )
 
     def test_a_carry_closed_other_than_as_a_pause_clears_nothing(self) -> None:
         """Ruling 187 admits a paused order alone; a carry seated as closed otherwise is not."""

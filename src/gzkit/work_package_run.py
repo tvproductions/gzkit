@@ -1047,6 +1047,22 @@ def _exit_subjects(
     return [subject]
 
 
+def _check_paused_find_exit(ledger: Ledger, package_id: str, order: str) -> None:
+    """Refuse an exit on a paused order's find block (RP-12 ruling 199).
+
+    A closed order takes one block, the out-of-position find on a carried tag (ruling
+    188), and a stop there stops nothing, so it lifts with no exit.
+    """
+    if order_state(ledger, order) == "closed":
+        _refuse(
+            f"Order {order} is paused by Gate 5; its block is the out-of-position find "
+            "on a carried tag (RP-12 ruling 188), and it takes no exit, since a stop on a "
+            "closed order stops nothing (RP-12 ruling 199). Lift it with no exit, and a "
+            "Restoration dispatch then clears the tag in position: `uv run gz wp unblock "
+            f"{package_id} --order {order} --ruling <words> --operator <who>`."
+        )
+
+
 def record_work_package_unblock(
     catalog: Catalog, ledger: Ledger, request: UnblockRequest
 ) -> WorkPackageUnblockedEvent:
@@ -1071,6 +1087,8 @@ def record_work_package_unblock(
     if not request.ruling.strip() or not request.operator.strip():
         _refuse("An unblock carries the operator's ruling and who ruled.")
     block = _run_rows(ledger, "work_package_blocked", package.id, order)[-1]
+    if order is not None and request.exit_taken is not None:
+        _check_paused_find_exit(ledger, package.id, order)
     covered = _exit_subjects(
         package, request, list(block.extra["at_bound"]), list(block.extra["held"])
     )

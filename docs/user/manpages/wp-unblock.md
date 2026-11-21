@@ -45,6 +45,12 @@ on. A repair package's run is its orders' (ruling 44), so its unblock names the
 order, and one that does not is refused with exit 3. `--json` reports `blocked`
 for the order unblocked.
 
+An order Gate 5 paused with a carried tag still hung takes one block, the one an
+out-of-position find books on its clear (RP-12 ruling 188). That block lifts with
+no exit, and any exit is refused with exit 3: a stop on a closed order stops
+nothing (ruling 199). The lift lets a `Restoration` dispatch clear the tag in
+position.
+
 The exit names the act and does not perform it. A requirement that reaches the
 bound again after a reopening has only `departure`, `hold` and `terminate`.
 
@@ -81,7 +87,7 @@ Unblocked order ORD-01-import of WP-01-stamp.
 | 0 | The ruling was booked and the block cleared |
 | 1 | The work package is not in the store |
 | 2 | Usage error |
-| 3 | The unblock is refused, the package or order not blocked, the order not one of the package's, and a repair package's unblock with no order included; nothing was booked |
+| 3 | The unblock is refused, the package or order not blocked, the order not one of the package's, and a repair package's unblock with no order, and an exit on a paused order's find block, included; nothing was booked |
 
 ## See also
 
