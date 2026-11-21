@@ -260,6 +260,9 @@ class DirectDataReachIsRostered(unittest.TestCase):
             'value = getattr(response, "data")\n',
             'logger.info("data")\n',
             'data = response["data"]\n',
+            'label = ", ".join(["data", "x"])\n',
+            'label = sep.join("data")\n',
+            'query = JsonPath("data")\n',
         ):
             with self.subTest(body=body):
                 self._module("m.py", body)

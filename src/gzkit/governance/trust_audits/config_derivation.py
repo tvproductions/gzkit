@@ -62,7 +62,10 @@ _REACH_SCAN_EXEMPT = (
 _DATA_REACH_RE = re.compile(
     r"""["']data/[\w.-]+\.json["']"""  # "data/x.json"
     r"""|["']data["']\s*/"""  # "data" / ...
-    r"""|(?:Path|\bjoin|\bjoinpath)\([^()]*?["']data["']\s*[,)]"""  # Path(root, "data"), join
+    # Path(root, "data"), PurePosixPath("data"), os.path.join(root, "data"), .joinpath("data");
+    # never str.join or another *Path name (the GHI #1336 review)
+    r"""|(?:\b(?:Pure(?:Posix|Windows)?)?Path|\bpath\.join|\.joinpath)"""
+    r"""\([^()]*?["']data["']\s*[,)]"""
     r"""|/\s*["']data["']"""  # root / "data"
 )
 _RECOVER = "uv run gz validate --config-registry"
