@@ -468,8 +468,10 @@ def live_reference_checker(project_root: Path) -> LiveReferenceChecker:
     Resolving ``gz-skills#1`` here would answer with the LOCAL issue 1. That is
     not a missed check but a wrong one, and it reads exactly like a right one.
 
-    Results are memoized per reference, and a missing/failing ``gh`` latches the
-    GHI arm off so an offline run costs one failed call, not one per citation.
+    Results are memoized per reference, and a ``gh`` that gives no answer, absent,
+    unauthenticated or offline, latches the GHI arm off so an offline run costs one
+    failed call, not one per citation. An issue that does not exist is an answer, so
+    it does not latch the arm (GHI #1335, RP-12 ruling 182).
     The ledger arms carry no such latch: they read a local file, so a failure is
     per-reference rather than a broken transport. Build one checker per command
     invocation so the memo spans every citation that invocation renders.
