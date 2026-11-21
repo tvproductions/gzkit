@@ -243,30 +243,30 @@ def _read_batch(numbers: list[str], project_root: Path) -> dict[str, IssueRead]:
         return dict.fromkeys(numbers, _UNANSWERED)
     match payload:
         case {"data": {"repository": dict() as repository}}:
-            errors = payload.get("errors")
+            not_found = _not_found_aliases(payload.get("errors"))
         case _:
             return dict.fromkeys(numbers, _UNANSWERED)
-    not_found = {_not_found_alias(error) for error in errors} if isinstance(errors, list) else set()
     return {
         number: _node_read(repository.get(f"i{number}"), not_found=f"i{number}" in not_found)
         for number in numbers
     }
 
 
-def _not_found_alias(error: object) -> str | None:
-    """Return the alias a ``NOT_FOUND`` error names under ``repository``, else None.
+def _not_found_aliases(errors: object) -> set[str]:
+    """Return every alias a ``NOT_FOUND`` error names directly under ``repository``.
 
     Returns:
-        The alias, or None for any other error.
+        The aliases GitHub says resolve to no issue or pull request.
 
     """
-    if not isinstance(error, dict) or error.get("type") != "NOT_FOUND":
-        return None
-    match error.get("path"):
-        case ["repository", str() as alias]:
-            return alias
-        case _:
-            return None
+    if not isinstance(errors, list):
+        return set()
+    aliases: set[str] = set()
+    for error in errors:
+        match error:
+            case {"type": "NOT_FOUND", "path": ["repository", str() as alias]}:
+                aliases.add(alias)
+    return aliases
 
 
 def _node_read(node: object, *, not_found: bool) -> IssueRead:
@@ -276,16 +276,17 @@ def _node_read(node: object, *, not_found: bool) -> IssueRead:
         The node's answer.
 
     """
-    if node is None:
-        return _MISSING if not_found else _UNANSWERED
-    if not isinstance(node, dict):
-        return _UNANSWERED
-    kind = node.get("__typename")
-    if kind == "PullRequest":
-        return _MISSING
-    if kind != "Issue":
-        return _UNANSWERED
-    return _issue_from({"state": node.get("state", ""), "created_at": node.get("createdAt")})
+    match node:
+        case None:
+            return _MISSING if not_found else _UNANSWERED
+        case {"__typename": "PullRequest"}:
+            return _MISSING
+        case {"__typename": "Issue"}:
+            return _issue_from(
+                {"state": node.get("state", ""), "created_at": node.get("createdAt")}
+            )
+        case _:
+            return _UNANSWERED
 
 
 def _unique_prefix_entry(
@@ -506,18 +507,16 @@ class LiveReferenceChecker:
         if reference.repo is not None:
             return ReferenceState.UNKNOWN
         key = (reference.kind, reference.identifier)
-        ledger_arm = _LEDGER_ARMS.get(reference.kind)
-        if ledger_arm is not None:
-            if key not in self._cache:
-                self._cache[key] = ledger_arm(reference.identifier, self._project_root)
-            return self._cache[key]
         if key in self._cache:
             return self._cache[key]
-        if reference.kind is not ReferenceKind.GHI or not self._reachable:
+        ledger_arm = _LEDGER_ARMS.get(reference.kind)
+        if ledger_arm is not None:
+            state = ledger_arm(reference.identifier, self._project_root)
+        elif reference.kind is not ReferenceKind.GHI or not self._reachable:
             return ReferenceState.UNKNOWN
-        state = gh_issue_state(reference.identifier, self._project_root)
-        if state is ReferenceState.UNKNOWN:
-            self._reachable = False
+        else:
+            state = gh_issue_state(reference.identifier, self._project_root)
+            self._reachable = state is not ReferenceState.UNKNOWN
         self._cache[key] = state
         return state
 
@@ -526,7 +525,8 @@ class LiveReferenceChecker:
 
         A batch in which no number was answered is an unreachable ``gh``, and
         latches the arm off as a failed single read does. A number answered
-        MISSING is an answer, so it does not.
+        MISSING is an answer, so it does not. A number a batch that did answer
+        left unanswered is not memoized, so a later check asks it singly.
         """
         if not self._reachable:
             return
@@ -541,8 +541,7 @@ class LiveReferenceChecker:
         if not pending:
             return
         reads = gh_issue_reads(pending, self._project_root)
-        if all(read.answer is IssueAnswer.UNANSWERED for read in reads.values()):
-            self._reachable = False
-            return
-        for number, read in reads.items():
+        answered = {n: r for n, r in reads.items() if r.answer is not IssueAnswer.UNANSWERED}
+        self._reachable = bool(answered)
+        for number, read in answered.items():
             self._cache[ReferenceKind.GHI, number] = _state_of(read.answer)

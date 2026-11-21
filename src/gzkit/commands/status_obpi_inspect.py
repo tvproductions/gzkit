@@ -288,7 +288,8 @@ def _resolve_tracked_defects(
     for defect in tracked_defects:
         state = ReferenceState.UNKNOWN
         if checker is not None:
-            state = checker(_defect_reference(defect))
+            reference = StepReference(kind=ReferenceKind.GHI, identifier=str(defect["number"]))
+            state = checker(reference)
         resolved.append({**defect, "state": _REFERENCE_STATE_LABELS[state]})
     return resolved
 

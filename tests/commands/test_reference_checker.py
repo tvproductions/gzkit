@@ -906,7 +906,7 @@ class TestGhIssueReadsAnswerManyIssuesInOneCall(unittest.TestCase):
         return reads, run
 
     def test_each_answer_one_query_gives(self) -> None:
-        # given one query's answer covering every shape GitHub returns
+        # given one query's answer covering every shape GitHub returns, and some it must not
         out = _batch_answer(
             {
                 "i11": _issue_node("OPEN"),
@@ -914,26 +914,42 @@ class TestGhIssueReadsAnswerManyIssuesInOneCall(unittest.TestCase):
                 "i13": {"__typename": "PullRequest"},
                 "i14": None,
                 "i15": None,
-                "i16": {"__typename": "Discussion"},
+                "i16": {"__typename": "Discussion", "state": "OPEN"},
                 "i17": _issue_node("LOCKED"),
+                "i18": "not a node",
+                "i19": None,
             },
             not_found=("i14",),
         )
+        payload = json.loads(out)
+        payload["errors"].append({"type": "FORBIDDEN", "path": ["repository", "i19"]})
         # when the numbers are read together
-        reads, run = self._reads(["11", "12", "13", "14", "15", "16", "17"], out)
+        numbers = [str(n) for n in range(11, 20)]
+        reads, run = self._reads(numbers, json.dumps(payload))
         # then one call answered all of them, each as the API said
         self.assertEqual(run.call_count, 1)
+        created = datetime(2026, 10, 18, 13, tzinfo=UTC)
+        unanswered = IssueRead(answer=IssueAnswer.UNANSWERED)
         expected = {
-            "11": IssueAnswer.OPEN,
-            "12": IssueAnswer.CLOSED,
-            "13": IssueAnswer.MISSING,
-            "14": IssueAnswer.MISSING,
-            "15": IssueAnswer.UNANSWERED,
-            "16": IssueAnswer.UNANSWERED,
-            "17": IssueAnswer.UNANSWERED,
+            "11": IssueRead(answer=IssueAnswer.OPEN, created_at=created),
+            "12": IssueRead(answer=IssueAnswer.CLOSED, created_at=created),
+            "13": IssueRead(answer=IssueAnswer.MISSING),
+            "14": IssueRead(answer=IssueAnswer.MISSING),
+            "15": unanswered,
+            "16": unanswered,
+            "17": unanswered,
+            "18": unanswered,
+            "19": unanswered,
         }
-        self.assertEqual({n: read.answer for n, read in reads.items()}, expected)
-        self.assertEqual(reads["11"].created_at, datetime(2026, 10, 18, 13, tzinfo=UTC))
+        self.assertEqual(reads, expected)
+
+    def test_errors_that_are_not_a_list_name_no_missing_issue(self) -> None:
+        # given an answer whose errors field is not the list GraphQL returns
+        out = json.dumps({"data": {"repository": {"i14": None}}, "errors": {"i14": "x"}})
+        # when the number is read
+        reads, _ = self._reads(["14"], out)
+        # then it is unanswered, never missing
+        self.assertEqual(reads, {"14": IssueRead(answer=IssueAnswer.UNANSWERED)})
 
     def test_the_call_asks_this_repository_through_graphql(self) -> None:
         _, run = self._reads(["11"], _batch_answer({"i11": _issue_node("OPEN")}))
@@ -1061,6 +1077,38 @@ class TestLiveCheckerPrefetchesCitationsInOneRead(unittest.TestCase):
         self.assertEqual(state, ReferenceState.UNKNOWN)
         self.assertEqual(self.batches, [["11", "12"]])
         self.single.assert_not_called()
+
+    def test_a_citation_already_answered_is_not_asked_again(self) -> None:
+        # given a single read that answers #11 closed
+        self.single.return_value = ReferenceState.SETTLED
+        check = live_reference_checker(Path("."))
+        # when #11 is checked twice
+        states = [check(self._ghi("11")), check(self._ghi("11"))]
+        # then one read answered both
+        self.assertEqual(states, [ReferenceState.SETTLED, ReferenceState.SETTLED])
+        self.assertEqual(self.single.call_count, 1)
+
+    def test_a_single_read_with_no_answer_latches_the_arm_off(self) -> None:
+        # given gh unreachable for a single read
+        self.single.return_value = ReferenceState.UNKNOWN
+        check = live_reference_checker(Path("."))
+        # when two different citations are checked
+        states = [check(self._ghi("11")), check(self._ghi("12"))]
+        # then the second was not asked
+        self.assertEqual(states, [ReferenceState.UNKNOWN, ReferenceState.UNKNOWN])
+        self.assertEqual(self.single.call_count, 1)
+
+    def test_a_number_an_answering_batch_left_unanswered_is_asked_singly(self) -> None:
+        # given a batch that answered #11 and said nothing of #12
+        self.answers = {"11": IssueAnswer.CLOSED}
+        self.single.return_value = ReferenceState.LIVE
+        check = live_reference_checker(Path("."))
+        check.prefetch([self._ghi("11"), self._ghi("12")])
+        # when both are checked
+        states = [check(self._ghi("11")), check(self._ghi("12"))]
+        # then #12 got its own read, and #11 none
+        self.assertEqual(states, [ReferenceState.SETTLED, ReferenceState.LIVE])
+        self.single.assert_called_once_with("12", Path("."))
 
     def test_a_missing_issue_in_a_batch_does_not_latch_the_arm_off(self) -> None:
         # given a batch that answered, one of its numbers no issue
