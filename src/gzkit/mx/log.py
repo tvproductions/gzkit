@@ -11,6 +11,15 @@ it runs *after* the exit guards have proven gz green, so importing
 ``mx_session_opened`` event's ``ts`` (enter anchor) and, when present, the
 matching ``mx_session_closed`` event's ``ts`` (exit anchor). At exit time the
 close is not yet written, so assembly runs against the still-open window.
+
+The log is the maintenance record's view at exit (RP-12 ruling 166,
+`docs/governance/harbor-ro12-contractor-kit.md`): the session's `entry_booked`
+entries, by order, each with the window commits whose subjects name it (ruling
+170) through `gzkit.mx.entries.landings`, written in the record's one entry block
+(ruling 191). Every window commit that names no entry the record holds is listed
+as unrecorded work, and one naming an entry the record does not hold says so
+(ruling 189); the commit list stays beside them. A record that cannot be read
+refuses the assembly, so the exit takes no signature over it (ruling 190).
 """
 
 import json
@@ -27,6 +36,15 @@ from gzkit.core.models import (
     REQ_SHORT_ID_BODY,
 )
 from gzkit.executables import resolve_argv
+from gzkit.ledger import Ledger
+from gzkit.mx.entries import (
+    LandingCommit,
+    RecordedEntry,
+    entries_cited,
+    entry_block,
+    landings,
+    record_view,
+)
 
 _LEDGER_RELPATH = (".gzkit", "ledger.jsonl")
 
@@ -87,6 +105,17 @@ class FixEntry(BaseModel):
     reqs: list[str] = Field(default_factory=list)
 
 
+class UnrecordedWork(BaseModel):
+    """A window commit that names no entry the session's record holds (rulings 166 and 189)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    commit: LandingCommit = Field(..., description="The commit, its subject as landed")
+    unheld: list[str] = Field(
+        default_factory=list, description="The entry ids it names the record does not hold"
+    )
+
+
 class MxLog(BaseModel):
     """The assembled, complete-by-construction record of an MX session window."""
 
@@ -101,6 +130,15 @@ class MxLog(BaseModel):
     fixes: list[FixEntry] = Field(default_factory=list)
     artifacts: dict[str, list[str]] = Field(
         default_factory=lambda: {"ADR": [], "OBPI": [], "REQ": []}
+    )
+    entries: list[RecordedEntry] = Field(
+        default_factory=list, description="The session's maintenance record, oldest first"
+    )
+    landed: dict[str, list[LandingCommit]] = Field(
+        default_factory=dict, description="Each entry's landing commits in the window"
+    )
+    unrecorded: list[UnrecordedWork] = Field(
+        default_factory=list, description="The window commits no held entry accounts for"
     )
 
 
@@ -124,19 +162,17 @@ def _read_ledger_lines(root: Path) -> list[dict]:
     return out
 
 
-def _git_commits_since(root: Path, since_ts: str, until_ts: str | None) -> list[FixEntry]:
-    """Return the commits in (since_ts, until_ts] as FixEntries.
+def _git_log(root: Path, selection: list[str], field: str) -> list[tuple[str, str]]:
+    """Read ``git log`` over *selection*, each commit's SHA and its *field* (``%B`` or ``%s``).
 
-    Tolerant of a non-git working tree (returns ``[]``) — assembly never raises
-    into the exit path.
+    Tolerant of a non-git working tree (returns ``[]``), so git's absence never
+    raises into the exit path.
 
     Returns:
-        One fix entry per commit in the window; empty when git cannot run or fails.
+        One ``(sha, text)`` pair per commit, newest first; empty when git cannot run or fails.
 
     """
-    cmd = ["git", "log", "--since", since_ts, f"--pretty=format:%H{_FIELD_SEP}%B{_RECORD_SEP}"]
-    if until_ts:
-        cmd[2:2] = ["--until", until_ts]
+    cmd = ["git", "log", *selection, f"--pretty=format:%H{_FIELD_SEP}{field}{_RECORD_SEP}"]
     try:
         result = subprocess.run(  # noqa: S603 — the git log argv this module builds
             resolve_argv(cmd),
@@ -150,17 +186,48 @@ def _git_commits_since(root: Path, since_ts: str, until_ts: str | None) -> list[
         return []
     if result.returncode != 0:
         return []
-    fixes: list[FixEntry] = []
+    pairs: list[tuple[str, str]] = []
     for record in result.stdout.split(_RECORD_SEP):
         record = record.strip()
-        if not record:
-            continue
-        sha, _, body = record.partition(_FIELD_SEP)
+        if record:
+            sha, _, text = record.partition(_FIELD_SEP)
+            pairs.append((sha.strip(), text))
+    return pairs
+
+
+def commits_citing_entries(root: Path) -> list[LandingCommit]:
+    """Read every commit in the history whose subject may name an entry (RP-12 ruling 192).
+
+    `gz wp entry show` joins the record to these through `gzkit.mx.entries.landings`,
+    which reads the whole id from each subject; git narrows to subjects carrying
+    ``ENT-`` only to keep the read small.
+
+    Returns:
+        Each such commit, newest first; empty outside a git working tree.
+
+    """
+    return [
+        LandingCommit(commit_sha=sha, subject=subject.strip())
+        for sha, subject in _git_log(root, ["--fixed-strings", "--grep", "ENT-"], "%s")
+        if "ENT-" in subject
+    ]
+
+
+def _git_commits_since(root: Path, since_ts: str, until_ts: str | None) -> list[FixEntry]:
+    """Return the commits in (since_ts, until_ts] as FixEntries.
+
+    Returns:
+        One fix entry per commit in the window; empty when git cannot run or fails.
+
+    """
+    selection = ["--since", since_ts, *(["--until", until_ts] if until_ts else [])]
+    fixes: list[FixEntry] = []
+    for sha, body in _git_log(root, selection, "%B"):
         subject = body.strip().splitlines()[0] if body.strip() else ""
         named = parse_artifacts(body)
         fixes.append(
             FixEntry(
-                commit_sha=sha.strip(),
+                commit_sha=sha,
                 subject=subject,
                 adrs=named["ADR"],
                 obpis=named["OBPI"],
@@ -170,6 +237,22 @@ def _git_commits_since(root: Path, since_ts: str, until_ts: str | None) -> list[
     return fixes
 
 
+def _unrecorded(commits: list[LandingCommit], held: set[str]) -> list[UnrecordedWork]:
+    """List the commits no held entry accounts for, naming what each cites (rulings 166, 189).
+
+    Returns:
+        Each commit naming no entry, or naming one the record does not hold, in *commits*' order.
+
+    """
+    work: list[UnrecordedWork] = []
+    for commit in commits:
+        cited = entries_cited(commit.subject)
+        unheld = [entry_id for entry_id in cited if entry_id not in held]
+        if unheld or not cited:
+            work.append(UnrecordedWork(commit=commit, unheld=unheld))
+    return work
+
+
 def assemble_window(root: Path, session_id: str) -> MxLog:
     """Build the MX log for *session_id* from the ledger + commits in its window.
 
@@ -177,11 +260,16 @@ def assemble_window(root: Path, session_id: str) -> MxLog:
     ``mx_session_opened`` event's ``ts`` and the matching ``mx_session_closed``
     ``ts`` when present (at exit time it is not), the session's last span when the
     harness's id reopened it (GHI #1273), and the log names every fix
-    and the ADRs/OBPIs/REQs each touched (REQ-06-02).
+    and the ADRs/OBPIs/REQs each touched (REQ-06-02). The session's maintenance
+    record is read with it, each entry joined to its window commits and every other
+    commit listed as unrecorded work (RP-12 rulings 166, 170 and 189).
 
     Returns:
         The MX log naming the session's window bounds, reason and attestor, the ledger event types
-        inside it, its fixes, and the ADRs, OBPIs and REQs they touched.
+        inside it, its fixes, and the ADRs, OBPIs and REQs they touched, with the session's
+        entries, their landing commits and the unrecorded work. A maintenance record
+        that cannot be read propagates `record_view`'s `EntryError`, naming the row and
+        the void that recovers it, so no view is returned over it (RP-12 ruling 190).
 
     """
     events = _read_ledger_lines(root)
@@ -222,6 +310,7 @@ def assemble_window(root: Path, session_id: str) -> MxLog:
         "REQ": _unique([r for f in fixes for r in f.reqs]),
     }
 
+    entries, landed, unrecorded = _session_record(root, session_id, fixes)
     return MxLog(
         session_id=session_id,
         opened_at=opened_at,
@@ -231,7 +320,61 @@ def assemble_window(root: Path, session_id: str) -> MxLog:
         ledger_event_types=window_event_types,
         fixes=fixes,
         artifacts=artifacts,
+        entries=entries,
+        landed=landed,
+        unrecorded=unrecorded,
     )
+
+
+def _session_record(
+    root: Path, session_id: str, fixes: list[FixEntry]
+) -> tuple[list[RecordedEntry], dict[str, list[LandingCommit]], list[UnrecordedWork]]:
+    """Read the session's maintenance record and join it to the window's commits (ruling 166).
+
+    Returns:
+        The session's entries, each entry's landing commits, and the unrecorded work.
+
+    """
+    record = [
+        view
+        for view in record_view(Ledger(root.joinpath(*_LEDGER_RELPATH)))
+        if view.entry.mx_session_id == session_id
+    ]
+    commits = [LandingCommit(commit_sha=f.commit_sha, subject=f.subject) for f in fixes]
+    held = {view.entry.entry_id for view in record}
+    joined = landings((view.entry.entry_id for view in record), commits)
+    return record, joined, _unrecorded(commits, held)
+
+
+def _record_lines(log: MxLog) -> list[str]:
+    """Write the session's maintenance record by order, then the unrecorded work (ruling 166).
+
+    Returns:
+        The record's lines, each entry its one block (ruling 191) under its order,
+        and each unrecorded commit with any entry it names the record does not hold.
+
+    """
+    count = len(log.entries)
+    lines = [f"Maintenance record ({count} {'entry' if count == 1 else 'entries'}):"]
+    by_order: dict[tuple[str, str], list[RecordedEntry]] = {}
+    for view in log.entries:
+        by_order.setdefault((view.entry.order, view.entry.work_package), []).append(view)
+    for (order, package), views in by_order.items():
+        lines.append(f"  {order} ({package}):")
+        for view in views:
+            block = entry_block(view, log.landed.get(view.entry.entry_id, []))
+            lines.extend(f"    {line}" for line in block.splitlines())
+    if not log.entries:
+        lines.append("  (no entry booked in this session)")
+    lines.extend(["", f"Unrecorded work ({len(log.unrecorded)}):"])
+    for work in log.unrecorded:
+        line = f"  - {work.commit.commit_sha[:12]} {work.commit.subject}"
+        if work.unheld:
+            line += f" — names {', '.join(work.unheld)}, which the record does not hold"
+        lines.append(line)
+    if not log.unrecorded:
+        lines.append("  (none)")
+    return [*lines, ""]
 
 
 def render(log: MxLog) -> str:
@@ -243,6 +386,7 @@ def render(log: MxLog) -> str:
         f"Reason: {log.reason}",
         f"Attestor at enter: {log.attestor}",
         "",
+        *_record_lines(log),
         f"Fixes ({len(log.fixes)}):",
     ]
     if log.fixes:

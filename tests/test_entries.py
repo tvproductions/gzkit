@@ -28,6 +28,11 @@ from gzkit.models.catalog import Catalog, Criterion, Order, RepairReq, WorkPacka
 from gzkit.mx.entries import (
     EntryBook,
     EntryError,
+    LandingCommit,
+    RecordedEntry,
+    entries_cited,
+    entry_block,
+    landings,
     maintenance_record,
     record_entry_book,
     record_view,
@@ -534,6 +539,81 @@ class RecordViewTests(_EntryCase):
         raised = _raised(lambda: record_view(self.ledger))
         self.assertIsInstance(raised, EntryError)
         self.assertIn("gz ledger correct", str(raised))
+
+
+def _entry(entry_id: str = "ENT-01-stamp-import") -> EntryBookedEvent:
+    """An entry as the writer books it, for the reads that take the record as given."""
+    return EntryBookedEvent.model_validate(
+        {
+            "event": "entry_booked",
+            "id": entry_id,
+            "ts": "2026-11-21T09:00:00+00:00",
+            "entry_id": entry_id,
+            "order": _ORDER,
+            "work_package": _REPAIR,
+            "dispatch_id": "D-0000000000000000",
+            "description": "The stamp generator imports its template again.",
+            "before": "tests.test_stamp fails: ImportError on the template",
+            "after": "tests.test_stamp passes, 12 tests",
+            "witness": "uv run -m unittest tests.test_stamp",
+            "mx_session_id": _SESSION,
+        }
+    )
+
+
+def _commit(sha: str, subject: str) -> LandingCommit:
+    return LandingCommit(commit_sha=sha * 40, subject=subject)
+
+
+class EntryCitationTests(unittest.TestCase):
+    """A landing commit names its entry in its subject (RP-12 ruling 170)."""
+
+    def test_a_subject_cites_each_whole_entry_id_it_names_once(self) -> None:
+        cases = {
+            "fix(stamp): imports again (ENT-01-stamp-import)": ["ENT-01-stamp-import"],
+            "fix(x): two acts (ENT-01-a, ENT-12-b-c)": ["ENT-01-a", "ENT-12-b-c"],
+            "fix(x): (ENT-01-a) and again ENT-01-a": ["ENT-01-a"],
+            "fix(x): one digit ENT-1-a": [],
+            "fix(x): glued XENT-01-a": [],
+            "fix(x): a dangling hyphen ENT-01-a-": [],
+            "fix(x): no entry (GHI #1301)": [],
+        }
+        for subject, cited in cases.items():
+            with self.subTest(subject=subject):
+                self.assertEqual(entries_cited(subject), cited)
+
+    def test_each_entry_is_joined_to_the_commits_naming_it_and_no_other(self) -> None:
+        first, other, stray = (
+            _commit("a", "fix(stamp): imports again (ENT-01-stamp-import)"),
+            _commit("b", "fix(stamp): the second act (ENT-02-second)"),
+            _commit("c", "fix(x): an entry no one booked (ENT-09-ghost)"),
+        )
+        joined = landings(["ENT-01-stamp-import", "ENT-03-unlanded"], [first, other, stray])
+        self.assertEqual(joined, {"ENT-01-stamp-import": [first], "ENT-03-unlanded": []})
+
+
+class EntryBlockRendering(unittest.TestCase):
+    """One block per entry, read by `gz wp entry show` and the MX log (RP-12 rulings 191, 192)."""
+
+    def test_a_landed_entry_names_each_commit_that_landed_it(self) -> None:
+        # output-contract: docs/user/manpages/wp-entry-show.md, the Landed line
+        landed = [
+            _commit("a", "fix(stamp): imports again (ENT-01-stamp-import)"),
+            _commit("b", "test(stamp): the import is witnessed (ENT-01-stamp-import)"),
+        ]
+        lines = entry_block(RecordedEntry(entry=_entry()), landed).splitlines()
+        at = lines.index(
+            "  Landed:      aaaaaaaaaaaa fix(stamp): imports again (ENT-01-stamp-import)"
+        )
+        continued = "bbbbbbbbbbbb test(stamp): the import is witnessed (ENT-01-stamp-import)"
+        self.assertEqual(lines[at + 1], f"{'':15}{continued}")
+        self.assertEqual(lines[at + 2], "  Gate 5:      not signed")
+
+    def test_an_entry_no_commit_names_reads_not_landed(self) -> None:
+        # output-contract: docs/user/manpages/wp-entry-show.md, ruling 167's reading
+        lines = entry_block(RecordedEntry(entry=_entry()), []).splitlines()
+        self.assertEqual(lines[0], "ENT-01-stamp-import on ORD-01-import (WP-01-stamp)")
+        self.assertIn("  Landed:      not landed", lines)
 
 
 if __name__ == "__main__":

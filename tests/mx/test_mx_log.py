@@ -14,7 +14,10 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from gzkit.mx import log
+from gzkit.events import EntryBookedEvent
+from gzkit.ledger import Ledger, ledger_row
+from gzkit.mx import log, marker
+from gzkit.mx.entries import EntryError
 from gzkit.traceability import covers
 from tests.commands.common import SilencedConsoleTestCase, _isolated_git_env
 
@@ -48,6 +51,37 @@ def _read_ledger_events(root: Path, event_type: str) -> list[dict]:
         if ev.get("event") == event_type:
             out.append(ev)
     return out
+
+
+def _session_row(kind: str, ts: str, session_id: str) -> dict:
+    """A session's open or close row, as the typed ledger reader admits it."""
+    return {
+        "schema": "gzkit.ledger.v1",
+        "event": kind,
+        "id": session_id,
+        "ts": ts,
+        "session_id": session_id,
+    }
+
+
+def _book_entry(root: Path, entry_id: str, session_id: str) -> None:
+    """Seat one maintenance-record entry, as the performer's writer books it (RP-12 ruling 8)."""
+    entry = EntryBookedEvent.model_validate(
+        {
+            "event": "entry_booked",
+            "id": entry_id,
+            "entry_id": entry_id,
+            "order": "ORD-01-import",
+            "work_package": "WP-01-stamp",
+            "dispatch_id": "D-0000000000000000",
+            "description": "The stamp generator imports its template again.",
+            "before": "tests.test_stamp fails",
+            "after": "tests.test_stamp passes",
+            "witness": "uv run -m unittest tests.test_stamp",
+            "mx_session_id": session_id,
+        }
+    )
+    Ledger(root / ".gzkit" / "ledger.jsonl").append(ledger_row(entry))
 
 
 def _init_git_repo(root: Path) -> None:
@@ -205,7 +239,7 @@ class TestReopenedSessionWindow(unittest.TestCase):
             ("mx_session_closed", "2026-10-02T00:00:00+00:00"),
             ("mx_session_opened", "2026-10-03T00:00:00+00:00"),
         )
-        events = [{"event": kind, "session_id": "s", "ts": ts} for kind, ts in spans]
+        events = [_session_row(kind, ts, "s") for kind, ts in spans]
         with TemporaryDirectory() as tmp:
             root = _mk_root(tmp)
             _write_ledger(root, events)
@@ -221,7 +255,7 @@ class TestReopenedSessionWindow(unittest.TestCase):
             ("mx_session_opened", "2026-10-03T00:00:00+00:00"),
             ("mx_session_closed", last),
         )
-        events = [{"event": kind, "session_id": "s", "ts": ts} for kind, ts in spans]
+        events = [_session_row(kind, ts, "s") for kind, ts in spans]
         with TemporaryDirectory() as tmp:
             root = _mk_root(tmp)
             _write_ledger(root, events)
@@ -300,6 +334,107 @@ class TestExitRendersLogBeforeSigning(SilencedConsoleTestCase):
             self.assertEqual(closed_count_at_render, [0])
             # The close event exists AFTER exit completes (signature taken after review).
             self.assertEqual(len(_read_ledger_events(root, "mx_session_closed")), 1)
+
+
+# ---------------------------------------------------------------------------
+# RP-12 O4 task 4: the MX log is the maintenance record's view at exit
+# (docs/governance/harbor-ro12-contractor-kit.md rulings 166, 170, 189 to 191).
+# ---------------------------------------------------------------------------
+def _record_window(tmp: str, subjects: list[str]) -> Path:
+    """Open session ``s``, book one entry under it and one under another, land *subjects*."""
+    root = _mk_root(tmp)
+    _init_git_repo(root)
+    _write_ledger(root, [_session_row("mx_session_opened", "1970-01-01T00:00:00+00:00", "s")])
+    _book_entry(root, "ENT-01-stamp-import", "s")
+    _book_entry(root, "ENT-02-other-session", "elsewhere")
+    for n, subject in enumerate(subjects):
+        _commit(root, f"f{n}.txt", subject)
+    return root
+
+
+def _seat_unreadable_entry(root: Path) -> None:
+    """Seat an `entry_booked` row its event's shape does not admit (ruling 190)."""
+    row = _session_row("entry_booked", "2026-11-21T00:00:00+00:00", "ENT-03-x")
+    with (root / ".gzkit" / "ledger.jsonl").open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(row) + "\n")
+
+
+class TestTheLogIsTheRecordsView(unittest.TestCase):
+    @covers("REQ-0.0.74-06-02")
+    def test_each_session_entry_is_joined_to_its_commits_and_the_rest_named_unrecorded(
+        self,
+    ) -> None:
+        landing, sync = "fix(stamp): imports again (ENT-01-stamp-import)", "chore: sync"
+        with TemporaryDirectory() as tmp:
+            window = log.assemble_window(_record_window(tmp, [landing, sync]), "s")
+        self.assertEqual([view.entry.entry_id for view in window.entries], ["ENT-01-stamp-import"])
+        self.assertEqual(
+            {k: [c.subject for c in v] for k, v in window.landed.items()},
+            {"ENT-01-stamp-import": [landing]},
+        )
+        self.assertEqual([(u.commit.subject, u.unheld) for u in window.unrecorded], [(sync, [])])
+        self.assertEqual(len(window.fixes), 2)
+
+    @covers("REQ-0.0.74-06-02")
+    def test_a_commit_naming_an_entry_the_record_does_not_hold_is_unrecorded_named(
+        self,
+    ) -> None:
+        stray = "fix(x): a mistyped id (ENT-07-ghost)"
+        other = "fix(x): another session's entry (ENT-02-other-session)"
+        with TemporaryDirectory() as tmp:
+            window = log.assemble_window(_record_window(tmp, [stray, other]), "s")
+        self.assertCountEqual(
+            [(u.commit.subject, u.unheld) for u in window.unrecorded],
+            [(stray, ["ENT-07-ghost"]), (other, ["ENT-02-other-session"])],
+        )
+        self.assertEqual(window.landed, {"ENT-01-stamp-import": []})
+
+    def test_an_unreadable_record_is_refused_with_its_void(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _record_window(tmp, [])
+            _seat_unreadable_entry(root)
+            with self.assertRaises(EntryError) as raised:
+                log.assemble_window(root, "s")
+        self.assertIn("gz ledger correct", str(raised.exception))
+
+
+class TestRecordViewRendering(unittest.TestCase):
+    """The record's view at exit (rulings 166, 189 and 191)."""
+
+    def test_entries_render_by_order_and_unrecorded_work_names_what_it_cites(self) -> None:
+        # output-contract: docs/user/manpages/mx-exit.md, the record's view before the signature
+        landing, stray = "fix(stamp): imports again (ENT-01-stamp-import)", "fix(x): (ENT-07-ghost)"
+        with TemporaryDirectory() as tmp:
+            out = log.render(log.assemble_window(_record_window(tmp, [landing, stray]), "s"))
+        after = out.split("Maintenance record (1 entry):", 1)[1]
+        record, unrecorded = after.split("Unrecorded work", 1)
+        self.assertIn("  ORD-01-import (WP-01-stamp):", record.splitlines())
+        self.assertIn("    ENT-01-stamp-import on ORD-01-import (WP-01-stamp)", record.splitlines())
+        self.assertIn(landing, record)
+        self.assertIn("names ENT-07-ghost, which the record does not hold", unrecorded)
+        self.assertIn("Fixes (2):", unrecorded)
+
+
+class TestExitRefusesAnUnreadableRecord(SilencedConsoleTestCase):
+    """Ruling 190: the operator never signs over a record that could not be read."""
+
+    def test_exit_refuses_at_3_writes_no_close_and_releases_the_hold(self) -> None:
+        from gzkit.commands.mx_cmd import mx_enter_cmd, mx_exit_cmd  # noqa: PLC0415
+
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            mx_enter_cmd(
+                reason="repair", attestor="g0", inspection_scope=["ADR-0.0.74"], project_root=root
+            )
+            _seat_unreadable_entry(root)
+            with self.assertRaises(SystemExit) as exited:
+                mx_exit_cmd(attestor="g0", project_root=root, _run_guards=lambda r: 0)
+            held = marker.read(root)
+            closes = _read_ledger_events(root, "mx_session_closed")
+        self.assertEqual(exited.exception.code, 3)
+        self.assertEqual(closes, [])
+        assert held is not None
+        self.assertFalse(held.exiting)
 
 
 if __name__ == "__main__":

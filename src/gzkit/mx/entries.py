@@ -14,7 +14,11 @@ measured it, none blank (ruling 173), and the open MX session (ruling 8). Its id
 subject (ruling 170), so the event cites no commit.
 
 The writer sits beside the tag-out log and the MX log that renders the record at
-exit (rulings 166 and 174). It takes the ledger, the stamped dispatch id and the
+exit (rulings 166 and 174). The record's two views, `gz wp entry show` and the MX
+log, write each entry through one block, `entry_block`, and join each entry to the
+commits whose subjects name it through one join, `landings`, which takes the
+commits as a parameter; git is read by the adapter that calls it (rulings 191 and
+192). It takes the ledger, the stamped dispatch id and the
 open MX session's id as parameters and reads neither the stamp nor the marker
 itself (`.gzkit/rules/hexagonal-architecture.md` rule 4). A refusal writes nothing.
 """
@@ -24,7 +28,12 @@ from typing import TYPE_CHECKING, NoReturn
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from gzkit.events import SLUG_PATTERN, EntryBookedEvent, OrderTransitionedEvent
+from gzkit.events import (
+    ENTRY_ID_PATTERN,
+    SLUG_PATTERN,
+    EntryBookedEvent,
+    OrderTransitionedEvent,
+)
 from gzkit.ledger import ledger_row
 from gzkit.mx.record_rows import malformed_row_message
 from gzkit.mx.series import next_series_id
@@ -38,6 +47,8 @@ from gzkit.work_package_run import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
+
     from gzkit.ledger import Ledger, LedgerEvent
     from gzkit.work_package_run import DispatchRecord
 
@@ -47,6 +58,10 @@ PERFORMERS: tuple[str, ...] = (IMPLEMENTER, SINGLE_DRIVER, RESTORATION)
 _REQUIRED_TEXT: tuple[str, ...] = ("description", "before", "after", "witness")
 #: An entry's slug: lowercase words joined by hyphens, as an order's or a tag's (ruling 169).
 _SLUG = re.compile(f"^{SLUG_PATTERN}$")
+#: An entry id as a commit subject names it: the whole token, never part of one (ruling 170).
+_CITED = re.compile(f"(?<![A-Za-z0-9-])({ENTRY_ID_PATTERN})(?![a-z0-9-])")
+#: Where an entry block's values start, after the widest label and its colon (ruling 126's form).
+_LABEL_WIDTH = 13
 
 
 class EntryError(ValueError):
@@ -131,6 +146,99 @@ def record_view(ledger: Ledger) -> list[RecordedEntry]:
         RecordedEntry(entry=entry, gate5=closes.get(entry.order))
         for entry in maintenance_record(ledger)
     ]
+
+
+class LandingCommit(BaseModel):
+    """A commit as the record's views read it: its subject names the entries it lands."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    commit_sha: str = Field(..., min_length=1, description="The commit's full SHA")
+    subject: str = Field(..., description="Its subject line, naming its entries (ruling 170)")
+
+
+def entries_cited(subject: str) -> list[str]:
+    """Read the entry ids a commit subject names, each once, in the order named (ruling 170).
+
+    Returns:
+        Each whole `ENT-<NN>-<slug>` in *subject*; a longer token's part is none.
+
+    """
+    return list(dict.fromkeys(match.group(1) for match in _CITED.finditer(subject)))
+
+
+def landings(
+    entry_ids: Iterable[str], commits: Iterable[LandingCommit]
+) -> dict[str, list[LandingCommit]]:
+    """Join each entry to the commits whose subjects name it (rulings 167, 170 and 192).
+
+    The one join both views of the record read, so they agree on what landed; the
+    commits are a parameter, read from git by the adapter that calls it.
+
+    Returns:
+        Each id in *entry_ids* with the commits naming it, in the order given; an
+        empty list is an entry not landed.
+
+    """
+    landed: dict[str, list[LandingCommit]] = {entry_id: [] for entry_id in entry_ids}
+    for commit in commits:
+        for cited in entries_cited(commit.subject):
+            if cited in landed:
+                landed[cited].append(commit)
+    return landed
+
+
+def _gate5_line(view: RecordedEntry) -> str:
+    """Write the entry's signature: its order's Gate 5 attestor, decision and date (ruling 8).
+
+    Returns:
+        ``<attestor>, <decision>, <ts>`` once the order is closed, else ``not signed``.
+
+    """
+    closed = view.gate5
+    if closed is None:
+        return "not signed"
+    return f"{closed.attestor}, {closed.decision}, {closed.ts}"
+
+
+def _landed_lines(landed: Sequence[LandingCommit]) -> list[str]:
+    """Write the commits that landed an entry, one a line, or ``not landed`` (ruling 167).
+
+    Returns:
+        ``<sha12> <subject>`` for each commit, else the one line ``not landed``.
+
+    """
+    return [f"{commit.commit_sha[:12]} {commit.subject}" for commit in landed] or ["not landed"]
+
+
+def entry_block(view: RecordedEntry, landed: Sequence[LandingCommit]) -> str:
+    """Write one entry as a block of labelled lines, each element legible (rulings 126 and 191).
+
+    The one block both views of the record write: its id, order and package, then each
+    element of 14 CFR 43.9(a) on its own line, the commits that landed it, and its
+    order's Gate 5, the signature.
+
+    Returns:
+        The entry's block, a value continued on the next line under its first.
+
+    """
+    entry = view.entry
+    first, *more = _landed_lines(landed)
+    fields = (
+        ("Booked", entry.ts),
+        ("Performer", entry.dispatch_id),
+        ("Description", entry.description),
+        ("Before", entry.before),
+        ("After", entry.after),
+        ("Witness", entry.witness),
+        ("MX session", entry.mx_session_id),
+        ("Landed", first),
+    )
+    lines = [f"{entry.entry_id} on {entry.order} ({entry.work_package})"]
+    lines.extend(f"  {label + ':':<{_LABEL_WIDTH}}{value}" for label, value in fields)
+    lines.extend(f"  {'':<{_LABEL_WIDTH}}{value}" for value in more)
+    lines.append(f"  {'Gate 5:':<{_LABEL_WIDTH}}{_gate5_line(view)}")
+    return "\n".join(lines)
 
 
 def next_entry_id(ledger: Ledger, slug: str) -> str:

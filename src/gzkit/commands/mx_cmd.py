@@ -32,6 +32,7 @@ from gzkit.ledger import Ledger, LedgerEvent
 from gzkit.lock_manager import LockData
 from gzkit.mx import hardening, lease, log, marker
 from gzkit.mx.contract import contract_pin_for
+from gzkit.mx.entries import EntryError
 from gzkit.mx.marker import Marker
 
 
@@ -466,8 +467,17 @@ def mx_exit_cmd(
         # All-green — assemble the complete-by-construction MX log and render it for
         # operator review BEFORE the close signature is taken (REQ-06-03). The log is
         # derived from the ledger events + commits in the enter→exit window, so it
-        # cannot be hand-narrated or forgotten.
-        console.print(log.assemble_and_render(root, m.session_id))
+        # cannot be hand-narrated or forgotten. It is the maintenance record's view, and
+        # a record it cannot read takes no signature (RP-12 rulings 166 and 190).
+        try:
+            rendered = log.assemble_and_render(root, m.session_id)
+        except EntryError as exc:
+            console.print(f"[red]ERROR:[/red] {exc}")
+            console.print(
+                "[red]The maintenance record cannot be read. MX session remains open.[/red]"
+            )
+            sys.exit(3)
+        console.print(rendered)
 
         # airlock-OUT fires (co-equal exit membrane, ADR-0.33.0) — ADDITIVE to the hard
         # guard-gate above, never a replacement: it runs only after the guards pass,

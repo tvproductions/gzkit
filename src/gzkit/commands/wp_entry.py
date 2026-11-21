@@ -8,7 +8,9 @@ with the dispatch named. The open MX session, read from the marker here and pass
 as a parameter, is recorded with the entry (ruling 8); the writer reads neither the
 stamp nor the marker (ruling 174), and every refusal it raises exits 3 and books
 nothing. `show` renders the record from the ledger, read-only (rulings 8 and 168):
-each entry with its order's Gate 5, the signature, joined by `record_view`.
+each entry with its order's Gate 5, the signature, joined by `record_view`, and the
+commits whose subjects name it, read from git here and joined by `landings`, in the
+record's one entry block (rulings 191 and 192).
 """
 
 from typing import TYPE_CHECKING
@@ -18,12 +20,18 @@ from gzkit.commands.common import ensure_initialized, get_project_root
 from gzkit.commands.open_session import open_session_id
 from gzkit.core.exceptions import PolicyBreachError
 from gzkit.ledger import Ledger
-from gzkit.mx.entries import EntryBook, EntryError, record_entry_book, record_view
+from gzkit.mx.entries import (
+    EntryBook,
+    EntryError,
+    entry_block,
+    landings,
+    record_entry_book,
+    record_view,
+)
+from gzkit.mx.log import commits_citing_entries
 
 if TYPE_CHECKING:
     from pathlib import Path
-
-    from gzkit.mx.entries import RecordedEntry
 
 
 def _open_session_id(root: Path, ledger_path: Path) -> str | None:
@@ -84,54 +92,17 @@ def wp_entry_book_cmd(
     )
 
 
-def _gate5_line(view: RecordedEntry) -> str:
-    """Write the entry's signature: its order's Gate 5 attestor, decision and date (ruling 8).
-
-    Returns:
-        ``<attestor>, <decision>, <ts>`` once the order is closed, else ``not signed``.
-
-    """
-    closed = view.gate5
-    if closed is None:
-        return "not signed"
-    return f"{closed.attestor}, {closed.decision}, {closed.ts}"
-
-
-def _entry_block(view: RecordedEntry) -> str:
-    """Write one entry as a block of labelled lines, each element legible (ruling 126's form).
-
-    Returns:
-        The entry's id, order and package, then each element of 14 CFR 43.9(a) on its own line.
-
-    """
-    entry = view.entry
-    fields = (
-        ("Booked", entry.ts),
-        ("Performer", entry.dispatch_id),
-        ("Description", entry.description),
-        ("Before", entry.before),
-        ("After", entry.after),
-        ("Witness", entry.witness),
-        ("MX session", entry.mx_session_id),
-        ("Gate 5", _gate5_line(view)),
-    )
-    return "\n".join(
-        (
-            f"{entry.entry_id} on {entry.order} ({entry.work_package})",
-            *(f"  {label + ':':<13}{value}" for label, value in fields),
-        )
-    )
-
-
 def wp_entry_show_cmd(*, as_json: bool) -> None:
     """Show the maintenance record: every entry, oldest first (RP-12 rulings 8 and 168).
 
     The record is a Layer 3 view rendered from the ledger's `entry_booked` events
     through `gzkit.mx.entries.record_view`, each entry with its order's Gate 5, the
-    signature 14 CFR 43.9(a) asks of the approver, once the order closes. The human
-    form is a block of labelled lines per entry, ruling 126's form for the tag-out
-    log, and a plain line when there is none; ``--json`` prints the list, each entry
-    its event's fields with ``gate5``, the closing `order_transitioned` or None.
+    signature 14 CFR 43.9(a) asks of the approver, once the order closes, and the
+    commits whose subjects name it, or none, an entry not landed (rulings 167 and
+    192). The human form is the record's one entry block (ruling 191), and a plain
+    line when there is none; ``--json`` prints the list, each entry its event's
+    fields with ``gate5``, the closing `order_transitioned` or None, and ``landed``,
+    its landing commits.
 
     The verb writes nothing, needs no MX session and is not refused from a
     subagent's call: a read is no one's act.
@@ -142,11 +113,13 @@ def wp_entry_show_cmd(*, as_json: bool) -> None:
 
     """
     config = ensure_initialized()
-    ledger = Ledger(get_project_root() / config.paths.ledger)
+    root = get_project_root()
+    ledger = Ledger(root / config.paths.ledger)
     try:
         views = record_view(ledger)
     except EntryError as exc:
         raise PolicyBreachError(str(exc)) from exc
+    landed = landings((view.entry.entry_id for view in views), commits_citing_entries(root))
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     if as_json:
         fmt.emit(
@@ -154,6 +127,7 @@ def wp_entry_show_cmd(*, as_json: bool) -> None:
                 {
                     **view.entry.model_dump(mode="json"),
                     "gate5": view.gate5.model_dump(mode="json") if view.gate5 else None,
+                    "landed": [c.model_dump(mode="json") for c in landed[view.entry.entry_id]],
                 }
                 for view in views
             ]
@@ -161,4 +135,4 @@ def wp_entry_show_cmd(*, as_json: bool) -> None:
     elif not views:
         fmt.emit("No entry has been booked.")
     else:
-        fmt.emit("\n\n".join(_entry_block(view) for view in views))
+        fmt.emit("\n\n".join(entry_block(view, landed[view.entry.entry_id]) for view in views))

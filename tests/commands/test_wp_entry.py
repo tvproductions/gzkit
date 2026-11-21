@@ -13,6 +13,7 @@ alone: the stamp and the session read at the CLI, the exit codes and the epilogs
 import json
 import os
 import shlex
+import subprocess
 import unittest
 from pathlib import Path
 from typing import Any
@@ -22,7 +23,7 @@ from gzkit.cli.main import _build_parser
 from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV
 from gzkit.mx import marker
 from gzkit.mx.marker import Marker
-from tests.commands.common import CliRunner, _quick_init
+from tests.commands.common import CliRunner, _isolated_git_env, _quick_init
 from tests.commands.test_wp_order import _help_parser, _seed_catalog
 from tests.mx.held import open_marker
 
@@ -33,6 +34,28 @@ _ENTRY = (
     *("--after", "tests.test_stamp passes, 12 tests"),
     *("--witness", "uv run -m unittest tests.test_stamp"),
 )
+
+
+def _land(subject: str) -> str:
+    """Commit the working tree with *subject* in a fresh repository, as the coordinator lands work.
+
+    Returns:
+        The landing commit's full SHA.
+
+    """
+    env = _isolated_git_env()
+    for args in (
+        ["init", "-q"],
+        ["config", "user.email", "t@e.st"],
+        ["config", "user.name", "tester"],
+        ["add", "-A"],
+        ["commit", "-q", "-m", subject],
+    ):
+        subprocess.run(["git", *args], check=True, env=env)  # noqa: S603 — git in a temp repo
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], check=True, env=env, capture_output=True, text=True
+    )
+    return head.stdout.strip()
 
 
 def _entry_rows() -> list[dict[str, Any]]:
@@ -219,7 +242,20 @@ class EntryShowWiringTests(_EntryCase):
         self.assertIn("Before:      tests.test_stamp fails: ImportError on the template", lines)
         self.assertIn("Witness:     uv run -m unittest tests.test_stamp", lines)
         self.assertIn("MX session:  test-session", lines)
+        self.assertIn("Landed:      not landed", lines)
         self.assertIn("Gate 5:      not signed", lines)
+
+    def test_an_entry_a_commit_subject_names_reads_landed_by_it(self) -> None:
+        # output-contract: docs/user/manpages/wp-entry-show.md, the Landed line (ruling 192)
+        # given an entry booked, then the coordinator's commit naming it in its subject
+        self.booked()
+        subject = "fix(stamp): the template imports again (ENT-01-stamp-import)"
+        sha = _land(subject)
+        # when
+        code, output = self.show()
+        # then the view joins the commit to the entry it names
+        self.assertEqual(code, 0, output)
+        self.assertIn(f"Landed: {sha[:12]} {subject} Gate 5:", " ".join(output.split()))
 
     def test_json_mode_prints_each_entry_with_its_gate_5(self) -> None:
         # given an entry booked on an order not closed
@@ -230,8 +266,21 @@ class EntryShowWiringTests(_EntryCase):
         self.assertEqual(code, 0, output)
         (printed,) = json.loads(output)
         (booked,) = _entry_rows()
-        self.assertEqual({k: v for k, v in printed.items() if k != "gate5"}, booked)
+        self.assertEqual({k: v for k, v in printed.items() if k not in {"gate5", "landed"}}, booked)
         self.assertIsNone(printed["gate5"])
+        self.assertEqual(printed["landed"], [])
+
+    def test_json_mode_lists_each_landing_commit(self) -> None:
+        # given an entry booked and a commit naming it
+        self.booked()
+        subject = "fix(stamp): the template imports again (ENT-01-stamp-import)"
+        sha = _land(subject)
+        # when
+        code, output = self.show("--json")
+        # then the entry carries its landing commit, as the human form reads it (ruling 192)
+        self.assertEqual(code, 0, output)
+        (printed,) = json.loads(output)
+        self.assertEqual(printed["landed"], [{"commit_sha": sha, "subject": subject}])
 
 
 class EntryEpilogTests(unittest.TestCase):

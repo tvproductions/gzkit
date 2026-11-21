@@ -5,11 +5,11 @@ description: Use to open or exit the MX hangar or safe mode, or to check which m
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-18
+last_reviewed: 2026-11-21
 model: haiku
 gz_command: mx
 metadata:
-  skill-version: "1.11.0"
+  skill-version: "1.12.0"
 ---
 
 # gz mx
@@ -129,7 +129,10 @@ operator a raw `gz mx` command is a defect in the surface that gave it.
    ```
    Every guard re-runs at full strength with the marker held (marked `exiting`), the
    enter-to-exit log is rendered for the operator, `mx_session_closed` is written, and
-   the marker is removed. A red guard puts the marker back and refuses. A session past
+   the marker is removed. The log is the maintenance record's view: the session's entries
+   by order with their landing commits, then every commit no entry accounts for as
+   unrecorded work; review it before signing (`docs/user/manpages/mx-exit.md`). A red guard,
+   or a record that cannot be read, puts the marker back and refuses. A session past
    its lease is announced, booked as `mx_session_lease_expired`, and never blocks exit.
 
 6. **Hand back.** The contract's handback amendment (every pilot commit listed, kept or

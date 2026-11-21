@@ -108,11 +108,12 @@ def _register_wp_entry(wp_commands: argparse._SubParsersAction) -> None:
 
     p_entry_show = entry_commands.add_parser(
         "show",
-        help="Show the maintenance record: every entry, with its order's Gate 5",
+        help="Show the maintenance record: every entry, its landing commits and Gate 5",
         description=(
             "Render the maintenance record from the ledger's entry events, a\n"
-            "read-only Layer 3 view, oldest first: each entry with its order's\n"
-            "Gate 5, the signature, once the order closes (RP-12 rulings 8, 168)."
+            "read-only Layer 3 view, oldest first: each entry with the commits\n"
+            "whose subjects name it, or not landed, and its order's Gate 5, the\n"
+            "signature, once the order closes (RP-12 rulings 8, 167, 168, 192)."
         ),
         epilog=build_epilog(_SHOW_EXAMPLES, exit_codes=_SHOW_EXIT_CODES),
     )
