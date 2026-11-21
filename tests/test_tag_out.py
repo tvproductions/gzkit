@@ -1065,6 +1065,8 @@ class PausedCarryTests(_ClearanceCase):
             lambda: record_work_package_block(self.catalog, self.ledger, request, refutations={})
         )
         self.assertIsInstance(raised, WorkPackageLedgerError)
+        # output-contract: the closed-order check refused it, not some earlier check
+        self.assertIn(f"Order {_ORDER} is closed; it takes no block", str(raised))
 
     def test_a_repair_dispatch_does_not_ride_the_exit(self) -> None:
         """Ruling 187 admits the Restoration that clears; a Repair dispatch hangs, never here."""
