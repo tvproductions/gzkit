@@ -2399,3 +2399,13 @@
 {"ts": "2026-11-21T07:46:47Z", "source": "20261121T074646Z-rp12-o4-task3-closed.md", "text": "Ruling 187, a carried tag is cleared on its paused order (verbatim: \"A: On its paused order (Rec.)\")."}
 {"ts": "2026-11-21T07:46:47Z", "source": "20261121T074646Z-rp12-o4-task3-closed.md", "text": "Ruling 188, an out-of-position find on a paused order blocks it (verbatim: \"A: Block the paused order (Rec.)\")."}
 {"ts": "2026-11-21T07:46:47Z", "source": "20261121T074646Z-rp12-o4-task3-closed.md", "text": "O4 task 3 complete (verbatim: \"Task 3 complete (Rec.)\")."}
+{"ts": "2026-11-21T10:23:46Z", "source": "20261121T102345Z-rp12-o4-task4-closed.md", "text": "Proceed with the resumed handoff's next steps (verbatim: \"do suggested next steps\")."}
+{"ts": "2026-11-21T10:23:46Z", "source": "20261121T102345Z-rp12-o4-task4-closed.md", "text": "Ruling 189, a commit naming an entry the record does not hold is unrecorded work, named (verbatim: \"A: Unrecorded, named (Rec.)\")."}
+{"ts": "2026-11-21T10:23:46Z", "source": "20261121T102345Z-rp12-o4-task4-closed.md", "text": "Ruling 190, an unreadable maintenance record refuses the exit (verbatim: \"A: Refuse exit (Rec.)\")."}
+{"ts": "2026-11-21T10:23:46Z", "source": "20261121T102345Z-rp12-o4-task4-closed.md", "text": "Ruling 191, one entry block read by both views of the record (verbatim: \"A: One shared block (Rec.)\")."}
+{"ts": "2026-11-21T10:23:46Z", "source": "20261121T102345Z-rp12-o4-task4-closed.md", "text": "Ruling 192, both views join an entry's landing commits (verbatim: \"A: Both views (Rec.)\")."}
+{"ts": "2026-11-21T10:23:46Z", "source": "20261121T102345Z-rp12-o4-task4-closed.md", "text": "Ruling 193, a git that cannot be read refuses the exit and is named in gz wp entry show (verbatim: \"A: Exit refuses, show names (Rec.)\")."}
+{"ts": "2026-11-21T10:23:46Z", "source": "20261121T102345Z-rp12-o4-task4-closed.md", "text": "Ruling 194, a commit naming a held and an unheld entry shows in both places (verbatim: \"A: Both places (Rec.)\")."}
+{"ts": "2026-11-21T10:23:46Z", "source": "20261121T102345Z-rp12-o4-task4-closed.md", "text": "The hard-coded gz mx ledger path is filed as a GHI, #1337 (verbatim: \"A: File a GHI (Rec.)\")."}
+{"ts": "2026-11-21T10:23:46Z", "source": "20261121T102345Z-rp12-o4-task4-closed.md", "text": "O4 task 4 complete (verbatim: \"Task 4 complete (Rec.)\")."}
+{"ts": "2026-11-21T10:23:46Z", "source": "20261121T102345Z-rp12-o4-task4-closed.md", "text": "Write the handoff and git-sync (verbatim: \"handoff and git sync\")."}
