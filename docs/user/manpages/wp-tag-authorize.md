@@ -42,7 +42,9 @@ Restoration dispatch then clears it (`gz wp tag clear`). `docs/governance/harbor
 - The tag is issued and hung, and its clearance not already authorized (ruling 6).
 - The order is commenced, where the Restoration dispatch that clears is booked,
   a stopped order included, and not blocked: a blocked order's acts are held
-  (rulings 59, 132, 135 and 137).
+  (rulings 59, 132, 135 and 137). A tag the order's acceptance carried is
+  authorized on the order once its Gate 5 has paused it, and no other tag of a
+  closed order (ruling 187; [`gz wp order accept`](wp-order-accept.md)).
 - The tag stays hung and open after its clearance, until the Restoration dispatch
   clears it (ruling 129). `gz wp tag show` names the clearance in its block and
   its `--json` record.

@@ -47,7 +47,7 @@ from gzkit.mx.tag_rows import (
     tag_hangs,
     tag_issues,
 )
-from gzkit.order_ledger import TERMINATED, is_order_blocked, order_state
+from gzkit.order_ledger import TERMINATED, is_order_blocked, order_state, paused_carried_tags
 from gzkit.work_package_ledger import work_package_state
 from gzkit.work_package_run import (
     REPAIR,
@@ -504,11 +504,14 @@ def _check_clearable(ledger: Ledger, issue: TagIssuedEvent, act: str = "clearanc
     """
     order_now = order_state(ledger, issue.order)
     done = "authorized" if act == "clearance" else "made"
-    if order_now != "commenced":
+    # Ruling 187: a tag its acceptance carried is cleared on its paused order too.
+    carried = issue.tag_id in paused_carried_tags(ledger, issue.order)
+    if order_now != "commenced" and not carried:
         _refuse(
             f"Order {issue.order} is {order_now or 'not opened'}; a tag's {act} is "
             f"{done} on a commenced order, where the Restoration dispatch that clears it "
-            "is booked (RP-12 rulings 132 and 135). `uv run gz wp order show "
+            "is booked (RP-12 rulings 132 and 135), or, for a tag its acceptance carried, "
+            f"on the order once Gate 5 has paused it (ruling 187). `uv run gz wp order show "
             f"{issue.order}` reads its state."
         )
     if is_order_blocked(ledger, issue.order):

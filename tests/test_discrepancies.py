@@ -964,6 +964,13 @@ class CarryClearTests(_DiscrepancyCase):
         )
         self.assertEqual(self.cleared(self.line.id, tag="TAG-01-size").tag_id, "TAG-01-size")
 
+    def test_the_carried_tags_clear_with_an_entry_beside_it_is_admitted(self) -> None:
+        """Ruling 185: the carried tag is the evidence; an entry of the package may stand beside
+        it, while a filed GHI may not, since that moves the line out of the package."""
+        self.clear_the_tag()
+        cleared = self.cleared(self.line.id, tag="TAG-01-size", entry="ENT-01-fixed")
+        self.assertEqual((cleared.tag_id, cleared.entry_id), ("TAG-01-size", "ENT-01-fixed"))
+
     def test_a_line_no_acceptance_carried_clears_as_before(self) -> None:
         """Ruling 185 binds only a carrying line; another line clears on any evidence."""
         other = self.recorded(grade="due-by-event", due_by="the fix", slug="other")

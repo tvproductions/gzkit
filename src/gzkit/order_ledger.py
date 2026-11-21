@@ -33,12 +33,12 @@ ruled grammar does not allow, writing nothing.
 
 from typing import TYPE_CHECKING, NoReturn
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from gzkit.events import BaselinedReq, CarriedTag, OrderTransitionedEvent, WorkPackageDecision
 from gzkit.ledger import ledger_row
 from gzkit.models.catalog import RepairReq
-from gzkit.mx.record_rows import DUE_BY, open_discrepancies
+from gzkit.mx.record_rows import DUE_BY, malformed_row_message, open_discrepancies
 from gzkit.mx.tag_rows import order_tags
 from gzkit.work_package_ledger import (
     declared_modules,
@@ -453,9 +453,37 @@ def carried_tags(ledger: Ledger, order_id: str) -> tuple[CarriedTag, ...]:
         Each carry its `accepted` move booked, or none when it booked none.
 
     """
-    accepted = [m for m in _moves(ledger, order_id) if m.get("to_state") == "accepted"]
-    rows = accepted[-1].get("carried") if accepted else None
-    return tuple(CarriedTag.model_validate(row) for row in rows or ())  # ty: ignore[not-iterable]
+    accepted = [
+        row
+        for row in ledger.query(event_type="order_transitioned")
+        if row.extra.get("order") == order_id and row.extra.get("to_state") == "accepted"
+    ]
+    if not accepted:
+        return ()
+    try:
+        return OrderTransitionedEvent.model_validate(accepted[-1].model_dump()).carried
+    except ValidationError as exc:
+        _refuse(
+            malformed_row_message(
+                accepted[-1], exc, f"{order_id}'s carry cannot be read", ruling=184
+            )
+        )
+
+
+def paused_carried_tags(ledger: Ledger, order_id: str) -> frozenset[str]:
+    """Read the tags a paused order's acceptance carried, which it still clears (ruling 187).
+
+    A pause defers the order with a revisit condition rather than withdrawing it
+    (ruling 30), so the order that carried a tag past acceptance clears it.
+
+    Returns:
+        The carried tags when the order's Gate 5 closed it as a pause, else none.
+
+    """
+    closes = [m for m in _moves(ledger, order_id) if m.get("to_state") == "closed"]
+    if not closes or closes[-1].get("decision") != "pause":
+        return frozenset()
+    return frozenset(carry.tag_id for carry in carried_tags(ledger, order_id))
 
 
 def _check_carry_pause(ledger: Ledger, order: Order, move: OrderMove) -> None:
@@ -469,7 +497,8 @@ def _check_carry_pause(ledger: Ledger, order: Order, move: OrderMove) -> None:
             f"Order {order.id}'s acceptance carried tag(s) that still hang: {named}. While a "
             "carried tag hangs, Gate 5 takes a pause alone, since the surface is still "
             "isolated (RP-12 ruling 171, on ruling 30's pause). Close it as `pause` with "
-            "--revisit-condition, or clear the tag first."
+            "--revisit-condition; the paused order's Restoration dispatch then clears the "
+            "tag (ruling 187)."
         )
 
 
@@ -565,18 +594,39 @@ def _carrying_lines(ledger: Ledger, order_id: str) -> dict[str, list[str]]:
     return lines
 
 
-def order_carries(ledger: Ledger, order_id: str) -> tuple[CarriedTag, ...]:
-    """Read each hung tag of the order that exactly one open line carries (rulings 171, 186).
+class CarryStanding(BaseModel):
+    """Each hung tag of an order, read against the lines that may carry it (171, 184, 186)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    carried: tuple[CarriedTag, ...] = Field(..., description="Tags one open line carries")
+    uncarried: tuple[str, ...] = Field(..., description="Hung tags no line carries")
+    doubled: tuple[tuple[str, tuple[str, ...]], ...] = Field(
+        ..., description="Hung tags two or more lines carry, each with its lines"
+    )
+
+
+def carry_standing(ledger: Ledger, order_id: str) -> CarryStanding:
+    """Read each hung tag of the order against its carrying lines, once (rulings 171, 186).
+
+    The one reading both the acceptance refusal and the booked carry take: a tag one
+    open line carries is carried, a tag no line carries holds acceptance, and a tag two
+    or more lines carry holds it too (ruling 186).
 
     Returns:
-        Each carry, in the tags' issue order, as the `accepted` move books it (ruling 184).
+        The order's carried, uncarried and doubly carried tags, each in issue order.
 
     """
     lines = _carrying_lines(ledger, order_id)
-    return tuple(
-        CarriedTag(tag_id=tag, discrepancy_id=lines[tag][0])
-        for tag in order_tags(ledger, order_id).hung_uncleared
-        if len(lines.get(tag, ())) == 1
+    hung = order_tags(ledger, order_id).hung_uncleared
+    return CarryStanding(
+        carried=tuple(
+            CarriedTag(tag_id=tag, discrepancy_id=lines[tag][0])
+            for tag in hung
+            if len(lines.get(tag, ())) == 1
+        ),
+        uncarried=tuple(tag for tag in hung if not lines.get(tag)),
+        doubled=tuple((tag, tuple(lines[tag])) for tag in hung if len(lines.get(tag, ())) > 1),
     )
 
 
@@ -593,41 +643,42 @@ def hung_tag_refusal(ledger: Ledger, order: Order) -> str | None:
         The refusal naming each tag held and its recovery, or None when none is held.
 
     """
-    lines = _carrying_lines(ledger, order.id)
-    hung = order_tags(ledger, order.id).hung_uncleared
-    uncarried = [tag for tag in hung if not lines.get(tag)]
-    doubled = [tag for tag in hung if len(lines.get(tag, ())) > 1]
+    standing = carry_standing(ledger, order.id)
     refusals: list[str] = []
-    if uncarried:
-        first = uncarried[0]
+    if standing.uncarried:
+        first = standing.uncarried[0]
         refusals.append(
             f"Order {order.id} has tag(s) hung, not cleared and not carried: "
-            f"{', '.join(uncarried)}. It is accepted only once every tag it hung is cleared "
-            "or carried, so no surface is left isolated past acceptance unrecorded (refusal 6; "
-            "RP-12 rulings 129, 142 and 171). To clear one, the coordinator authorizes the "
-            f"clearance (`uv run gz wp tag authorize {first}`), books a Restoration dispatch "
-            f"(`uv run gz wp dispatch {order.work_package} --order {order.id} --role "
-            "Restoration --model <tier>`), and its subagent runs `uv run gz wp tag clear "
-            f"{first} --dispatch D-<id> --position-found <position>`. To carry one, the "
-            "coordinator records a line graded due by a named event that cites it (`uv run gz "
-            f"wp discrepancy record --order {order.id} --tag {first} --grade due-by-event "
-            '--due-by "<event>" --source left-broken --slug <slug> --description "<what>"`), '
-            "and its Gate 5 then takes a pause alone while the tag hangs. Then accept."
+            f"{', '.join(standing.uncarried)}. It is accepted only once every tag it hung is "
+            "cleared or carried, so no surface is left isolated past acceptance unrecorded "
+            "(refusal 6; RP-12 rulings 129, 142 and 171). To clear one, the coordinator "
+            f"authorizes the clearance (`uv run gz wp tag authorize {first}`), books a "
+            f"Restoration dispatch (`uv run gz wp dispatch {order.work_package} --order "
+            f"{order.id} --role Restoration --model <tier>`), and its subagent runs `uv run gz "
+            f"wp tag clear {first} --dispatch D-<id> --position-found <position>`. To carry "
+            "one, the coordinator records a line graded due by a named event that cites it "
+            f"(`uv run gz wp discrepancy record --order {order.id} --tag {first} --grade "
+            'due-by-event --due-by "<event>" --source left-broken --slug <slug> --description '
+            '"<what>"`); its Gate 5 then takes a pause alone, and the paused order\'s '
+            "Restoration dispatch clears the tag (ruling 187). Then accept."
         )
-    if doubled:
-        named = "; ".join(f"{tag} by {', '.join(lines[tag])}" for tag in doubled)
+    if standing.doubled:
+        named = "; ".join(f"{tag} by {', '.join(ids)}" for tag, ids in standing.doubled)
         refusals.append(
             f"Order {order.id} has tag(s) carried by more than one open line: {named}. One "
             "line carries a tag, so its due-by event is never chosen silently (RP-12 ruling "
-            "186). Clear all but one with `uv run gz wp discrepancy clear`, then accept."
+            "186). Clear all but one, citing the entry or the open issue that settles it "
+            "(`uv run gz wp discrepancy clear <DSC-id> --entry <ENT-id>` or `--ghi <n>`), "
+            "then accept."
         )
     return "\n".join(refusals) or None
 
 
 def _check_accepted(ledger: Ledger, order: Order, move: OrderMove) -> None:
-    """Refuse an acceptance that books no readiness, a hung tag, or an unstopped one not ready.
+    """Refuse an acceptance that books no readiness, a held tag, or an unstopped one not ready.
 
-    Rulings 86 and 142: a hung tag not cleared holds it whatever its stop (refusal 6).
+    Rulings 86, 142 and 171: a hung tag neither cleared nor carried by one open due-by
+    line holds it whatever its stop (refusal 6), and so does one two lines carry (186).
     """
     if move.acceptance_ready is None:
         _refuse(
@@ -749,7 +800,9 @@ def record_order_transition(
             "evidence": move.evidence.strip(),
             "modules": _package(catalog, order).modules if move.to_state == "frozen" else (),
             # Ruling 184: acceptance books each carry it admitted, which Gate 5 reads.
-            "carried": order_carries(ledger, order.id) if move.to_state == "accepted" else (),
+            "carried": (
+                carry_standing(ledger, order.id).carried if move.to_state == "accepted" else ()
+            ),
             # The attestor is an identity, stripped as the package writer strips it; the
             # operator's words are booked verbatim (AGENTS.md § Attestation).
             "attestor": move.attestor.strip() if move.attestor else None,

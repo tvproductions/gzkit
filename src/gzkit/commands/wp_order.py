@@ -26,6 +26,7 @@ from gzkit.core.exceptions import PolicyBreachError, ResourceNotFoundError
 from gzkit.events import BaselinedReq, OrderTransitionedEvent
 from gzkit.ledger import Ledger
 from gzkit.models.catalog import Catalog, Order, WorkPackage, load_catalog
+from gzkit.mx.record_rows import DiscrepancyError
 from gzkit.mx.tag_rows import TagOutError
 from gzkit.order_ledger import (
     OrderLedgerError,
@@ -291,7 +292,7 @@ def wp_order_transition_cmd(
     move = OrderMove.model_validate({**fields, **({"baseline": entries} if entries else {})})
     try:
         event = record_order_transition(catalog, ledger, move)
-    except (OrderLedgerError, TagOutError) as exc:
+    except (OrderLedgerError, TagOutError, DiscrepancyError) as exc:
         _refuse_move(to_state, str(exc))
     _emit_move(event, cross_airlock(root, ledger, package, event.to_state), as_json=as_json)
 
@@ -355,8 +356,10 @@ def wp_order_accept_cmd(*, order_id: str, evidence: str, as_json: bool) -> None:
     Gate 5 reads, so a stopped order that read ready may still proceed (rulings
     80 and 84). A tag the order hung and nobody cleared holds every order, a
     stopped one included, named beside the other blockers (refusal 6, ruling
-    142). The move crosses the airlock outward on the package's slice (ruling
-    65). An unknown order exits 1; any refusal exits 3 and books nothing.
+    142), unless one open due-by line of the coordinator's carries it; the move
+    books each carry and the verb prints it (rulings 171, 184 and 186). The
+    move crosses the airlock outward on the package's slice (ruling 65). An
+    unknown order exits 1; any refusal exits 3 and books nothing.
 
     Raises:
         PolicyBreachError: The lifecycle or the block refuses the move, acceptance
@@ -386,12 +389,13 @@ def wp_order_accept_cmd(*, order_id: str, evidence: str, as_json: bool) -> None:
     ready = not blockers
     move = OrderMove(order=order.id, to_state="accepted", evidence=evidence, acceptance_ready=ready)
     try:
-        # Refusal 6 and ruling 142: a hung tag holds every order, a stopped one included;
-        # a tag row the leaf reader cannot read is refused with its void (ruling 141).
+        # Refusal 6 and rulings 142, 171 and 186: a hung tag neither cleared nor carried by
+        # one open due-by line holds every order, a stopped one included; a tag or line row
+        # the leaf readers cannot read is refused with its void (rulings 141 and 184).
         if (hung := hung_tag_refusal(ledger, order)) or refusing:
             raise PolicyBreachError("\n".join([*refusing, *([hung] if hung else [])]))
         event = record_order_transition(catalog, ledger, move)
-    except (OrderLedgerError, TagOutError) as exc:
+    except (OrderLedgerError, TagOutError, DiscrepancyError) as exc:
         _refuse_move("accepted", str(exc))
     _emit_move(event, cross_airlock(root, ledger, package, event.to_state), as_json=as_json)
 

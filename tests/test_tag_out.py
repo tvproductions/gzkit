@@ -39,6 +39,12 @@ from gzkit.events import (
 )
 from gzkit.ledger import Ledger, ledger_row
 from gzkit.models.catalog import Catalog, Criterion, Order, RepairReq, WorkPackage
+from gzkit.mx.discrepancies import (
+    DiscrepancyClear,
+    DiscrepancyRecord,
+    record_discrepancy,
+    record_discrepancy_clear,
+)
 from gzkit.mx.tag_out import (
     TagIssue,
     TagOutError,
@@ -945,6 +951,114 @@ class ClearanceRefusalTests(_ClearanceCase):
         )
         record_work_package_block(self.catalog, self.ledger, request, refutations={})
         self.assert_clearance_refused("is blocked on the operator")
+
+
+class _NoWitnesses:
+    """A clear's witnesses for a clear that cites only a tag: nothing outside the ledger."""
+
+    min_occurrences = 3
+    separation_hours = 24.0
+
+    def issue_state(self, number: int) -> str | None:
+        message = f"a tag clear asks gh nothing, yet #{number} was asked"
+        raise AssertionError(message)
+
+    def resolve_cite(self, cite: str) -> None:
+        message = f"a tag clear resolves no citation, yet {cite} was asked"
+        raise AssertionError(message)
+
+
+class PausedCarryTests(_ClearanceCase):
+    """Ruling 187: a carried tag is cleared on its paused order, the carry's exit."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        line = DiscrepancyRecord(
+            slug="carry",
+            grade="due-by-event",
+            source="left-broken",
+            description="The surface stays isolated past acceptance.",
+            due_by="O9's carry",
+            order=_ORDER,
+            tag=self.tag.tag_id,
+        )
+        record_discrepancy(self.catalog, self.ledger, line, stamped_id=None, mx_session_id=_SESSION)
+        self.move("accepted", acceptance_ready=True)
+
+    def pause(self) -> None:
+        self.move(
+            "closed",
+            decision="pause",
+            attestor="g0",
+            attestation_text="pause it",
+            revisit_condition="O9's carry",
+        )
+
+    def test_a_carried_tag_waits_for_the_pause(self) -> None:
+        """Ruling 187: before Gate 5 the order is accepted, not paused, so nothing clears yet."""
+        self.assert_clearance_refused("a tag's clearance is authorized on a commenced order")
+
+    def test_the_paused_order_clears_its_carried_tag(self) -> None:
+        """Ruling 187: the clearance, the Restoration dispatch and the clear all take it."""
+        self.pause()
+        self.authorized()
+        booked: list[str] = []
+        self.assertIsNone(_raised(lambda: booked.append(self.book("Restoration"))))
+        cleared = record_tag_clear(
+            self.catalog,
+            self.ledger,
+            self.tag.tag_id,
+            booked[0],
+            "off",
+            stamped_id=booked[0],
+            mx_session_id=_SESSION,
+            read_refutations=_Refutations(),
+        )
+        self.assertIsInstance(cleared, TagClearedEvent)
+        # then the carrying line clears by that clear (ruling 185), and the package closes
+        line = record_discrepancy_clear(
+            self.ledger,
+            DiscrepancyClear(discrepancy="DSC-01-carry", tag=self.tag.tag_id),
+            stamped_id=None,
+            mx_session_id=_SESSION,
+            witnesses=_NoWitnesses(),
+        )
+        self.assertEqual(line.tag_id, self.tag.tag_id)
+        close = TransitionRequest(
+            work_package=_REPAIR, to_state="closed", evidence="e", attestor="g0",
+            residual_risk="none",
+        )  # fmt: skip
+        # with every carried tag cleared, the paused order takes no further Restoration
+        self.assertIsNotNone(_raised(lambda: self.book("Restoration")))
+        closed = record_work_package_transition(self.catalog, self.ledger, close)
+        self.assertEqual(closed.to_state, "closed")
+
+    def test_a_paused_order_whose_acceptance_carried_nothing_clears_nothing(self) -> None:
+        """Ruling 187 admits the tags the acceptance carried, not every tag of a paused order."""
+        self.reset_without_carry()
+        self.assert_clearance_refused("a tag's clearance is authorized on a commenced order")
+
+    def test_a_carry_closed_other_than_as_a_pause_clears_nothing(self) -> None:
+        """Ruling 187 admits a paused order alone; a carry seated as closed otherwise is not."""
+        _ClearanceCase.setUp(self)
+        carried = ({"tag_id": self.tag.tag_id, "discrepancy_id": "DSC-01-carry"},)
+        self.seat_move("commenced", "accepted", acceptance_ready=True, carried=carried)
+        self.seat_move("accepted", "closed", decision="terminate", attestor="g0",
+                       attestation_text="stop")  # fmt: skip
+        self.assert_clearance_refused("a tag's clearance is authorized on a commenced order")
+
+    def reset_without_carry(self) -> None:
+        """A fresh ledger: the tag hung, the order seated accepted and paused with no carry."""
+        _ClearanceCase.setUp(self)
+        self.seat_move("commenced", "accepted", acceptance_ready=True)
+        self.seat_move(
+            "accepted",
+            "closed",
+            decision="pause",
+            attestor="g0",
+            attestation_text="pause it",
+            revisit_condition="later",
+        )
 
 
 class FrozenClearanceTests(_HangCase):

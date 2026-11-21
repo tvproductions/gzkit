@@ -365,9 +365,14 @@ class RepairLifecycleTests(_LedgerCase):
         seat_hang(self.ledger, 1, order="ORD-01-x")
         raised = _raised(self.close)
         self.assertIsInstance(raised, WorkPackageLedgerError)
-        # output-contract: the recovery is the clear, never a carry that waits on a later order
-        self.assertIn("gz wp tag authorize", str(raised))
-        self.assertIn("171", str(raised))
+        # output-contract: the recovery is the paused order's clear, each step runnable as named
+        for step in (
+            "gz wp tag authorize <TAG-id>",
+            "--order <ORD-id> --role Restoration",
+            "gz wp tag clear <TAG-id> --dispatch D-<id> --position-found <position>",
+            "ruling 187",
+        ):
+            self.assertIn(step, str(raised))
 
     def test_every_tag_cleared_lets_the_close_pass(self) -> None:
         """Refusal 6: with each hung tag cleared, the package closes."""

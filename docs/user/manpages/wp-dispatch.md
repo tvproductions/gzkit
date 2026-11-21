@@ -18,7 +18,7 @@ gz wp dispatch <WP-id> --void <D-id> --reason <why> [OPTIONS]
 | Flag | Description |
 |------|-------------|
 | `WP-id` | The work package's id. Required |
-| `--role` | `Implementer`, `SpecReviewer`, `QualityReviewer` or `SingleDriver`; on a repair package's order also `Repair` (a frozen order) or `Restoration` (a commenced order). Required to book |
+| `--role` | `Implementer`, `SpecReviewer`, `QualityReviewer` or `SingleDriver`; on a repair package's order also `Repair` (a frozen order) or `Restoration` (a commenced order, or a paused one still holding a carried tag, ruling 187). Required to book |
 | `--model` | The model tier. Required to book |
 | `--req` | The frozen REQ dispatched against. Required to book, except that `Repair` and `Restoration` name none |
 | `--reason` | Why the run is single-driver: required with `SingleDriver`, refused otherwise. With `--void`, why the dispatch is abandoned, required |
@@ -74,8 +74,8 @@ and refused anywhere else (RP-12 ruling 109). Each names no REQ, and its subject
 the order, so it is bound to the order and not to a requirement (ruling 130). A
 `Repair` dispatch, the one that hangs the order's tags, takes a frozen order alone,
 not blocked, and is refused once the order is commenced (rulings 108 and 131). A
-`Restoration` dispatch, the one that clears them, takes a commenced order alone
-(ruling 132). Neither is a review, so neither arms a fix cycle, and neither is
+`Restoration` dispatch, the one that clears them, takes a commenced order (ruling
+132), or a paused one whose acceptance carried a tag that still hangs (ruling 187). Neither is a review, so neither arms a fix cycle, and neither is
 held to the bound. A dispatch on a frozen order is open to the guard as one on a
 commenced order is (ruling 134). A stopping exit on the order holds neither role,
 since restoring what the order isolated must still happen (ruling 135).

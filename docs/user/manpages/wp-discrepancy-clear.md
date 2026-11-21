@@ -56,9 +56,10 @@ with its evidence (RP-12 ruling 9). `docs/governance/harbor-ro12-contractor-kit.
   is refused.
 - A line an order's acceptance carried a tag on (the accepted move's `carried`,
   rulings 171 and 184) stays on the list while the surface is isolated: it is
-  cleared only by that tag's clear, citing it with `--tag` once its
-  `Restoration` dispatch has cleared it. An entry, another tag or `--ghi` is
-  refused (ruling 185).
+  cleared only by that tag's clear, citing it with `--tag` once the paused
+  order's `Restoration` dispatch has cleared it (ruling 187). An entry or another
+  tag in its place is refused, and so is `--ghi`, which would take the line out
+  of its package; an entry beside the carried tag is admitted (ruling 185).
 - A line is cleared once.
 
 A refusal names what failed, why and what to do, and books nothing.

@@ -73,9 +73,12 @@ repair package must be initiated and not closed (rulings 2 and 44).
 A tag the order's acceptance carried (rulings 171 and 184, [`gz wp order
 accept`](wp-order-accept.md)) holds Gate 5 to a `pause` while it hangs: every
 other decision is refused, naming each carried tag and its line, since the surface
-is still isolated (ruling 171, on ruling 30's pause). Once the tag is cleared,
-any decision is admitted. The paused order stays closed with its tag hung, and the
-repair package's close stays refused over the tag until its clear (refusal 6,
+is still isolated (ruling 171, on ruling 30's pause). An accepted order cannot
+clear the tag, so a carry always closes as a `pause`. The paused order then clears
+it: its tag clearance, a `Restoration` dispatch on it and the subagent's clear are
+admitted for the tags its acceptance carried, and no others (ruling 187, [`gz wp
+tag authorize`](wp-tag-authorize.md), [`gz wp tag clear`](wp-tag-clear.md)). The
+repair package's close stays refused over the tag until that clear (refusal 6,
 [`gz wp close`](wp-close.md)).
 
 A refusal names what failed, why, and the call to re-run, and books nothing.
@@ -144,11 +147,12 @@ $ uv run gz wp order close ORD-01-import --decision terminate --attestor g0 --at
 Order ORD-01-import's acceptance carried tag(s) that still hang: TAG-01-stamp
 (carried by DSC-01-carry). While a carried tag hangs, Gate 5 takes a pause
 alone, since the surface is still isolated (RP-12 ruling 171, on ruling 30's
-pause). Close it as `pause` with --revisit-condition, or clear the tag first.
-Nothing was written; correct the call and re-run `uv run gz wp order close
-<ORD-id> --decision <proceed|redirect|pause|terminate> --attestor g0
---attestation-text <words> --evidence <text> [--residual-risk <text> |
---superseded-by <ORD-id> | --revisit-condition <text>]`.
+pause). Close it as `pause` with --revisit-condition; the paused order's
+Restoration dispatch then clears the tag (ruling 187). Nothing was written;
+correct the call and re-run `uv run gz wp order close <ORD-id> --decision
+<proceed|redirect|pause|terminate> --attestor g0 --attestation-text <words>
+--evidence <text> [--residual-risk <text> | --superseded-by <ORD-id> |
+--revisit-condition <text>]`.
 $ uv run gz wp order close ORD-01-import --decision pause --revisit-condition "O9's carry" --attestor g0 --attestation-text ruled --evidence e
 ORD-01-import: accepted -> closed
 ```

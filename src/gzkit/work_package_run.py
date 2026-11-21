@@ -55,12 +55,14 @@ from gzkit.events import (
     WorkPackageUnblockedEvent,
 )
 from gzkit.ledger import Ledger, ledger_row
+from gzkit.mx.tag_rows import order_tags
 from gzkit.order_ledger import (
     STOPPING_EXITS,
     is_order_blocked,
     order_baseline,
     order_rows,
     order_state,
+    paused_carried_tags,
 )
 from gzkit.pipeline_dispatch import MAX_REVIEW_FIX_CYCLES
 from gzkit.work_package_ledger import (
@@ -419,16 +421,21 @@ def _package_order(catalog: Catalog, package: WorkPackage, order_id: str) -> Ord
     return held
 
 
-def _craftsman_subject(order: Order, request: DispatchRequest, state: str | None) -> str:
+def _craftsman_subject(
+    ledger: Ledger, order: Order, request: DispatchRequest, state: str | None
+) -> str:
     """Bind the craftsman's dispatch to its order, naming no REQ (RP-12 ruling 130).
 
     A Repair dispatch takes a frozen order, to hang its tags before commencement
-    (rulings 108 and 131); a Restoration dispatch takes a commenced one (ruling 132).
+    (rulings 108 and 131); a Restoration dispatch takes a commenced one (ruling 132),
+    or a paused one whose acceptance carried a tag still hung (ruling 187).
 
     Returns:
         The subject, the order's id.
 
     """
+    if request.role != REPAIR and _carried_tag_hangs(ledger, order.id):
+        state = "commenced"  # ruling 187: the paused order clears the tags it carried
     wanted, cited, step = (
         (
             "frozen",
@@ -455,6 +462,12 @@ def _craftsman_subject(order: Order, request: DispatchRequest, state: str | None
     return order.id
 
 
+def _carried_tag_hangs(ledger: Ledger, order_id: str) -> bool:
+    """Whether a tag the paused order's acceptance carried still hangs (ruling 187)."""
+    carried = paused_carried_tags(ledger, order_id)
+    return bool(carried & set(order_tags(ledger, order_id).hung_uncleared))
+
+
 def _order_subject(ledger: Ledger, order: Order, request: DispatchRequest) -> str:
     """Ruling 57: an order's dispatch takes a REQ its freeze holds, at the frozen revision.
 
@@ -464,7 +477,7 @@ def _order_subject(ledger: Ledger, order: Order, request: DispatchRequest) -> st
     """
     state = order_state(ledger, order.id)
     if request.role in _CRAFTSMAN:
-        return _craftsman_subject(order, request, state)
+        return _craftsman_subject(ledger, order, request, state)
     if state != "commenced":
         _refuse(f"Order {order.id} is {state or 'not opened'}, not commenced.")
     if request.req is None:

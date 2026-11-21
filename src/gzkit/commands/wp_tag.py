@@ -41,6 +41,7 @@ from gzkit.mx.tag_out import (
     record_tag_issue,
     tag_log,
 )
+from gzkit.order_ledger import OrderLedgerError
 from gzkit.work_package_ledger import WorkPackageLedgerError
 
 if TYPE_CHECKING:
@@ -176,7 +177,7 @@ def wp_tag_authorize_cmd(*, tag_id: str, called_by_subagent: bool, as_json: bool
         event = record_tag_clearance(
             Ledger(ledger_path), tag_id, mx_session_id=_open_session_id(root, ledger_path)
         )
-    except TagOutError as exc:
+    except (TagOutError, OrderLedgerError) as exc:
         raise PolicyBreachError(str(exc)) from exc
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     fmt.emit(
@@ -247,7 +248,7 @@ def wp_tag_clear_cmd(
             mx_session_id=_open_session_id(root, ledger_path),
             read_refutations=_refutations_reader(root),
         )
-    except (TagOutError, WorkPackageLedgerError) as exc:
+    except (TagOutError, WorkPackageLedgerError, OrderLedgerError) as exc:
         raise PolicyBreachError(str(exc)) from exc
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     if isinstance(event, TagClearedEvent):

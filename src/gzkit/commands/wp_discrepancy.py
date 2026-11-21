@@ -39,6 +39,7 @@ from gzkit.mx.discrepancies import (
 from gzkit.mx.entries import EntryError
 from gzkit.mx.record_rows import DiscrepancyError, discrepancy_list, open_discrepancies
 from gzkit.mx.tag_rows import TagOutError
+from gzkit.order_ledger import OrderLedgerError
 from gzkit.registries import RegistryError
 
 if TYPE_CHECKING:
@@ -50,7 +51,7 @@ if TYPE_CHECKING:
 #: Every refusal a record or clear can raise: the writer's own, and the maintenance
 #: record's and the tag log's, which the writer reads and which refuse a row they cannot
 #: parse with the void that recovers it. Each is a policy breach, exit 3.
-_REFUSALS = (DiscrepancyError, EntryError, TagOutError)
+_REFUSALS = (DiscrepancyError, EntryError, TagOutError, OrderLedgerError)
 
 
 class GhClearWitnesses:

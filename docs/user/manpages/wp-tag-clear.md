@@ -39,7 +39,8 @@ found the surface in (ruling 6). `docs/governance/harbor-ro12-contractor-kit.md`
   subagent that claimed the hanging dispatch also claimed the clearing one, read
   from the `dispatch_claimed` rows the stamp hook books.
 - The tag is hung, its clearance authorized and not already cleared (ruling 6).
-  The order is commenced and not blocked (rulings 59, 132 and 135). The open MX
+  The order is commenced and not blocked (rulings 59, 132 and 135), or paused at
+  Gate 5 with the tag among those its acceptance carried (ruling 187). The open MX
   session is recorded as the holder; with none open the clear is refused.
 - `--position-found` takes one of a closed set: the three positions a tag is
   hung in, or `on`, a surface found back in service (ruling 140). Found in the

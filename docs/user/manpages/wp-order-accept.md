@@ -49,8 +49,9 @@ a file outside the footprint and a hung tag beside the others (ruling 88):
    until all but one is cleared (ruling 186). The accepted move books each carry
    as `carried`, the tag with its line, and the verb prints it (ruling 184); the
    order's Gate 5 then takes a pause alone while a carried tag hangs (ruling 171,
-   [`gz wp order close`](wp-order-close.md)), and the line is cleared only by
-   that tag's clear (ruling 185, [`gz wp discrepancy
+   [`gz wp order close`](wp-order-close.md)), the paused order clears the tag
+   through its `Restoration` dispatch (ruling 187), and the line is cleared only
+   by that tag's clear (ruling 185, [`gz wp discrepancy
    clear`](wp-discrepancy-clear.md)). The rule holds whatever the order's stop.
 
 A move that passes crosses the airlock outward on the repair package's slice: it
@@ -117,9 +118,10 @@ dispatch WP-01-stamp --order ORD-01-import --role Restoration --model <tier>`),
 and its subagent runs `uv run gz wp tag clear TAG-01-stamp --dispatch D-<id>
 --position-found <position>`. To carry one, the coordinator records a line
 graded due by a named event that cites it (`uv run gz wp discrepancy record
---order ORD-01-import --tag TAG-01-stamp --grade due-by-event --due-by
-"<event>" --source left-broken --slug <slug> --description "<what>"`), and its
-Gate 5 then takes a pause alone while the tag hangs. Then accept.
+--order ORD-01-import --tag TAG-01-stamp --grade due-by-event --due-by "<event>"
+--source left-broken --slug <slug> --description "<what>"`); its Gate 5 then
+takes a pause alone, and the paused order's Restoration dispatch clears the tag
+(ruling 187). Then accept.
 $ uv run gz wp order accept ORD-01-import --evidence final-inspection
 ORD-01-import: commenced -> accepted
   carried: TAG-01-stamp on DSC-01-carry (Gate 5: pause alone)

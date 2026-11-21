@@ -915,31 +915,57 @@ class CarryTests(_OrderCase):
         self.assertIn(first, refusal)
         self.assertIn(second, refusal)
 
-    def test_only_an_open_coordinator_due_by_line_carries(self) -> None:
-        """Ruling 171: a blocking line does not carry, and neither does a cleared one."""
+    def test_a_blocking_line_does_not_carry(self) -> None:
+        """Ruling 171: the carry is a line graded due by a named event; a blocking one is not."""
         self.line(grade="blocks-return-to-service", due_by=None)
         self.assertIn(self.hung, self.assert_refused("accepted", acceptance_ready=True))
 
-    def test_a_performers_line_does_not_carry(self) -> None:
-        """Ruling 171: the carry is the coordinator's unstamped line; a stamped one is not."""
-        stamped = DiscrepancyRecordedEvent.model_validate(
+    def seat_line(self, **fields: object) -> None:
+        """Seat a due-by line citing the hung tag past the writer, the guard under test the
+        acceptance's own (the writer refuses these lines before they reach it)."""
+        line = DiscrepancyRecordedEvent.model_validate(
             {
                 "event": "discrepancy_recorded",
-                "id": "DSC-01-found",
-                "discrepancy_id": "DSC-01-found",
+                "id": "DSC-01-seated",
+                "discrepancy_id": "DSC-01-seated",
                 "order": "ORD-01-import",
                 "work_package": "WP-01-stamp",
                 "grade": "due-by-event",
                 "due_by": "O9's carry",
-                "source": "found-in-work",
-                "description": "Found while repairing.",
+                "source": "left-broken",
+                "description": "Seated past the writer.",
                 "tag_id": self.hung,
-                "dispatch_id": "D-0123456789abcdef",
                 "mx_session_id": "mx-1",
+                **fields,
             }
         )
-        self.ledger.append(ledger_row(stamped))
+        self.ledger.append(ledger_row(line))
+
+    def test_a_performers_line_does_not_carry(self) -> None:
+        """Ruling 171: the carry is the coordinator's unstamped line; a stamped one is not."""
+        self.seat_line(source="found-in-work", dispatch_id="D-0123456789abcdef")
         self.assertIn(self.hung, self.assert_refused("accepted", acceptance_ready=True))
+
+    def test_another_orders_line_does_not_carry(self) -> None:
+        """Ruling 171: the carry cites that tag and that order; another order's line is not."""
+        self.seat_line(order="ORD-02-matcher")
+        self.assertIn(self.hung, self.assert_refused("accepted", acceptance_ready=True))
+
+    def test_a_malformed_carry_row_is_refused_with_its_void(self) -> None:
+        """Ruling 184: Gate 5 reads the booked carry; a row it cannot read is refused, typed."""
+        row = {
+            "schema": "gzkit.ledger.v1", "event": "order_transitioned", "id": "ORD-01-import",
+            "ts": "2026-11-21T00:00:00+00:00", "order": "ORD-01-import",
+            "work_package": "WP-01-stamp", "from_state": "commenced", "to_state": "accepted",
+            "evidence": "seated", "acceptance_ready": True, "carried": [{"tag_id": "bad"}],
+        }  # fmt: skip
+        with self.path.open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps(row) + "\n")
+        # a terminate is the decision Gate 5 reads the carry for; a pause needs no reading
+        refusal = self.assert_refused(
+            "closed", decision="terminate", attestor="g0", attestation_text="ruled"
+        )
+        self.assertIn("gz ledger correct", refusal)
 
     def test_a_cleared_line_carries_nothing(self) -> None:
         """Ruling 171: the carry reads open lines; a cleared one is off the list."""
