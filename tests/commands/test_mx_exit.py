@@ -289,10 +289,6 @@ class TestMxExitLiveNegativeControl(SilencedConsoleTestCase):
             self.assertTrue(marker.is_active(root))
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class TestMxExitSafeModeOutputForm(unittest.TestCase):
     """GHI #1244: closing a safe-mode marker says so, through the same hard gate."""
 
@@ -325,3 +321,7 @@ class TestMxExitSafeModeOutputForm(unittest.TestCase):
                 mx_exit_cmd(attestor="g0", project_root=root, _run_guards=_green_guard)
             self.assertFalse(marker.is_active(root))
             self.assertIn("Safe mode closed", buffer.getvalue())
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -17,6 +17,7 @@ import subprocess
 import unittest
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
 from gzkit.cli import main
 from gzkit.cli.main import _build_parser
@@ -49,7 +50,7 @@ def _land(subject: str) -> str:
         ["config", "user.email", "t@e.st"],
         ["config", "user.name", "tester"],
         ["add", "-A"],
-        ["commit", "-q", "-m", subject],
+        ["-c", "commit.gpgsign=false", "commit", "-q", "-m", subject],
     ):
         subprocess.run(["git", *args], check=True, env=env)  # noqa: S603 — git in a temp repo
     head = subprocess.run(
@@ -286,11 +287,14 @@ class EntryShowWiringTests(_EntryCase):
 
     def test_outside_a_git_repository_each_landed_line_names_why(self) -> None:
         # output-contract: docs/user/manpages/wp-entry-show.md, git not read (ruling 193)
-        # given an entry booked in a project that is no git repository
+        # given an entry booked in a project that is no git repository, git's search
+        # for one held to the project so a repository above the temp dir is not read
         self.booked()
+        ceiling = {"GIT_CEILING_DIRECTORIES": str(Path.cwd().resolve().parent)}
         # when
-        code, output = self.show()
-        json_code, json_output = self.show("--json")
+        with patch.dict(os.environ, ceiling):
+            code, output = self.show()
+            json_code, json_output = self.show("--json")
         # then the Landed line names the cause, and JSON reads landed as unknown
         flat = " ".join(output.split())
         self.assertEqual((code, json_code), (0, 0), output)

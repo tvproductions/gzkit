@@ -53,11 +53,13 @@ gz mx exit --attestor ATTESTOR
   `order_transitioned` row, does not parse): names the row and the `gz ledger correct` void
   that recovers it, puts the marker back as it was and exits 3. No signature is taken over a
   record that could not be read (ruling 190).
-- If git cannot be read (not installed, the project not a repository, or one with no commit
-  yet): names the cause (`` `git log` exited <code>: <git's message> ``), says the window's
-  commits cannot be read, puts the marker back and exits 3. The view is never taken as an
-  empty window (ruling 193).
-- The log is printed as plain text: brackets in an entry or a commit subject read as written.
+- If git cannot be read (not installed, the project not a repository, one with no commit
+  yet, or a commit message carrying git's field or record separator): names the cause
+  (`git could not run (<error>)`, `` `git log` exited <code>: <git's message> `` or
+  `` a `git log` record did not parse: <record> ``), says the window's commits cannot be read,
+  puts the marker back and exits 3. The view is never taken as an empty window (ruling 193).
+- The log is printed as written: brackets, `:name:` emoji codes and long lines in an entry or
+  a commit subject read as their authors wrote them.
 
 **There is no `--force` flag.** You cannot narrow your way out of a red guard.
 **Exit is the ONLY path that clears the marker.** A marker removed without a matching

@@ -9,10 +9,13 @@ discriminated-union parser; proven here AND by ``gz validate --ledger`` exit 0
 """
 
 import json
+import os
 import subprocess
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 from gzkit.commands.common import console
 from gzkit.commands.mx_cmd import mx_enter_cmd, mx_exit_cmd
@@ -23,6 +26,9 @@ from gzkit.mx.entries import EntryError
 from gzkit.mx.git_commits import CommitsUnreadableError, git_log
 from gzkit.traceability import covers
 from tests.commands.common import SilencedConsoleTestCase, _isolated_git_env
+
+if TYPE_CHECKING:
+    from contextlib import AbstractContextManager
 
 
 def _mk_root(tmp: str) -> Path:
@@ -110,7 +116,19 @@ def _commit(root: Path, filename: str, message: str) -> None:
     (root / filename).write_text("x", encoding="utf-8")
     subprocess.run(["git", "add", "-A"], cwd=root, check=True, env=_isolated_git_env())
     subprocess.run(  # noqa: S603 — git argv this test builds
-        ["git", "commit", "-q", "-m", message], cwd=root, check=True, env=_isolated_git_env()
+        [
+            "git",
+            "-c",
+            "commit.gpgsign=false",
+            "commit",
+            "-q",
+            "--allow-empty-message",
+            "-m",
+            message,
+        ],
+        cwd=root,
+        check=True,
+        env=_isolated_git_env(),
     )
 
 
@@ -503,22 +521,53 @@ class TestUnreadableGit(unittest.TestCase):
                 root, [_session_row("mx_session_opened", "1970-01-01T00:00:00+00:00", "s")]
             )
             _book_entry(root, "ENT-01-stamp-import", "s")
-            window = log.assemble_window(root, "s")
-            with self.assertRaises(CommitsUnreadableError) as raised:
-                log.assemble_and_render(root, "s")
+            with _no_repository_above(tmp):
+                window = log.assemble_window(root, "s")
+                with self.assertRaises(CommitsUnreadableError) as raised:
+                    log.assemble_and_render(root, "s")
         assert window.commits_unread is not None
         self.assertIn("`git log` exited", window.commits_unread)
         self.assertEqual(str(raised.exception), window.commits_unread)
         self.assertEqual((window.fixes, window.unrecorded), ([], []))
 
 
+def _no_repository_above(tmp: str) -> AbstractContextManager[object]:
+    """Hold git's search for a repository to *tmp*, so one above the temp dir is never read."""
+    return patch.dict(os.environ, {"GIT_CEILING_DIRECTORIES": str(Path(tmp).resolve().parent)})
+
+
 class TestGitReader(unittest.TestCase):
     """The one git reader both views call (rulings 192 and 193)."""
+
+    def test_a_commit_with_an_empty_message_reads_as_an_empty_subject(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _init_git_repo(root)
+            _commit(root, "f.txt", "")
+            records = git_log(root, [], ("%s", "%B"))
+        self.assertEqual([fields[1:] for fields in records], [["", ""]])
+
+    def test_a_message_carrying_a_separator_is_refused_never_misread(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _init_git_repo(root)
+            _commit(root, "f.txt", "fix: a subject\n\na body with a \x1e record separator")
+            with self.assertRaises(CommitsUnreadableError) as raised:
+                git_log(root, [], ("%s", "%B"))
+        self.assertIn("did not parse", str(raised.exception))
+
+    def test_a_repository_with_no_commit_yet_cannot_be_read(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _init_git_repo(root)
+            with self.assertRaises(CommitsUnreadableError) as raised:
+                git_log(root, [], ("%s",))
+        self.assertIn("`git log` exited", str(raised.exception))
 
     def test_a_git_that_cannot_run_is_named_never_read_as_no_commit(self) -> None:
         with TemporaryDirectory() as tmp:
             missing = Path(tmp) / "no-such-project"
-            with self.assertRaises(CommitsUnreadableError) as raised:
+            with _no_repository_above(tmp), self.assertRaises(CommitsUnreadableError) as raised:
                 git_log(missing, [], ("%s",))
         self.assertIn("git could not run", str(raised.exception))
 
@@ -529,8 +578,9 @@ class TestGitReader(unittest.TestCase):
             _init_git_repo(root)
             _commit(root, "f.txt", "fix: a commit outside any window")
             _write_ledger(root, [])
+            _book_entry(root, "ENT-01-stamp-import", "never-opened")
             window = log.assemble_window(root, "never-opened")
-        self.assertEqual((window.fixes, window.commits_unread), ([], None))
+        self.assertEqual((window.fixes, window.commits_unread, window.entries), ([], None, []))
 
 
 class TestUnreadableGitRendering(unittest.TestCase):
@@ -542,7 +592,8 @@ class TestUnreadableGitRendering(unittest.TestCase):
                 root, [_session_row("mx_session_opened", "1970-01-01T00:00:00+00:00", "s")]
             )
             _book_entry(root, "ENT-01-stamp-import", "s")
-            window = log.assemble_window(root, "s")
+            with _no_repository_above(tmp):
+                window = log.assemble_window(root, "s")
         assert window.commits_unread is not None
         named = f"commits could not be read: {window.commits_unread}"
         lines = log.render(window).splitlines()
@@ -575,17 +626,13 @@ class TestParseArtifactsRefusesWildcards(unittest.TestCase):
     """
 
     def test_a_wildcard_suffix_names_no_obpi(self) -> None:
-        from gzkit.mx.log import parse_artifacts  # noqa: PLC0415
-
         for wildcard in ("OBPI-0.51.0-0x", "OBPI-0.0.74-1[5-9]", "OBPI-0.52.0-0{1,2,3}"):
             with self.subTest(wildcard=wildcard):
-                got = parse_artifacts(f"fix(x): touches {wildcard} today")
+                got = log.parse_artifacts(f"fix(x): touches {wildcard} today")
                 self.assertEqual(got["OBPI"], [], f"{wildcard} produced {got['OBPI']}")
 
     def test_a_real_two_digit_obpi_is_still_named(self) -> None:
-        from gzkit.mx.log import parse_artifacts  # noqa: PLC0415
-
-        got = parse_artifacts("fix(x): OBPI-0.35.0-08 and OBPI-0.1.0-10-templates")
+        got = log.parse_artifacts("fix(x): OBPI-0.35.0-08 and OBPI-0.1.0-10-templates")
         self.assertIn("OBPI-0.35.0-08", got["OBPI"])
         self.assertIn("OBPI-0.1.0-10", got["OBPI"])
 
@@ -618,6 +665,7 @@ class TestExitRefusesWhatItCannotRead(unittest.TestCase):
         self.assertEqual(code, 3)
         self.assertIn("ENT-03-x", printed)
         self.assertIn("gz ledger correct", printed)
+        self.assertIn("2026-11-21T00:00:00+00:00", printed)
 
     def test_the_log_prints_brackets_as_written_never_as_markup(self) -> None:
         # output-contract: docs/user/manpages/mx-exit.md, the log printed as plain text
@@ -628,10 +676,13 @@ class TestExitRefusesWhatItCannotRead(unittest.TestCase):
             mx_enter_cmd(
                 reason="repair", attestor="g0", inspection_scope=["ADR-0.0.74"], project_root=root
             )
-            _commit(root, "fix.txt", "fix(ci): keep the [skip ci] tag and [/tmp] path")
+            subject = "fix(ci): keep the [skip ci] tag, the [/tmp] path and :fire: as written " + (
+                "and a subject long enough that no console would leave it on one line " * 3
+            )
+            _commit(root, "fix.txt", subject.strip())
             with console.capture() as captured:
                 mx_exit_cmd(attestor="g0", project_root=root, _run_guards=lambda r: 0)
-        self.assertIn("fix(ci): keep the [skip ci] tag and [/tmp] path", captured.get())
+        self.assertIn(subject.strip(), captured.get())
 
     def test_a_git_it_cannot_read_refuses_at_3_naming_the_cause(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -639,7 +690,8 @@ class TestExitRefusesWhatItCannotRead(unittest.TestCase):
             mx_enter_cmd(
                 reason="repair", attestor="g0", inspection_scope=["ADR-0.0.74"], project_root=root
             )
-            code, printed = self._exit(root)
+            with _no_repository_above(tmp):
+                code, printed = self._exit(root)
             self._assert_held_open(root)
         self.assertEqual(code, 3)
         self.assertIn("`git log` exited", printed)

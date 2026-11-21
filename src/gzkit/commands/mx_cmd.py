@@ -472,7 +472,8 @@ def mx_exit_cmd(
         # derived from the ledger events + commits in the enter→exit window, so it
         # cannot be hand-narrated or forgotten. It is the maintenance record's view, and a
         # record or a git it cannot read takes no signature (RP-12 rulings 166, 190, 193).
-        # Its text is performers' and commit authors', so it prints as text, never markup.
+        # Its text is performers' and commit authors', so it prints as written: no markup,
+        # emoji codes, highlighting or rewrapping.
         try:
             rendered = log.assemble_and_render(root, m.session_id)
         except (EntryError, CommitsUnreadableError) as exc:
@@ -480,7 +481,7 @@ def mx_exit_cmd(
             console.print("[red]ERROR:[/red]", escape(str(exc)))
             console.print(f"[red]The {what} cannot be read. MX session remains open.[/red]")
             sys.exit(3)
-        console.print(rendered, markup=False)
+        console.print(rendered, markup=False, emoji=False, highlight=False, soft_wrap=True)
 
         # airlock-OUT fires (co-equal exit membrane, ADR-0.33.0) — ADDITIVE to the hard
         # guard-gate above, never a replacement: it runs only after the guards pass,

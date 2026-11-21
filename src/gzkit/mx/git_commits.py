@@ -22,7 +22,8 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 #: git log field and record separators: the ASCII unit and record separators, which
-#: do not appear in normal commit text (a message carrying one would split a record).
+#: do not appear in normal commit text; a message carrying one splits its record, and
+#: the reader refuses that record as unreadable rather than misread it.
 FIELD_SEP = "\x1f"
 RECORD_SEP = "\x1e"
 
@@ -35,11 +36,13 @@ def git_log(root: Path, selection: list[str], fields: tuple[str, ...]) -> list[l
     """Read ``git log`` over *selection*: each commit's SHA, then each of *fields* (``%s``, ``%B``).
 
     Returns:
-        One list per commit, newest first: its SHA, then one value per field.
+        One list per commit, newest first: its SHA, then exactly one value per field.
 
     Raises:
         CommitsUnreadableError: git could not run, or exited non-zero (not a
-            repository, or one with no commit yet); the message names the cause.
+            repository, or one with no commit yet), or a record did not split into
+            its SHA and fields (a message carrying a separator); the message names
+            the cause.
 
     """
     pretty = "%H" + "".join(FIELD_SEP + field for field in fields) + RECORD_SEP
@@ -62,10 +65,16 @@ def git_log(root: Path, selection: list[str], fields: tuple[str, ...]) -> list[l
         msg = f"`git log` exited {result.returncode}: {cause}"
         raise CommitsUnreadableError(msg)
     records: list[list[str]] = []
+    # git puts a newline between records; strip only that, never str.strip(), which
+    # reads the separators themselves as whitespace and would drop an empty field.
     for raw in result.stdout.split(RECORD_SEP):
-        if record := raw.strip():
-            sha, *values = record.split(FIELD_SEP, len(fields))
-            records.append([sha.strip(), *values])
+        if not (record := raw.lstrip("\n")):
+            continue
+        parts = record.split(FIELD_SEP, len(fields))
+        if len(parts) != len(fields) + 1:
+            msg = f"a `git log` record did not parse: {record[:60]!r}"
+            raise CommitsUnreadableError(msg)
+        records.append(parts)
     return records
 
 

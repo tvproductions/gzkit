@@ -301,8 +301,10 @@ def _session_record(
     """Read the session's maintenance record and join it to the window's commits (ruling 166).
 
     An entry is the session's when it records the session's id and was booked in the
-    window, so a reopened id's earlier span stays outside it as its commits do
-    (REQ-0.0.74-06-01; GHI #1273).
+    window, so a reopened id's earlier span stays outside it as its commits do, and a
+    session with no window holds none (REQ-0.0.74-06-01; GHI #1273). Every ledger
+    ``ts`` is ``datetime.now(UTC).isoformat()``, one form, so the strings compare in
+    time order.
 
     Returns:
         The session's entries, each entry's landing commits, and the unrecorded work.
@@ -312,7 +314,8 @@ def _session_record(
     record = [
         view
         for view in record_view(Ledger(root.joinpath(*_LEDGER_RELPATH)))
-        if view.entry.mx_session_id == session_id
+        if opened_at
+        and view.entry.mx_session_id == session_id
         and view.entry.ts >= opened_at
         and (closed_at is None or view.entry.ts <= closed_at)
     ]

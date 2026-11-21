@@ -1,4 +1,8 @@
-"""Open MX conditions for tests: a marker only counts when the ledger backs it (GHI #1273)."""
+"""Open MX conditions for tests: a marker only counts when the ledger backs it (GHI #1273).
+
+`git_project` makes a fixture project a git repository with a commit, which a green
+`gz mx exit` needs since a git it cannot read refuses the exit (RP-12 ruling 193).
+"""
 
 import json
 import subprocess
@@ -38,7 +42,7 @@ def git_project(root: Path) -> None:
         ["init", "-q"],
         ["config", "user.email", "t@e.st"],
         ["config", "user.name", "tester"],
-        ["commit", "-q", "--allow-empty", "-m", "chore: the fixture's first commit"],
+        ["-c", "commit.gpgsign=false", "commit", "-q", "--allow-empty", "-m", "chore: seed"],
     ):
         subprocess.run(["git", *args], cwd=root, check=True, env=env)  # noqa: S603 — a temp repo
 
