@@ -2417,3 +2417,5 @@
 {"ts": "2026-11-21T13:11:15Z", "source": "20261121T131110Z-rp12-o4-task5-sweep-running.md", "text": "Ruling 199, a paused order's find block takes no exit (verbatim: \"A: Refuse it (Rec.)\")."}
 {"ts": "2026-11-21T13:11:15Z", "source": "20261121T131110Z-rp12-o4-task5-sweep-running.md", "text": "Let the sweep finish, then show the survivors (verbatim: \"let it finish, then show me the survivors\")."}
 {"ts": "2026-11-21T13:11:15Z", "source": "20261121T131110Z-rp12-o4-task5-sweep-running.md", "text": "Write the handoff and git-sync with the sweep left running (verbatim: \"yes, write the handoff and git sync, this taking 4 hours is ridiculous\")."}
+{"ts": "2026-11-21T23:59:20Z", "source": "20261121T235919Z-rp12-mutation-tool-and-drift.md", "text": "The internal mutation tool was a mistake and is to be investigated (verbatim: \"our vibed internal tool was a mistake. we need to look into this.\")."}
+{"ts": "2026-11-21T23:59:20Z", "source": "20261121T235919Z-rp12-mutation-tool-and-drift.md", "text": "Write the handoff and git-sync (verbatim: \"write the handoff and git sync\")."}
