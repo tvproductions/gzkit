@@ -187,7 +187,7 @@
     },
     {
       "source": "src/gzkit/commands/mx_cmd.py",
-      "tree": "28eedea7c87fdc5a316a96f352e90c4605a68b3f+dirty",
+      "tree": "8d6800491ee1eb8c919f67d1286a58946918cb6b",
       "scope": {
         "cited": [
           "mx_exit_cmd"
@@ -209,10 +209,10 @@
       "baseline_tests_run": 114,
       "source_restored": true,
       "counts": {
-        "killed": 23,
+        "killed": 24,
         "survived": 4,
         "invalid": 0,
-        "inconclusive": 1
+        "inconclusive": 0
       },
       "mutants": [
         {
@@ -227,7 +227,6 @@
             "tests.commands.test_mx_exit.TestMxExitHardRefuseOnRed.test_a_failure_after_green_guards_leaves_the_marker_not_exiting",
             "tests.commands.test_mx_exit.TestMxExitHardRefuseOnRed.test_an_interrupted_exit_leaves_the_marker_not_exiting",
             "tests.commands.test_mx_exit.TestMxExitSafeModeOutputForm.test_exit_names_safe_mode",
-            "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_exit_books_airlock_out_when_guards_pass",
             "tests.mx.test_mx_log.TestExitRefusesWhatItCannotRead.test_a_git_it_cannot_read_refuses_at_3_naming_the_cause",
             "tests.mx.test_mx_log.TestExitRefusesWhatItCannotRead.test_a_ledger_it_cannot_read_refuses_at_3_and_signs_nothing",
             "tests.mx.test_mx_log.TestExitRefusesWhatItCannotRead.test_an_unreadable_record_refuses_at_3_naming_its_row_and_void",
@@ -240,7 +239,8 @@
             "tests.commands.test_mx_exit.TestMxExitRefusalsNameTheirRecovery.test_an_unreadable_marker_refuses_at_1_naming_gz_mx_repair",
             "tests.commands.test_mx_exit.TestMxExitRefusalsNameTheirRecovery.test_with_no_session_open_it_refuses_at_1_naming_gz_mx_enter",
             "tests.commands.test_mx_exit.TestMxExitThroughTheCli.test_the_cli_closes_the_hangar_running_the_full_strength_guards",
-            "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_airlock_out_is_additive_hard_gate_still_refuses_red"
+            "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_airlock_out_is_additive_hard_gate_still_refuses_red",
+            "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_exit_books_airlock_out_when_guards_pass"
           ]
         },
         {
@@ -265,7 +265,6 @@
             "tests.commands.test_mx_exit.TestMxExitHardRefuseOnRed.test_a_failure_after_green_guards_leaves_the_marker_not_exiting",
             "tests.commands.test_mx_exit.TestMxExitHardRefuseOnRed.test_an_interrupted_exit_leaves_the_marker_not_exiting",
             "tests.commands.test_mx_exit.TestMxExitSafeModeOutputForm.test_exit_names_safe_mode",
-            "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_exit_books_airlock_out_when_guards_pass",
             "tests.mx.test_mx_log.TestExitRefusesWhatItCannotRead.test_a_git_it_cannot_read_refuses_at_3_naming_the_cause",
             "tests.mx.test_mx_log.TestExitRefusesWhatItCannotRead.test_a_ledger_it_cannot_read_refuses_at_3_and_signs_nothing",
             "tests.mx.test_mx_log.TestExitRefusesWhatItCannotRead.test_an_unreadable_record_refuses_at_3_naming_its_row_and_void",
@@ -277,7 +276,8 @@
             "tests.commands.test_mx_exit.TestMxExitLiveNegativeControl.test_live_exit_nc_catches_known_violation",
             "tests.commands.test_mx_exit.TestMxExitRefusalsNameTheirRecovery.test_an_unreadable_marker_refuses_at_1_naming_gz_mx_repair",
             "tests.commands.test_mx_exit.TestMxExitThroughTheCli.test_the_cli_closes_the_hangar_running_the_full_strength_guards",
-            "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_airlock_out_is_additive_hard_gate_still_refuses_red"
+            "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_airlock_out_is_additive_hard_gate_still_refuses_red",
+            "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_exit_books_airlock_out_when_guards_pass"
           ]
         },
         {
@@ -301,7 +301,6 @@
             "tests.commands.test_mx_exit.TestMxExitHardRefuseOnRed.test_a_failure_after_green_guards_leaves_the_marker_not_exiting",
             "tests.commands.test_mx_exit.TestMxExitHardRefuseOnRed.test_an_interrupted_exit_leaves_the_marker_not_exiting",
             "tests.commands.test_mx_exit.TestMxExitSafeModeOutputForm.test_exit_names_safe_mode",
-            "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_exit_books_airlock_out_when_guards_pass",
             "tests.mx.test_mx_log.TestExitRefusesWhatItCannotRead.test_a_git_it_cannot_read_refuses_at_3_naming_the_cause",
             "tests.mx.test_mx_log.TestExitRefusesWhatItCannotRead.test_a_ledger_it_cannot_read_refuses_at_3_and_signs_nothing",
             "tests.mx.test_mx_log.TestExitRefusesWhatItCannotRead.test_an_unreadable_record_refuses_at_3_naming_its_row_and_void",
@@ -312,7 +311,8 @@
             "tests.commands.test_mx_exit.TestMxExitHardRefuseOnRed.test_exit_red_raises_exit3",
             "tests.commands.test_mx_exit.TestMxExitLiveNegativeControl.test_live_exit_nc_catches_known_violation",
             "tests.commands.test_mx_exit.TestMxExitThroughTheCli.test_the_cli_closes_the_hangar_running_the_full_strength_guards",
-            "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_airlock_out_is_additive_hard_gate_still_refuses_red"
+            "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_airlock_out_is_additive_hard_gate_still_refuses_red",
+            "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_exit_books_airlock_out_when_guards_pass"
           ]
         },
         {
@@ -344,7 +344,6 @@
             "tests.commands.test_mx_exit.TestMxExitHardRefuseOnRed.test_a_failure_after_green_guards_leaves_the_marker_not_exiting",
             "tests.commands.test_mx_exit.TestMxExitHardRefuseOnRed.test_an_interrupted_exit_leaves_the_marker_not_exiting",
             "tests.commands.test_mx_exit.TestMxExitSafeModeOutputForm.test_exit_names_safe_mode",
-            "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_exit_books_airlock_out_when_guards_pass",
             "tests.mx.test_mx_log.TestExitRefusesWhatItCannotRead.test_a_ledger_it_cannot_read_refuses_at_3_and_signs_nothing",
             "tests.mx.test_mx_log.TestExitRefusesWhatItCannotRead.test_an_unreadable_record_refuses_at_3_naming_its_row_and_void",
             "tests.mx.test_mx_log.TestExitRefusesWhatItCannotRead.test_the_log_prints_brackets_as_written_never_as_markup",
@@ -355,7 +354,8 @@
             "tests.commands.test_mx_exit.TestMxExitHardRefuseOnRed.test_exit_red_raises_exit3",
             "tests.commands.test_mx_exit.TestMxExitLiveNegativeControl.test_live_exit_nc_catches_known_violation",
             "tests.commands.test_mx_exit.TestMxExitRefusalsNameTheirRecovery.test_an_unreadable_marker_refuses_at_1_naming_gz_mx_repair",
-            "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_airlock_out_is_additive_hard_gate_still_refuses_red"
+            "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_airlock_out_is_additive_hard_gate_still_refuses_red",
+            "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_exit_books_airlock_out_when_guards_pass"
           ]
         },
         {
@@ -379,14 +379,14 @@
             "tests.commands.test_mx_exit.TestMxExitHardRefuseOnRed.test_a_failure_after_green_guards_leaves_the_marker_not_exiting",
             "tests.commands.test_mx_exit.TestMxExitHardRefuseOnRed.test_an_interrupted_exit_leaves_the_marker_not_exiting",
             "tests.commands.test_mx_exit.TestMxExitSafeModeOutputForm.test_exit_names_safe_mode",
-            "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_exit_books_airlock_out_when_guards_pass",
             "tests.mx.test_mx_log.TestExitRefusesWhatItCannotRead.test_a_git_it_cannot_read_refuses_at_3_naming_the_cause",
             "tests.mx.test_mx_log.TestExitRefusesWhatItCannotRead.test_a_ledger_it_cannot_read_refuses_at_3_and_signs_nothing",
             "tests.mx.test_mx_log.TestExitRefusesWhatItCannotRead.test_an_unreadable_record_refuses_at_3_naming_its_row_and_void",
             "tests.mx.test_mx_log.TestExitRefusesWhatItCannotRead.test_the_log_prints_brackets_as_written_never_as_markup",
             "tests.commands.test_mx_exit.TestMxExitGreenPath.test_exit_green_removes_marker",
             "tests.commands.test_mx_exit.TestMxExitGreenPath.test_exit_green_writes_mx_session_closed_event",
-            "tests.commands.test_mx_exit.TestMxExitLiveNegativeControl.test_live_exit_nc_catches_known_violation"
+            "tests.commands.test_mx_exit.TestMxExitLiveNegativeControl.test_live_exit_nc_catches_known_violation",
+            "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_exit_books_airlock_out_when_guards_pass"
           ]
         },
         {
@@ -400,14 +400,14 @@
             "tests.commands.test_mx_exit.TestMxExitFullStrengthRerun.test_exit_rerun_is_full_strength_with_the_marker_held",
             "tests.commands.test_mx_exit.TestMxExitHardRefuseOnRed.test_a_failure_after_green_guards_leaves_the_marker_not_exiting",
             "tests.commands.test_mx_exit.TestMxExitSafeModeOutputForm.test_exit_names_safe_mode",
-            "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_exit_books_airlock_out_when_guards_pass",
             "tests.mx.test_mx_log.TestExitRefusesWhatItCannotRead.test_a_git_it_cannot_read_refuses_at_3_naming_the_cause",
             "tests.mx.test_mx_log.TestExitRefusesWhatItCannotRead.test_a_ledger_it_cannot_read_refuses_at_3_and_signs_nothing",
             "tests.mx.test_mx_log.TestExitRefusesWhatItCannotRead.test_an_unreadable_record_refuses_at_3_naming_its_row_and_void",
             "tests.mx.test_mx_log.TestExitRefusesWhatItCannotRead.test_the_log_prints_brackets_as_written_never_as_markup",
             "tests.commands.test_mx_exit.TestMxExitGreenPath.test_exit_green_removes_marker",
             "tests.commands.test_mx_exit.TestMxExitGreenPath.test_exit_green_writes_mx_session_closed_event",
-            "tests.commands.test_mx_exit.TestMxExitThroughTheCli.test_the_cli_closes_the_hangar_running_the_full_strength_guards"
+            "tests.commands.test_mx_exit.TestMxExitThroughTheCli.test_the_cli_closes_the_hangar_running_the_full_strength_guards",
+            "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_exit_books_airlock_out_when_guards_pass"
           ]
         },
         {
@@ -569,9 +569,9 @@
         },
         {
           "label": "mx_cmd.py:_run_mx_airlock_out_diagnostic:209:24 ifexp forced true",
-          "outcome": "inconclusive",
-          "reason": "the nominated tests errored; none failed on an assertion",
-          "failure_class": "error",
+          "outcome": "killed",
+          "reason": "",
+          "failure_class": "assertion",
           "failing_tests": [
             "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_exit_books_airlock_out_when_guards_pass"
           ]
@@ -584,22 +584,7 @@
           "failing_tests": []
         }
       ],
-      "follow_ups": [
-        {
-          "label": "mx_cmd.py:_run_mx_airlock_out_diagnostic:209:24 ifexp forced true",
-          "broad_outcome": "inconclusive",
-          "outcome": "disclosed",
-          "killed_by": null,
-          "tried": [
-            {
-              "test": "tests.test_mx_door_airlock.TestMxExitCallsAirlockOut.test_exit_books_airlock_out_when_guards_pass",
-              "baseline_green": true,
-              "outcome": "inconclusive",
-              "failure_class": "error"
-            }
-          ]
-        }
-      ]
+      "follow_ups": []
     },
     {
       "source": "src/gzkit/commands/wp_entry.py",
