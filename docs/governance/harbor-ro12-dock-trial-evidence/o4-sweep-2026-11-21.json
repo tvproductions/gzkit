@@ -187,7 +187,7 @@
     },
     {
       "source": "src/gzkit/commands/mx_cmd.py",
-      "tree": "8d6800491ee1eb8c919f67d1286a58946918cb6b",
+      "tree": "bfd4362848741856fc4fddd6bffa364ac9a8134d",
       "scope": {
         "cited": [
           "mx_exit_cmd"
@@ -210,9 +210,9 @@
       "source_restored": true,
       "counts": {
         "killed": 24,
-        "survived": 4,
+        "survived": 3,
         "invalid": 0,
-        "inconclusive": 0
+        "inconclusive": 1
       },
       "mutants": [
         {
@@ -426,10 +426,12 @@
         },
         {
           "label": "mx_cmd.py:mx_exit_cmd:502:11 if forced true",
-          "outcome": "survived",
-          "reason": "",
-          "failure_class": "none",
-          "failing_tests": []
+          "outcome": "inconclusive",
+          "reason": "the nominated tests errored; none failed on an assertion",
+          "failure_class": "error",
+          "failing_tests": [
+            "tests.commands.test_wp_entry.EntryShowWiringTests.test_an_entry_named_in_a_commit_body_alone_reads_not_landed"
+          ]
         },
         {
           "label": "mx_cmd.py:mx_exit_cmd:502:11 if forced false",
@@ -584,7 +586,22 @@
           "failing_tests": []
         }
       ],
-      "follow_ups": []
+      "follow_ups": [
+        {
+          "label": "mx_cmd.py:mx_exit_cmd:502:11 if forced true",
+          "broad_outcome": "inconclusive",
+          "outcome": "disclosed",
+          "killed_by": null,
+          "tried": [
+            {
+              "test": "tests.commands.test_wp_entry.EntryShowWiringTests.test_an_entry_named_in_a_commit_body_alone_reads_not_landed",
+              "baseline_green": true,
+              "outcome": "survived",
+              "failure_class": "none"
+            }
+          ]
+        }
+      ]
     },
     {
       "source": "src/gzkit/commands/wp_entry.py",

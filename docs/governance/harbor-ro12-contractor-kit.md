@@ -283,7 +283,7 @@ What it shows. Findings 1 to 3 and 8 changed code the trial swept or flew. The s
 
 ### O4's task cut, approved 2026-11-20
 
-**Status: approved; tasks 1 to 4 closed on their reviews, task 5 opened (rulings 195 to 199, 2026-11-21).** The operator's words, verbatim: *"Approve, start task 1 (Rec.)"* (a dated record). Task 1 closed on its repairs' re-review (handoff `20261120T101706Z`, operator: *"proceed as indicated"*); task 2 closed on its repairs' re-review, operator, verbatim: *"task 2 complete"* (2026-11-20); task 3, opened on rulings 184 to 186 and repaired under rulings 187 and 188 at its review, closed on its repairs' re-reviews, operator, by selection: *"Task 3 complete (Rec.)"* (2026-11-21). Task 4, opened on rulings 189 to 192 and repaired under rulings 193 and 194 at its review, closed on its repairs' re-reviews, operator, by selection: *"Task 4 complete (Rec.)"* (2026-11-21); the review's ledger-path finding is GHI #1337. O4 lands the maintenance record and the list of discrepancies (rulings 8, 9 and 166 to 173) in five tasks, worked in order, each opening with its own questions one at a time and closing on an independent review:
+**Status: approved; tasks 1 to 4 closed on their reviews, task 5 opened (rulings 195 to 199, 2026-11-21), its sweep recorded and every unread row routed (rulings 203 to 205, § O4's dock trial, its sweep), its inspection next.** The operator's words, verbatim: *"Approve, start task 1 (Rec.)"* (a dated record). Task 1 closed on its repairs' re-review (handoff `20261120T101706Z`, operator: *"proceed as indicated"*); task 2 closed on its repairs' re-review, operator, verbatim: *"task 2 complete"* (2026-11-20); task 3, opened on rulings 184 to 186 and repaired under rulings 187 and 188 at its review, closed on its repairs' re-reviews, operator, by selection: *"Task 3 complete (Rec.)"* (2026-11-21). Task 4, opened on rulings 189 to 192 and repaired under rulings 193 and 194 at its review, closed on its repairs' re-reviews, operator, by selection: *"Task 4 complete (Rec.)"* (2026-11-21); the review's ledger-path finding is GHI #1337. O4 lands the maintenance record and the list of discrepancies (rulings 8, 9 and 166 to 173) in five tasks, worked in order, each opening with its own questions one at a time and closing on an independent review:
 
 1. The entry: `entry_booked`, its writer and reducer, `gz wp entry book` stamped as the `Implementer`, `SingleDriver` or `Restoration` dispatch on the order that did the work (amended 2026-11-20 under ruling 175; the cut as approved read *a `Repair` or `Restoration` dispatch*), and `gz wp entry show` (rulings 8, 167, 169, 173, 175).
 2. The discrepancy: `discrepancy_recorded` and `discrepancy_cleared`, their writer and reducer, and `gz wp discrepancy record`, `clear` and `show` (rulings 9, 169, 172).
@@ -292,6 +292,58 @@ What it shows. Findings 1 to 3 and 8 changed code the trial swept or flew. The s
 5. The dock trial, then O4's Gate 5 under ruling 165 (rulings 27, 154's form).
 
 Outside O4: the carry of the contract's open lines, the three Gate 5 signatures and the passage log into the records, with § Records amended, at O9 (rulings 10, 165); a discrepancy from an inspector's rejection, at O6 (ruling 172).
+
+### O4's dock trial, its sweep, 2026-11-21 and 2026-11-22
+
+**Status: recorded; every unread row routed, the re-swept files' survivors read; ruling 198's inspection next.** O4's task 5 (rulings 27, 195 to 199 and 203 to 205; a dated record). The script is `docs/governance/harbor-ro12-dock-trial-evidence/o4_mutation_sweep.py` and its record `o4-sweep-2026-11-21.json` beside it; it imports O2's AST rule and O3's narrowed run, so the three trials cannot mutate or run by different rules.
+
+The scope (rulings 196, 197 and 203). The two rows of § Mode Contract that wait on O4's trial, by the functions they cite, and every function whose body a commit of O4's tasks 3 to 5 changed, read mechanically from those commits' diffs, each swept whole with ruling 96's helpers; `gzkit/mx/log.py`, `gzkit/mx/git_commits.py` and `gzkit/mx/series.py` swept whole. `gzkit/cli/parser_governance.py` is narrowed to its changed statement, the `gz mx exit` help string, which takes no mutant (ruling 203). `--plan` prints the selection.
+
+The run (rulings 152 and 195). Each file's mutants run only against the self-test modules of the rows that cite its functions, an inconclusive row re-run alone against each test that failed. The first run, on `37e8a6ee9`, left 108 rows unread. Under ruling 203, `mx_cmd.py`, `order_ledger.py` and `work_package_run.py` took the modules whose tests killed their survivors outside the first run's lists and were re-swept after the triage's tests landed; every other entry stands from the first run. Every baseline below is green and every source restored byte for byte.
+
+| File | Tree | Mutants | Killed broad | Killed alone | Survived | Disclosed |
+|---|---|---|---|---|---|---|
+| `commands/mx_cmd.py` | `bfd436284` | 28 | 24 | 0 | 3 | 1 |
+| `commands/wp_entry.py` | `37e8a6ee9` | 11 | 7 | 0 | 3 | 1 |
+| `commands/wp_order.py` | `37e8a6ee9` | 44 | 27 | 16 | 1 | 0 |
+| `commands/wp_tag.py` | `37e8a6ee9` | 20 | 18 | 1 | 1 | 0 |
+| `mx/discrepancies.py` | `37e8a6ee9` | 97 | 65 | 29 | 3 | 0 |
+| `mx/entries.py` | `37e8a6ee9` | 30 | 24 | 4 | 1 | 1 |
+| `mx/git_commits.py` | `37e8a6ee9` | 12 | 5 | 3 | 2 | 2 |
+| `mx/log.py` | `37e8a6ee9` | 52 | 19 | 6 | 20 | 7 |
+| `mx/record_rows.py` | `37e8a6ee9` | 6 | 4 | 2 | 0 | 0 |
+| `mx/series.py` | `37e8a6ee9` | 2 | 1 | 0 | 1 | 0 |
+| `mx/tag_out.py` | `37e8a6ee9` | 9 | 7 | 2 | 0 | 0 |
+| `order_ledger.py` | `28eedea7c+dirty` | 118 | 115 | 0 | 3 | 0 |
+| `work_package_ledger.py` | `37e8a6ee9` | 13 | 5 | 8 | 0 | 0 |
+| `work_package_run.py` | `28eedea7c+dirty` | 122 | 122 | 0 | 0 | 0 |
+| **All** | | **564** | **443** | **71** | **38** | **12** |
+
+What it shows. 514 of the 564 mutants are killed by assertion, 443 by the broad run and 71 alone; none is invalid. Of the 38 survivors and 12 disclosed rows, every one is read below or closed by a test after the run. A broad kill shows that some test of the file's modules failed on an assertion; a kill alone names its test in the record's `killed_by`. The re-swept entries name their tree: `28eedea7c+dirty` for `order_ledger.py` and `work_package_run.py`, the mark from an insight appended to `.gzkit/` during the run, no source or test differing; `bfd436284`, clean, for `mx_cmd.py`.
+
+The first run's 108 unread rows, 92 survivors and 16 inconclusive rows no single test killed, were read against the code by three independent readers in scratch copies, each mutant hand-applied by O2's rule, and routed. No row was a defect in O4's code. Every test below is green on its commit and fails alone, by assertion, against the mutant it names:
+
+- Forty-six were killed by tests outside the file's nominated modules. Ruling 203 re-nominated three files and re-swept them; `parser_governance.py`'s twelve left the sweep with its narrowing.
+- Two were rows ruling 204 answered: a ledger the exit cannot read is refused at 3 (`29242e629`, red before the fix). One was a branch ruling 205 removed, the exit view's unread-commits lines (`42fea6788`).
+- Thirteen were read as equivalent. One, `mx_cmd.mx_exit_cmd:454` forced false, is killed in the re-sweep by the CLI-path test; twelve stand below.
+- The other 46 were test gaps or crashes escaping as test errors, closed in `0fe189c2c`, `c09f3560a`, `28eedea7c`, `5b5d21069` and `bfd436284`: `gz mx exit` run as the CLI calls it, with no seam injected, its refusals naming their recovery (ruling 97) and every exit call read through `_answer` (ruling 156's form); the window bounded by its own open and matching close, a lease renewal closing nothing, and the events counted those inside it (REQ-0.0.74-06-01); the record's view, line by line (rulings 166 and 189); the git reader naming git's own cause (ruling 193); `gz wp entry show`'s refusal at 3 and its `--json` Gate 5 (rulings 8 and 190); `gz wp order accept --json` with a carry (ruling 184); the discrepancy refusals' grade, tag and role (rulings 171, 172, 175 and 181); a pause close booking no carry (ruling 184); every bare exit unblock in the order-run tests asserting it answers (ruling 156's form). Two CLI routes no test had reached, `gz mx repair` and `gz state --repair`, took routing tests.
+
+The survivors standing, each read against the code; each changes nothing a caller can observe:
+
+- `mx_cmd.mx_exit_cmd:502` conditional forced true: the marker is rewritten unheld and unlinked on the next line. The record holds it disclosed, not survived: in the broad run `test_wp_entry`'s `test_an_entry_named_in_a_commit_body_alone_reads_not_landed`, which never reaches the exit, erred once, and alone it passed; the module passed five runs in a row after it, so the error is read as transient, not the mutant's.
+- `mx_cmd._release_session_lock:55` boolean return forced true and forced false: `delete_lock` runs either way, and the one caller discards the value.
+- `mx_cmd._run_mx_airlock_out_diagnostic:209` forced false: the reach seam's fallback is taken on every call, and no production caller passes a reach.
+- `order_ledger._check_successor:407` forced true: `order_state` is a pure read that answers nothing for an unknown id, and the `held is None` refusal fires first.
+- `order_ledger._check_delivered:439` filter forced true: its only caller is a proceed close, reachable only from accepted, so the last move is the accepted move.
+- `order_ledger.paused_carried_tags:483` filter forced true: nothing moves after closed, and the writer refuses a decision on any move but a close.
+- `wp_tag._refutations_reader:206` early return removed: the handler falls off the function's end and returns `None`, as the removed line does, the form O3's `:223` row disclosed.
+- `log._read_ledger_lines` at 152 forced false, 156's handler re-raising and 158 forced true, and `log.assemble_window:253` forced true: the reader skips a blank line as the guard does, and the typed record view refuses the same row with the same error, so only an uncaught crash's type changes.
+
+Not re-swept. The first run's entries for the files ruling 203 did not re-nominate stand at `37e8a6ee9` with their survivors as recorded; each survivor not disclosed above is closed by a test red-proved alone in the commits named, and `log.py`'s entry predates rulings 204 and 205, whose changes are witnessed by their own red tests. The record keeps no run of those red proofs: the readers' scratch tools and logs are not committed, three red proofs were re-run by hand at landing, and the inspection re-runs a sample.
+
+Disclosed. The first attempt at re-sweeping the three files aborted: under `mx_cmd.mx_exit_cmd:454` forced false the exit runs the real `uv run gz check`, gz-mutation-witness 0.2.0's hang bound stops only the direct child, and the grandchildren writing into the mutant's cache directory made its cleanup raise, losing the finished files' results (insight scope `gz-mutation-witness`). The files were re-swept apart. A first draft of the CLI-path test, run by a reader under `mx_exit_cmd:443` forced true, rewrote the reader's own worktree's `.gzkit/mx.json` through the working directory; the landed test runs from its temporary project, and the live checkout's marker and ledger were found untouched. The triage's reading that no test seated a non-performer dispatch on an order was wrong: `test_a_dispatch_not_live_or_not_a_performer_is_refused` did, asserting too little, and took the missing assertion.
+
+Not yet clear. Four tests the triage added sit in modules the hexagon test rules hold, `tests/commands/test_mx_renew.py`, `tests/commands/test_state.py` and two in `tests/commands/test_wp_entry.py`, and name no REQ with `@covers`; `gz validate --hexagon-tests` reports them, demoted by the hangar. Under ruling 125 they join ruling 104's line on the contract's list of discrepancies. A first landing placed `tests/commands/test_mx_exit.py` and `test_mx_repair.py` under those rules through a `gzkit.cli.main` import; `bfd436284` removed it. No O4 row is accepted by this record.
 
 ### O1's Gate 5, attested 2026-11-20
 
