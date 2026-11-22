@@ -302,9 +302,14 @@ class EntryTests(_EntryCase):
         self.assertEqual(self.booked(slug="late").entry_id, "ENT-101-late")
 
     def test_a_row_the_event_no_longer_admits_still_holds_its_number(self) -> None:
-        """Ruling 176: the series reads each row's id by its shape, a malformed row included."""
+        """Ruling 176: the series reads each row's id by its shape, a malformed row included.
+
+        A row whose id has no ``ENT-<NN>-`` shape holds no number and bars no booking: the
+        number is "read from each row's id by its shape" (`gzkit.mx.series`).
+        """
         self.booked()
         self.seat({"event": "entry_booked", "id": "ENT-05-bad", "ts": "2026-11-20T00:00:00+00:00"})
+        self.seat({"event": "entry_booked", "id": "stray-row", "ts": "2026-11-20T00:00:01+00:00"})
         self.assertEqual(self.booked(slug="after").entry_id, "ENT-06-after")
 
     def test_a_voided_entrys_number_is_never_reissued(self) -> None:
@@ -381,6 +386,8 @@ class EntryRefusalTests(_EntryCase):
                     f"a {role} dispatch", lambda dispatch_id=dispatch_id: self.entry(dispatch_id)
                 )
                 self.assertIn("Implementer, SingleDriver or Restoration", refusal)
+                # The dispatch sits on an order, so the refusal never says it is on none.
+                self.assertNotIn("on no order", refusal)
 
     def test_a_dispatch_on_no_order_is_refused(self) -> None:
         """Ruling 175: an entry is booked by a dispatch that performs maintenance on an order."""
@@ -591,8 +598,15 @@ class EntryCitationTests(unittest.TestCase):
             _commit("b", "fix(stamp): the second act (ENT-02-second)"),
             _commit("c", "fix(x): an entry no one booked (ENT-09-ghost)"),
         )
-        joined = landings(["ENT-01-stamp-import", "ENT-03-unlanded"], [first, other, stray])
-        self.assertEqual(joined, {"ENT-01-stamp-import": [first], "ENT-03-unlanded": []})
+        held: list[dict[str, list[LandingCommit]]] = []
+        raised = _raised(
+            lambda: held.append(
+                landings(["ENT-01-stamp-import", "ENT-03-unlanded"], [first, other, stray])
+            )
+        )
+        # Ruling 189: a commit naming an id not asked for is no crash; the join answers.
+        self.assertIsNone(raised)
+        self.assertEqual(held[0], {"ENT-01-stamp-import": [first], "ENT-03-unlanded": []})
 
     def test_an_entry_landed_by_two_commits_keeps_both_in_the_order_given(self) -> None:
         newer, older = (

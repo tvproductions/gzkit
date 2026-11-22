@@ -28,6 +28,7 @@ from gzkit.traceability import covers
 from tests.commands.common import SilencedConsoleTestCase, _isolated_git_env
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from contextlib import AbstractContextManager
 
 
@@ -130,6 +131,15 @@ def _commit(root: Path, filename: str, message: str) -> None:
         check=True,
         env=_isolated_git_env(),
     )
+
+
+def _raised(act: Callable[[], object]) -> Exception | None:
+    """Run *act* and return what it raised, so a crash fails an assertion (RP-12 ruling 156)."""
+    try:
+        act()
+    except Exception as exc:  # a crash in place of the behaviour must fail, not error
+        return exc
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -564,13 +574,6 @@ class TestGitReader(unittest.TestCase):
                 git_log(root, [], ("%s",))
         self.assertIn("`git log` exited", str(raised.exception))
 
-    def test_a_git_that_cannot_run_is_named_never_read_as_no_commit(self) -> None:
-        with TemporaryDirectory() as tmp:
-            missing = Path(tmp) / "no-such-project"
-            with _no_repository_above(tmp), self.assertRaises(CommitsUnreadableError) as raised:
-                git_log(missing, [], ("%s",))
-        self.assertIn("git could not run", str(raised.exception))
-
     @covers("REQ-0.0.74-06-01")
     def test_a_session_never_opened_reads_no_commit(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -581,24 +584,6 @@ class TestGitReader(unittest.TestCase):
             _book_entry(root, "ENT-01-stamp-import", "never-opened")
             window = log.assemble_window(root, "never-opened")
         self.assertEqual((window.fixes, window.commits_unread, window.entries), ([], None, []))
-
-
-class TestUnreadableGitLeavesNoView(unittest.TestCase):
-    """Rulings 193 and 205: commits git could not read leave no view; the entry point refuses."""
-
-    def test_the_entry_point_refuses_naming_gits_cause_in_place_of_a_view(self) -> None:
-        with TemporaryDirectory() as tmp:
-            root = _mk_root(tmp)
-            _write_ledger(
-                root, [_session_row("mx_session_opened", "1970-01-01T00:00:00+00:00", "s")]
-            )
-            _book_entry(root, "ENT-01-stamp-import", "s")
-            with _no_repository_above(tmp):
-                window = log.assemble_window(root, "s")
-                with self.assertRaises(CommitsUnreadableError) as refused:
-                    log.assemble_and_render(root, "s")
-        assert window.commits_unread is not None
-        self.assertEqual(str(refused.exception), window.commits_unread)
 
 
 class TestEmptyRecordRendering(unittest.TestCase):
@@ -715,6 +700,230 @@ class TestExitRefusesWhatItCannotRead(unittest.TestCase):
         self.assertFalse(ledger_written, "the refusal booked a close over an unread ledger")
         self.assertIn(".gzkit/ledger.jsonl", printed)
         self.assertIn("ledger cannot be read", printed)
+
+
+# ---------------------------------------------------------------------------
+# RP-12 O4's dock trial (ruling 27): the triage's test gaps and crash rows.
+# ---------------------------------------------------------------------------
+def _row(kind: str, ts: str, session_id: str = "s", **fields: str) -> dict:
+    """A session-scoped ledger row, as the session's verbs book it."""
+    return {**_session_row(kind, ts, session_id), **fields}
+
+
+class TestParseArtifactsNamesEachIdOnce(unittest.TestCase):
+    @covers("REQ-0.0.74-06-02")
+    def test_an_id_named_twice_is_named_once(self) -> None:
+        # REQ-0.0.74-06-02 and parse_artifacts' contract: "the unique ids of that kind found".
+        got = log.parse_artifacts(
+            "fix: ADR-0.0.74 again ADR-0.0.74 (OBPI-0.0.74-06, OBPI-0.0.74-06) REQ-06-01 REQ-06-01"
+        )
+        self.assertEqual(
+            got, {"ADR": ["ADR-0.0.74"], "OBPI": ["OBPI-0.0.74-06"], "REQ": ["REQ-06-01"]}
+        )
+
+
+class TestTheWindowIsTheSessionsOwn(unittest.TestCase):
+    """REQ-0.0.74-06-01: the window is bounded by this session's open and matching close."""
+
+    @covers("REQ-0.0.74-06-01")
+    def test_a_commit_after_the_close_is_outside_the_window(self) -> None:
+        # REQ-0.0.74-06-01: the matching mx_session_closed bounds the window when present.
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _init_git_repo(root)
+            _write_ledger(
+                root,
+                [
+                    _row("mx_session_opened", "1970-01-01T00:00:00+00:00"),
+                    _row("mx_session_closed", "2000-01-01T00:00:00+00:00"),
+                ],
+            )
+            _commit(root, "f.txt", "fix: landed after the close ADR-0.0.99")
+            window = log.assemble_window(root, "s")
+        self.assertEqual(window.fixes, [])
+
+    @covers("REQ-0.0.74-06-01")
+    def test_another_sessions_open_and_close_do_not_bound_this_window(self) -> None:
+        # REQ-0.0.74-06-01: the window is this session's open and "the matching" close.
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _write_ledger(
+                root,
+                [
+                    _row("mx_session_opened", "2026-10-01T00:00:00+00:00", reason="mine"),
+                    _row("mx_session_opened", "2026-10-02T00:00:00+00:00", "t", reason="theirs"),
+                    _row("mx_session_closed", "2026-10-03T00:00:00+00:00", "t"),
+                ],
+            )
+            window = log.assemble_window(root, "s")
+        self.assertEqual(
+            (window.opened_at, window.closed_at, window.reason),
+            ("2026-10-01T00:00:00+00:00", None, "mine"),
+        )
+
+    @covers("REQ-0.0.74-06-01")
+    def test_a_lease_renewal_leaves_the_window_open(self) -> None:
+        # REQ-0.0.74-06-01 and ruling 166: only the matching close ends the window; a renewal
+        # carries the session's id (mx-mode rule § The lease) and closes nothing.
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _write_ledger(
+                root,
+                [
+                    _row("mx_session_opened", "2026-10-01T00:00:00+00:00"),
+                    _row("mx_session_lease_renewed", "2026-10-02T00:00:00+00:00"),
+                ],
+            )
+            window = log.assemble_window(root, "s")
+        self.assertIsNone(window.closed_at)
+
+    @covers("REQ-0.0.74-06-01")
+    def test_the_ledger_events_counted_are_those_inside_the_window(self) -> None:
+        # docs/user/manpages/mx-exit.md § Fixes: "the count of ledger events in the window".
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _write_ledger(
+                root,
+                [
+                    _row("mx_session_lease_expired", "2026-09-01T00:00:00+00:00", "x"),
+                    _row("mx_session_opened", "2026-10-01T00:00:00+00:00"),
+                    _row("mx_session_lease_renewed", "2026-10-02T00:00:00+00:00"),
+                    _row("mx_session_closed", "2026-10-03T00:00:00+00:00"),
+                    _row("mx_session_lease_expired", "2026-10-04T00:00:00+00:00", "y"),
+                ],
+            )
+            window = log.assemble_window(root, "s")
+        self.assertEqual(
+            window.ledger_event_types,
+            ["mx_session_opened", "mx_session_lease_renewed", "mx_session_closed"],
+        )
+
+
+class TestTheAssemblyAnswers(unittest.TestCase):
+    """Ruling 156's form: a call that should answer is run through `_raised`."""
+
+    @covers("REQ-0.0.74-06-01")
+    def test_an_open_window_over_a_readable_git_answers_with_its_commits(self) -> None:
+        # REQ-0.0.74-06-01: an open window reads every commit since its open.
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _init_git_repo(root)
+            _write_ledger(root, [_row("mx_session_opened", "1970-01-01T00:00:00+00:00")])
+            _commit(root, "f.txt", "fix: one")
+            held: list[log.MxLog] = []
+            raised = _raised(lambda: held.append(log.assemble_window(root, "s")))
+        self.assertIsNone(raised)
+        self.assertEqual([fix.subject for fix in held[0].fixes], ["fix: one"])
+
+    def test_a_git_it_cannot_read_answers_with_the_cause(self) -> None:
+        # Ruling 193 and assemble_window's contract: a git that cannot be read names its cause
+        # in `commits_unread`, leaving no commit.
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _write_ledger(root, [_row("mx_session_opened", "1970-01-01T00:00:00+00:00")])
+            held: list[log.MxLog] = []
+            with _no_repository_above(tmp):
+                raised = _raised(lambda: held.append(log.assemble_window(root, "s")))
+        self.assertIsNone(raised)
+        self.assertIn("`git log` exited", held[0].commits_unread or "")
+        self.assertEqual(held[0].fixes, [])
+
+    @covers("REQ-0.0.74-06-03")
+    def test_the_entry_point_renders_a_readable_window(self) -> None:
+        # REQ-0.0.74-06-03 and assemble_and_render's contract: it returns the rendered log
+        # for review, refusing only a git it could not read (ruling 193).
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _init_git_repo(root)
+            _write_ledger(root, [_row("mx_session_opened", "1970-01-01T00:00:00+00:00")])
+            _commit(root, "f.txt", "fix: one")
+            held: list[str] = []
+            raised = _raised(lambda: held.append(log.assemble_and_render(root, "s")))
+        self.assertIsNone(raised)
+        self.assertIn("fix: one", held[0])
+
+
+class TestRecordViewLinesRendering(unittest.TestCase):
+    """docs/user/manpages/mx-exit.md, the record's view: each section's lines (ruling 166)."""
+
+    def test_a_record_with_an_entry_and_one_unrecorded_commit_reads_each_line(self) -> None:
+        # output-contract: docs/user/manpages/mx-exit.md, Maintenance record, Unrecorded work
+        # and Fixes; "names <id>, ..." only for an unheld id (ruling 189).
+        landing, sync = "fix(stamp): imports again (ENT-01-stamp-import)", "chore: sync"
+        with TemporaryDirectory() as tmp:
+            window = log.assemble_window(_record_window(tmp, [landing, sync]), "s")
+        lines = log.render(window).splitlines()
+        sha = {fix.subject: fix.commit_sha[:12] for fix in window.fixes}
+        self.assertNotIn("  (no entry booked in this session)", lines)
+        self.assertIn("Unrecorded work (1):", lines)
+        unrecorded = lines.index("Unrecorded work (1):")
+        self.assertEqual(lines[unrecorded + 1 : unrecorded + 3], [f"  - {sha[sync]} {sync}", ""])
+        self.assertIn("Fixes (2):", lines)
+        fixes = lines.index("Fixes (2):")
+        self.assertCountEqual(
+            lines[fixes + 1 : fixes + 3],
+            [
+                f"  - {sha[landing]} {landing} [(no artifacts named)]",
+                f"  - {sha[sync]} {sync} [(no artifacts named)]",
+            ],
+        )
+
+    def test_a_window_with_no_commit_says_so_under_fixes(self) -> None:
+        # output-contract: docs/user/manpages/mx-exit.md, Fixes over a window with no commit
+        lines = log.render(log.MxLog(session_id="s", opened_at="1970-01-01T00:00:00+00:00"))
+        lines = lines.splitlines()
+        self.assertIn("Fixes (0):", lines)
+        self.assertEqual(lines[lines.index("Fixes (0):") + 1], "  (no commits in window)")
+
+    def test_the_record_header_counts_its_entries(self) -> None:
+        # output-contract: docs/user/manpages/mx-exit.md, "Maintenance record (1 entry):"
+        empty = log.render(log.MxLog(session_id="s", opened_at="1970-01-01T00:00:00+00:00"))
+        with TemporaryDirectory() as tmp:
+            one = log.render(log.assemble_window(_record_window(tmp, []), "s"))
+        self.assertIn("Maintenance record (0 entries):", empty.splitlines())
+        self.assertIn("Maintenance record (1 entry):", one.splitlines())
+
+
+class TestGitReaderNamesItsCause(unittest.TestCase):
+    """Ruling 193 and mx-exit.md: the reader names git's cause, never a crash of its own."""
+
+    def test_a_git_that_cannot_run_raises_the_readers_refusal(self) -> None:
+        # Ruling 193: `git could not run (<error>)`, a CommitsUnreadableError both views catch.
+        with TemporaryDirectory() as tmp:
+            missing = Path(tmp) / "no-such-project"
+            with _no_repository_above(tmp):
+                raised = _raised(lambda: git_log(missing, [], ("%s",)))
+        self.assertIsInstance(raised, CommitsUnreadableError)
+        self.assertIn("git could not run", str(raised))
+
+    def test_the_cause_is_gits_own_first_line(self) -> None:
+        # output-contract: docs/user/manpages/mx-exit.md, `git log` exited <code>: <git's message>
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _init_git_repo(root)
+            said = subprocess.run(
+                ["git", "log"],
+                cwd=root,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+                env=_isolated_git_env(),
+            )
+            raised = _raised(lambda: git_log(root, [], ("%s",)))
+        self.assertIsInstance(raised, CommitsUnreadableError)
+        first = said.stderr.strip().splitlines()[0]
+        self.assertEqual(str(raised), f"`git log` exited {said.returncode}: {first}")
+
+    def test_a_git_that_exits_without_a_word_is_named_with_no_message(self) -> None:
+        # output-contract: docs/user/manpages/mx-exit.md, `git log` exited <code>: <message>,
+        # a git killed by a signal writing no stderr still refused, never a crash.
+        silent = subprocess.CompletedProcess(["git"], -9, stdout="", stderr="")
+        with patch("gzkit.mx.git_commits.subprocess.run", return_value=silent):
+            raised = _raised(lambda: git_log(Path(), [], ("%s",)))
+        self.assertIsInstance(raised, CommitsUnreadableError)
+        self.assertEqual(str(raised), "`git log` exited -9: no message")
 
 
 if __name__ == "__main__":
