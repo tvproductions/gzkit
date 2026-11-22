@@ -51,7 +51,7 @@ dependencies = [
     # gz-mutation-witness is gzkit's former gzkit.mutation_witness; gz-mindload
     # is its former gzkit.complexity.cognitive. Both are stdlib plus Pydantic.
     "gz-mindload>=0.1.0",
-    "gz-mutation-witness>=0.1.0",
+    "gz-mutation-witness>=0.2.0",
 ]
 
 [project.scripts]

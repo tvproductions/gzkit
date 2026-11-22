@@ -353,14 +353,14 @@ wheels = [
 
 [[package]]
 name = "gz-mutation-witness"
-version = "0.1.0"
+version = "0.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9b/ae/eb7598c67f9a8857897a727872487455bb6e305950c7a54dce8dec9684d1/gz_mutation_witness-0.1.0.tar.gz", hash = "sha256:e4ced1fedab71288a5c090caaee8b2d44feb0ef6c8157318db6409dfc68edaa6", size = 11271, upload-time = "2026-11-22T01:31:53.488Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ea/63/c1d87dc207c3a21324c2256e905a6f80e56e47023eff0d2292011c41fc4d/gz_mutation_witness-0.2.0.tar.gz", hash = "sha256:6bc07260cf4e2ccc46b2039503e9b0cd40f6ba9d76307f54d59d46a3165aa516", size = 12017, upload-time = "2026-11-22T04:53:21.493Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/64/2d/1a2c1ea655d43514c9b15c58ecb025df42df53dcc77914ff72c7e71eb355/gz_mutation_witness-0.1.0-py3-none-any.whl", hash = "sha256:e49a6e4679367787d64ec588c9eb45f76b81798505b58395b93682d7ad552230", size = 13116, upload-time = "2026-11-22T01:31:52.221Z" },
+    { url = "https://files.pythonhosted.org/packages/5b/7b/fa7eb268057008ccc2953efd7185560bc7f6a136c24d8ed478dedec9bc66/gz_mutation_witness-0.2.0-py3-none-any.whl", hash = "sha256:72854314ae4c01ebaf8c0b3603da84d197a1535cb074f6a0f1472935bdaed591", size = 13885, upload-time = "2026-11-22T04:53:20.23Z" },
 ]
 
 [[package]]
@@ -773,7 +773,7 @@ docs = [
 requires-dist = [
     { name = "cohesion", specifier = ">=1.2,<2.0" },
     { name = "gz-mindload", specifier = ">=0.1.0" },
-    { name = "gz-mutation-witness", specifier = ">=0.1.0" },
+    { name = "gz-mutation-witness", specifier = ">=0.2.0" },
     { name = "jinja2", specifier = ">=3.1" },
     { name = "jsonschema", specifier = ">=4.26" },
     { name = "lizard", specifier = ">=1.26,<2.0" },
