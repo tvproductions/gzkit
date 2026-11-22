@@ -112,3 +112,38 @@ TASK**. No work, repair or drydock identifier resolves through it (T9).
 
 None yet. Each ruling is recorded here with its question, the options put and the operator's
 verbatim words, as it is made.
+
+## 9. Gathering still owed before any ruling
+
+The operator, 2026-11-22, verbatim: *"we'll review ALL of the taxonomy (make sure it is thorough
+and exhaustive), and then settle this, finally and once-and-for-all."* Sections 1 to 6 are not
+yet exhaustive. Each domain below is gathered from its source, read in full, and each term marked
+**ruled**, **sourced**, **contradicted** or **unsourced** before T1 is put. A domain found to
+hold nothing relevant is marked so, with what was read.
+
+- [ ] The drydock vocabulary: drydock, hangar, out of service, standby level, dock trial, sea
+  trial, handback, transfer of custody, return to service, MEL and its (M) and (O) entries
+  (`docs/governance/safe-mode-doctrine.md`, the contract, `.gzkit/rules/mode-contract.md`).
+- [ ] The change ladder's rungs as terms, and the change order as the operator's act (rulings 32,
+  76).
+- [ ] The control roles from the census: safeguard, tripwire, gate, monitor, alarm, dispatcher
+  (`docs/rnd/contractor-kit/sources/census-code-controls.md`).
+- [ ] The personas and positions: craftsman, QAI, coordinator, surveillant, operator
+  (`.gzkit/personas/`, kit rulings 21 to 23), and the dispatch roles in section 5.
+- [ ] The kit's terms crosswalk and its rejected synonyms (ruling 21; the crosswalk JSON, if it
+  has landed).
+- [ ] Each RP-n specification page's own sub-units: tranches, acts, rows, stages
+  (`docs/governance/harbor-ro*.md`).
+- [ ] Requirement kinds (BEHAVIOR, SUPPORT, STRUCTURAL-FENCE) and the REQ specializations
+  (catalog, repair), with their fields.
+- [ ] Gates 1 to 5, lanes (lite, heavy), ADR kinds (feature, pool, foundation) and OBPI states
+  (`AGENTS.md` § Gate Covenant, `.gzkit/rules/`).
+- [ ] The ledger's event names that record work and repair (`src/gzkit/events.py`).
+- [ ] R&D entry kinds and disposition states (`.gzkit/skills/gz-rnd/SKILL.md`), insight types,
+  and GHI labels and problem-report states (`ghi-close` references).
+- [ ] Chore names and classes, receipt and run ids (`arb-*`, acceptance run ids), handoff and
+  ceremony file names.
+- [ ] The hexagon package map's parts (`pyproject.toml` `[tool.py-gzkit]`).
+- [ ] Every alias store and alias grammar (`aliases` on packages and orders; `ORDER_ALIAS_PATTERN`).
+- [ ] A census of where each identifier in sections 2 to 4 is minted, parsed and rendered in
+  code, so T9's single seam can be sized.
