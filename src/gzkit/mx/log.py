@@ -349,7 +349,7 @@ def _record_lines(log: MxLog) -> list[str]:
         lines.append(f"  {order} ({package}):")
         for view in views:
             landed = log.landed.get(view.entry.entry_id, [])
-            block = entry_block(view, landed, commits_unread=log.commits_unread)
+            block = entry_block(view, landed)
             lines.extend(f"    {line}" for line in block.splitlines())
     if not log.entries:
         lines.append("  (no entry booked in this session)")
@@ -359,15 +359,22 @@ def _record_lines(log: MxLog) -> list[str]:
         if work.unheld:
             line += f" — names {', '.join(work.unheld)}, which this session's record does not hold"
         lines.append(line)
-    if log.commits_unread:
-        lines.append(f"  (commits could not be read: {log.commits_unread})")
-    elif not log.unrecorded:
+    if not log.unrecorded:
         lines.append("  (none)")
     return [*lines, ""]
 
 
 def render(log: MxLog) -> str:
-    """Render the assembled log for operator review (REQ-06-03)."""
+    """Render the assembled log for operator review (REQ-06-03).
+
+    A log whose commits could not be read is never rendered: `assemble_and_render`
+    refuses it first (RP-12 rulings 193 and 205).
+
+    Returns:
+        The log's text: its window, the maintenance record, the fixes, the artifacts
+        touched and the count of ledger events in the window.
+
+    """
     lines = [
         "=== MX Maintenance Log (complete by construction) ===",
         f"Window: {log.opened_at} → {log.closed_at or '(open)'}",
@@ -382,8 +389,6 @@ def render(log: MxLog) -> str:
         for fix in log.fixes:
             named = ", ".join(fix.adrs + fix.obpis + fix.reqs) or "(no artifacts named)"
             lines.append(f"  - {fix.commit_sha[:12]} {fix.subject} [{named}]")
-    elif log.commits_unread:
-        lines.append(f"  (commits could not be read: {log.commits_unread})")
     else:
         lines.append("  (no commits in window)")
     lines.extend(

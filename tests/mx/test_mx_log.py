@@ -583,9 +583,10 @@ class TestGitReader(unittest.TestCase):
         self.assertEqual((window.fixes, window.commits_unread, window.entries), ([], None, []))
 
 
-class TestUnreadableGitRendering(unittest.TestCase):
-    def test_each_section_names_the_cause_in_place_of_its_commits(self) -> None:
-        # output-contract: docs/user/manpages/mx-exit.md, the view of commits not read
+class TestUnreadableGitLeavesNoView(unittest.TestCase):
+    """Rulings 193 and 205: commits git could not read leave no view; the entry point refuses."""
+
+    def test_the_entry_point_refuses_naming_gits_cause_in_place_of_a_view(self) -> None:
         with TemporaryDirectory() as tmp:
             root = _mk_root(tmp)
             _write_ledger(
@@ -594,13 +595,10 @@ class TestUnreadableGitRendering(unittest.TestCase):
             _book_entry(root, "ENT-01-stamp-import", "s")
             with _no_repository_above(tmp):
                 window = log.assemble_window(root, "s")
+                with self.assertRaises(CommitsUnreadableError) as refused:
+                    log.assemble_and_render(root, "s")
         assert window.commits_unread is not None
-        named = f"commits could not be read: {window.commits_unread}"
-        lines = log.render(window).splitlines()
-        self.assertIn(f"      Landed:      {named}", lines)
-        self.assertEqual(lines.count(f"  ({named})"), 2)
-        self.assertNotIn("  (none)", lines)
-        self.assertNotIn("  (no commits in window)", lines)
+        self.assertEqual(str(refused.exception), window.commits_unread)
 
 
 class TestEmptyRecordRendering(unittest.TestCase):
