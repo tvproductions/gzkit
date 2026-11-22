@@ -98,7 +98,9 @@ class TestTheLedgerGuardReadsTheStagedDiff(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = _repo(tmp)
             # A driver that prints nothing leaves no removed line to see.
-            (root / ".git" / "info" / "attributes").write_text("*.jsonl diff=blank\n")
+            (root / ".git" / "info" / "attributes").write_text(
+                "*.jsonl diff=blank\n", encoding="utf-8"
+            )
             _git(["config", "diff.blank.textconv", "true"], root)
             _stage_ledger(root, '{"b":2}\n')
             self.assertEqual(_ledger_guard(root), 1)
