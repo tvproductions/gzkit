@@ -697,6 +697,27 @@ class TestExitRefusesWhatItCannotRead(unittest.TestCase):
         self.assertIn("`git log` exited", printed)
         self.assertIn("window's commits cannot be read", printed)
 
+    def test_a_ledger_it_cannot_read_refuses_at_3_and_signs_nothing(self) -> None:
+        # Ruling 204: the ledger is the exit's evidence; an unread one is never an empty window.
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            _init_git_repo(root)
+            _commit(root, "seed.txt", "chore: seed")
+            mx_enter_cmd(
+                reason="repair", attestor="g0", inspection_scope=["ADR-0.0.74"], project_root=root
+            )
+            ledger_path = root / ".gzkit" / "ledger.jsonl"
+            ledger_path.unlink()
+            code, printed = self._exit(root)
+            held = marker.read(root)
+            ledger_written = ledger_path.exists()
+        self.assertEqual(code, 3)
+        assert held is not None
+        self.assertFalse(held.exiting)
+        self.assertFalse(ledger_written, "the refusal booked a close over an unread ledger")
+        self.assertIn(".gzkit/ledger.jsonl", printed)
+        self.assertIn("ledger cannot be read", printed)
+
 
 if __name__ == "__main__":
     unittest.main()

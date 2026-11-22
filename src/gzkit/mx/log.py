@@ -19,10 +19,11 @@ entries, by order, each with the window commits whose subjects name it (ruling
 (ruling 191). Every window commit that names no entry the record holds is listed
 as unrecorded work, and one naming an entry the record does not hold says so
 (ruling 189); the commit list stays beside them. A record that cannot be read
-refuses the assembly, so the exit takes no signature over it (ruling 190), and a
-git that cannot be read is named in each section in place of the commits, the
-assembler's caller refusing the exit on it (ruling 193). Commits are read through
-`gzkit.mx.git_commits`, the one git reader both of the record's views call.
+refuses the assembly, so the exit takes no signature over it (ruling 190), as does a
+ledger that cannot be read (ruling 204), and a git that cannot be read is named in
+``commits_unread``, on which the assembly's entry point refuses the exit (ruling 193).
+Commits are read through `gzkit.mx.git_commits`, the one git reader both of the
+record's views call.
 """
 
 import json
@@ -140,12 +141,18 @@ class MxLog(BaseModel):
     )
 
 
+class LedgerUnreadableError(RuntimeError):
+    """The ledger could not be read, so the exit takes no signature (RP-12 ruling 204)."""
+
+
 def _read_ledger_lines(root: Path) -> list[dict]:
     ledger_path = root.joinpath(*_LEDGER_RELPATH)
     try:
         text = ledger_path.read_text(encoding="utf-8")
-    except OSError:
-        return []
+    except OSError as exc:
+        cause = exc.strerror or type(exc).__name__
+        msg = f"{'/'.join(_LEDGER_RELPATH)} could not be read ({cause})"
+        raise LedgerUnreadableError(msg) from exc
     out: list[dict] = []
     for line in text.splitlines():
         line = line.strip()
@@ -220,7 +227,8 @@ def assemble_window(root: Path, session_id: str) -> MxLog:
         read leaves no commit and names its cause in ``commits_unread`` (RP-12 ruling
         193). A maintenance record that cannot be read propagates `record_view`'s
         `EntryError`, naming the row and the void that recovers it, so no view is
-        returned over it (RP-12 ruling 190).
+        returned over it (RP-12 ruling 190), and a ledger that cannot be read raises
+        `LedgerUnreadableError`, never an empty window (RP-12 ruling 204).
 
     """
     events = _read_ledger_lines(root)
@@ -394,6 +402,10 @@ def render(log: MxLog) -> str:
 
 def assemble_and_render(root: Path, session_id: str) -> str:
     """Assemble the window and render it — the single entry point used at exit.
+
+    `assemble_window`'s `EntryError` and `LedgerUnreadableError` propagate, so the exit
+    takes no signature over a record or a window it could not read (RP-12 rulings 190
+    and 204).
 
     Returns:
         The rendered log, for the operator's review before the signature.

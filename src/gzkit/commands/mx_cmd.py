@@ -476,8 +476,13 @@ def mx_exit_cmd(
         # emoji codes, highlighting or rewrapping.
         try:
             rendered = log.assemble_and_render(root, m.session_id)
-        except (EntryError, CommitsUnreadableError) as exc:
-            what = "maintenance record" if isinstance(exc, EntryError) else "window's commits"
+        except (EntryError, CommitsUnreadableError, log.LedgerUnreadableError) as exc:
+            if isinstance(exc, EntryError):
+                what = "maintenance record"
+            elif isinstance(exc, log.LedgerUnreadableError):
+                what = "ledger"
+            else:
+                what = "window's commits"
             console.print("[red]ERROR:[/red]", escape(str(exc)))
             console.print(f"[red]The {what} cannot be read. MX session remains open.[/red]")
             sys.exit(3)
