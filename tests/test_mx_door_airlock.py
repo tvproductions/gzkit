@@ -23,6 +23,7 @@ from gzkit.commands import mx_cmd
 from gzkit.mx import marker
 from gzkit.traceability import covers
 from tests.commands.common import SilencedConsoleTestCase
+from tests.commands.test_mx_exit import _answer
 from tests.mx.held import git_project
 
 
@@ -132,7 +133,14 @@ class TestMxExitCallsAirlockOut(SilencedConsoleTestCase):
             mx_cmd.mx_enter_cmd(
                 reason="repair", attestor="g0", inspection_scope=["ADR-TESTMX"], project_root=root
             )
-            mx_cmd.mx_exit_cmd(attestor="g0", project_root=root, _run_guards=lambda _r: 0)
+            # RP-12 ruling 156's form: a crash in place of the close fails by assertion.
+            code = _answer(
+                self,
+                lambda: mx_cmd.mx_exit_cmd(
+                    attestor="g0", project_root=root, _run_guards=lambda _r: 0
+                ),
+            )
+            self.assertEqual(code, 0)
             self.assertEqual(
                 len(_events(root, "airlock_out")),
                 1,
