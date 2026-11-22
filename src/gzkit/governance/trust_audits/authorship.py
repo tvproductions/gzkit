@@ -23,6 +23,7 @@ enforced on every adopter is precisely the dogfooding-leak complaint open at
 GHI #607. Projects that want the guard declare it in ``.gzkit.json``.
 """
 
+import re
 import subprocess
 from pathlib import Path
 
@@ -33,9 +34,15 @@ from gzkit.executables import resolve_executable
 _AUDIT_TYPE = "authorship_policy"
 _ARTIFACT = "git config user.email"
 
+#: The two identities git stamps on a commit, each read through ``git var``, which
+#: resolves them as the commit will: ``--author``, an amended commit's author and
+#: the ``GIT_AUTHOR_*`` / ``GIT_COMMITTER_*`` variables before config (GHI #1340).
+_STAMPED_IDENTITIES = (("author", "GIT_AUTHOR_IDENT"), ("committer", "GIT_COMMITTER_IDENT"))
+_IDENT_EMAIL = re.compile(r"<([^<>]*)>")
+
 
 def evaluate_authorship(
-    effective_email: str | None, required_suffix: str | None
+    effective_email: str | None, required_suffix: str | None, *, artifact: str = _ARTIFACT
 ) -> list[ValidationError]:
     """Judge an effective git identity against a declared policy.
 
@@ -49,6 +56,7 @@ def evaluate_authorship(
             when no identity resolves at all.
         required_suffix: The declared policy, or ``None`` when the project
             declares none — in which case every address is admitted.
+        artifact: The identity judged, named in the finding.
 
     Returns:
         Zero or one ``ValidationError``. Never echoes ``effective_email``: a
@@ -65,14 +73,15 @@ def evaluate_authorship(
     return [
         ValidationError(
             type=_AUDIT_TYPE,
-            artifact=_ARTIFACT,
+            artifact=artifact,
             message=(
-                f"Commit authorship policy requires an address ending '{required_suffix}' "
-                f"({observed}; the address is withheld here rather than reprinted into "
-                "logs and receipts). AGENTS.md § Local Agent Rules forbids the operator's "
-                "personal email in any repo-bound artifact — commits, trailers, "
-                "attestation text — and a leak needs a filter-repo rewrite plus a "
-                "force-push to recover. Next step: "
+                f"Commit authorship policy requires the {artifact} address to end "
+                f"'{required_suffix}' ({observed}; the address is withheld here rather "
+                "than reprinted into logs and receipts). AGENTS.md § Local Agent Rules "
+                "forbids the operator's personal email in any repo-bound artifact — "
+                "commits, trailers, attestation text — and a leak needs a filter-repo "
+                "rewrite plus a force-push to recover. Next step: drop any `--author` "
+                "or GIT_AUTHOR_EMAIL / GIT_COMMITTER_EMAIL override, set "
                 f"`git config --local user.email '<handle>{required_suffix}'` in this "
                 "clone, then re-run `uv run gz validate --authorship`."
             ),
@@ -80,11 +89,21 @@ def evaluate_authorship(
     ]
 
 
-def _effective_email(project_root: Path) -> str | None:
-    """Return the address git would stamp here, honoring local > global > system."""
+def _effective_email(project_root: Path, variable: str = "GIT_AUTHOR_IDENT") -> str | None:
+    """Return the address git will stamp for *variable*'s identity, or None if none resolves.
+
+    ``git var`` resolves the identity the way the commit will, so an override that
+    never touches config is read, not missed (GHI #1340). Inside a pre-commit hook
+    git has already exported ``--author`` and an amended commit's author into the
+    ``GIT_AUTHOR_*`` variables ``git var`` reads.
+
+    Returns:
+        The email of the resolved identity; None when git resolves none or cannot run.
+
+    """
     try:
         result = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
-            [resolve_executable("git"), "config", "--get", "user.email"],
+            [resolve_executable("git"), "var", variable],
             cwd=project_root,
             capture_output=True,
             text=True,
@@ -94,23 +113,32 @@ def _effective_email(project_root: Path) -> str | None:
         )
     except OSError, subprocess.SubprocessError:
         return None
-    return result.stdout.strip() or None
+    if result.returncode != 0:
+        return None
+    match = _IDENT_EMAIL.search(result.stdout)
+    return (match.group(1).strip() or None) if match else None
 
 
 def audit_authorship(project_root: Path) -> list[ValidationError]:
-    """Assert this clone's git identity satisfies the project's declared policy.
+    """Assert the identities a commit here would stamp satisfy the declared policy.
 
     Adapter around :func:`evaluate_authorship`: resolves the policy from
-    ``.gzkit.json`` and the effective address from git, then delegates the
-    judgment.
+    ``.gzkit.json`` and the author and committer addresses from ``git var``, then
+    delegates the judgment for each (GHI #1340).
 
     Returns:
-        The ``evaluate_authorship`` findings for this clone's address; empty when no email suffix is
-        required.
+        The ``evaluate_authorship`` findings for the author and the committer; empty when no
+        email suffix is required.
 
     """
     config = GzkitConfig.load(project_root / ".gzkit.json")
     required = config.authorship.required_email_suffix
     if not required:
         return []
-    return evaluate_authorship(_effective_email(project_root), required)
+    return [
+        error
+        for role, variable in _STAMPED_IDENTITIES
+        for error in evaluate_authorship(
+            _effective_email(project_root, variable), required, artifact=f"commit {role}"
+        )
+    ]

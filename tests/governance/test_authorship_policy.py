@@ -14,6 +14,9 @@ dogfooding-leak complaint open at GHI #607.
 """
 
 import json
+import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -21,6 +24,7 @@ from unittest import mock
 
 from gzkit.config import GzkitConfig
 from gzkit.governance.trust_audits.authorship import audit_authorship, evaluate_authorship
+from tests.commands.common import _isolated_git_env
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
@@ -101,7 +105,8 @@ class DeclaredPolicyReachesTheAudit(unittest.TestCase):
                 return_value="someone@elsewhere.test",
             ):
                 errors = audit_authorship(root)
-        self.assertEqual(len(errors), 1)
+        # Both stamped identities are judged, author and committer (GHI #1340).
+        self.assertEqual([e.artifact for e in errors], ["commit author", "commit committer"])
 
     def test_compliant_identity_is_admitted(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -123,6 +128,98 @@ class DeclaredPolicyReachesTheAudit(unittest.TestCase):
                 errors = audit_authorship(root)
         self.assertEqual(errors, [])
         lookup.assert_not_called()
+
+
+_SUFFIX = "@users.noreply.github.com"
+
+
+def _git(args: list[str], cwd: Path) -> None:
+    subprocess.run(  # noqa: S603 — git argv this test builds
+        ["git", *args],
+        cwd=cwd,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        env=_isolated_git_env(),
+    )
+
+
+def _compliant_repo(tmp: str) -> Path:
+    """Return a repository whose CONFIG identity satisfies the declared policy."""
+    root = Path(tmp)
+    _git(["init", "-q", "-b", "main"], root)
+    _git(["config", "user.email", f"g0{_SUFFIX}"], root)
+    _git(["config", "user.name", "g0"], root)
+    (root / ".gzkit.json").write_text(
+        json.dumps({"authorship": {"required_email_suffix": _SUFFIX}}), encoding="utf-8"
+    )
+    return root
+
+
+class TheIdentityACommitStampsIsTheOneJudged(unittest.TestCase):
+    """The guard reads the identity git will stamp, not the configured one (GHI #1340).
+
+    git takes a commit's author from `--author`, `GIT_AUTHOR_EMAIL` or the amended
+    commit, and its committer from `GIT_COMMITTER_EMAIL`, before it reads config.
+    These run real git: a stubbed lookup cannot show which address git resolves.
+    """
+
+    def _audit(self, root: Path, **env: str) -> list[str]:
+        with mock.patch.dict(os.environ, env):
+            return [error.artifact for error in audit_authorship(root)]
+
+    def test_a_compliant_identity_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(self._audit(_compliant_repo(tmp)), [])
+
+    def test_an_author_override_that_violates_the_policy_is_refused(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            artifacts = self._audit(_compliant_repo(tmp), GIT_AUTHOR_EMAIL="a@example.com")
+        self.assertEqual(artifacts, ["commit author"])
+
+    def test_a_committer_override_that_violates_the_policy_is_refused(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            artifacts = self._audit(_compliant_repo(tmp), GIT_COMMITTER_EMAIL="c@example.com")
+        self.assertEqual(artifacts, ["commit committer"])
+
+    def test_the_refusal_names_the_identity_and_the_override_to_drop(self) -> None:
+        # output-contract: three-part recovery prose (guardrail-feedback-prose.md).
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _compliant_repo(tmp)
+            with mock.patch.dict(os.environ, {"GIT_AUTHOR_EMAIL": "a@example.com"}):
+                (error,) = audit_authorship(root)
+        self.assertIn("commit author address", error.message)
+        self.assertIn("`--author`", error.message)
+        self.assertIn("GIT_AUTHOR_EMAIL", error.message)
+        self.assertNotIn("a@example.com", error.message)
+
+    def test_a_commit_made_with_a_violating_author_flag_is_refused_at_the_hook(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _compliant_repo(tmp)
+            hook = root / ".git" / "hooks" / "pre-commit"
+            hook.write_text(
+                "#!/bin/sh\n"
+                f'exec "{sys.executable}" -c "import sys; from pathlib import Path; '
+                "from gzkit.governance.trust_audits.authorship import audit_authorship; "
+                'sys.exit(1 if audit_authorship(Path.cwd()) else 0)"\n',
+                encoding="utf-8",
+            )
+            hook.chmod(0o755)
+            (root / "a.txt").write_text("a\n", encoding="utf-8")
+            _git(["add", "a.txt"], root)
+            refused = subprocess.run(
+                ["git", "commit", "-q", "--author", "X <x@example.com>", "-m", "x"],
+                cwd=root,
+                check=False,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                env=_isolated_git_env(),
+            )
+        self.assertNotEqual(refused.returncode, 0)
 
 
 class ThisRepositoryIsGuarded(unittest.TestCase):

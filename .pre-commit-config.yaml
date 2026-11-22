@@ -153,7 +153,9 @@ repos:
         # operator's personal email with nothing objecting, and AGENTS.md prices
         # that at a filter-repo rewrite plus a force-push (GHI #725).
         #
-        # Cheap by construction: one `git config --get` and a suffix compare,
+        # Cheap by construction: two `git var` reads of the author and committer
+        # git will stamp (`--author` and GIT_* overrides included, GHI #1340) and
+        # a suffix compare,
         # and a no-op entirely in projects that declare no policy — so adopters
         # pay nothing and inherit no identity rule of gzkit's.
         entry: uv run gz validate --authorship

@@ -3044,7 +3044,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         "authorship-policy",
         _build_authorship_policy,
         _ep._ep_authorship_policy,
-        "Commit authorship policy requires an address ending",
+        "Commit authorship policy requires the commit author address to end",
     ),
     ("smoke-tier", _build_smoke_tier, _ep._ep_smoke_tier),
     (
