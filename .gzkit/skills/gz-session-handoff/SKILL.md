@@ -5,7 +5,7 @@ description: Use to create or resume a session handoff document.
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "7.9.0"
+  skill-version: "7.9.1"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
@@ -16,7 +16,7 @@ last_reviewed: 2026-11-22
 model: sonnet
 ---
 
-# gz-session-handoff (v7.9.0)
+# gz-session-handoff (v7.9.1)
 
 ## Purpose
 

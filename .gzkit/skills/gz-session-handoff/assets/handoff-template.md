@@ -89,7 +89,9 @@ ignition.
 
 <!-- Items that are not immediate next steps but must be completed before the parent
      ADR/OBPI can be marked done. For work a provider repository owes, say what gzkit
-     expects from it, never its issue numbers (GHI #1338). Include anything deferred, blocked, or discovered
+     expects from it, never its issue numbers or other internals (the operator's
+     ruling is quoted in SKILL.md § Settled-citation annotation; GHI #1338).
+     Include anything deferred, blocked, or discovered
      during the session. -->
 
 ## Verification Checklist
