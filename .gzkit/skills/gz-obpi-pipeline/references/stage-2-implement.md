@@ -219,7 +219,7 @@ A check
 
          **Proving a test can fail is the orchestrator's duty (GHI #968).** Reviewers catch
          hollow tests by reading; no repo surface can scope execution to reviewers alone. Run
-         `gz_mutation_witness.run_mutation_sweep` (GHI #963) and hand over its verdict.
+         `gzkit.mutation_witness.run_mutation_sweep` (GHI #963) and hand over its verdict.
 
          Distinguish that limitation from an identified defect in REQUIRED proof:
          an import failure described as an assertion failure, a test that never

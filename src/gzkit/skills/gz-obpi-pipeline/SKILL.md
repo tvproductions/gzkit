@@ -5,9 +5,9 @@ description: Use after a plan is approved, or when the operator says "execute OB
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-21
+last_reviewed: 2026-10-24
 metadata:
-  skill-version: "6.69.4"
+  skill-version: "6.69.3"
 model: sonnet
 ---
 

@@ -3173,16 +3173,16 @@
    "non_control": []
   },
   {
-   "text": "         **Proving a test can fail is the orchestrator's duty (GHI #968).** Reviewers catch\n         hollow tests by reading; no repo surface can scope execution to reviewers alone. Run\n         `gz_mutation_witness.run_mutation_sweep` (GHI #963) and hand over its verdict.",
+   "text": "         **Proving a test can fail is the orchestrator's duty (GHI #968).** Reviewers catch\n         hollow tests by reading; no repo surface can scope execution to reviewers alone. Run\n         `gzkit.mutation_witness.run_mutation_sweep` (GHI #963) and hand over its verdict.",
    "controls": [
     {
      "id": "S2-067",
-     "quote": "         **Proving a test can fail is the orchestrator's duty (GHI #968).** Reviewers catch\n         hollow tests by reading; no repo surface can scope execution to reviewers alone. Run\n         `gz_mutation_witness.run_mutation_sweep` (GHI #963) and hand over its verdict.",
+     "quote": "         **Proving a test can fail is the orchestrator's duty (GHI #968).** Reviewers catch\n         hollow tests by reading; no repo surface can scope execution to reviewers alone. Run\n         `gzkit.mutation_witness.run_mutation_sweep` (GHI #963) and hand over its verdict.",
      "applies_at": [
       "stage2"
      ],
      "cause": "GHI #968",
-     "delivered_span": "         **Proving a test can fail is the orchestrator's duty (GHI #968).** Reviewers catch\n         hollow tests by reading; no repo surface can scope execution to reviewers alone. Run\n         `gz_mutation_witness.run_mutation_sweep` (GHI #963) and hand over its verdict.",
+     "delivered_span": "         **Proving a test can fail is the orchestrator's duty (GHI #968).** Reviewers catch\n         hollow tests by reading; no repo surface can scope execution to reviewers alone. Run\n         `gzkit.mutation_witness.run_mutation_sweep` (GHI #963) and hand over its verdict.",
      "reworded": null
     }
    ],
