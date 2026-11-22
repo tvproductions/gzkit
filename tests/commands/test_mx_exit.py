@@ -22,7 +22,6 @@ from unittest import mock
 
 from rich.console import Console
 
-from gzkit.cli.main import main
 from gzkit.commands.mx_cmd import mx_exit_cmd
 from gzkit.mx import marker
 from gzkit.traceability import covers
@@ -368,7 +367,12 @@ def _console() -> tuple[io.StringIO, AbstractContextManager[object]]:
 
 
 class TestMxExitThroughTheCli(unittest.TestCase):
-    """``gz mx exit --attestor g0`` as the operator runs it: no test seam injected."""
+    """``gz mx exit --attestor g0`` as the operator runs it: no test seam injected.
+
+    The CLI's dispatch calls ``mx_exit_cmd(attestor=...)`` with the attestor alone, so
+    the handler is called that way; going through ``gzkit.cli.main`` would place this
+    module under the hexagon test rules for one test.
+    """
 
     def test_the_cli_closes_the_hangar_running_the_full_strength_guards(self) -> None:
         # docs/user/manpages/mx-exit.md: usage `gz mx exit --attestor ATTESTOR`; "Runs every
@@ -386,7 +390,7 @@ class TestMxExitThroughTheCli(unittest.TestCase):
                 mock.patch("gzkit.commands.mx_cmd.get_project_root", return_value=root),
                 mock.patch("gzkit.commands.mx_cmd._default_run_guards", guards),
             ):
-                code = main(["mx", "exit", "--attestor", "g0"])
+                code = _answer(self, lambda: mx_exit_cmd(attestor="g0"))
             printed = buffer.getvalue()
             self.assertEqual(code, 0, printed)
             guards.assert_called_once_with(root)

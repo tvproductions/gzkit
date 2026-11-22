@@ -9539,7 +9539,7 @@
     {
       "file": "tests/commands/test_mx_renew.py",
       "rule": "PLC0415",
-      "count": 12
+      "count": 11
     },
     {
       "file": "tests/commands/test_obpi_audit_cmd.py",

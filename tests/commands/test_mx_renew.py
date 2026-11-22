@@ -16,6 +16,7 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from gzkit import lock_manager
+from gzkit.cli.main import main
 from gzkit.commands import mx_cmd
 from gzkit.mx import marker
 from gzkit.mx.lease import book_lease_expiries
@@ -193,11 +194,22 @@ class TestRenewBooksALapsedLeasesExpiry(SilencedConsoleTestCase):
 
 class TestRenewIsReachableFromTheCli(SilencedConsoleTestCase):
     def test_gz_mx_renew_routes_to_the_handler_with_the_attestor(self) -> None:
-        from gzkit.cli.main import main
-
         with patch("gzkit.commands.mx_cmd.mx_renew_cmd") as handler:
             main(["mx", "renew", "--attestor", "g0"])
         handler.assert_called_once_with(attestor="g0")
+
+    def test_gz_mx_repair_routes_to_the_handler_with_the_attestor(self) -> None:
+        # docs/user/manpages/mx-repair.md: usage `gz mx repair --attestor ATTESTOR`, the
+        # recovery the condition's announcement names (operator ruling 2026-10-31, "b").
+        with (
+            patch("gzkit.commands.mx_cmd.mx_repair_cmd") as handler,
+            patch("gzkit.commands.mx_cmd.mx_exit_cmd") as exit_handler,
+            patch("gzkit.commands.mx_cmd.mx_renew_cmd") as renew_handler,
+        ):
+            main(["mx", "repair", "--attestor", "g0"])
+        handler.assert_called_once_with(attestor="g0")
+        exit_handler.assert_not_called()
+        renew_handler.assert_not_called()
 
 
 class TestRenewRefusals(SilencedConsoleTestCase):
