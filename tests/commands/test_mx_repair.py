@@ -9,7 +9,9 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
+from gzkit.cli.main import main
 from gzkit.commands.mx_cmd import mx_enter_cmd, mx_repair_cmd
 from gzkit.mx import marker
 from gzkit.mx.marker import Marker
@@ -154,6 +156,21 @@ class TestMxRepair(SilencedConsoleTestCase):
 
         self.assertEqual(refused.exception.code, 1)
         self.assertTrue(marker.is_active(self.root))
+
+
+class TestRepairIsReachableFromTheCli(SilencedConsoleTestCase):
+    def test_gz_mx_repair_routes_to_the_handler_with_the_attestor(self) -> None:
+        # docs/user/manpages/mx-repair.md: usage `gz mx repair --attestor ATTESTOR`, the
+        # recovery the condition's announcement names (operator ruling 2026-10-31, "b").
+        with (
+            patch("gzkit.commands.mx_cmd.mx_repair_cmd") as handler,
+            patch("gzkit.commands.mx_cmd.mx_exit_cmd") as exit_handler,
+            patch("gzkit.commands.mx_cmd.mx_renew_cmd") as renew_handler,
+        ):
+            main(["mx", "repair", "--attestor", "g0"])
+        handler.assert_called_once_with(attestor="g0")
+        exit_handler.assert_not_called()
+        renew_handler.assert_not_called()
 
 
 if __name__ == "__main__":

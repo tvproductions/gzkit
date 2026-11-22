@@ -11,17 +11,26 @@ REQ-0.0.74-05-05 is a [structural-fence] REQ; proof channel is parent ADR
 Boundary Invariant #4 — no @covers test required.
 """
 
+import io
 import json
 import unittest
+from contextlib import AbstractContextManager, chdir
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import TYPE_CHECKING
 from unittest import mock
 
+from rich.console import Console
+
+from gzkit.cli.main import main
 from gzkit.commands.mx_cmd import mx_exit_cmd
 from gzkit.mx import marker
 from gzkit.traceability import covers
 from tests.commands.common import SilencedConsoleTestCase
 from tests.mx.held import git_project
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 def _mk_root(tmp: str) -> Path:
@@ -69,6 +78,25 @@ def _green_guard(root: Path) -> int:
 
 def _red_guard(root: Path) -> int:
     return 1
+
+
+def _answer(case: unittest.TestCase, act: Callable[[], object]) -> int | str | None:
+    """Return the exit code *act* answers with; any other exception fails by assertion.
+
+    RP-12 ruling 156's form (rulings 100 and 107): a crash in place of the answer
+    fails the test by assertion, never escaping as an error.
+
+    Returns:
+        The code *act* exited with, or 0 when it returned without exiting.
+
+    """
+    try:
+        act()
+    except SystemExit as exc:
+        return exc.code
+    except Exception as exc:  # a crash in place of the answer must fail, not error
+        case.fail(f"raised {type(exc).__name__}: {exc}")
+    return 0
 
 
 class TestMxExitFullStrengthRerun(SilencedConsoleTestCase):
@@ -216,7 +244,12 @@ class TestMxExitGreenPath(SilencedConsoleTestCase):
 
         with TemporaryDirectory() as tmp:
             root = _mk_root_with_session(tmp)
-            mx_exit_cmd(attestor="g0", project_root=root, _run_guards=_green_guard)
+            # Ruling 156: a crash past green guards fails by assertion, never as an error.
+            code = _answer(
+                self,
+                lambda: mx_exit_cmd(attestor="g0", project_root=root, _run_guards=_green_guard),
+            )
+            self.assertEqual(code, 0)
             events = _read_ledger_events(root, "mx_session_closed")
             self.assertEqual(len(events), 1)
             self.assertEqual(events[0].get("attestor"), "g0")
@@ -227,7 +260,11 @@ class TestMxExitGreenPath(SilencedConsoleTestCase):
 
         with TemporaryDirectory() as tmp:
             root = _mk_root_with_session(tmp)
-            mx_exit_cmd(attestor="g0", project_root=root, _run_guards=_green_guard)
+            code = _answer(
+                self,
+                lambda: mx_exit_cmd(attestor="g0", project_root=root, _run_guards=_green_guard),
+            )
+            self.assertEqual(code, 0)
             # Marker MUST be gone after a green close.
             self.assertFalse(marker.is_active(root))
 
@@ -321,6 +358,81 @@ class TestMxExitSafeModeOutputForm(unittest.TestCase):
                 mx_exit_cmd(attestor="g0", project_root=root, _run_guards=_green_guard)
             self.assertFalse(marker.is_active(root))
             self.assertIn("Safe mode closed", buffer.getvalue())
+
+
+def _console() -> tuple[io.StringIO, AbstractContextManager[object]]:
+    """Route the verb's console to a buffer, wide enough that no line wraps."""
+    buffer = io.StringIO()
+    console = Console(file=buffer, width=300, color_system=None)
+    return buffer, mock.patch("gzkit.commands.mx_cmd.console", console)
+
+
+class TestMxExitThroughTheCli(unittest.TestCase):
+    """``gz mx exit --attestor g0`` as the operator runs it: no test seam injected."""
+
+    def test_the_cli_closes_the_hangar_running_the_full_strength_guards(self) -> None:
+        # docs/user/manpages/mx-exit.md: usage `gz mx exit --attestor ATTESTOR`; "Runs every
+        # guard at full strength against the project"; exit 0, "Hangar closed successfully";
+        # the close books one `mx_session_closed` and only then removes the marker.
+        with TemporaryDirectory() as tmp:
+            root = _mk_root_with_session(tmp)
+            buffer, patched = _console()
+            guards = mock.Mock(return_value=0)
+            # Run from the project, as the operator does, so no path the verb resolves
+            # from the working directory can reach the repository running the test.
+            with (
+                chdir(root),
+                patched,
+                mock.patch("gzkit.commands.mx_cmd.get_project_root", return_value=root),
+                mock.patch("gzkit.commands.mx_cmd._default_run_guards", guards),
+            ):
+                code = main(["mx", "exit", "--attestor", "g0"])
+            printed = buffer.getvalue()
+            self.assertEqual(code, 0, printed)
+            guards.assert_called_once_with(root)
+            closed = _read_ledger_events(root, "mx_session_closed")
+            self.assertEqual([event.get("attestor") for event in closed], ["g0"])
+            self.assertFalse(marker.is_active(root))
+        # output-contract: GHI #1244, the closing line names the mode it closed
+        self.assertIn("MX session closed.", printed)
+        self.assertNotIn("Safe mode closed", printed)
+
+
+class TestMxExitRefusalsNameTheirRecovery(unittest.TestCase):
+    """RP-12 ruling 97: a refusal's recovery step is its contract, not wording."""
+
+    def _exit(self, root: Path) -> tuple[int | str | None, str]:
+        buffer, patched = _console()
+        with patched:
+            code = _answer(
+                self,
+                lambda: mx_exit_cmd(attestor="g0", project_root=root, _run_guards=_green_guard),
+            )
+        return code, " ".join(buffer.getvalue().split())
+
+    def test_with_no_session_open_it_refuses_at_1_naming_gz_mx_enter(self) -> None:
+        # docs/user/manpages/mx-exit.md: "Checks the hangar is open (`marker.is_active`).
+        # Fails closed (exit 1) if not"; Exit Codes 1, "no active session".
+        with TemporaryDirectory() as tmp:
+            root = _mk_root(tmp)
+            code, printed = self._exit(root)
+            self.assertEqual(_read_ledger_events(root, "mx_session_closed"), [])
+        self.assertEqual(code, 1, printed)
+        # output-contract: ruling 97, the refusal names the verb that opens a session
+        self.assertIn("gz mx enter", printed)
+        self.assertNotIn("gz mx repair", printed)
+
+    def test_an_unreadable_marker_refuses_at_1_naming_gz_mx_repair(self) -> None:
+        # docs/user/manpages/mx-repair.md: an unreadable marker is what `gz mx repair`
+        # repairs; ruling 156: the refusal is asserted, a crash fails by assertion.
+        with TemporaryDirectory() as tmp:
+            root = _mk_root_with_session(tmp)
+            marker.marker_path(root).write_text("{not json", encoding="utf-8")
+            code, printed = self._exit(root)
+            self.assertEqual(_read_ledger_events(root, "mx_session_closed"), [])
+        self.assertEqual(code, 1, printed)
+        # output-contract: ruling 97, the refusal names the verb that recovers the marker
+        self.assertIn("gz mx repair", printed)
 
 
 if __name__ == "__main__":

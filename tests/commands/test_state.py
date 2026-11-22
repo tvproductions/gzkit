@@ -3,6 +3,7 @@
 import os
 import unittest
 from pathlib import Path
+from unittest import mock
 from unittest.mock import patch
 
 from gzkit.cli import main
@@ -86,6 +87,22 @@ class TestStateFullOutputForm(unittest.TestCase):
                 "expected Rich box-drawing markers in --full output",
             )
             self.assertIn("Artifact State", result.output)
+
+
+class TestStateRoutesItsModes(unittest.TestCase):
+    """docs/user/manpages/state.md § Repair Mode: `--repair` repairs, it never queries."""
+
+    def test_gz_state_repair_runs_the_repair_and_not_the_query(self) -> None:
+        # manpage: "`--repair` makes two repairs, both from ledger-derived state" and
+        # "`gz state --repair` is the one command that restores or rebuilds" a marker.
+        query = mock.Mock()
+        with (
+            patch("gzkit.commands.state.state_repair") as repair,
+            patch.dict("gzkit.cli.parser_handler_manifest._HANDLER_CACHE", {"state": query}),
+        ):
+            main(["state", "--repair"])
+        repair.assert_called_once_with(as_json=False)
+        query.assert_not_called()
 
 
 if __name__ == "__main__":

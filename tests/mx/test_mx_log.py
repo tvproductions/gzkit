@@ -26,6 +26,7 @@ from gzkit.mx.entries import EntryError
 from gzkit.mx.git_commits import CommitsUnreadableError, git_log
 from gzkit.traceability import covers
 from tests.commands.common import SilencedConsoleTestCase, _isolated_git_env
+from tests.commands.test_mx_exit import _answer
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -624,9 +625,13 @@ class TestExitRefusesWhatItCannotRead(unittest.TestCase):
     """Rulings 190 and 193: the operator never signs over a record or commits it could not read."""
 
     def _exit(self, root: Path) -> tuple[int | str | None, str]:
-        with console.capture() as captured, self.assertRaises(SystemExit) as exited:
-            mx_exit_cmd(attestor="g0", project_root=root, _run_guards=lambda r: 0)
-        return exited.exception.code, " ".join(captured.get().split())
+        # Ruling 156: the refusal's code is read; an error escaping in its place fails by
+        # assertion, never as a test error.
+        with console.capture() as captured:
+            code = _answer(
+                self, lambda: mx_exit_cmd(attestor="g0", project_root=root, _run_guards=lambda r: 0)
+            )
+        return code, " ".join(captured.get().split())
 
     def _assert_held_open(self, root: Path) -> None:
         held = marker.read(root)
@@ -649,6 +654,11 @@ class TestExitRefusesWhatItCannotRead(unittest.TestCase):
         self.assertIn("ENT-03-x", printed)
         self.assertIn("gz ledger correct", printed)
         self.assertIn("2026-11-21T00:00:00+00:00", printed)
+        # output-contract: docs/user/manpages/mx-exit.md, the refusal names its cause, the
+        # maintenance record (ruling 190), never the window's commits (ruling 193; ruling
+        # 97). The EntryError text names the record too, so the verb's own line is pinned.
+        self.assertIn("The maintenance record cannot be read. MX session remains open.", printed)
+        self.assertNotIn("window's commits", printed)
 
     def test_the_log_prints_brackets_as_written_never_as_markup(self) -> None:
         # output-contract: docs/user/manpages/mx-exit.md, the log printed as plain text
@@ -664,7 +674,11 @@ class TestExitRefusesWhatItCannotRead(unittest.TestCase):
             )
             _commit(root, "fix.txt", subject.strip())
             with console.capture() as captured:
-                mx_exit_cmd(attestor="g0", project_root=root, _run_guards=lambda r: 0)
+                code = _answer(
+                    self,
+                    lambda: mx_exit_cmd(attestor="g0", project_root=root, _run_guards=lambda r: 0),
+                )
+        self.assertEqual(code, 0)
         self.assertIn(subject.strip(), captured.get())
 
     def test_a_git_it_cannot_read_refuses_at_3_naming_the_cause(self) -> None:

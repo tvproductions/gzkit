@@ -22,11 +22,14 @@ from unittest.mock import patch
 from gzkit.cli import main
 from gzkit.cli.main import _build_parser
 from gzkit.dispatch_stamp import STAMP_ID_ENV, STAMP_ROOT_ENV
+from gzkit.events import OrderTransitionedEvent
+from gzkit.ledger import Ledger, ledger_row
 from gzkit.mx import marker
 from gzkit.mx.marker import Marker
 from tests.commands.common import CliRunner, _isolated_git_env, _quick_init
 from tests.commands.test_wp_order import _help_parser, _seed_catalog
 from tests.mx.held import open_marker
+from tests.mx.test_mx_log import _seat_unreadable_entry
 
 _ENTRY = (
     *("--slug", "stamp-import"),
@@ -62,6 +65,14 @@ def _land(subject: str) -> str:
         errors="replace",
     )
     return head.stdout.strip()
+
+
+def _parsed(case: unittest.TestCase, output: str) -> Any:
+    """Parse ``--json`` output, so output that is not JSON fails by assertion (ruling 156)."""
+    try:
+        return json.loads(output)
+    except ValueError as exc:
+        case.fail(f"--json printed no JSON: {exc}")
 
 
 def _entry_rows() -> list[dict[str, Any]]:
@@ -273,7 +284,7 @@ class EntryShowWiringTests(_EntryCase):
         code, output = self.show("--json")
         # then each entry is its booked event with its order's Gate 5, here none
         self.assertEqual(code, 0, output)
-        (printed,) = json.loads(output)
+        (printed,) = _parsed(self, output)
         (booked,) = _entry_rows()
         self.assertEqual({k: v for k, v in printed.items() if k not in {"gate5", "landed"}}, booked)
         self.assertIsNone(printed["gate5"])
@@ -305,7 +316,7 @@ class EntryShowWiringTests(_EntryCase):
         self.assertEqual((code, json_code), (0, 0), output)
         self.assertIn("Landed: commits could not be read: `git log` exited", flat)
         self.assertNotIn("not landed", flat)
-        self.assertIsNone(json.loads(json_output)[0]["landed"])
+        self.assertIsNone(_parsed(self, json_output)[0]["landed"])
 
     def test_json_mode_lists_each_landing_commit(self) -> None:
         # given an entry booked and a commit naming it
@@ -316,8 +327,58 @@ class EntryShowWiringTests(_EntryCase):
         code, output = self.show("--json")
         # then the entry carries its landing commit, as the human form reads it (ruling 192)
         self.assertEqual(code, 0, output)
-        (printed,) = json.loads(output)
+        (printed,) = _parsed(self, output)
         self.assertEqual(printed["landed"], [{"commit_sha": sha, "subject": subject}])
+
+    def test_json_gate5_is_the_orders_closing_move(self) -> None:
+        # docs/user/manpages/wp-entry-show.md: `--json` gives each entry `gate5`, "the
+        # order's `order_transitioned` event to `closed` or `null`" (ruling 8)
+        # given an entry booked, then its order closed at Gate 5
+        self.booked()
+        _land("chore: an unrelated commit")
+        (booked,) = _entry_rows()
+        closed = OrderTransitionedEvent.model_validate(
+            {
+                "event": "order_transitioned",
+                "id": booked["order"],
+                "order": booked["order"],
+                "work_package": booked["work_package"],
+                "from_state": "accepted",
+                "to_state": "closed",
+                "evidence": "inspected",
+                "decision": "proceed",
+                "attestor": "g0",
+                "attestation_text": "proceed",
+                "residual_risk": "none",
+            }
+        )
+        Ledger(Path(".gzkit") / "ledger.jsonl").append(ledger_row(closed))
+        # when
+        code, output = self.show("--json")
+        # then the entry's gate5 is that closing move
+        self.assertEqual(code, 0, output)
+        (printed,) = _parsed(self, output)
+        self.assertIsNotNone(printed["gate5"], "a closed order's entry reads no Gate 5")
+        self.assertEqual(
+            (printed["gate5"]["order"], printed["gate5"]["to_state"], printed["gate5"]["attestor"]),
+            (booked["order"], "closed", "g0"),
+        )
+
+    def test_an_unreadable_entry_row_refuses_at_3_naming_the_row_and_its_void(self) -> None:
+        # docs/user/manpages/wp-entry-show.md § Exit codes, 3: an `entry_booked` row does
+        # not parse; "the refusal names the row and the `gz ledger correct` void" (ruling 190)
+        # given an entry booked, then a row its event's shape does not admit
+        self.booked()
+        _land("chore: an unrelated commit")
+        _seat_unreadable_entry(Path.cwd())
+        # when
+        code, output = self.show()
+        # then
+        flat = " ".join(output.split())
+        self.assertEqual(code, 3, output)
+        # output-contract: the refusal names its row and recovery (guardrail-feedback-prose)
+        self.assertIn("ENT-03-x", flat)
+        self.assertIn("gz ledger correct", flat)
 
 
 class EntryEpilogTests(unittest.TestCase):

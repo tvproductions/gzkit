@@ -250,6 +250,24 @@ class TestTheOrdersGate(_OrderAcceptance):
         # output-contract: acceptance names each carry (ruling 171)
         self.assertIn(f"carried: {tag} on {line}", output)
 
+    def test_accept_json_with_a_carry_prints_the_booked_event_alone(self) -> None:
+        """docs/user/manpages/wp-order-accept.md: `--json` outputs the booked event (ruling 184)."""
+        self.terminate()
+        tag = self.hang_a_tag()
+        line = self.carry(tag)
+        with mock.patch(_FOOTPRINT, return_value=None):
+            output = self.wp("order", "accept", _ORDER, "--evidence", "final inspection", "--json")
+        try:
+            event = json.loads(output)
+        except ValueError as exc:  # ruling 156: output that is not the event fails by assertion
+            self.fail(f"--json printed more than the booked event: {exc}")
+        booked = self.rows("order_transitioned")[-1]
+        self.assertEqual(
+            {k: v for k, v in event.items() if k != "ts"},
+            {k: v for k, v in booked.items() if k != "ts"},
+        )
+        self.assertEqual(event["carried"], [{"tag_id": tag, "discrepancy_id": line}])
+
     def test_a_terminated_order_with_a_hung_tag_is_refused(self) -> None:
         """Rulings 135 and 142: a stopping exit excuses readiness, never a hung tag."""
         self.terminate()
