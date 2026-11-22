@@ -12,6 +12,7 @@ enabler: null
 **Status:** Pool
 **SemVer:** Unassigned; allocate only at operator-authorized promotion.
 **Amended:** 2026-11-21, TI-01 withdrawn (operator, verbatim: "withdraw TI-01 from the pool ADR, keep the rest"); see § Target Scope.
+**Amended:** 2026-11-22, § Target Scope states the contract required of any mutation provider in place of one provider's documents and issues (operator, verbatim: "do not reference the dependency by its title, we make it generic and abstracted to the contract desired from any provider").
 
 ## Intent
 
@@ -24,15 +25,21 @@ separation between executing a line and asserting the behavior on that line.
 These are local candidate keys, not OBPI identifiers or existing briefs.
 At promotion, author a feature ADR and one brief per accepted checklist item.
 
-TI-01 (`mutate`) is withdrawn (2026-11-21). The mutation engine left gzkit as the
-[gz-mutation-witness](https://github.com/tvproductions/gz-mutation-witness) library, and TI-01's contract, its § 10 gate
-"General mutation diagnostic completeness", the 2026-09-24 pilot and the promotion
-trigger moved to that project's [PRD-1.0.0](https://github.com/tvproductions/gz-mutation-witness/blob/main/docs/prd/PRD-1.0.0.md)
-and [backlog](https://github.com/tvproductions/gz-mutation-witness/issues) (#12 carries the evidence contract, #13 the trigger,
-#11 the engine alternatives). The withdrawn sections (TI-01, its gate, the pilot
-evidence, the promotion trigger, the Stdlib-First decision and the alternatives) moved
-verbatim to [`docs/prd/inherited-ti-01.md`](https://github.com/tvproductions/gz-mutation-witness/blob/main/docs/prd/inherited-ti-01.md)
-there; the pilot's full record stays in
+TI-01 (`mutate`) is withdrawn (2026-11-21). Mutation testing now comes from a
+provider library. The engine's design, dependencies and schedule are the provider's.
+gzkit states only the contract it requires of any mutation provider:
+
+- **Isolation:** apply each mutation to a copy of the code, never to the tree under
+  test, and run the selected tests against that copy.
+- **Complete outcomes:** report every job and classify every outcome. A missing
+  job, a failed baseline, code under test imported from somewhere other than the
+  mutated copy, or an unclassified outcome is a failure, never a pass.
+- **No score floor:** report survivors without a global kill percentage. A survivor
+  percentage alone does not fail quality; a reviewed non-equivalent survivor is a
+  finding for the operator.
+
+The pilot's full record, and the § 10 gate "General mutation diagnostic
+completeness" that this contract restates, stay in
 [the 2026-09-24 audit](../../../evals/test-suite-integrity-audit-2026-09-24.md).
 
 - **TI-02 — `test-quality`:** AST measurements with stated detection limits;
