@@ -72,15 +72,23 @@ def _repo_files(root: Path) -> Iterator[Path]:
     rather than to scanning nothing -- a pytest-import guard that silently
     inspects zero files is exactly the false-green it exists to prevent.
     """
-    proc = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
-        [resolve_executable("git"), "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
-        cwd=root,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        check=False,
-    )
+    try:
+        proc = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+            [
+                resolve_executable("git"),
+                *("ls-files", "--cached", "--others", "--exclude-standard", "-z"),
+            ],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=False,
+        )
+    except OSError:
+        # git absent from PATH answers nothing too (GHI #1339).
+        yield from root.rglob("*")
+        return
     if proc.returncode != 0:
         yield from root.rglob("*")
         return
@@ -186,9 +194,10 @@ class GitReadError(RuntimeError):
 
 
 #: Every patch a guard parses is read in git's plain format, whatever the user's
-#: config says: ``color.diff=always`` prefixes each removed line with an escape and
-#: ``diff.external`` replaces the patch outright (GHI #1339).
-_PLAIN_PATCH = ("--no-color", "--no-ext-diff")
+#: config says: ``color.diff=always`` prefixes each removed line with an escape,
+#: ``diff.external`` replaces the patch outright and a ``textconv`` driver rewrites
+#: both sides before they are compared (GHI #1339).
+_PLAIN_PATCH = ("--no-color", "--no-ext-diff", "--no-textconv")
 
 
 def _run_git(args: list[str], cwd: Path, *, absent_ok: bool = False) -> str:

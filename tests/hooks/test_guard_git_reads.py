@@ -12,11 +12,13 @@ defect lived in how git's own output and exit status were read.
 """
 
 import io
+import os
 import subprocess
 import tempfile
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
+from unittest import mock
 
 from gzkit.hooks import guards
 from tests.commands.common import _isolated_git_env
@@ -92,6 +94,15 @@ class TestTheLedgerGuardReadsTheStagedDiff(unittest.TestCase):
             _stage_ledger(root, '{"b":2}\n')
             self.assertEqual(_ledger_guard(root), 1)
 
+    def test_a_staged_deletion_is_refused_under_a_textconv_driver(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _repo(tmp)
+            # A driver that prints nothing leaves no removed line to see.
+            (root / ".git" / "info" / "attributes").write_text("*.jsonl diff=blank\n")
+            _git(["config", "diff.blank.textconv", "true"], root)
+            _stage_ledger(root, '{"b":2}\n')
+            self.assertEqual(_ledger_guard(root), 1)
+
 
 class TestAReadThatMayMissIsNotAFailedRead(unittest.TestCase):
     """A brief new in this commit has no HEAD blob; that absence is an answer."""
@@ -140,6 +151,21 @@ class TestAGitReadThatFailsIsNotACleanRead(unittest.TestCase):
         message = out.getvalue()
         self.assertIn("git diff --cached", message)
         self.assertIn("GHI #1339", message)
+
+    def test_the_guard_sweep_refuses_the_commit_when_git_is_absent(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _repo(tmp)
+            _stage_ledger(root, '{"b":2}\n')
+            out = io.StringIO()
+            try:
+                with mock.patch.dict(os.environ, {"PATH": ""}), redirect_stdout(out):
+                    rc = guards.run_guards(root)
+            except OSError as exc:
+                self.fail(f"an absent git escaped the sweep instead of refusing: {exc!r}")
+        self.assertEqual(rc, 1)
+        # output-contract: the refusal names the cause (guardrail-feedback-prose.md).
+        self.assertIn("could not run", out.getvalue())
+        self.assertIn("GHI #1339", out.getvalue())
 
 
 if __name__ == "__main__":
