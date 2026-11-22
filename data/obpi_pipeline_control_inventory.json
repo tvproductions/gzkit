@@ -3182,8 +3182,11 @@
       "stage2"
      ],
      "cause": "GHI #968",
-     "delivered_span": "         **Proving a test can fail is the orchestrator's duty (GHI #968).** Reviewers catch\n         hollow tests by reading; no repo surface can scope execution to reviewers alone. Run\n         `gzkit.mutation_witness.run_mutation_sweep` (GHI #963) and hand over its verdict.",
-     "reworded": null
+     "delivered_span": "         **Proving a test can fail is the orchestrator's duty (GHI #968).** Reviewers catch\n         hollow tests by reading; no repo surface can scope execution to reviewers alone. Run\n         `gz_mutation_witness.run_mutation_sweep` (GHI #963) and hand over its verdict.",
+     "reworded": {
+      "text": "         **Proving a test can fail is the orchestrator's duty (GHI #968).** Reviewers catch\n         hollow tests by reading; no repo surface can scope execution to reviewers alone. Run\n         `gz_mutation_witness.run_mutation_sweep` (GHI #963) and hand over its verdict.",
+      "reason": "A cross-reference that no longer resolves (Requirement 4): gzkit.mutation_witness was extracted as-is into the gz-mutation-witness library, which gzkit now depends on (6225cee5b; operator 2026-11-21, \"they need to migrate as libraries\"), so the sweep is gz_mutation_witness.run_mutation_sweep. Only the module path moved; the duty and its causes stand. Operator 2026-11-22, \"proceed with indicated steps\"."
+     }
     }
    ],
    "non_control": []

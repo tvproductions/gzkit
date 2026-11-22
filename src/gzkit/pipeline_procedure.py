@@ -69,7 +69,7 @@ STAGE_PROCEDURES: tuple[StageProcedure, ...] = (
         number=2,
         label="Implement",
         filename="stage-2-implement.md",
-        sha256="f1f336d41a0ec2a3b2ccc0b642894b6159a99a7c6e37ea1c633c6961ab3a91e3",
+        sha256="fbfef4728c12e273a512c3351748ea194b8ee5af371ab9d8346cc8a70b92f2f1",
     ),
     StageProcedure(
         key="stage3",
