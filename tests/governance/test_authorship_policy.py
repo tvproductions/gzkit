@@ -1,6 +1,6 @@
 """Commit authorship must be provable inside the repo it protects (GHI #725).
 
-`AGENTS.md` § Local Agent Rules forbids the operator's personal email in any
+`AGENTS.md` § Execution Rules forbids the operator's personal email in any
 repo-bound artifact, and names the recovery: a filter-repo rewrite plus a
 force-push. Until now the only thing standing between that rule and a violation
 was a hand-added `--local` git config override in one clone. A fresh clone, a
@@ -133,16 +133,32 @@ class DeclaredPolicyReachesTheAudit(unittest.TestCase):
 _SUFFIX = "@users.noreply.github.com"
 
 
-def _git(args: list[str], cwd: Path) -> None:
-    subprocess.run(  # noqa: S603 — git argv this test builds
+def _identity_free_env() -> dict[str, str]:
+    """Return a git environment carrying no inherited author or committer identity.
+
+    `_isolated_git_env` keeps `GIT_AUTHOR_*` / `GIT_COMMITTER_*` on purpose; a
+    runner that exports one would otherwise decide these tests.
+
+    Returns:
+        The isolated git environment with every author and committer variable removed.
+    """
+    return {
+        key: value
+        for key, value in _isolated_git_env().items()
+        if not key.startswith(("GIT_AUTHOR_", "GIT_COMMITTER_"))
+    }
+
+
+def _git(args: list[str], cwd: Path, *, check: bool = True) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(  # noqa: S603 — git argv this test builds
         ["git", *args],
         cwd=cwd,
-        check=True,
+        check=check,
         capture_output=True,
         text=True,
         encoding="utf-8",
         errors="replace",
-        env=_isolated_git_env(),
+        env=_identity_free_env(),
     )
 
 
@@ -158,6 +174,20 @@ def _compliant_repo(tmp: str) -> Path:
     return root
 
 
+def _install_authorship_hook(root: Path) -> None:
+    """Install the configured hook's entry, `gz validate --authorship`, as pre-commit."""
+    hook = root / ".git" / "hooks" / "pre-commit"
+    hook.write_text(
+        f'#!/bin/sh\nexec "{sys.executable}" -m gzkit validate --authorship\n', encoding="utf-8"
+    )
+    hook.chmod(0o755)
+
+
+def _stage(root: Path, name: str) -> None:
+    (root / name).write_text(f"{name}\n", encoding="utf-8")
+    _git(["add", name], root)
+
+
 class TheIdentityACommitStampsIsTheOneJudged(unittest.TestCase):
     """The guard reads the identity git will stamp, not the configured one (GHI #1340).
 
@@ -167,7 +197,7 @@ class TheIdentityACommitStampsIsTheOneJudged(unittest.TestCase):
     """
 
     def _audit(self, root: Path, **env: str) -> list[str]:
-        with mock.patch.dict(os.environ, env):
+        with mock.patch.dict(os.environ, {**_identity_free_env(), **env}, clear=True):
             return [error.artifact for error in audit_authorship(root)]
 
     def test_a_compliant_identity_passes(self) -> None:
@@ -184,42 +214,63 @@ class TheIdentityACommitStampsIsTheOneJudged(unittest.TestCase):
             artifacts = self._audit(_compliant_repo(tmp), GIT_COMMITTER_EMAIL="c@example.com")
         self.assertEqual(artifacts, ["commit committer"])
 
-    def test_the_refusal_names_the_identity_and_the_override_to_drop(self) -> None:
+    def test_the_refusal_names_the_identity_and_each_recovery(self) -> None:
         # output-contract: three-part recovery prose (guardrail-feedback-prose.md).
         with tempfile.TemporaryDirectory() as tmp:
             root = _compliant_repo(tmp)
-            with mock.patch.dict(os.environ, {"GIT_AUTHOR_EMAIL": "a@example.com"}):
+            with mock.patch.dict(
+                os.environ,
+                {**_identity_free_env(), "GIT_AUTHOR_EMAIL": "a@example.com"},
+                clear=True,
+            ):
                 (error,) = audit_authorship(root)
         self.assertIn("commit author address", error.message)
         self.assertIn("`--author`", error.message)
-        self.assertIn("GIT_AUTHOR_EMAIL", error.message)
+        self.assertIn("--amend --reset-author", error.message)
+        self.assertIn("AGENTS.md § Execution Rules", error.message)
+        self.assertTrue(error.message.endswith("Then commit again."))
         self.assertNotIn("a@example.com", error.message)
 
-    def test_a_commit_made_with_a_violating_author_flag_is_refused_at_the_hook(self) -> None:
+
+class TheCommitHookRefusesOnlyAViolatingIdentity(unittest.TestCase):
+    """The configured hook entry, run by a real `git commit`, against each input."""
+
+    def test_a_compliant_commit_passes_the_hook(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = _compliant_repo(tmp)
-            hook = root / ".git" / "hooks" / "pre-commit"
-            hook.write_text(
-                "#!/bin/sh\n"
-                f'exec "{sys.executable}" -c "import sys; from pathlib import Path; '
-                "from gzkit.governance.trust_audits.authorship import audit_authorship; "
-                'sys.exit(1 if audit_authorship(Path.cwd()) else 0)"\n',
-                encoding="utf-8",
-            )
-            hook.chmod(0o755)
-            (root / "a.txt").write_text("a\n", encoding="utf-8")
-            _git(["add", "a.txt"], root)
-            refused = subprocess.run(
-                ["git", "commit", "-q", "--author", "X <x@example.com>", "-m", "x"],
-                cwd=root,
-                check=False,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                env=_isolated_git_env(),
+            _install_authorship_hook(root)
+            _stage(root, "a.txt")
+            committed = _git(["commit", "-q", "-m", "a"], root, check=False)
+        self.assertEqual(committed.returncode, 0, committed.stdout + committed.stderr)
+
+    def test_a_violating_author_flag_is_refused_for_the_author(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _compliant_repo(tmp)
+            _install_authorship_hook(root)
+            _stage(root, "a.txt")
+            refused = _git(
+                ["commit", "-q", "--author", "X <x@example.com>", "-m", "x"], root, check=False
             )
         self.assertNotEqual(refused.returncode, 0)
+        self.assertIn("commit author", refused.stdout + refused.stderr)
+
+    def test_amending_a_commit_whose_author_violates_is_refused_until_reset(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _compliant_repo(tmp)
+            _stage(root, "a.txt")
+            # The violating commit predates the hook, as one from a clone without it does.
+            _git(["commit", "-q", "--author", "X <x@example.com>", "-m", "x"], root)
+            head = _git(["rev-parse", "HEAD"], root).stdout
+            _install_authorship_hook(root)
+            refused = _git(["commit", "-q", "--amend", "--no-edit"], root, check=False)
+            unchanged = _git(["rev-parse", "HEAD"], root).stdout
+            reset = _git(
+                ["commit", "-q", "--amend", "--no-edit", "--reset-author"], root, check=False
+            )
+        self.assertNotEqual(refused.returncode, 0)
+        self.assertIn("commit author", refused.stdout + refused.stderr)
+        self.assertEqual(unchanged, head)
+        self.assertEqual(reset.returncode, 0, reset.stdout + reset.stderr)
 
 
 class ThisRepositoryIsGuarded(unittest.TestCase):

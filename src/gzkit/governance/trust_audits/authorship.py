@@ -1,6 +1,6 @@
 """Commit-authorship policy audit (GHI #725).
 
-``AGENTS.md`` § Local Agent Rules forbids the operator's personal email in any
+``AGENTS.md`` § Execution Rules forbids the operator's personal email in any
 repo-bound artifact and prices a breach at a filter-repo rewrite plus a
 force-push. Before this audit the only enforcement was a hand-added ``--local``
 git config override living in one clone — machine state the repository can
@@ -77,13 +77,15 @@ def evaluate_authorship(
             message=(
                 f"Commit authorship policy requires the {artifact} address to end "
                 f"'{required_suffix}' ({observed}; the address is withheld here rather "
-                "than reprinted into logs and receipts). AGENTS.md § Local Agent Rules "
+                "than reprinted into logs and receipts). AGENTS.md § Execution Rules "
                 "forbids the operator's personal email in any repo-bound artifact — "
                 "commits, trailers, attestation text — and a leak needs a filter-repo "
                 "rewrite plus a force-push to recover. Next step: drop any `--author` "
-                "or GIT_AUTHOR_EMAIL / GIT_COMMITTER_EMAIL override, set "
+                "or GIT_AUTHOR_EMAIL / GIT_COMMITTER_EMAIL override; when amending a "
+                "commit whose author violates the policy, re-author it with "
+                "`git commit --amend --reset-author`; and set "
                 f"`git config --local user.email '<handle>{required_suffix}'` in this "
-                "clone, then re-run `uv run gz validate --authorship`."
+                "clone. Then commit again."
             ),
         )
     ]

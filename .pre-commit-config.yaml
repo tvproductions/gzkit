@@ -154,10 +154,11 @@ repos:
         # that at a filter-repo rewrite plus a force-push (GHI #725).
         #
         # Cheap by construction: two `git var` reads of the author and committer
-        # git will stamp (`--author` and GIT_* overrides included, GHI #1340) and
-        # a suffix compare,
-        # and a no-op entirely in projects that declare no policy — so adopters
-        # pay nothing and inherit no identity rule of gzkit's.
+        # git will stamp (`--author`, an amended author and GIT_* overrides
+        # included) and a suffix compare, and a no-op entirely in projects that
+        # declare no policy — so adopters pay nothing and inherit no identity rule
+        # of gzkit's. A commit made without this hook (cherry-pick, rebase, a
+        # hand-pushed ref) is not judged (GHI #1340).
         entry: uv run gz validate --authorship
         language: system
         pass_filenames: false
