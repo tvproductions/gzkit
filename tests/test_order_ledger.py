@@ -776,7 +776,10 @@ class CommencementTagTests(_OrderCase):
             operator="g0",
             exit_taken="terminate",
         )
-        record_work_package_unblock(self.catalog, self.ledger, unblock)
+        # Ruling 156's form: the exit on the open order's block answers (rulings 59 and 199).
+        self.assertIsNone(
+            _raised(lambda: record_work_package_unblock(self.catalog, self.ledger, unblock))
+        )
         moved: list[OrderTransitionedEvent] = []
         self.assertIsNone(_raised(lambda: moved.append(self.move("commenced"))))
         self.assertEqual([(e.to_state, e.no_isolation) for e in moved], [("commenced", None)])
@@ -811,7 +814,10 @@ class AcceptanceTagTests(_OrderCase):
             work_package="WP-01-stamp", order="ORD-01-import", ruling="stop it", operator="g0",
             exit_taken="terminate",
         )  # fmt: skip
-        record_work_package_unblock(self.catalog, self.ledger, unblock)
+        # Ruling 156's form: the exit on the open order's block answers (rulings 59 and 199).
+        self.assertIsNone(
+            _raised(lambda: record_work_package_unblock(self.catalog, self.ledger, unblock))
+        )
 
     def test_a_hung_tag_not_cleared_holds_acceptance_and_is_named(self) -> None:
         """Refusal 6: an order read ready is still refused while its hung tag is uncleared."""
@@ -1004,6 +1010,8 @@ class CarryTests(_OrderCase):
         paused = _raised(lambda: closed.append(self.close("pause", revisit_condition="O9's carry")))
         self.assertIsNone(paused)
         self.assertEqual([event.decision for event in closed], ["pause"])
+        # Ruling 184: the acceptance books the carry; the pause close books none of its own.
+        self.assertEqual([event.carried for event in closed], [()])
 
     def test_a_carried_tag_cleared_before_gate_5_admits_any_decision(self) -> None:
         """Ruling 171: the pause binds only while the carried tag is still hung."""

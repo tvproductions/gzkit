@@ -570,12 +570,14 @@ class RecordRefusalTests(_DiscrepancyCase):
         for role in ("Repair", "SpecReviewer"):
             with self.subTest(role=role):
                 seated = self.seat_dispatch(role)
-                self.assert_refused(
+                refusal = self.assert_refused(
                     f"a {role} dispatch",
                     lambda seated=seated: self.record(
                         stamped=seated, dispatch=seated, source="found-in-work"
                     ),
                 )
+                # Rulings 172 and 175: the dispatch is on an order, so its role refuses it.
+                self.assertNotIn("on no order", refusal)
         record_dispatch_void(self.ledger, _REPAIR, self.dispatch, "killed by TaskStop")
         self.assert_refused(
             "voided",
@@ -665,6 +667,14 @@ class RecordRefusalTests(_DiscrepancyCase):
         self.seat_tag("TAG-01-size", order=_OTHER)
         self.assert_refused(f"issued on {_OTHER}", lambda: self.record(tag="TAG-01-size"))
 
+    def test_an_unissued_tag_beside_an_issued_one_is_refused(self) -> None:
+        """Ruling 171: the tag cited is the one the ledger issued, not another on the order."""
+        self.seat_tag("TAG-01-size")
+        refusal = self.assert_refused(
+            "is not issued in the ledger", lambda: self.record(tag="TAG-07-none")
+        )
+        self.assertIn("TAG-07-none", refusal)
+
 
 class ClearTests(_DiscrepancyCase):
     def test_a_line_cleared_on_an_entry_reads_closed(self) -> None:
@@ -699,10 +709,12 @@ class ClearTests(_DiscrepancyCase):
         """Rulings 9 and 181: required on a blocking line's clear."""
         line = self.recorded()
         self.seat_entry("ENT-01-fixed")
-        self.assert_refused(
+        refusal = self.assert_refused(
             "--root-cause and --corrective-action",
             lambda: self.clear(line.id, entry="ENT-01-fixed"),
         )
+        # output-contract: ruling 181, the refusal names the grade that requires the fields
+        self.assertIn("the line blocks return to service", refusal)
         self.assert_refused(
             "--corrective-action",
             lambda: self.clear(

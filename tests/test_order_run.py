@@ -110,6 +110,14 @@ class _OrderRun(_OrderCase):
         )  # fmt: skip
         return record_work_package_unblock(self.catalog, self.ledger, request)
 
+    def unblocked(self, exit_taken: str) -> None:
+        """Lift the order's block on *exit_taken*, asserting the unblock answers.
+
+        Ruling 156's form: a wrongful refusal fails an assertion rather than erroring, and an
+        exit on an open order's block is booked (rulings 59 and 199).
+        """
+        self.assertIsNone(_raised(lambda: self.unblock(exit_taken=exit_taken)))
+
     def refused(self, pattern: str, act) -> str:
         before = _rows(self.path)
         raised = _raised(act)
@@ -328,7 +336,7 @@ class BlockOnAnOrder(_OrderRun):
     def test_a_later_block_carries_the_orders_exits_and_reopenings(self) -> None:
         self.reach_the_bound()
         self.block()
-        self.unblock(exit_taken="hold")
+        self.unblocked("hold")
         event = self.block()
         self.assertEqual((event.exits_used, event.held), (("hold",), ("REQ-1@1",)))
         self.assertIsNone(_raised(lambda: self.unblock(exit_taken="reopen", req="REQ-1")))
@@ -507,7 +515,7 @@ class UnblockOnAnOrder(_OrderRun):
         self.commence_second()
         self.reach_the_bound()
         self.block()
-        self.unblock(exit_taken="terminate")
+        self.unblocked("terminate")
         self.assertTrue(order_took_stopping_exit(self.ledger, _ORDER))
         self.assertFalse(order_took_stopping_exit(self.ledger, _SECOND))
         self.assertFalse(took_stopping_exit(self.ledger, _PACKAGE))
@@ -520,7 +528,7 @@ class UnblockOnAnOrder(_OrderRun):
         # output-contract: the refusal's what-failed part, RP-12 ruling 101
         self.reach_the_bound()
         self.block()
-        self.unblock(exit_taken="terminate")
+        self.unblocked("terminate")
         self.assertEqual(
             self.refused("terminate exit", self.dispatch),
             f"Order {_ORDER} took the terminate exit; it takes no further repair and closes "
@@ -530,12 +538,12 @@ class UnblockOnAnOrder(_OrderRun):
     def test_a_stopped_order_never_ready_does_not_close_as_proceed(self) -> None:
         """Rulings 80 and 84: the writer reads the readiness booked at acceptance."""
         self.block()
-        self.unblock(exit_taken="terminate")
+        self.unblocked("terminate")
         self.move("accepted", acceptance_ready=False)
         self.refused("rulings 78, 80 and 84", lambda: self.move("closed", **_CLOSE))
         self.setUp()
         self.block()
-        self.unblock(exit_taken="terminate")
+        self.unblocked("terminate")
         self.assertTrue(self.move("accepted", acceptance_ready=True).acceptance_ready)
         self.assertEqual(self.move("closed", **_CLOSE).decision, "proceed")
 
@@ -550,7 +558,7 @@ class UnblockOnAnOrder(_OrderRun):
     def test_a_proceed_on_a_req_another_proceed_holds_is_refused(self) -> None:
         """Ruling 82: a stopped order's REQ refrozen and proceeded is not held twice."""
         self.block()
-        self.unblock(exit_taken="terminate")
+        self.unblocked("terminate")
         self.walk_to("accepted", order=_SECOND)
         self.move("closed", order=_SECOND, **_CLOSE)
         self.move("accepted", acceptance_ready=True)
@@ -563,7 +571,7 @@ class UnblockOnAnOrder(_OrderRun):
         self.move("opened", order=_SECOND, **_PAYLOADS["opened"])
         self.refused("ORD-01-import", lambda: self.move("frozen", order=_SECOND, **_FREEZE))
         self.block()
-        self.unblock(exit_taken="terminate")
+        self.unblocked("terminate")
         self.assertEqual(
             self.move("frozen", order=_SECOND, **_FREEZE).baseline, _FREEZE["baseline"]
         )
@@ -593,7 +601,7 @@ class OrderFence(_OrderRun):
     def test_an_order_stopped_by_an_exit_fences(self) -> None:
         self.reach_the_bound()
         self.block()
-        self.unblock(exit_taken="terminate")
+        self.unblocked("terminate")
         self.assertEqual(self.fences(), [(_PACKAGE, _ORDER, "stopped")])
 
     def test_a_blocked_frozen_order_fences_its_footprint_not_the_tree(self) -> None:
@@ -671,7 +679,7 @@ class FrozenOrderFence(_OrderRun):
     def test_a_stopped_orders_close_lifts_its_fence(self) -> None:
         """Ruling 58: an order holds the fence only while commenced or accepted, never closed."""
         self.block()
-        self.unblock(exit_taken="terminate")
+        self.unblocked("terminate")
         self.assertEqual([f.reason for f in self._fences() if f.order == _ORDER], ["stopped"])
         self.move("accepted", acceptance_ready=True)
         self.move("closed", **_CLOSE)
