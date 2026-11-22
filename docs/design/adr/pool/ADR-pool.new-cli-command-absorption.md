@@ -73,5 +73,6 @@ is introduced by this pool proposal.
 - Audit baseline `5d9885a08c438b0aa546716b20a181c55342612e`, measured
   2026-09-24: this pool frontmatter says Pool while its former body said
   Proposed, reserved 0.31.0, and claimed every numbered row had a brief.
-- The test-integrity pilot and proposed promotion trigger belong in the
-  [split entry](ADR-pool.test-integrity-tooling.md).
+- The test-integrity pilot and proposed promotion trigger belonged in the
+  [split entry](ADR-pool.test-integrity-tooling.md) until its TI-01 was withdrawn on
+  2026-11-21; they now live with the gz-mutation-witness library's backlog.
