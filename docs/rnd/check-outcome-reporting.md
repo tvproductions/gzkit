@@ -345,12 +345,25 @@ would we not wait for RP-13? I had already expressed a desire to do so"*.
 
 ---
 
+## decision · row 2 executed on the operator's go
+
+Operator, 2026-11-22, verbatim: *"1. fund; 2. approve"*, the second clause being the go on row
+2. Filed through `ghi-author`, each after its Step 0 lookup (#1279 already owns the TODO hook
+and #1289 the demoted self-test, so both are cited rather than refiled):
+
+- **#1341**: a run-state rendered as a pass on the reporting surfaces.
+- **#1342**: an empty or proxy population passing a validator and proving REQs.
+- **#1343**: what pre-push examines differs from what lands.
+
+Evidence comments were posted on #1154 (the runner rows) and #1224 (the missing or unreadable
+input rows), and #919 was given its answered ruling. Each names this record and RP-13.
+
 ## Disposition map
 
 | # | Disposition | State | What | Reason |
 |---|---|---|---|---|
 | 1 | catalog, packages, orders and decision records | commissioned | A change order on RP-13 adding the outcome contract to its foundation tranche: every check reports a subject-state (passed, failed) or a run-state (not run, demoted, not observed); a run-state grounds at the check's own level; every surface (exit code, ✓, JSON, receipt, ledger row) carries it; the rule clause lands with its witness. The class's open members attach to RP-13. Proposed only; the operator issues it (RP-12 ruling 32). | *it blocks return to service, and RP-13 owns it through a change order* |
-| 2 | GHI / direct fix | commissioned | Three GHIs through `ghi-author`, one per mechanism: a run-state rendered as a pass on the reporting surfaces; a vacuous population or proxy passing a validator, the closeout amplifier included; the pre-push range. Evidence comments on #1154 (runner rows) and #1224 (missing-file rows), and a comment on #919 citing its answered ruling. Each linked to the RP-13 change order. Awaits the operator's go on this row. | *the unfiled findings are filed by mechanism*; *a run-state grounds at the check's own level* |
+| 2 | GHI / direct fix | commissioned | Three GHIs through `ghi-author`, one per mechanism: a run-state rendered as a pass on the reporting surfaces; a vacuous population or proxy passing a validator, the closeout amplifier included; the pre-push range. Evidence comments on #1154 (runner rows) and #1224 (missing-file rows), and a comment on #919 citing its answered ruling. Each linked to the RP-13 change order. **Executed on the operator's go: #1341, #1342, #1343.** | *the unfiled findings are filed by mechanism*; *a run-state grounds at the check's own level* |
 | 3 | chore | not pursued | A periodic false-green sweep. | It reports the class without removing its cause; RP-13's shrink-only baseline is the planned witness. Revisit if run-states still escape on a surface RP-13's witness does not read. |
 | 4 | control surface, rule, doc, skill, hook | not pursued | The contract's rule clause. | Operator: *"No text until RP-13"*. The clause lands with its witness in the RP-13 change order (row 1). |
 | 5 | one-shot refactoring | not pursued | Replacing two-valued outcome carriers (`QualityResult.success: bool` and kin) with the outcome type. | That is the retrofit row 1 carries; a second program would be a parallel model. |
@@ -371,10 +384,13 @@ return to service, under a change order the operator issues.
 filing shape, the rule text's timing and the follow-on research are each ruled; rows 3, 5 and 6
 are recorded with their reasons.
 
-**Review.** `docs/rnd/check-outcome-reporting/review.md`. Awaiting the operator's words that
-they have read it.
+**Review.** `docs/rnd/check-outcome-reporting/review.md`, written and committed
+(`8c9195cdb`), with the operator asked to read it and then rule kill or fund. The operator's
+reply gave the sign-off and row 2's go together. It did not separately state that the review
+was read.
 
-**Sign-off.**
+**Sign-off.** Operator, 2026-11-22, verbatim: *"1. fund; 2. approve"* — **fund**. The second
+clause is the go on row 2.
 
 ## What this record does not license
 
