@@ -528,7 +528,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T34 | The legacy vocabularies (ADR and OBPI states, undo verbs, REQ kinds and their checks): reconcile them now, or freeze them as legacy with their contradictions owned by RP-6 and RP-14 | 40 contradictions in D |
 | T35 | `REQ-C<n>` (executive decision 1, 2026-10-16) against `REQ-<n>`, and the *"no separate document"* rulings against the feature package (G 23, 24) | silent |
 | T36 | The Release Package's identifier, and the `RP` collision: *repair package* and *Release Package* both abbreviate to RP. The contract's own diagram already labels the Release Package node `RP` (`harbor-pilotage-candidate-2026-10-15.md:116`). The operator, 2026-11-22: releases are *"where we DO use semver so it would likely NOT be RP but rather use something like gzkit (or GZ-) maj.min.patch-slug"* | the version is the identity (requirements model); the template mints `RELEASE-{{version}}` |
-| T38 | One repair discipline in every condition: drydock, safe mode and line GHI work all run as repair package → repair order → FIX + task (operator, 2026-11-22: *"this discipline works for dry dock, safe mode and "normal" GHI work I would imagine"*). What differs by condition: the epic (a return to service package only when the marker is open), whether one GHI is a package of one order, and Gate 5 on a line order | line GHI work leaves one `fix(…): (GHI #N)` commit and no record |
+| T38 | **Ruled W10.** One repair discipline in every condition: drydock, safe mode and line GHI work all run as repair package → repair order → FIX + task (operator, 2026-11-22: *"this discipline works for dry dock, safe mode and "normal" GHI work I would imagine"*). What differs by condition: the epic (a return to service package only when the marker is open), whether one GHI is a package of one order, and Gate 5 on a line order | line GHI work leaves one `fix(…): (GHI #N)` commit and no record |
 | T39 | Gate 5 on a line repair order, against `AGENTS.md` § Attestation's *"a GHI needs no completion attestation"* | line GHIs close on a reviewer subagent |
 | T37 | Numbered rulings on each package's specification page (RP-12 holds 205, RP-11 holds 11), cited as *"RP-11 ruling 4"*: a fourth id family, scoped by page, never in the store or the identity seam | prose only |
 
@@ -616,6 +616,14 @@ put after it.
   - C: one GHI, one FIX.
 
   Operator: *"A"*.
+- **W10 (2026-11-22, T38 and the check levels).** The question: does canon stand as one repair
+  discipline at every level (repair package → repair order → FIX + task), with A and B on the line,
+  C and D out of service, and the alarm test deciding (`safe-mode-doctrine.md`, the four check
+  levels, ruled 2026-11-03)? Or do C and D also run on the line? Operator, verbatim: *"yes, and I
+  wanted that to be solidly confirmed as we now have an organizational discipline for repair work
+  that gzkit has never had. All GHI work for repair was woefully ad hoc and sometimes that is not
+  useful. This is an emerging discipline that is much better."* T38 is ruled. Line GHI work joins
+  the discipline. T39, Gate 5 on a line order, stays open.
 
 ## 10. The gathering, closed
 
