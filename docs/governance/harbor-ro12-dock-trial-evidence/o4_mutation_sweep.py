@@ -20,6 +20,12 @@ imported from ``o3_mutation_sweep``: each file's mutants run only against the se
 modules of the rows that cite its functions (:data:`MODULES`), and an inconclusive row is
 re-run against each test that failed, one at a time, until one kills it alone.
 
+Ruling 203, at the triage of the first run. ``gzkit/cli/parser_governance.py`` is narrowed
+to its changed statement, the ``gz mx exit`` help string, which takes no mutant
+(:data:`NARROWED`), as ruling 155 narrowed ``gz``'s entry for O3. ``mx_cmd.py``,
+``order_ledger.py`` and ``work_package_run.py`` take the modules whose tests killed their
+survivors outside the first run's lists, and only those three are re-swept.
+
 Usage:
 
     uv run python docs/governance/harbor-ro12-dock-trial-evidence/o4_mutation_sweep.py --plan
@@ -56,6 +62,12 @@ ROW_CITED: dict[str, tuple[str, ...]] = {
     # The row named it under `gzkit.mx.discrepancies`; it lives in `record_rows`.
     "src/gzkit/mx/record_rows.py": ("discrepancy_list",),
 }
+#: Ruling 203: files narrowed to a changed statement that takes no mutant, with why.
+NARROWED: dict[str, str] = {
+    "src/gzkit/cli/parser_governance.py": (
+        "O4 changed only the `gz mx exit` help string in register_governance_parsers"
+    ),
+}
 #: Swept whole: task 4's new modules and the module the entry row cites (ruling 197).
 WHOLE = ("src/gzkit/mx/log.py", "src/gzkit/mx/git_commits.py", "src/gzkit/mx/series.py")
 
@@ -78,15 +90,18 @@ MODULES: dict[str, tuple[str, ...]] = {
     "src/gzkit/mx/record_rows.py": tuple(dict.fromkeys((*_DSC, *_CARRY))),
     "src/gzkit/mx/log.py": _LOG,
     "src/gzkit/mx/git_commits.py": _LOG,
-    "src/gzkit/commands/mx_cmd.py": _LOG,
+    # Ruling 203: the exit's airlock-out booking is asserted in its own module.
+    "src/gzkit/commands/mx_cmd.py": (*_LOG, "tests.test_mx_door_airlock"),
     "src/gzkit/commands/wp_entry.py": _ENTRY,
     "src/gzkit/cli/parser_wp_entry.py": _ENTRY,
-    "src/gzkit/cli/parser_governance.py": _ENTRY,
     "src/gzkit/commands/wp_discrepancy.py": _DSC,
     "src/gzkit/mx/tag_out.py": tuple(dict.fromkeys((*narrowed._TAG, *_CARRY))),  # noqa: SLF001
     "src/gzkit/commands/wp_tag.py": narrowed._TAG,  # noqa: SLF001
     "src/gzkit/order_ledger.py": tuple(
-        dict.fromkeys((*narrowed._LIFECYCLE, *narrowed._GATE5, *_CARRY))  # noqa: SLF001
+        # Ruling 203: ruling 82's held-REQ refusal is asserted by the order run's tests.
+        dict.fromkeys(
+            (*narrowed._LIFECYCLE, *narrowed._GATE5, *_CARRY, "tests.test_order_run")  # noqa: SLF001
+        )
     ),
     "src/gzkit/commands/wp_order.py": (
         "tests.commands.test_wp_order",
@@ -96,7 +111,17 @@ MODULES: dict[str, tuple[str, ...]] = {
         dict.fromkeys((*narrowed._GATE5, *_CARRY))  # noqa: SLF001
     ),
     "src/gzkit/work_package_run.py": tuple(
-        dict.fromkeys((*narrowed._RUN, *_CARRY, "tests.commands.test_wp"))  # noqa: SLF001
+        # Ruling 203: the package arms are asserted by the package run's own tests.
+        dict.fromkeys(
+            (
+                *narrowed._RUN,  # noqa: SLF001
+                *_CARRY,
+                "tests.commands.test_wp",
+                "tests.test_work_package_run",
+                "tests.commands.test_wp_run",
+                "tests.commands.test_wp_acceptance",
+            )
+        )
     ),
 }
 WORKERS = 4
@@ -187,6 +212,8 @@ def selection() -> dict[str, tuple[str, ...] | None]:
         relative: tuple(sorted(names)) for relative, names in cited.items() if names
     }
     chosen.update(dict.fromkeys(WHOLE))
+    for relative in NARROWED:
+        chosen.pop(relative, None)
     return dict(sorted(chosen.items()))
 
 
@@ -246,6 +273,8 @@ def plan() -> int:
     for relative, found in changed_functions().items():
         if found["gone"]:
             sys.stdout.write(f"  {relative} lost since: {', '.join(found['gone'])}\n")
+    for relative, why in NARROWED.items():
+        sys.stdout.write(f"  {relative} narrowed, no mutant (ruling 203): {why}\n")
     total = 0
     for relative in selection():
         found, mutations = planned(relative)
@@ -275,7 +304,7 @@ def main(out: Path, only: list[str]) -> int:
     by_source = {entry["source"]: entry for entry in kept} | fresh
     sweeps = [by_source[relative] for relative in selection() if relative in by_source]
     record = {
-        "rulings": [195, 196, 197],
+        "rulings": [195, 196, 197, 203],
         "workers": WORKERS,
         "commits": list(commits()),
         "changed": changed_functions(),
