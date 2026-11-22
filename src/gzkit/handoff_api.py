@@ -817,9 +817,11 @@ _SECTION_NUMBER_LEAD = r"\b(?:" + "|".join(_SECTION_LEAD_INS) + r")\s+"
 _SECTION_NUMBER = _SECTION_NUMBER_LEAD + r"#\d+\b"
 
 #: A token glued to ``#`` qualifies the citation with the repository that owns
-#: it — GitHub's own ``repo#N`` / ``owner/repo#N`` shorthand, and what a handoff
-#: spanning clones writes. Whitespace is what separates this from ``GHI #696``,
-#: so the charset deliberately excludes it.
+#: it — GitHub's own ``repo#N`` / ``owner/repo#N`` shorthand. A handoff names
+#: what it expects from a provider, not the provider's issues (GHI #1338), so this
+#: is a guard: such a citation reads ``unknown``, never as this repository's issue.
+#: Whitespace is what separates this from ``GHI #696``, so the charset
+#: deliberately excludes it.
 _FOREIGN_REPO = r"(?P<repo>[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)?)"
 
 _REFERENCE_PATTERNS: tuple[tuple[ReferenceKind, re.Pattern[str]], ...] = (

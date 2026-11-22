@@ -5,18 +5,18 @@ description: Use to create or resume a session handoff document.
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "7.8.4"
+  skill-version: "7.9.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-20
+last_reviewed: 2026-11-22
 model: sonnet
 ---
 
-# gz-session-handoff (v7.8.1)
+# gz-session-handoff (v7.9.0)
 
 ## Purpose
 
@@ -69,21 +69,25 @@ orphaned. See the manpages under `docs/user/manpages/handoff*.md`.
 
 ### Settled-citation annotation
 
-`create` resolves every reference cited in a **prospective** section — `Immediate
-Next Steps` and `Pending Work / Open Loops` — against its Layer-2 authority, and
-annotates a settled one `[settled]` in place. A handoff therefore cannot be
-*written* naming settled work as open.
+`create` resolves every reference cited in a **prospective** section (`Immediate
+Next Steps`, `Pending Work / Open Loops`) against its Layer-2 authority and marks a
+settled one `[settled]` in place, so a handoff cannot be *written* naming settled
+work as open. Retrospective sections (`Current State Summary`, `Evidence /
+Artifacts`, `Decisions Made`, `Settled Rulings`) are never marked: a closed GHI
+there is the correct record of the traversal, and marking it would falsify the
+archive. `Pending Work` is in scope because a handoff parks future work there, the
+longest-lived place a stale citation hides.
 
-Retrospective sections are never annotated: a closed GHI in `Current State
-Summary`, `Evidence / Artifacts`, `Decisions Made`, or `Settled Rulings` is the
-correct record of what the traversal did, and marking it would falsify the
-archive. `Pending Work / Open Loops` is in scope because that is where a handoff
-parks work for a *future* session — the longest-lived place a stale citation hides.
+It annotates, never refuses: a step may cite a closed GHI as provenance rather than
+as a precondition. Only `settled` marks; an unresolvable reference is `unknown`,
+missing evidence rather than evidence of a closed issue.
 
-It annotates, never refuses: citing and depending are different claims, and a step
-may name a closed GHI as provenance rather than as a precondition. Only `settled`
-marks — an unresolvable reference is `unknown`, which is missing evidence rather
-than evidence of a closed issue.
+**Cite only this repository's issues.** Say what gzkit expects from a provider
+repository, never its issue numbers or other internals (operator, 2026-11-22: *"we
+don't want to mention another repo's internals"*, *"we should just say what we
+expect from a provider"*). A bare `#N` or `GHI #N` is read as gzkit's issue, so a
+provider's number gets gzkit's verdict, which reads like a true one (GHI #1338).
+Work a provider owes goes to its own tracker. Advisory: nothing refuses it.
 
 **Do not hand-author around it.** Writing a handoff with `Write` instead of
 `gz handoff create` bypasses this check along with the whole fail-closed gate.
