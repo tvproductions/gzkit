@@ -667,6 +667,31 @@ put after it.
   Operator: *"A, the requirements model is the one home. however, also, we need a GIANT step back
   here... how disorganized is our big picture documentation of gzkit? I suspect it is a shambles
   right now."* T11 is ruled. Its witness is owed.
+- **W15 (2026-11-22, direction).** Shown the documentation tree measured: 2,030 pages, 124 flat
+  governance pages, no governance index, a `docs/README.md` map naming two of fifteen directories,
+  38 of 238 governance pages in the site's navigation, and 183 pages claiming sole or canonical
+  authority. Operator, verbatim: *"finish the taxonomy walk first, then open the R&D (this is most
+  CERTAINLY dry dock fodder too, the vibe code kudzu is excessive and accelerating)."* So a
+  documentation R&D run (`gz-rnd`) opens when this walk ends, and its outcome is drydock work.
+- **W16 (2026-11-22, FIX question 4).** The question: the FIX identifier. Three options were put:
+  - A: `FIX-<n>`, one sequence, never reused, minted from the store and the ledger. Recommended.
+  - B: numbered within its order.
+  - C: `FIX-<n>-<slug>`.
+
+  Operator: *"A, FIX-<n> (however, what is the harm in anything having a slug? slugs are much
+  friendlier to quick human examination, plus, for context and conversation, I can always refer
+  to a briefer expression - REQ-99, FIX-1003. discuss)"*.
+- **W17 (2026-11-22, one rule for every record id).** The harms were weighed: a stale slug,
+  renames, long references, parse ambiguity. The question put: one rule for every record id, REQ
+  and FIX included?
+  - `PREFIX-<n>-<slug>`.
+  - The slug is frozen at minting and starts with a letter.
+  - The number is the key.
+  - The short form `PREFIX-<n>` always resolves.
+
+  Operator: *"yes, one rule for every record id"*. This amends `REQ-<n>` (area-free, no slug) and
+  W16 to carry a frozen slug. The prefixes themselves stay T2, T3 and T36. Short-form resolution
+  is the identity seam's (T9).
 
 ## 10. The gathering, closed
 
