@@ -73,6 +73,9 @@ selection:
 
 ## The store
 
+*Collated 2026-11-22*: the whole store, this page's four files and every file added since, is
+described in one place in [the requirements model § The store](ieee/requirements-model.md#the-store).
+
 **`families.json`** — the legend, seeded with decision 8.3's table: `code` (one letter), `band`
 (`product` or `common`), `name`, and `scope` (one sentence). Product: X, H, C, M, P, D. Common: R, G,
 A, L, Q. (*Amended 2026-10-30*: codes become a fixed three letters, re-coded by

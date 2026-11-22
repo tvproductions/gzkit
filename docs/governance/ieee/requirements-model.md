@@ -43,6 +43,78 @@ is the operator's rulings below.
 Architecture decisions are peers of the catalog, never its parents (decision 9). The PRD is the
 parent of the families: every FR and every §7 attribute has a disposition (see § Family schemes).
 
+## The store
+
+*Collated 2026-11-22* on the operator's words: *"please tighten up that documentation, NOW. Where
+is the canonical and collated location for the documentation for these things? I am increasingly
+finding that they are strewn all about."* This section is the one place that describes the
+catalog store. Each specification page that built a file stays its dated record.
+
+**Three layers** (`docs/governance/state-doctrine.md`):
+
+- **Layer 1, the records**, under `data/catalog/`, say *what is*.
+- **Layer 2, the ledger**, `.gzkit/ledger.jsonl`, says *what happened*: every state move,
+  freeze, proof, Gate 5 and release record.
+- **Layer 3, the views**, such as the backlog board, `gz status` and `gz wp runs`, are composed
+  from the first two and never edited.
+
+**No record carries a lifecycle state, and no REQ carries its proof.** Both live only in the
+ledger (decisions 3 and 4), and `extra="forbid"` on every model keeps them out.
+
+**Layout:** one file per kind (RP-3 ruling 1, *"One file per kind (Rec.)"*, 2026-10-21).
+
+- Each file is a list under a `_doc` header.
+- Each has a JSON schema `src/gzkit/schemas/catalog_<kind>.json` and a frozen Pydantic model in
+  `src/gzkit/models/catalog.py`.
+- Each is declared in `data/config_registry.json`.
+- A child names its parent in a field, never by the spelling of its code (decision 2;
+  W3 of `docs/governance/drydock-taxonomy.md`).
+- `gz validate --catalog` checks every file.
+
+**The files.** Counts were measured 2026-11-22.
+
+- **`families.json`**: the family legend (decision 8.3).
+  - Model `Family`; 11 held.
+  - Writer: none. It was seeded by RP-3 ruling 2, and RP-11 tranche 1 re-codes it to the three
+    letters ruled 2026-10-30.
+- **`outcomes.json`**: the catalog's outcomes.
+  - Model `Outcome`; 0 held.
+  - Writer: the `catalog admit` verb, ruled under RP-11 ruling 1 and not built.
+- **`reqs.json`**: the requirements.
+  - Model `CatalogReq` or `RepairReq`, marked by `specialization`; 0 held.
+  - Writer: `gz wp req new` for a repair requirement (RP-12 ruling 48). A catalog REQ's writer is
+    RP-11's intake, not built.
+  - *Ruled 2026-11-22* (taxonomy W6): the repair requirement becomes the FIX, in its own file, and
+    `REQ` names a catalog requirement only.
+- **`fixes.json`**: ruled 2026-11-22 (taxonomy W6 to W9 and W13), not built.
+  - One file of FIXes, each naming the repair `order` it lives in. That field never changes,
+    because a FIX never moves.
+  - The package is read through the order.
+- **`work_packages.json`**: the work packages and repair packages.
+  - Model `WorkPackage`; 1 held, `WP-01-astral-toolchain`.
+  - Writers: `gz wp new`, `gz wp attach` and `gz wp evidence`. Their lifecycle moves are ledger
+    events (`gz wp initiate`, `freeze`, `commence`, `accept`, `close`).
+  - Ruled by RP-5, rulings 1 to 6 and the 2026-10-28 amendment.
+- **`orders.json`**: the work orders and repair orders.
+  - Model `Order`; 0 held.
+  - Writer: `gz wp order new`.
+  - Ruled by RP-12 rulings 43 to 47.
+- **`externals.json`**: the external boundaries an outcome's `depends_on` may name as
+  `external:<slug>`.
+  - Model `External`; 0 held.
+  - Writer: none.
+  - Ruled by RP-3 ruling 8.
+- **`delivery_events.json`**: a registry, not records. It lists the nine delivery event types and
+  the cutover.
+  - Writer: none.
+  - Ruled by RP-3 rulings 10 and 12.
+
+Not yet in the store, though ruled:
+
+- the capability records, `capabilities.json` (RP-11 rulings 5 to 7);
+- the feature package, *"to be named when its store lands"*;
+- the return to service package (#1303).
+
 ## The decisions, as ruled
 
 ### 2. Identity

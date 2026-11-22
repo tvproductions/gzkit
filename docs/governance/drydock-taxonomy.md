@@ -530,6 +530,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T36 | The Release Package's identifier, and the `RP` collision: *repair package* and *Release Package* both abbreviate to RP. The contract's own diagram already labels the Release Package node `RP` (`harbor-pilotage-candidate-2026-10-15.md:116`). The operator, 2026-11-22: releases are *"where we DO use semver so it would likely NOT be RP but rather use something like gzkit (or GZ-) maj.min.patch-slug"* | the version is the identity (requirements model); the template mints `RELEASE-{{version}}` |
 | T38 | **Ruled W10.** One repair discipline in every condition: drydock, safe mode and line GHI work all run as repair package → repair order → FIX + task (operator, 2026-11-22: *"this discipline works for dry dock, safe mode and "normal" GHI work I would imagine"*). What differs by condition: the epic (a return to service package only when the marker is open), whether one GHI is a package of one order, and Gate 5 on a line order | line GHI work leaves one `fix(…): (GHI #N)` commit and no record |
 | T39 | Gate 5 on a line repair order, against `AGENTS.md` § Attestation's *"a GHI needs no completion attestation"* | line GHIs close on a reviewer subagent |
+| T40 | **Done W13**, in the requirements model § The store. The catalog store documented in one place: every file under `data/catalog/`, its kind, its writer verb and its schema (W12) | spread over `harbor-ro3`, `harbor-ro5`, the kit and the model docstrings |
 | T37 | Numbered rulings on each package's specification page (RP-12 holds 205, RP-11 holds 11), cited as *"RP-11 ruling 4"*: a fourth id family, scoped by page, never in the store or the identity seam | prose only |
 
 ## 9. Rulings
@@ -633,6 +634,28 @@ put after it.
 
   Operator: *"A"*. This amends `ghi-close`'s review-closes step (decision B12) for a GHI worked
   through the repair discipline: the order's close is the review on record.
+- **W12 (2026-11-22, the store).** The operator asked: *"are we really using all of these .json
+  files to hold the entire structure? not critiquing, but this seems new to me."* Shown:
+  - the three layers: records under `data/catalog/`, state only in the ledger, views composed;
+  - RP-3 ruling 1, *"One file per kind (Rec.)"*, 2026-10-21;
+  - that JSON as the format was never put as its own question.
+
+  Operator: *"it stands for now, finish FIX question 3 - (that design is fine, I hope it is
+  well-documented)"*. Measured 2026-11-22, it is not documented in one place. `harbor-ro3` §
+  The store describes four files, `harbor-ro5` the work packages, the kit the orders, and the
+  model docstrings the rest. No page describes the whole store (T40).
+- **W13 (2026-11-22, FIX question 3).** The question: where are FIXes stored? Three options were
+  put:
+  - A: their own file, `data/catalog/fixes.json`, each FIX naming its `order`, with no `package`
+    field. Recommended.
+  - B: nested in each order's record.
+  - C: their own file naming both `order` and `package`.
+
+  Operator: *"A, and for God's sake, please tighten up that documentation, NOW. Where is the
+  canonical and collated location for the documentation for these things? I am increasingly
+  finding that they are strewn all about."* The store is collated the same day in
+  `docs/governance/ieee/requirements-model.md` § The store, and `harbor-ro3` points there. T40 is
+  done.
 
 ## 10. The gathering, closed
 
