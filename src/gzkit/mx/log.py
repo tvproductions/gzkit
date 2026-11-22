@@ -40,6 +40,7 @@ from gzkit.core.models import (
 )
 from gzkit.ledger import Ledger
 from gzkit.mx.entries import (
+    EntryError,
     LandingCommit,
     RecordedEntry,
     entries_cited,
@@ -317,11 +318,25 @@ def _session_record(
     Returns:
         The session's entries, each entry's landing commits, and the unrecorded work.
 
+    Raises:
+        EntryError: an entry row or an order's closing row does not parse (RP-12
+            ruling 190).
+        LedgerUnreadableError: a ledger row the reader cannot decode, so the exit
+            takes no signature over the record (RP-12 ruling 204).
+
     """
     opened_at, closed_at = window
+    try:
+        views = record_view(Ledger(root.joinpath(*_LEDGER_RELPATH)))
+    except EntryError:
+        raise
+    except (ValueError, TypeError) as exc:
+        # The ledger's reader raises on a row it cannot decode (RP-12 ruling 204).
+        msg = f"{'/'.join(_LEDGER_RELPATH)} holds a row that does not parse ({exc})"
+        raise LedgerUnreadableError(msg) from exc
     record = [
         view
-        for view in record_view(Ledger(root.joinpath(*_LEDGER_RELPATH)))
+        for view in views
         if opened_at
         and view.entry.mx_session_id == session_id
         and view.entry.ts >= opened_at

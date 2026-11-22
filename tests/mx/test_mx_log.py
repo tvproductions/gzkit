@@ -59,7 +59,7 @@ def _read_ledger_events(root: Path, event_type: str) -> list[dict]:
             ev = json.loads(line)
         except ValueError:
             continue
-        if ev.get("event") == event_type:
+        if isinstance(ev, dict) and ev.get("event") == event_type:
             out.append(ev)
     return out
 
@@ -714,6 +714,27 @@ class TestExitRefusesWhatItCannotRead(unittest.TestCase):
         self.assertFalse(ledger_written, "the refusal booked a close over an unread ledger")
         self.assertIn(".gzkit/ledger.jsonl", printed)
         self.assertIn("ledger cannot be read", printed)
+
+    def test_a_ledger_row_that_does_not_parse_refuses_at_3_and_signs_nothing(self) -> None:
+        # Ruling 204: a row the ledger's reader cannot decode is a ledger the exit cannot
+        # read, refused as rulings 190 and 193 refuse, never a crash past green guards.
+        for row in ("not json at all", "[1, 2]", '{"schema": "gzkit.ledger.v1"}'):
+            with self.subTest(row=row), TemporaryDirectory() as tmp:
+                root = _mk_root(tmp)
+                _init_git_repo(root)
+                _commit(root, "seed.txt", "chore: seed")
+                mx_enter_cmd(
+                    reason="repair",
+                    attestor="g0",
+                    inspection_scope=["ADR-0.0.74"],
+                    project_root=root,
+                )
+                with (root / ".gzkit" / "ledger.jsonl").open("a", encoding="utf-8") as fh:
+                    fh.write(row + "\n")
+                code, printed = self._exit(root)
+                self._assert_held_open(root)
+                self.assertEqual(code, 3, printed)
+                self.assertIn("ledger cannot be read", printed)
 
 
 # ---------------------------------------------------------------------------

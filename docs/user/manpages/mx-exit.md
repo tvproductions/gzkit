@@ -58,8 +58,8 @@ gz mx exit --attestor ATTESTOR
   (`git could not run (<error>)`, `` `git log` exited <code>: <git's message> `` or
   `` a `git log` record did not parse: <record> ``), says the window's commits cannot be read,
   puts the marker back and exits 3. The view is never taken as an empty window (ruling 193).
-- If the ledger cannot be read (`.gzkit/ledger.jsonl` missing or unreadable): names the file
-  and the cause, says the ledger cannot be read, puts the marker back and exits 3. A window it
+- If the ledger cannot be read (`.gzkit/ledger.jsonl` missing or unreadable, or holding a row
+  its reader cannot decode): names the file and the cause, says the ledger cannot be read, puts the marker back and exits 3. A window it
   could not bound takes no signature (ruling 204).
 - The log is printed as written: brackets, `:name:` emoji codes and long lines in an entry or
   a commit subject read as their authors wrote them.
