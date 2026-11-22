@@ -9,12 +9,14 @@
 
 import contextlib
 import io
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
 
 from gzkit.hooks import guards
+from tests.commands.common import _isolated_git_env
 from tests.mx.held import open_marker
 
 
@@ -292,12 +294,21 @@ class TestSafePrint(unittest.TestCase):
 
 
 class TestMain(unittest.TestCase):
-    """main() delegates to forbid_pytest(Path.cwd())."""
+    """main() runs every registered guard over Path.cwd()."""
 
     def test_main_returns_zero_on_clean_cwd(self) -> None:
+        # A real repository: outside one, git cannot answer and every git-reading
+        # guard refuses the commit rather than passing it (GHI #1339).
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             _write(root / "ok.py", "import unittest\n")
+            subprocess.run(
+                ["git", "init", "-q"],
+                cwd=root,
+                check=True,
+                capture_output=True,
+                env=_isolated_git_env(),
+            )
             with mock.patch.object(Path, "cwd", return_value=root):
                 buf = io.StringIO()
                 with contextlib.redirect_stdout(buf):

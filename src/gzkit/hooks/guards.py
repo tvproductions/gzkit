@@ -181,10 +181,31 @@ def _safe_print(s: str) -> None:
         print(s.encode("ascii", "backslashreplace").decode("ascii"))  # noqa: T201
 
 
-def _run_git(args: list[str], cwd: Path) -> str:
-    """Return stdout of ``git <args>`` from ``cwd``; empty string on failure."""
-    import subprocess  # noqa: PLC0415
+class GitReadError(RuntimeError):
+    """Git gave no answer to a guard's read, so the guard has not checked the commit."""
 
+
+#: Every patch a guard parses is read in git's plain format, whatever the user's
+#: config says: ``color.diff=always`` prefixes each removed line with an escape and
+#: ``diff.external`` replaces the patch outright (GHI #1339).
+_PLAIN_PATCH = ("--no-color", "--no-ext-diff")
+
+
+def _run_git(args: list[str], cwd: Path, *, absent_ok: bool = False) -> str:
+    """Return stdout of ``git <args>`` from ``cwd``.
+
+    An empty string is git's answer, never a failure (GHI #1339). ``absent_ok``
+    is for a read of an object that may not exist, such as ``HEAD:<path>`` for a
+    new file, where a non-zero exit means absent and reads as ``""``.
+
+    Returns:
+        git's stdout; ``""`` for an absent object when ``absent_ok``.
+
+    Raises:
+        GitReadError: git could not run, or exited non-zero on a read that must answer.
+
+    """
+    command = " ".join(["git", *args])
     try:
         result = subprocess.run(  # noqa: S603 — git argv this module builds, never user text; executable resolved
             [resolve_executable("git"), *args],
@@ -195,8 +216,15 @@ def _run_git(args: list[str], cwd: Path) -> str:
             errors="replace",
             encoding="utf-8",
         )
-    except FileNotFoundError, OSError:
-        return ""
+    except OSError as exc:
+        message = f"{command} could not run: {exc}"
+        raise GitReadError(message) from exc
+    if result.returncode != 0:
+        if absent_ok:
+            return ""
+        detail = (result.stderr or "").strip().splitlines()[:1]
+        message = f"{command} exited {result.returncode}" + (f": {detail[0]}" if detail else "")
+        raise GitReadError(message)
     return result.stdout or ""
 
 
@@ -213,7 +241,7 @@ def forbid_manual_ledger_edits(root: Path) -> int:
         1 when the staged ledger diff removes or modifies a line; 0 otherwise.
 
     """
-    staged = _run_git(["diff", "--cached", ".gzkit/ledger.jsonl"], root)
+    staged = _run_git(["diff", "--cached", *_PLAIN_PATCH, "--", ".gzkit/ledger.jsonl"], root)
     if not staged:
         return 0
     # Hunks: look for ``-`` lines that aren't ``---`` or ``+++``, and ``+``
@@ -525,7 +553,7 @@ def forbid_unattested_obpi_completion_commits(root: Path) -> int:
         if not staged_text or not marks_completed(staged_text):
             continue
         # Only the transition is gated: an empty HEAD blob means the brief is new.
-        head_text = _run_git(["show", f"HEAD:{path}"], root)
+        head_text = _run_git(["show", f"HEAD:{path}"], root, absent_ok=True)
         if head_text and marks_completed(head_text):
             continue
         obpi_id = obpi_id_from_path(path)
@@ -637,6 +665,22 @@ def _guard_grounds(guard_name: str, emitted_level: int, root: Path) -> bool:
         return True
 
 
+def _unread_git_refusal(guard_name: str, exc: GitReadError) -> str:
+    """Return the refusal for a guard that could not read the staged change.
+
+    Returns:
+        Recovery prose: what failed, why the commit is held, and the next step.
+
+    """
+    return (
+        f"Guard '{guard_name}' could not read the staged change: {exc}.\n"
+        "  A guard that cannot read git has not checked this commit, so it is refused "
+        "rather than passed (GHI #1339).\n"
+        "  Next: run the git command above in this repository, fix what stops it "
+        "(git missing from PATH, a broken GIT_DIR or index), then commit again."
+    )
+
+
 def run_guards(root: Path) -> int:
     """Run every registered pre-commit guard through the shared MX checkpoint.
 
@@ -654,7 +698,11 @@ def run_guards(root: Path) -> int:
     """
     module = sys.modules[__name__]
     for guard_name, attr, emitted_level in _GUARD_META:
-        rc = getattr(module, attr)(root)
+        try:
+            rc = getattr(module, attr)(root)
+        except GitReadError as exc:
+            _safe_print(_unread_git_refusal(guard_name, exc))
+            rc = 1
         if not rc:
             continue
         if _guard_grounds(guard_name, emitted_level, root):
