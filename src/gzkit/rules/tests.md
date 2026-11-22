@@ -5,11 +5,11 @@ paths:
 description: Test policy and coverage requirements
 ---
 
-<!-- rule-version: 0.29.0 -->
+<!-- rule-version: 0.29.1 -->
 
 # Test Policy (canonical)
 
-> **Rule version:** `0.29.0` — three § Hexagon tests clauses are gated by `gz validate --hexagon-tests` (RP-7, rulings of 2026-11-13); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#testsmd).
+> **Rule version:** `0.29.1` — the mutation engine and the cognitive scorer are now the `gz-mutation-witness` and `gz-mindload` libraries (operator, 2026-11-21: *"they need to migrate as libraries"*); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#testsmd).
 
 ## General Rules (binding)
 
@@ -59,7 +59,7 @@ Gate 2 is named TDD. Per behavior increment:
 
 **RED evidence:** Do not author ARB *step* receipts with `exit_status=1` as "RED receipts". Gate 2 claims cite GREEN-side step receipts; the RED witness is `uv run gz arb red --req <REQ-ID>`, which runs the covering test with the production hunks withheld and emits an `arb-red-<REQ>` receipt whose `failure_class` `none` means the test cannot fail (GHI #642).
 
-**Mutation-sweep integrity (binding, GHI #963).** A failing mutant run is NOT a kill. Report four outcomes: `killed` and `survived` are claims about the guard, `invalid` and `inconclusive` about the run. Every mutant runs in a subprocess with its own `PYTHONPYCACHEPREFIX` (CPython validates a cached `.pyc` on mtime-seconds and size, so two equal-length mutants in one second share bytecode). Use `gzkit.mutation_witness.run_mutation_sweep`, name the covering test via `Mutation.expected_tests`, and cite a sweep only when `is_conclusive` is true, disclosing `invalid` and `inconclusive` rows.
+**Mutation-sweep integrity (binding, GHI #963).** A failing mutant run is NOT a kill. Report four outcomes: `killed` and `survived` are claims about the guard, `invalid` and `inconclusive` about the run. Every mutant runs in a subprocess with its own `PYTHONPYCACHEPREFIX` (CPython validates a cached `.pyc` on mtime-seconds and size, so two equal-length mutants in one second share bytecode). Use `gz_mutation_witness.run_mutation_sweep`, name the covering test via `Mutation.expected_tests`, and cite a sweep only when `is_conclusive` is true, disclosing `invalid` and `inconclusive` rows.
 
 **Verification exit-code integrity (binding, GHI #589).** A verifier's truth is its own exit code, never a downstream filter's. Capture to a file (`verifier > out.log 2>&1`) and read `$?` in the statement immediately after; for attestation cite the ARB receipt's `exit_status`. The shell reports the last thing it ran, so each of these masks a failure: a pipe (`verifier | tail`; only `set -o pipefail` or `${PIPESTATUS[0]}` preserves it), a following statement (`verifier > log; tail log`; only `set -e` or an immediate `$?` read), an `||` branch (`verifier || echo failed` exits 0 exactly when the verifier failed — write `verifier || echo "REAL EXIT: $?"`), a group (`( … )` and `{ …; }` report their last statement), a chain whose final separator is not the verifier's, and `&` (reports the launch). The aggregate status is a floor, not a proof (GHI #969). Mechanized by the `verifier-pipe-gate.py` PreToolUse hook over `Bash`, whose verifier set is read from `CANONICAL_STEP_COMMANDS`.
 

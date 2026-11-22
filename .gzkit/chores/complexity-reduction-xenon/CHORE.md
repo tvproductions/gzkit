@@ -3,6 +3,9 @@
 **Lane:** Lite
 **Slug:** `complexity-reduction-xenon`
 
+> **Version 3.1.2 (2026-11-21):** the cognitive scores come from the `gz-mindload` CLI,
+> gzkit's scorer extracted as a library; the procedure is unchanged.
+>
 > **Version 3.1.1 (2026-10-28, GHI #1183):** the remediation and non-authority
 > text stop naming xenon as the current ceiling; the procedure is unchanged.
 >
@@ -54,7 +57,7 @@ holds it in two legs:
 
 ```bash
 uv run gz validate --complexity-ceiling
-uv run python -m gzkit.complexity.cognitive src/gzkit --top 20
+uv run gz-mindload src/gzkit --top 20
 uv run gz complexity advise --json src/ > .gzkit/chores/complexity-reduction-xenon/proofs/advisor-diagnosis-baseline.json
 ```
 
@@ -96,7 +99,7 @@ obligation, not a criterion.
 
 ```bash
 uv run gz validate --complexity-ceiling > .gzkit/chores/complexity-reduction-xenon/proofs/ceiling-report.txt
-uv run python -m gzkit.complexity.cognitive src/gzkit --json > .gzkit/chores/complexity-reduction-xenon/proofs/cognitive-report.json
+uv run gz-mindload src/gzkit --json > .gzkit/chores/complexity-reduction-xenon/proofs/cognitive-report.json
 ```
 
 ## Cluster Linkage

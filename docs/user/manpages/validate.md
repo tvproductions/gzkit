@@ -2648,7 +2648,7 @@ The population is the Python the uv_build wheel ships, read from the predictor `
 project not built by uv_build is clean. A project that ships code and declares no `max-complexity` is
 refused. Values compare unrounded, and a value equal to the ceiling passes.
 
-Cognitive complexity is the second leg, scored by gzkit over CPython's `ast` to the SonarSource
+Cognitive complexity is the second leg, scored by gzkit's `gz-mindload` library over CPython's `ast` to the SonarSource
 specification (complexipy was retired for it on 2026-10-22). A project opts in with
 `complexity.cognitive_ceiling` in `.gzkit.json`; unset, the leg does not run. Functions over the
 ceiling are held at their score by `data/cognitive_complexity_baseline.json`, keyed by POSIX path and

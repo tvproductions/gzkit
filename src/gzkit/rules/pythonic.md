@@ -7,9 +7,9 @@ description: Pythonic standards and idiomatic code contract
 
 # Pythonic Standards (Idiomatic Code Contract)
 
-<!-- rule-version: 0.7.0 -->
+<!-- rule-version: 0.7.1 -->
 
-> **Rule version:** `0.7.0` — principle 9 and § Size Limits cite the canonical threshold table for function and module size and keep <=300 lines for classes (RP-7 held ruling H2, operator, 2026-11-13: *"A: Cite the table"*); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
+> **Rule version:** `0.7.1` — the mutation engine and the cognitive scorer are now the `gz-mutation-witness` and `gz-mindload` libraries (operator, 2026-11-21: *"they need to migrate as libraries"*); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
 
 ## Core Principles
 
@@ -36,7 +36,7 @@ description: Pythonic standards and idiomatic code contract
 | Classes <=300 | `gz validate --class-size` (`code_quality.py`, `limit = 300` hardcoded, waivers in `_CLASS_SIZE_WAIVERS`) | **live gate** |
 | Function size (`lizard_nloc`) | nothing: `complexity_advise.py` reads `lizard_ccn` alone (`gzkit.complexity.functions.METRIC_KEY`) | the band has no consumer; authoring-time guidance |
 | Module size (`lizard_file_nloc`) | `gz check`'s "Module size" step runs `.gzkit/chores/module-sloc-cap-radon/check_module_size.py` over `src/` against the shrink-only `data/module_size_grandfather.json` | **live gate** on the table's `block` band |
-| *(cyclomatic)* | `gz validate --complexity-ceiling` and Ruff `C901`, both at `[tool.ruff.lint.mccabe] max-complexity` (each function, module mean and overall mean CC <=20); cognitive complexity by the same gate, scored by gzkit over CPython's `ast` at `.gzkit.json`'s `complexity.cognitive_ceiling` (15, held by the shrink-only `data/cognitive_complexity_baseline.json`) | **live gate** — a *third* ceiling, matching neither authority: the table's `lizard_ccn` blocks at 11.0, so a CC-15 function passes the ceiling while `block` per the table |
+| *(cyclomatic)* | `gz validate --complexity-ceiling` and Ruff `C901`, both at `[tool.ruff.lint.mccabe] max-complexity` (each function, module mean and overall mean CC <=20); cognitive complexity by the same gate, scored by gzkit's `gz-mindload` library over CPython's `ast` at `.gzkit.json`'s `complexity.cognitive_ceiling` (15, held by the shrink-only `data/cognitive_complexity_baseline.json`) | **live gate** — a *third* ceiling, matching neither authority: the table's `lizard_ccn` blocks at 11.0, so a CC-15 function passes the ceiling while `block` per the table |
 
 ## Imports (PEP 8)
 

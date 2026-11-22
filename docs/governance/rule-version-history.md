@@ -411,6 +411,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `pythonic.md`
 
+### Changed 2026-11-21 at version `0.7.1` (the tool extraction)
+
+Prior `0.7.0` banner, verbatim: *"principle 9 and § Size Limits cite the canonical threshold table for function and module size and keep <=300 lines for classes (RP-7 held ruling H2, operator, 2026-11-13: *"A: Cite the table"*)"*. Superseded when the mutation engine and the cognitive scorer are now the `gz-mutation-witness` and `gz-mindload` libraries (operator, 2026-11-21: "they need to migrate as libraries").
+
 ### Changed 2026-11-13 at version `0.7.0` (RP-7 held ruling H2)
 
 Prior `0.6.0` banner, verbatim: *"§ Error Handling splits inside the hexagon's walls (values) from outside (`GzkitError`), from the hexagonal specification run (operator, 2026-11-12: "pythonic error rule")"*. Superseded on the operator's *"A: Cite the table"*: principle 9 and § Size Limits carried `<=50 lines/function` and `<=600 lines/module`, a second threshold authority that disagreed with the canonical table in both directions, against `complexity-thresholds.md` § Invariant. Both now cite the table's `lizard_nloc` and `lizard_file_nloc` bands; `<=300 lines/class` stays, because the table carries no class metric. The unreconciled admonition is replaced by the ruling and the enforcement table. Scorecard rows 19 and 20 restated, scores unchanged.
@@ -1028,6 +1032,10 @@ Lifted 2026-08-29 at version `0.11.0` (rule now at `0.12.0`).
 > **Rule version:** `0.11.0` — GHI #728: adds the chores-only `project_local` content class and the declaration protocol. `.gzkit/chores/AGENTS.md` declared project-local-only slugs as a real category (REQ-0.0.21-09-06) but nothing implemented it, so a chore authored only under `.gzkit/chores/` was copied into the wheel by sync and scaffolded into every adopter by `gz init`. The property is now DECLARED in `registry.json` rather than inferred from absence — the inference `gz chores doctor` used is the exact state sync overwrites. Prior `0.10.1` — diet pass (operator ruling 2026-08-02): lifted bootstrap-semantics narrative, retirement-policy rationale, and the class-classifier reference tables to `docs/governance/skill-surface-sync-rationale.md`; every non-negotiable rule and binding core retained verbatim. Prior `0.10.0` — names `metadata.skill-version` as the canonical spelling and records that presence is now enforced. Rule #2 said only "`skill-version:` in YAML frontmatter (validated by the skill schema)", which was true of neither half: no skill schema exists, the audit checked *format when present* and never presence, and the unstated nesting let two spellings coexist — 57 skills nested under `metadata:`, 11 at top level, where both validators were blind to them. The rule's own conflict-resolution procedure names the version as "the primary signal", so the drift disarmed the procedure the same rule prescribes. Prior `0.9.0` — renamed prohibited headings; lifted Rationale to expansion doc (OBPI-0.0.54-04 shape conformance pass).
 
 ## `tests.md`
+
+### Changed 2026-11-21 at version `0.29.1` (the tool extraction)
+
+Prior `0.29.0` banner, verbatim: *"three § Hexagon tests clauses are gated by `gz validate --hexagon-tests` (RP-7, rulings of 2026-11-13)"*. Superseded when the mutation engine and the cognitive scorer are now the `gz-mutation-witness` and `gz-mindload` libraries (operator, 2026-11-21: "they need to migrate as libraries").
 
 ### Changed 2026-11-13 at version `0.29.0` (RP-7, change order of 2026-11-12)
 

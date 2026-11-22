@@ -83,7 +83,7 @@
     {
       "slug": "complexity-reduction-xenon",
       "title": "Complexity Reduction (C/C/C ceiling)",
-      "version": "3.1.1",
+      "version": "3.1.2",
       "path": ".gzkit/chores/complexity-reduction-xenon",
       "lane": "lite",
       "timeoutSeconds": 180,
@@ -862,7 +862,7 @@
     {
       "slug": "pythonic-design-pattern-application",
       "title": "Pythonic Design Pattern Application (Before/After Evidence Capture)",
-      "version": "1.2.4",
+      "version": "1.2.5",
       "path": ".gzkit/chores/pythonic-design-pattern-application",
       "lane": "lite",
       "timeoutSeconds": 180,

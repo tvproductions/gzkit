@@ -127,12 +127,12 @@ The rule at `0.26.0` keeps every binding sentence; the measured instances, histo
 
 Every mutant MUST run in a subprocess with its own `PYTHONPYCACHEPREFIX`. CPython validates a cached `.pyc` on `(mtime-seconds, size)`, so two mutations of equal length landing in the same clock second let the second subprocess import the first mutant's bytecode — measured on an OBPI-0.35.0-04 sweep, where a guard reported PASSED in-sweep and FAILED correctly in isolation.
 
-Use `gzkit.mutation_witness.run_mutation_sweep`, which verifies baseline, activation, isolation and failure cause and returns the four-way verdict; do not hand-roll a shell loop, which is the shape that produced the collision. A kill may be required to name a covering test via `Mutation.expected_tests` — without it, a failure elsewhere in the suite counts as coverage this guard does not have.
+Use `gz_mutation_witness.run_mutation_sweep`, which verifies baseline, activation, isolation and failure cause and returns the four-way verdict; do not hand-roll a shell loop, which is the shape that produced the collision. A kill may be required to name a covering test via `Mutation.expected_tests` — without it, a failure elsewhere in the suite counts as coverage this guard does not have.
 
 ```bash
 uv run python -c '
 from pathlib import Path
-from gzkit.mutation_witness import Mutation, run_mutation_sweep
+from gz_mutation_witness import Mutation, run_mutation_sweep
 s = run_mutation_sweep(Path("."), Path("src/gzkit/<module>.py"),
     [Mutation(find="<guard>", replace="<broken>", label="<name>",
               expected_tests=["<covering test>"])],

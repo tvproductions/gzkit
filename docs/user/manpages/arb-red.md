@@ -58,7 +58,7 @@ A guard added on the direct-fix route (`fix(<scope>): … (GHI #N)`) has no REQ,
 `--req` has no subject there. `--commit` keys the witness on the commit instead:
 each production hunk the commit **added** is reverted to its parent's text, one at
 a time, and the test modules **the same commit touched** are run against the
-mutant through `gzkit.mutation_witness` (baseline, activation, bytecode isolation
+mutant through `gz_mutation_witness` (baseline, activation, bytecode isolation
 and failure cause all verified). A `.py` file under `tests/` is a test module; one
 under `features/` is a behave step module, test code the unit runner never imports,
 so it is neither a production hunk nor a test module here. Hunks that change only comments, docstrings or

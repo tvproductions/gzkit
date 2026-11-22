@@ -5,9 +5,9 @@ description: Use for a tech-debt review of files, paths, ADRs, OBPIs or the repo
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-21
 metadata:
-  skill-version: "1.4.6"
+  skill-version: "1.4.7"
 model: sonnet
 ---
 
@@ -148,7 +148,7 @@ For each class, the canonical probe:
 | Class | Canonical command | Notes |
 |-------|-------------------|-------|
 | `size-cap` | `uv run lizard <files>` | Filter to functions >50, modules >600, classes >300. |
-| `complexity` | `uv run ruff check <subtree> --select C901` and `uv run python -m gzkit.complexity.cognitive <subtree> --top 20` | The ceilings the pre-commit gates and the `complexity-reduction-xenon` chore enforce (`max-complexity`, `.gzkit.json`'s `complexity.cognitive_ceiling`); a stricter ceiling reports code the gates pass. For C901 a non-zero exit IS the signal; for the cognitive list, the scores above the ceiling are. |
+| `complexity` | `uv run ruff check <subtree> --select C901` and `uv run gz-mindload <subtree> --top 20` | The ceilings the pre-commit gates and the `complexity-reduction-xenon` chore enforce (`max-complexity`, `.gzkit.json`'s `complexity.cognitive_ceiling`); a stricter ceiling reports code the gates pass. For C901 a non-zero exit IS the signal; for the cognitive list, the scores above the ceiling are. |
 | `lint` | `uv run gz lint <files>` for the gate's verdict; `uv run ruff check <files> --output-format=json` for every finding, held ones included | JSON for grouping; the baseline rows for `<files>` are the held debt. |
 | `types` | `uv run ty check <files>` | Capture stdout; cross-reference `tests/governance/test_type_ignore_syntax.py` for the suppression class. |
 | `pythonic` | `uv run gz chores run pythonic-design-pattern-detection` (only on `--scope all` or paths overlap; expensive) | Skip if scope is small and last run is <7 days old. |
