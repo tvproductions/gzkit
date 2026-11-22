@@ -624,6 +624,15 @@ put after it.
   that gzkit has never had. All GHI work for repair was woefully ad hoc and sometimes that is not
   useful. This is an emerging discipline that is much better."* T38 is ruled. Line GHI work joins
   the discipline. T39, Gate 5 on a line order, stays open.
+- **W11 (2026-11-22, FIX question 2b).** The question: when does a GHI close? Three options were
+  put:
+  - A: when every FIX answering it holds. The close comment cites each FIX and how its order
+    closed, the order's close standing as the review. Recommended.
+  - B: the FIXes mark it resolved and a separate `ghi-close` reviewer pass closes it.
+  - C: at its package's close.
+
+  Operator: *"A"*. This amends `ghi-close`'s review-closes step (decision B12) for a GHI worked
+  through the repair discipline: the order's close is the review on record.
 
 ## 10. The gathering, closed
 
