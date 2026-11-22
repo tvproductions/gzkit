@@ -400,7 +400,7 @@ dev = [
 # Docs syncs this group alone; every other sync gets it through `default-groups`.
 docs = [
     "mkdocs==1.6.1",
-    "mkdocs-material==9.8.1",
+    "mkdocs-material==9.8.2",
 ]
 
 # GHI #256: scope coverage to src/gzkit so ephemeral tempdir sources under
