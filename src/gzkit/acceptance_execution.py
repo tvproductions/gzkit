@@ -16,6 +16,7 @@ import uuid
 from pathlib import Path
 
 import yaml
+from gz_mutation_witness import Mutation, run_mutation_sweep
 
 from gzkit.acceptance import Obligation, Proof
 from gzkit.acceptance_package import STORE_PATH, PackageContract, binds_by_mutation
@@ -23,7 +24,6 @@ from gzkit.config import GzkitConfig
 from gzkit.executables import resolve_argv
 from gzkit.frontmatter import read_frontmatter
 from gzkit.governance.req_coverage import discover_covers
-from gzkit.mutation_witness import Mutation, run_mutation_sweep
 from gzkit.req_kind_fence import resolve_fence_proof
 from gzkit.req_kind_support import ScopeDispatcher, resolve_support_proof
 from gzkit.triangle import extract_reqs_from_brief

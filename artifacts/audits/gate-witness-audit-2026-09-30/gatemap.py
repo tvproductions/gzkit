@@ -27,9 +27,10 @@ OUT = Path(sys.argv[4])
 os.environ["PYTHONPATH"] = f"{WT / 'src'}{os.pathsep}{WT}"
 sys.path[:0] = [str(WT / "src"), str(WT)]
 
+from gz_mutation_witness import Mutation, run_mutation_sweep  # noqa: E402
+
 from gzkit.commit_witness import statement_mutations  # noqa: E402
 from gzkit.enforcement import production_enforcement_registry  # noqa: E402
-from gzkit.mutation_witness import Mutation, run_mutation_sweep  # noqa: E402
 
 PROBE = WT / "tests" / "_gatemap_probe.py"
 

@@ -34,8 +34,7 @@ REPO = HERE.parents[2]
 sys.path[:0] = [str(REPO / "src"), str(HERE)]
 
 import o2_mutation_sweep as sweep  # noqa: E402
-
-from gzkit.mutation_witness import Mutation, run_mutation_sweep  # noqa: E402
+from gz_mutation_witness import Mutation, run_mutation_sweep  # noqa: E402
 
 RECORD = HERE / "o2-red-proofs-2026-11-15.json"
 WORKERS = 4

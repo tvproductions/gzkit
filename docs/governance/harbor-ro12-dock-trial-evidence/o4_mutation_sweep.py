@@ -41,8 +41,7 @@ sys.path[:0] = [str(REPO / "src"), str(HERE)]
 
 import o2_mutation_sweep as rule  # noqa: E402
 import o3_mutation_sweep as narrowed  # noqa: E402
-
-from gzkit.mutation_witness import Mutation, run_mutation_sweep  # noqa: E402
+from gz_mutation_witness import Mutation, run_mutation_sweep  # noqa: E402
 
 #: The task trailers whose commits ruling 196 takes, task 5's for ruling 199's fix.
 TASKS = (

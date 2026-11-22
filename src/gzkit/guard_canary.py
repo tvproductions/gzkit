@@ -19,7 +19,7 @@ because they fail differently.
 * **Kill (live, on an isolated copy).** The mutant is applied to a copy of the tree and the
   designated test must fail. The copy is the point: a sweep rewrites the source file it
   mutates, and running one against the working tree while other tests import it would corrupt
-  them. The verdict is ``gzkit.mutation_witness``'s four-way one; only ``killed`` passes.
+  them. The verdict is ``gz_mutation_witness``'s four-way one; only ``killed`` passes.
 
 A claim with no canary is a finding unless it is on the shrink-only roster
 (``guard_canary_grandfather.json``), the same disclosure posture as GHI #1155's enrollment.
@@ -38,13 +38,13 @@ import tempfile
 import textwrap
 from pathlib import Path
 
+from gz_mutation_witness import Mutation, MutationOutcome, run_mutation_sweep
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.core import exceptions as gz_errors
 from gzkit.core.validation_rules import ValidationError
 from gzkit.ledger import Ledger
 from gzkit.ledger_events import guard_canary_reviewed_event
-from gzkit.mutation_witness import Mutation, MutationOutcome, run_mutation_sweep
 from gzkit.registries import load_registry, registry_path
 
 _LEDGER = Path(".gzkit") / "ledger.jsonl"

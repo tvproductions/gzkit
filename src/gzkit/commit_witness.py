@@ -8,7 +8,7 @@ files, none of which drove it, and the suite stayed green.
 
 This witness is keyed on the commit instead. Every production hunk the commit
 ADDED is one mutant — that hunk reverted to the parent's text — swept against the
-test modules the same commit touched, through :mod:`gzkit.mutation_witness` (so
+test modules the same commit touched, through :mod:`gz_mutation_witness` (so
 baseline, activation, bytecode isolation and failure cause are all verified, and
 ``invalid``/``inconclusive`` stay apart from ``killed``/``survived``).
 
@@ -46,15 +46,15 @@ import tomllib
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
-
-from gzkit.mutation_witness import (
+from gz_mutation_witness.witness import (
     Mutation,
     MutationWitness,
-    _run,
+    _run,  # noqa: PLC2701 — gz-mutation-witness 0.1.0 keeps its isolated runner private
     hang_reason,
     run_mutation_sweep,
 )
+from pydantic import BaseModel, ConfigDict, Field
+
 from gzkit.reach_trace import ModuleReach, reaching_modules, trace_reach
 from gzkit.red_witness import _git, base_tree_worktree
 

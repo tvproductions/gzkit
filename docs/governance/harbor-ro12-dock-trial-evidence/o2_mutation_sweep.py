@@ -55,7 +55,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(REPO / "src")]
 
-from gzkit.mutation_witness import (  # noqa: E402
+from gz_mutation_witness.witness import (  # noqa: E402
     Mutation,
     MutationSweep,
     MutationWitness,

@@ -26,6 +26,14 @@
       "reason": "LCOM4 class cohesion for the complexity thresholds (ADR-0.0.27); Astral ships no cohesion metric."
     },
     {
+      "name": "gz-mindload",
+      "reason": "gzkit's own cognitive complexity scorer, extracted as-is into a library other projects consume (operator 2026-11-21, verbatim: \"they need to migrate as libraries\"); it is the former gzkit.complexity.cognitive, stdlib plus Pydantic, and Astral ships no cognitive complexity metric."
+    },
+    {
+      "name": "gz-mutation-witness",
+      "reason": "gzkit's own mutation-sweep engine, extracted as-is into a library other projects consume (operator 2026-11-21, verbatim: \"they need to migrate as libraries\"); it is the former gzkit.mutation_witness, stdlib plus Pydantic, and Astral ships no mutation testing."
+    },
+    {
       "name": "behave",
       "reason": "The Gate 4 BDD runner (AGENTS.md § Gate Covenant); Astral ships no test runner."
     },

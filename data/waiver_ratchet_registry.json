@@ -293,7 +293,7 @@
       "gates_step": "config registry (gz validate --config-registry)",
       "mechanism": "shrink-ratchet",
       "entries_path": "constants",
-      "baseline_count": 56,
+      "baseline_count": 55,
       "identity": {
         "kind": "strings"
       }
@@ -404,7 +404,7 @@
       "gates_step": "Lint (gz lint)",
       "mechanism": "shrink-ratchet",
       "entries_path": "rows",
-      "baseline_count": 4613,
+      "baseline_count": 4607,
       "identity": {
         "kind": "fields",
         "fields": [
@@ -418,7 +418,7 @@
       "gates_step": "hexagon dependency rules (gz validate --hexagon-dependencies)",
       "mechanism": "shrink-ratchet",
       "entries_path": "findings",
-      "baseline_count": 177,
+      "baseline_count": 176,
       "identity": {
         "kind": "strings"
       }

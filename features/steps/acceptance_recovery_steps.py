@@ -8,6 +8,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from behave import given, then, when
+from gz_mutation_witness import Mutation
 from rich.console import Console
 from tests.test_acceptance_execution import REQ, SELECTOR, TEST, ExecutionFixture
 from tests.test_acceptance_store import OBPI, captured_receipt
@@ -24,7 +25,6 @@ from gzkit.acceptance_store import (
 from gzkit.commands.obpi_acceptance import _execute_proof
 from gzkit.commands.obpi_stages import _run_pipeline_ceremony_stage
 from gzkit.commands.validate_cmd import dispatch_validator_scope
-from gzkit.mutation_witness import Mutation
 from gzkit.pipeline_procedure import seed_stage_procedures
 
 
@@ -158,7 +158,7 @@ def independent_oracle(context):
 
 @when("proof execution times out after activation with {newline} source bytes")
 def interrupted_proof(context, newline):
-    import gzkit.mutation_witness as witness
+    from gz_mutation_witness import witness
 
     fixture = context.acceptance_fixture
     source = fixture.root / "src/engine.py"

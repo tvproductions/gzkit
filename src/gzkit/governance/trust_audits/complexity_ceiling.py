@@ -24,8 +24,8 @@ Lizard score (``unmeasured`` otherwise: an inline suite, which can also hide the
 functions after it), and a module that does not parse is ``unparseable``. A body
 that is nothing but ``...`` carries no decision and is the one exemption.
 
-Cognitive complexity is the second leg, scored by gzkit's own
-:mod:`gzkit.complexity.cognitive` over CPython's ``ast`` (the operator ruled
+Cognitive complexity is the second leg, scored by gzkit's own :mod:`gz_mindload`
+(formerly ``gzkit.complexity.cognitive``) over CPython's ``ast`` (the operator ruled
 complexipy a poor replacement, 2026-10-22). A project opts in by declaring
 ``complexity.cognitive_ceiling`` in ``.gzkit.json``. No shipped function may score
 above it unless ``data/cognitive_complexity_baseline.json`` holds it, keyed by
@@ -44,9 +44,9 @@ from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any, Literal
 
+from gz_mindload import score_cognitive
 from pydantic import BaseModel, ConfigDict
 
-from gzkit.complexity.cognitive import score_cognitive
 from gzkit.complexity.functions import is_ellipsis_stub
 from gzkit.complexity.lizard_adapter import FunctionScore, score_functions
 from gzkit.config import GzkitConfig

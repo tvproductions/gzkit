@@ -4,7 +4,7 @@ import json
 import sys
 from pathlib import Path
 
-from gzkit.mutation_witness import Mutation, run_mutation_sweep
+from gz_mutation_witness import Mutation, run_mutation_sweep
 
 ROOT = Path.cwd()
 T = "tests.commands.test_init."

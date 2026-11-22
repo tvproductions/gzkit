@@ -107,7 +107,6 @@
     "unmapped gzkit.lifecycle",
     "unmapped gzkit.lock_manager",
     "unmapped gzkit.models",
-    "unmapped gzkit.mutation_witness",
     "unmapped gzkit.mx",
     "unmapped gzkit.obpi_completion_fence",
     "unmapped gzkit.obpi_dispatch_channel",

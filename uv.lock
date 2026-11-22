@@ -340,6 +340,30 @@ wheels = [
 ]
 
 [[package]]
+name = "gz-mindload"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pydantic" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/19/30/cd2127658eca1c020700a1afcc07f2ba307867fc76dc231b22ee27008161/gz_mindload-0.1.0.tar.gz", hash = "sha256:c0d95a06352c9508b76fa3521bc082e162fde6704dca18dad7d5dffe7d66ecd1", size = 6242, upload-time = "2026-11-22T01:31:55.783Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b2/b8/1e8af777edd14503635833a2e5352943d5124653e2341e5337dfc100b0e3/gz_mindload-0.1.0-py3-none-any.whl", hash = "sha256:f53a65019463c69116396d3adf65205d8bf5e45ad1d58b1bf4989b5c02e07290", size = 7129, upload-time = "2026-11-22T01:31:54.74Z" },
+]
+
+[[package]]
+name = "gz-mutation-witness"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pydantic" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9b/ae/eb7598c67f9a8857897a727872487455bb6e305950c7a54dce8dec9684d1/gz_mutation_witness-0.1.0.tar.gz", hash = "sha256:e4ced1fedab71288a5c090caaee8b2d44feb0ef6c8157318db6409dfc68edaa6", size = 11271, upload-time = "2026-11-22T01:31:53.488Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/64/2d/1a2c1ea655d43514c9b15c58ecb025df42df53dcc77914ff72c7e71eb355/gz_mutation_witness-0.1.0-py3-none-any.whl", hash = "sha256:e49a6e4679367787d64ec588c9eb45f76b81798505b58395b93682d7ad552230", size = 13116, upload-time = "2026-11-22T01:31:52.221Z" },
+]
+
+[[package]]
 name = "identify"
 version = "2.6.20"
 source = { registry = "https://pypi.org/simple" }
@@ -715,6 +739,8 @@ source = { editable = "." }
 default-groups = ["dev", "docs"]
 dependencies = [
     { name = "cohesion" },
+    { name = "gz-mindload" },
+    { name = "gz-mutation-witness" },
     { name = "jinja2" },
     { name = "jsonschema" },
     { name = "lizard" },
@@ -746,6 +772,8 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "cohesion", specifier = ">=1.2,<2.0" },
+    { name = "gz-mindload", specifier = ">=0.1.0" },
+    { name = "gz-mutation-witness", specifier = ">=0.1.0" },
     { name = "jinja2", specifier = ">=3.1" },
     { name = "jsonschema", specifier = ">=4.26" },
     { name = "lizard", specifier = ">=1.26,<2.0" },

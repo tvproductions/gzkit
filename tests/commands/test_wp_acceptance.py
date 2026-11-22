@@ -14,6 +14,8 @@ from pathlib import Path
 from typing import Any
 from unittest import mock
 
+from gz_mutation_witness import Mutation
+
 from gzkit.acceptance import Proof, Review
 from gzkit.acceptance_errors import AcceptanceUninitializedError
 from gzkit.acceptance_execution import canonical_obligations, input_digest, prove
@@ -35,7 +37,6 @@ from gzkit.acceptance_store import (
 from gzkit.arb.paths import receipts_root
 from gzkit.cli import main
 from gzkit.commands.validate_cmd import dispatch_validator_scope
-from gzkit.mutation_witness import Mutation
 from gzkit.work_package_fence import fenced_packages
 from tests.commands.common import CliRunner, _quick_init
 from tests.test_acceptance_execution import SELECTOR, ExecutionFixture

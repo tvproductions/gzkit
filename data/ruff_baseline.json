@@ -5347,21 +5347,6 @@
       "count": 3
     },
     {
-      "file": "src/gzkit/complexity/cognitive.py",
-      "rule": "PLR0911",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/complexity/cognitive.py",
-      "rule": "T201",
-      "count": 3
-    },
-    {
-      "file": "src/gzkit/complexity/cognitive.py",
-      "rule": "TC003",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/complexity/distillation.py",
       "rule": "FURB113",
       "count": 2
@@ -7832,11 +7817,6 @@
       "count": 2
     },
     {
-      "file": "src/gzkit/mutation_witness.py",
-      "rule": "PLR0911",
-      "count": 1
-    },
-    {
       "file": "src/gzkit/mx/awareness.py",
       "rule": "FBT001",
       "count": 1
@@ -9904,11 +9884,6 @@
     {
       "file": "tests/complexity/test_citation.py",
       "rule": "PGH003",
-      "count": 1
-    },
-    {
-      "file": "tests/complexity/test_cognitive.py",
-      "rule": "RUF012",
       "count": 1
     },
     {
@@ -12070,11 +12045,6 @@
       "file": "tests/test_logging.py",
       "rule": "PLC0415",
       "count": 4
-    },
-    {
-      "file": "tests/test_mutation_witness.py",
-      "rule": "PLC0415",
-      "count": 1
     },
     {
       "file": "tests/test_mx_door_airlock.py",

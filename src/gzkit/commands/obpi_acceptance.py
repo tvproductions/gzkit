@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import Literal
 
+from gz_mutation_witness import Mutation
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.acceptance_context import build_review_context
@@ -24,7 +25,6 @@ from gzkit.commands.common import get_project_root
 from gzkit.commands.obpi_precomplete import ObpiEntryError, resolve_obpi_at_entry
 from gzkit.commands.validate_cmd import dispatch_validator_scope
 from gzkit.config import GzkitConfig
-from gzkit.mutation_witness import Mutation
 from gzkit.pipeline_runtime import RunCrossing, record_run_position
 
 

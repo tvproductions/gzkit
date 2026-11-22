@@ -6,6 +6,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from gz_mutation_witness import Mutation
+
 from gzkit.acceptance_execution import (
     canonical_obligations,
     digest_components,
@@ -13,7 +15,6 @@ from gzkit.acceptance_execution import (
     prove,
 )
 from gzkit.commands.validate_cmd import dispatch_validator_scope
-from gzkit.mutation_witness import Mutation
 
 REQ = "REQ-0.1.0-01-01"
 SELECTOR = "tests.test_engine.EngineTests.test_double"

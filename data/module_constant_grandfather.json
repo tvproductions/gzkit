@@ -33,7 +33,6 @@
     "src/gzkit/insights/correction_mining.py::RUN_LOG_MAX_BYTES",
     "src/gzkit/justify/evidence.py::_DEFAULT_TIMEOUT_SECONDS",
     "src/gzkit/justify/evidence.py::_PER_SOURCE_SUBPROCESS_TIMEOUT",
-    "src/gzkit/mutation_witness.py::_RUN_TIMEOUT_S",
     "src/gzkit/mx/hardening.py::_MAX_OPEN",
     "src/gzkit/pipeline_dispatch.py::MAX_BLOCKED_FIX_ATTEMPTS",
     "src/gzkit/pipeline_dispatch.py::MAX_NEEDS_CONTEXT_RETRIES",
