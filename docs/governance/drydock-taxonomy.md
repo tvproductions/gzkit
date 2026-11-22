@@ -502,7 +502,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T8 | Family and outcome codes: apply the three-letter recode of 2026-10-30, with the depth rule, to the store, the pattern and the shipped seed | single letters in code, store and seed |
 | T9 | One identity seam: every identifier in §§ 2 to 4 resolves through it, with its witness | four kinds; three grammar homes |
 | T10 | The route for § 7.1's fifteen corrections: one contract amendment, change orders per package, or GHIs | unrouted |
-| T11 | Where the ruled taxonomy lives as the one home, and what witnesses it | nowhere |
+| T11 | **Ruled W14: the requirements model.** Where the ruled taxonomy lives as the one home, and what witnesses it | nowhere |
 | T12 | Gate 5's home: the order alone, or also the package close and the outcome; and the charter's closeout terms against the order's decisions | four homes in text and code |
 | T13 | Below the task: apply the retirement of *act* and *tranche*, or rule a named sub-unit | retired 2026-11-02 and still in use |
 | T14 | The 2026-10-05 ladder: retire the whole of it (EO, ECP, task card, block) and amend the program and the pool ADR; and whether the pool is ADRs or intentions | parts retired one by one; the pool ADR unamended |
@@ -656,6 +656,17 @@ put after it.
   finding that they are strewn all about."* The store is collated the same day in
   `docs/governance/ieee/requirements-model.md` § The store, and `harbor-ro3` points there. T40 is
   done.
+- **W14 (2026-11-22, T11).** The question: where does the ruled work, repair and catalog taxonomy
+  live as its one home? Three options were put:
+  - A: the requirements model, each ruled part folding into it, the RP-n pages becoming dated
+    records that point there, and a validator refusing a units-of-work term or id grammar
+    defined elsewhere. Recommended.
+  - B: a new canon page for work and repair.
+  - C: this page as canon.
+
+  Operator: *"A, the requirements model is the one home. however, also, we need a GIANT step back
+  here... how disorganized is our big picture documentation of gzkit? I suspect it is a shambles
+  right now."* T11 is ruled. Its witness is owed.
 
 ## 10. The gathering, closed
 
