@@ -63,6 +63,43 @@ row 58).
 | Order | Work order | Repair order | the REQ-to-task binding; the freeze; inspection and buy-back; **Gate 5** | Coordinator, inspector, operator |
 | Action | Task | Task | one recorded action, its measure, its (V) mark | Craftsman |
 
+**What sits beside the levels** (requirements model § The records, § 7, § 12). The levels are the
+work; three records frame it, and two more record and show it:
+
+- **The catalog** says what must be true: PRD → family (`SES`) → capability (`SES1`) → outcome
+  (`SES1.4`) → REQ (`REQ-1207`), with a feature file for each user-facing outcome. **The ADR**
+  records one architecture decision, a peer of the catalog, never its parent.
+- **The Release Package** says what is planned to ship. Its identifier is the version. It holds
+  which outcomes a version is planned to carry and the repair packages it carries, and it may
+  carry completed work orders from a work package that is not complete (operator, 2026-11-03:
+  *"c - it is possible that a release package includes some completed work orders from a work
+  package without completing the whole package, this is the decoupling we were working
+  towards."*). It is mutable while a target. The ledger's release record is the shipped claim.
+- **The input sets the release.** New construction and a remodel go to a Release Package, as a
+  minor. A repair and a refactor go to a patch.
+- **The ledger** records what happened, and **the backlog board** is a view of it, never edited.
+
+Text that disagrees on the release:
+
+- `templates/release_package.md` advances REQ states with `REQ-C0000` and `WP-0000` grammars
+  (D C7).
+- `adr-lifecycle.md:253` tags a release by the highest validated feature ADR (D C33).
+- The 2026-10-05 ladder's *block* for the release was never withdrawn from the program page or
+  the pool ADR (lineage row 12) (T14).
+
+Canon already rules all three, and each has an owner in the drydock (read 2026-11-22):
+
+- The template retires under RP-4 ruling 7: *"the package is a catalog record, not a document"*
+  (`harbor-ro4-release.md:30`).
+- The release-tag rule goes with RP-4 tranche 4, which retires the ADR-as-carrier text in
+  `adr-lifecycle.md:227-277` (`harbor-ro4-release.md:44`).
+- *Block* goes with RP-6 item 2, which corrects *"release → block"* in the ladder records
+  (`harbor-ro6-canon-retirement.md:12, 44`). RP-6 leaves the pool ADR as is, because a pool entry
+  is an intention (`:17`); that pool ADR is T14's.
+
+All three are open because the owning work has not landed: *"Nothing of RO-4 has landed"*
+(`harbor-ro4-release.md:56`).
+
 The successions it rests on (lineage rows 56 and 57; operator, 2026-11-03: *"work package is the
 mADR successor, the WO is the OBPI successor"*; *"A wins because you elevate the feature pack to
 "epic" and keep the WP (mADR) as a story"*).
@@ -112,6 +149,53 @@ TASK**. `IDENTITY_MODELS` holds five, adding `EV`. The `gz validate --id-seam` w
 those kinds, so at least nine drydock parse sites have none. The grammars live in three homes:
 `core/models.py`, `models/catalog.py` and `events.py`. Folding them into one seam is sized at
 about nine new kinds, nine grammar constants and six mint functions (E § 3a) (T9).
+
+### 2.1 How a REQ relates to its place in the catalog (review called for in W2)
+
+Read 2026-11-22 against the requirements model and `src/gzkit/models/catalog.py`, whole.
+
+Canon: a catalog REQ is a member of exactly one outcome. The outcome sits in one capability, and
+the capability in one family. The REQ's id is area-free (`REQ-1207`), so its place is the
+`member_of` field and never the id. A work package draws REQs from any outcomes (amended
+2026-11-03), and the order binds REQs to tasks.
+
+Code, against that:
+
+1. **The chain above the outcome is a string, not a record.** `member_of` names an outcome code.
+   The capability exists only as that code's prefix, because no capability store is built. The
+   family is a one-letter field (`Family.code`, pattern `^[A-Z]$`, *"The family's one letter"*).
+   Nothing checks that `SES1` exists or that `SES` is a family.
+2. **The outcome pattern takes any depth**, so `member_of` accepts `H1` (a capability's shape) or
+   `H1.4.2` (four levels).
+3. **A delivery package names one outcome.** `WorkPackage.outcome` is a single code, the
+   2026-10-30 reading (*"one dated attempt to deliver one outcome"*). The 2026-11-03 amendment
+   says a work package draws REQs from any outcomes.
+4. **The order holds no REQs.** The REQ-to-task binding the level table gives the order lives
+   only in its `frozen` event (ruling 46, thin record). The R&D ruled the order *"a real record
+   with an id, an ordered task list, its REQ bindings"* (C 18). No task event can name an order
+   (E C4).
+5. **A repair REQ sits on the package, not the order.** `RepairReq.held_on` is a `WP-` id, and
+   its only catalog link is an optional `aligns_to` a catalog REQ.
+6. **Two other REQ forms place themselves by id.** The legacy `REQ-<semver>-NN-NN` encodes its
+   ADR and OBPI. `REQ-C<n>` (executive decision 1, 2026-10-16) is still kept as design input
+   (T35).
+7. **The construction side has no orders yet, by ruling.** A delivery package holds no orders and
+   keeps the five package states until RP-14 moves construction onto the order (RP-12 rulings 2,
+   44 and 103). Until then a construction REQ has no order to bind it, so the level table's Order
+   row is built for repair only.
+8. **Stale docstrings in the same file**: *"task cards"* (`procedure`), *"Drydock names such as
+   `RO-9`"* (`aliases`), *"its family letter"* (`OUTCOME_CODE_PATTERN`).
+
+**Owners, read 2026-11-22.**
+
+- RP-11 (`harbor-ro11-intake.md`, rulings 3 to 7, tranches 1 to 3) owns items 1 and 2: the
+  three-letter re-code, the exact three-level pattern
+  `^[A-Z]{3}[1-9][0-9]*\.[1-9][0-9]*$`, the capability records and the outcome's `source` and
+  `modules`. Its tranche 1 does not list the seed shipped to adopters,
+  `src/gzkit/catalog_seed.json`, which holds the single letters too: a gap in RP-11's scope.
+- RP-5 ruling 7 owns the outcome's `withdrawn`.
+- RP-14 owns the derived `validated` (RP-12 ruling 78).
+- `member_of` is held to an existing outcome by `catalog_edges.py:186`.
 
 ## 3. Drydock records
 
@@ -443,11 +527,95 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T33 | The ADR and pool identifiers: `ADR-[0-9]{4,}-<slug>`, `ADR-pool.<slug>` against `ADR-0.2.0-pool.<slug>` | ruled in RP-6, not applied |
 | T34 | The legacy vocabularies (ADR and OBPI states, undo verbs, REQ kinds and their checks): reconcile them now, or freeze them as legacy with their contradictions owned by RP-6 and RP-14 | 40 contradictions in D |
 | T35 | `REQ-C<n>` (executive decision 1, 2026-10-16) against `REQ-<n>`, and the *"no separate document"* rulings against the feature package (G 23, 24) | silent |
+| T36 | The Release Package's identifier, and the `RP` collision: *repair package* and *Release Package* both abbreviate to RP. The contract's own diagram already labels the Release Package node `RP` (`harbor-pilotage-candidate-2026-10-15.md:116`). The operator, 2026-11-22: releases are *"where we DO use semver so it would likely NOT be RP but rather use something like gzkit (or GZ-) maj.min.patch-slug"* | the version is the identity (requirements model); the template mints `RELEASE-{{version}}` |
+| T38 | One repair discipline in every condition: drydock, safe mode and line GHI work all run as repair package → repair order → FIX + task (operator, 2026-11-22: *"this discipline works for dry dock, safe mode and "normal" GHI work I would imagine"*). What differs by condition: the epic (a return to service package only when the marker is open), whether one GHI is a package of one order, and Gate 5 on a line order | line GHI work leaves one `fix(…): (GHI #N)` commit and no record |
+| T39 | Gate 5 on a line repair order, against `AGENTS.md` § Attestation's *"a GHI needs no completion attestation"* | line GHIs close on a reviewer subagent |
+| T37 | Numbered rulings on each package's specification page (RP-12 holds 205, RP-11 holds 11), cited as *"RP-11 ruling 4"*: a fourth id family, scoped by page, never in the store or the identity seam | prose only |
 
 ## 9. Rulings
 
-None yet. Each ruling is recorded here with its question, the options put and the operator's
-verbatim words, as it is made.
+Each ruling is recorded here with its question, the options put and the operator's verbatim
+words, as it is made. Rulings made during the walk-through are numbered W1 onward. T1 to T35 are
+put after it.
+
+- **W1 (2026-11-22, step 1).** The question: what happens to the three surfaces that disagree on
+  the release (the template, `adr-lifecycle.md`'s release-tag rule, *block*)? Two options were
+  put: leave them with their owners, RP-4 ruling 7, RP-4 tranche 4 and RP-6 item 2 (recommended),
+  or fix them ahead of RP-4's sequence. Operator: *"agreed, leave them with their owners"*.
+- **W2 (2026-11-22, step 2b).** The operator confirmed the catalog and ADR identifiers, and called
+  for two reviews. Verbatim: *"family, those single letters are superseded. capability, yes.
+  outcome, yes. REQ - yes. but how does a REQ relate to its place in the catalog? there seems to
+  be drift here. We need review. ADR - yes."* On the identity seam: *"this is insane and all over
+  the place (looks like terrible drift to me)"*. The REQ review is § 2.1. The seam is T9, carried
+  with the operator's reading of it as drift.
+- **W3 (2026-11-22, disentangling link 2).** The question: where does a catalog record's parent
+  link live, given decision 2's *"Codes are never derived into parentage: the catalog holds the
+  relationships, and a code's spelling proves nothing"* and the family lookup's `o.code[0]`
+  (`trust_audits/catalog.py:121`)? Three options were put:
+  - A: a field on each record. The capability carries `family`, the outcome carries
+    `capability`, and a validator holds each parent to a record and the code to its parent.
+    Recommended.
+  - B: the code is the link, which reverses decision 2.
+  - C: membership lists on the parent.
+
+  Operator: *"A, a field on each record"*. RP-11's tranches 1 and 2 (the re-code and the
+  capability records) are where it lands. Neither names the field today, so this is a change to
+  RP-11's scope, routed with T10.
+- **W4 (2026-11-22, direction).** On being shown that a package's specification page divides its
+  work by numbered rulings, tranches and acts, the operator said, verbatim: *"those rulings are
+  not good. We should have Repair Package, that contains Repair Orders. Repair Orders can then
+  have tasks (and perhaps repair REQs?). Let's get that clear first"*.
+- **W5 (2026-11-22, direction).** Shown how the drydock's work came to live in page prose, the
+  operator said, verbatim: *"we are in safe mode, we need to (other than spent ledgers), "nuke
+  the planet from orbit, it's the only way to be sure"-level repair here. This vibe coding is very,
+  very poisonous and destructive. Agents kept vibe coding this because we allowed it and an
+  agent's "copy cat" tendencies are very, very strong and certain."* and *"Let's get this
+  repair-side hierarchy down first before we worry about an 8-step rectification plan."* The repair
+  is total: everything except the spent ledger. The repair-side hierarchy is settled first.
+- **W6 (2026-11-22, the repair hierarchy).** The hierarchy as the operator stated it: a repair
+  package contains repair orders, and a repair order contains its tasks. The question put was
+  where the repair requirement lives:
+  - A: in its repair order. Recommended.
+  - B: on the package, as built under RP-12 ruling 45.
+  - C: both.
+
+  Shown that A mirrors the construction side's work while a catalog REQ lives in the catalog,
+  the operator named a new concept. Verbatim: *"okay, then we need a new concept, how about
+  FIX?"*, and, confirming the agent's reading (*FIX as the repair requirement, its own `FIX-<n>`
+  series, living in the repair order, sharing the base requirement's shape and proof path*):
+  *"yes, that's the concept ==> fix is the repair requirement, otherwise, we have a bad name and
+  semantic collision."* This reverses RP-12 ruling 45's one shared `REQ-<n>` sequence.
+  `REQ` names a catalog requirement only.
+- **W7 (2026-11-22, FIX question 1).** The question: does a FIX belong to exactly one repair order,
+  and what becomes of it under each Gate 5 outcome? Three options were put:
+  - A: one order at a time. On proceed it holds. On redirect it moves to the superseding order by
+    a ledger event and is re-frozen there. On pause it stays. On terminate it is withdrawn with
+    the order, the GHI stays open, and a new attempt writes a new FIX that may `supersedes` it.
+    Recommended.
+  - B: terminate returns it to the package unbound, as ruling 30 reads today.
+  - C: bound by several orders over its life.
+
+  Operator: *"A, one order at a time"*. This amends RP-12 ruling 30's terminate clause (*"its REQ
+  returns to the package unbound"*). *Amended by W8*: on a redirect no FIX moves.
+- **W8 (2026-11-22, FIX identity).** The operator, verbatim: *"a fix is unique to the RP/RO it
+  lives within (we may find ourselves fixing something again in the future)."* So a FIX lives in
+  one package and one order for its whole life and is never reused, and a later repair of the
+  same thing is a new FIX carrying a `repeats` link to the earlier one, distinct from
+  `supersedes`. The question put, on the tension with W7's redirect clause:
+  - A: a redirect writes new FIXes in the superseding order, each `supersedes` its counterpart,
+    and the redirected order's FIXes close with it as superseded. Recommended.
+  - B: keep W7's move, unique to the package only.
+
+  Operator: *"A, a redirect writes new FIXes (the referene chains will help with traceability and
+  analyses)"*.
+- **W9 (2026-11-22, FIX question 2).** The question: how do GHIs and FIXes relate? Three options
+  were put:
+  - A: one GHI yields many FIXes; each FIX answers exactly one GHI, which its package carries;
+    a recurrence is a new GHI and a new FIX with `repeats`. Recommended.
+  - B: a FIX may answer several GHIs.
+  - C: one GHI, one FIX.
+
+  Operator: *"A"*.
 
 ## 10. The gathering, closed
 
