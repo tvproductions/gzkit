@@ -1154,7 +1154,7 @@
     {
       "file": "features/steps/acceptance_recovery_steps.py",
       "rule": "EM101",
-      "count": 2
+      "count": 1
     },
     {
       "file": "features/steps/acceptance_recovery_steps.py",

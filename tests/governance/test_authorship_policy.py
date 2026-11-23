@@ -20,11 +20,15 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest import mock
 
 from gzkit.config import GzkitConfig
 from gzkit.governance.trust_audits.authorship import audit_authorship, evaluate_authorship
 from tests.commands.common import _isolated_git_env
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
@@ -133,7 +137,7 @@ class DeclaredPolicyReachesTheAudit(unittest.TestCase):
 _SUFFIX = "@users.noreply.github.com"
 
 
-def _identity_free_env() -> dict[str, str]:
+def _identity_free_env(base: Mapping[str, str]) -> dict[str, str]:
     """Return a git environment carrying no inherited author or committer identity.
 
     `_isolated_git_env` keeps `GIT_AUTHOR_*` / `GIT_COMMITTER_*` on purpose; a
@@ -144,12 +148,13 @@ def _identity_free_env() -> dict[str, str]:
     """
     return {
         key: value
-        for key, value in _isolated_git_env().items()
+        for key, value in base.items()
         if not key.startswith(("GIT_AUTHOR_", "GIT_COMMITTER_"))
     }
 
 
 def _git(args: list[str], cwd: Path, *, check: bool = True) -> subprocess.CompletedProcess[str]:
+    env = _identity_free_env(_isolated_git_env())
     return subprocess.run(  # noqa: S603 — git argv this test builds
         ["git", *args],
         cwd=cwd,
@@ -158,7 +163,7 @@ def _git(args: list[str], cwd: Path, *, check: bool = True) -> subprocess.Comple
         text=True,
         encoding="utf-8",
         errors="replace",
-        env=_identity_free_env(),
+        env=env,
     )
 
 
@@ -197,7 +202,9 @@ class TheIdentityACommitStampsIsTheOneJudged(unittest.TestCase):
     """
 
     def _audit(self, root: Path, **env: str) -> list[str]:
-        with mock.patch.dict(os.environ, {**_identity_free_env(), **env}, clear=True):
+        with mock.patch.dict(
+            os.environ, {**_identity_free_env(_isolated_git_env()), **env}, clear=True
+        ):
             return [error.artifact for error in audit_authorship(root)]
 
     def test_a_compliant_identity_passes(self) -> None:
@@ -220,7 +227,7 @@ class TheIdentityACommitStampsIsTheOneJudged(unittest.TestCase):
             root = _compliant_repo(tmp)
             with mock.patch.dict(
                 os.environ,
-                {**_identity_free_env(), "GIT_AUTHOR_EMAIL": "a@example.com"},
+                {**_identity_free_env(_isolated_git_env()), "GIT_AUTHOR_EMAIL": "a@example.com"},
                 clear=True,
             ):
                 (error,) = audit_authorship(root)

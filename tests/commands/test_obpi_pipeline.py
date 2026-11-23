@@ -27,8 +27,11 @@ _UNITTEST_STEP = (
 )
 
 
-class TestObpiPipelineCommand(unittest.TestCase):
-    """Tests for the OBPI pipeline runtime command surface."""
+class ObpiPipelineFixtures:
+    """Seeds the project, ADR, OBPI, receipt and ledger state a pipeline launch reads.
+
+    Mixed into each pipeline test class, so the helpers share one type.
+    """
 
     @staticmethod
     def _load_json(path: Path) -> dict[str, str]:
@@ -149,6 +152,10 @@ class TestObpiPipelineCommand(unittest.TestCase):
                 citation_delta_count=0,
             )
         )
+
+
+class TestObpiPipelineCommand(ObpiPipelineFixtures, unittest.TestCase):
+    """Tests for the OBPI pipeline runtime command surface."""
 
     @covers("REQ-0.13.0-02-01")
     def test_full_launch_accepts_short_id_and_creates_markers(self) -> None:
@@ -748,18 +755,13 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertIn("already completed", result.output)
 
 
-class TestStageEntryServesProcedures(unittest.TestCase):
+class TestStageEntryServesProcedures(ObpiPipelineFixtures, unittest.TestCase):
     """OBPI-0.35.0-17: stage entry prints the served procedure's pointer; a missing one refuses."""
 
     @staticmethod
     def _one_line(output: str) -> str:
         # The console wraps long lines at the runner's width; the pointer is one line of text.
         return " ".join(output.split())
-
-    _seed_runtime = TestObpiPipelineCommand._seed_runtime
-    _seed_parent_adr = staticmethod(TestObpiPipelineCommand._seed_parent_adr)
-    _seed_obpi = staticmethod(TestObpiPipelineCommand._seed_obpi)
-    _pipeline_paths = staticmethod(TestObpiPipelineCommand._pipeline_paths)
 
     def test_full_launch_prints_stage_one_and_stage_two_pointers(self) -> None:
         runner = CliRunner()

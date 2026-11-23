@@ -552,10 +552,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         "--authorship",
         dest="check_authorship",
         action="store_true",
-        help=(
-            "Fail closed when the commit author or committer address violates the "
-            "declared authorship policy"
-        ),
+        help=("Fail closed when a commit author or committer breaks the authorship policy"),
     )
     p_validate.add_argument(
         "--utf8-prefix",

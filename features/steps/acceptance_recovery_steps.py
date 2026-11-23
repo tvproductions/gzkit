@@ -196,11 +196,12 @@ def interrupted_proof(context, newline):
     context.activation_observed = False
     with patch.object(witness, "_run", side_effect=interrupted):
         try:
-            _execute_proof(fixture.root, OBPI, str(specification))
+            _, valid = _execute_proof(fixture.root, OBPI, str(specification))
         except subprocess.TimeoutExpired:
-            pass
-        else:
-            raise AssertionError("Injected active-mutation interruption was not propagated")
+            # gz-mutation-witness 0.2 propagated the timeout; 0.3 records it as
+            # an inconclusive run. Either way the interruption must earn no credit.
+            valid = False
+        assert not valid, "an interrupted active mutation must not be credited"
     context.original_bytes = original
     context.proof_specification = specification
 
@@ -208,9 +209,13 @@ def interrupted_proof(context, newline):
 @then("no proof is recorded and the original source is restored exactly")
 def restored_without_credit(context):
     fixture = context.acceptance_fixture
-    assert context.activation_observed
-    assert (fixture.root / "src/engine.py").read_bytes() == context.original_bytes
-    assert load_history(fixture.root, OBPI).proofs == []
+    assert context.activation_observed, "the interruption was never injected"
+    assert (fixture.root / "src/engine.py").read_bytes() == context.original_bytes, (
+        "the active mutation was not restored byte-for-byte"
+    )
+    # 0.3 persists the interrupted run as an inconclusive record; it must be invalid.
+    credited = [proof for proof in load_history(fixture.root, OBPI).proofs if proof.valid]
+    assert credited == [], f"an interrupted run earned valid proof: {credited!r}"
 
 
 @then("a subsequent clean execution records valid proof")
@@ -218,8 +223,8 @@ def recovered_execution(context):
     fixture = context.acceptance_fixture
     _, successful = _execute_proof(fixture.root, OBPI, str(context.proof_specification))
     assert successful
-    assert len(load_history(fixture.root, OBPI).proofs) == 1
-    assert load_history(fixture.root, OBPI).proofs[0].valid
+    valid = [proof for proof in load_history(fixture.root, OBPI).proofs if proof.valid]
+    assert len(valid) == 1, f"expected one valid proof after recovery, got {len(valid)}"
 
 
 def _control(fixture, find, replace):
