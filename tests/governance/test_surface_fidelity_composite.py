@@ -19,6 +19,7 @@ import unittest
 from unittest.mock import patch
 
 from gzkit.core.validation_rules import ValidationError
+from gzkit.doc_coverage.flag_scanner import check_flag_doc_coverage, scan_command_flags
 from gzkit.governance.trust_audits import validate_surface_fidelity
 from gzkit.traceability import covers
 from tests.governance.common import QuietAdvisoriesMixin
@@ -196,16 +197,12 @@ class TestSurfaceFidelityComposite(QuietAdvisoriesMixin):
 
         `docs/user/manpages/validate.md` MUST document `--surface-fidelity`.
         """
-        manpage_path = _PROJECT_ROOT / "docs" / "user" / "manpages" / "validate.md"
-        self.assertTrue(manpage_path.is_file(), "validate.md manpage not found")
-
-        content = manpage_path.read_text(encoding="utf-8")
-
-        self.assertIn(
-            "--surface-fidelity",
-            content,
-            "validate.md must document --surface-fidelity flag",
+        flag = "--surface-fidelity"
+        self.assertIn(flag, scan_command_flags(_PROJECT_ROOT)["validate"])
+        gaps = check_flag_doc_coverage(
+            _PROJECT_ROOT / "docs" / "user" / "manpages", {"validate": [flag]}
         )
+        self.assertEqual(gaps, [], "validate.md must document --surface-fidelity flag")
 
 
 if __name__ == "__main__":

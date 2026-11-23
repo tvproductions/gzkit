@@ -35,6 +35,7 @@ import unittest
 from pathlib import Path
 from typing import Any
 
+from gzkit.doc_coverage.flag_scanner import check_flag_doc_coverage, scan_command_flags
 from gzkit.governance.trust_audits.complexity_thresholds import (
     BOOTSTRAP_MODE_NOTICE_PREFIX,
     validate_complexity_thresholds,
@@ -272,10 +273,13 @@ class CommandDocAndRunbook(unittest.TestCase):
 
     @covers("REQ-0.0.28-03-07")
     def test_command_doc_documents_flag(self) -> None:
-        path = _PROJECT_ROOT / "docs" / "user" / "manpages" / "validate.md"
-        self.assertTrue(path.is_file())
-        content = path.read_text(encoding="utf-8")
-        self.assertIn("--complexity-thresholds", content)
+        """The CLI audit's flag-coverage check finds the registered flag in its manpage."""
+        flag = "--complexity-thresholds"
+        self.assertIn(flag, scan_command_flags(_PROJECT_ROOT)["validate"])
+        gaps = check_flag_doc_coverage(
+            _PROJECT_ROOT / "docs" / "user" / "manpages", {"validate": [flag]}
+        )
+        self.assertEqual(gaps, [])
 
     @covers("REQ-0.0.28-03-07")
     def test_runbook_lists_complexity_thresholds_verb(self) -> None:

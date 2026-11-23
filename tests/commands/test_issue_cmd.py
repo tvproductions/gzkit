@@ -7,6 +7,7 @@ surface, and dry-run preview without contacting the live tracker.
 """
 
 import unittest
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from gzkit.cli import main
@@ -17,7 +18,7 @@ from gzkit.commands.issue_cmd import (
     derive_gzkit_version,
     validate_gzkit_surface_reference,
 )
-from gzkit.traceability import covers
+from gzkit.traceability import covers, scan_feature_tree
 from tests.commands.common import CliRunner
 
 
@@ -333,16 +334,19 @@ class TestBddScenarioReqTagCoverage(unittest.TestCase):
 
     @covers("REQ-0.0.23-04-10")
     def test_features_file_carries_required_scenario_tags(self) -> None:
-        from pathlib import Path
-
-        feature_path = Path(__file__).resolve().parents[2] / "features" / "issue_file.feature"
-        feature_text = feature_path.read_text(encoding="utf-8")
+        features_dir = Path(__file__).resolve().parents[2] / "features"
+        bound = {
+            record.target.identifier
+            for record in scan_feature_tree(features_dir)
+            if Path(record.source.location or "").name == "issue_file.feature"
+        }
         # The brief's behave-coverable REQs are 04, 05, 06.
         # (REQs 01/02 are doctrine; REQs 03/07/09 are unit-only; REQ 08/10 are
         # rule/test policy. The brief's STOP-on-BLOCKERS section names 04 as the
-        # canonical Heavy-lane Gate 4 tag.)
-        for tag in ("@REQ-0.0.23-04-04", "@REQ-0.0.23-04-05", "@REQ-0.0.23-04-06"):
-            self.assertIn(tag, feature_text, f"missing scenario tag: {tag}")
+        # canonical Heavy-lane Gate 4 tag.) Read through the scanner `gz covers`
+        # uses, so a tag that does not bind a scenario does not count.
+        for req in ("REQ-0.0.23-04-04", "REQ-0.0.23-04-05", "REQ-0.0.23-04-06"):
+            self.assertIn(req, bound, f"no issue_file.feature scenario covers {req}")
 
 
 if __name__ == "__main__":

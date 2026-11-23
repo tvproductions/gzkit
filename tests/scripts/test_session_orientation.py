@@ -18,7 +18,6 @@ import contextlib
 import importlib.util
 import io
 import json
-import re
 import subprocess
 import sys
 import tempfile
@@ -301,19 +300,29 @@ class TestCollectHandoff(unittest.TestCase):
 
     @covers("REQ-0.0.65-04-03")
     def test_orientation_source_has_no_dual_scan_markers(self):
-        """The GHI #529 dual-scan workaround is fully removed: the production
-        source references neither `docs/design/adr` nor the `GHI #529` marker."""
-        source = Path(self.mod.__file__).read_text(encoding="utf-8")
-        self.assertNotIn("docs/design/adr", source)
-        self.assertNotIn("GHI #529", source)
-        # The removed dual-scan built the path segment-by-segment
-        # (`repo_root / "docs" / "design" / "adr"`) and globbed `**/handoffs`;
-        # the contiguous check above misses the segmented form. Squeeze out
-        # quotes/whitespace/slashes so both the contiguous and segmented
-        # reconstructions collapse to the same fingerprint.
-        squeezed = re.sub(r'["\s/]', "", source)
-        self.assertNotIn("docsdesignadr", squeezed)
-        self.assertNotIn("**/handoffs", source)
+        """The GHI #529 dual-scan fallback is gone: an ADR-package handoff is never
+        surfaced, even when the canonical `.gzkit/handoffs/` holds nothing to report."""
+        for canonical_dir_exists in (False, True):
+            with (
+                self.subTest(canonical_dir_exists=canonical_dir_exists),
+                tempfile.TemporaryDirectory() as tmp,
+            ):
+                root = Path(tmp)
+                if canonical_dir_exists:
+                    (root / ".gzkit" / "handoffs").mkdir(parents=True)
+                adr_handoffs = (
+                    root / "docs" / "design" / "adr" / "foundation" / "ADR-0.0.63-x" / "handoffs"
+                )
+                adr_handoffs.mkdir(parents=True)
+                (adr_handoffs / "adr-handoff.md").write_text(
+                    self._handoff(
+                        (self.now - timedelta(hours=1)).isoformat(),
+                        "Off-surface ADR-package action",
+                        adr_id="ADR-0.0.63",
+                    ),
+                    encoding="utf-8",
+                )
+                self.assertIsNone(self.mod.collect_handoff(root, self.now))
 
 
 class TestCollectRemoteState(unittest.TestCase):

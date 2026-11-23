@@ -9499,7 +9499,7 @@
     {
       "file": "tests/commands/test_issue_cmd.py",
       "rule": "PLC0415",
-      "count": 4
+      "count": 3
     },
     {
       "file": "tests/commands/test_justify_cmd.py",

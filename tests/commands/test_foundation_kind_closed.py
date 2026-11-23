@@ -473,10 +473,22 @@ class TestFoundationKindClosedAtAuthoringTime(unittest.TestCase):
 
     @covers("REQ-0.34.0-02-03")
     def test_kind_enum_still_lists_foundation_seal_not_delete(self) -> None:
-        schema_path = Path("src/gzkit/schemas/adr.json")
-        schema = json.loads(schema_path.read_text(encoding="utf-8"))
-        kind_enum = schema["properties"]["frontmatter"]["properties"]["kind"]["enum"]
-        self.assertIn("foundation", kind_enum)
+        """The validator still admits ``kind: foundation``: sealed, not deleted."""
+
+        def kind_errors(kind: str) -> list[str]:
+            with TemporaryDirectory() as tmp:
+                adr_path = Path(tmp) / "ADR-0.0.99-demo.md"
+                adr_path.write_text(
+                    "---\nid: ADR-0.0.99-demo\nstatus: Proposed\nsemver: 0.0.99\nlane: lite\n"
+                    f"kind: {kind}\nparent: PRD-GZKIT-1.0.0\ndate: 2026-11-23\n---\n\n"
+                    "# ADR-0.0.99: Demo\n",
+                    encoding="utf-8",
+                )
+                errors = validate_document(adr_path, "adr")
+            return [error.message for error in errors if error.field == "kind"]
+
+        self.assertEqual(kind_errors("foundation"), [])
+        self.assertTrue(kind_errors("bogus"), "the kind field must still be a closed set")
 
     # --- REQ-0.34.0-02-04 (fence): closure did not widen to feature/pool ---
 

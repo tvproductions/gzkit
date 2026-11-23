@@ -16,6 +16,7 @@ from pathlib import Path
 from gzkit.ledger import Ledger
 from gzkit.ledger_events import adr_evaluation_event
 from gzkit.traceability import covers
+from gzkit.validate_pkg.ledger_check import validate_ledger
 
 
 class TestAdrEvaluationEventFactory(unittest.TestCase):
@@ -85,29 +86,48 @@ class TestAdrEvaluationEventFactory(unittest.TestCase):
         self.assertEqual(event.id, "ADR-0.0.26")
 
 
-_SCHEMA_PATH = Path(__file__).parent.parent.parent / "src" / "gzkit" / "schemas" / "ledger.json"
-
-
 class TestAdrEvaluationEventSchema(unittest.TestCase):
-    """Verify the ``adr-evaluation`` event type has a schema entry in ledger.json."""
+    """The ledger validator refuses an ``adr-evaluation`` row missing any required field."""
+
+    _REQUIRED = (
+        "artifact_id",
+        "artifact_type",
+        "dimensions",
+        "scores",
+        "weighted_total",
+        "red_team_challenges_fired",
+        "evaluator_persona",
+        "timestamp",
+    )
 
     @covers("REQ-0.0.26-01-03")
     def test_schema_has_required_fields(self) -> None:
-        schema = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
-        event_schema = schema["events"]["adr-evaluation"]
-        required_fields = {
-            "artifact_id",
-            "artifact_type",
-            "dimensions",
-            "scores",
-            "weighted_total",
-            "red_team_challenges_fired",
-            "evaluator_persona",
-            "timestamp",
+        event = adr_evaluation_event(
+            artifact_id="ADR-0.0.26",
+            artifact_type="ADR",
+            dimensions={"clarity": 3.0},
+            scores={"clarity": 0.6},
+            weighted_total=1.0,
+            red_team_challenges_fired=[],
+            evaluator_persona="gz-adr-evaluate",
+            timestamp="2026-05-03T10:00:00Z",
+        )
+        row = {
+            **event.model_dump(mode="json", exclude_none=True),
+            "ts": "2026-05-03T10:00:00+00:00",
         }
-        declared = set(event_schema.get("required", []))
-        missing = required_fields - declared
-        self.assertFalse(missing, f"Schema missing required fields: {missing}")
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger_path = Path(tmp) / "ledger.jsonl"
+            ledger_path.write_text(json.dumps(row) + "\n", encoding="utf-8")
+            self.assertEqual(validate_ledger(ledger_path), [])
+            for field in self._REQUIRED:
+                with self.subTest(field=field):
+                    partial = {key: value for key, value in row.items() if key != field}
+                    ledger_path.write_text(json.dumps(partial) + "\n", encoding="utf-8")
+                    messages = [error.message for error in validate_ledger(ledger_path)]
+                    self.assertTrue(
+                        any(f"missing required field: {field}" in m for m in messages), messages
+                    )
 
 
 class TestAdrEvaluationMultipleAppend(unittest.TestCase):

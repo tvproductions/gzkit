@@ -9,6 +9,7 @@ Covers REQ-0.34.0-01-03 (``FoundationGrandfatherManifest`` rejects a
 @covers REQ-0.34.0-01-04
 """
 
+import shutil
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -128,7 +129,7 @@ class TestGoldenFileTamperGuard(unittest.TestCase):
         """
         with TemporaryDirectory() as tmp:
             twin = Path(tmp) / "foundation_grandfather.json"
-            twin.write_text(GOLDEN_PATH.read_text(encoding="utf-8"), encoding="utf-8")
+            shutil.copyfile(GOLDEN_PATH, twin)
             self.assertFalse(manifest_diverges(twin, GOLDEN_PATH))
 
 

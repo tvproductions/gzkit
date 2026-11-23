@@ -22,6 +22,7 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from pydantic import ValidationError
 
@@ -143,8 +144,23 @@ class TestRunWithTimeout(unittest.TestCase):
 
     @covers("REQ-0.0.29-09-05")
     def test_no_subprocess_spawned(self) -> None:
-        source = Path("src/gzkit/complexity/advisor/timeout.py").read_text(encoding="utf-8")
-        self.assertNotIn("subprocess", source)
+        def slow() -> str:
+            time.sleep(10)
+            return "never"
+
+        refused = AssertionError("the timeout primitive spawned a process")
+        with (
+            patch("subprocess.Popen", side_effect=refused) as popen,
+            patch("os.system", side_effect=refused) as system,
+            patch("os.posix_spawn", side_effect=refused, create=True) as spawn,
+        ):
+            completed = run_with_timeout(lambda: 1, timeout_s=5.0, log_path=self.log_path)
+            timed_out = run_with_timeout(slow, timeout_s=0.2, log_path=self.log_path)
+        self.assertIsInstance(completed, TimeoutOk)
+        self.assertIsInstance(timed_out, TimeoutTimedOut)
+        popen.assert_not_called()
+        system.assert_not_called()
+        spawn.assert_not_called()
 
 
 class TestPrimitiveHonoursConfiguredTimeout(unittest.TestCase):
