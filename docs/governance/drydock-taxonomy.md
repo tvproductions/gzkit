@@ -746,6 +746,19 @@ put after it.
 
   Operator: *"A, a task under one REQ or FIX"*. By W17 the task's id is `TASK-<n>-<slug>`, and a
   commit carries `Task: TASK-<n>`. The legacy task forms stay frozen for past work.
+- **W23 (2026-11-22, disentangling link 8).** The question: construction has no orders until
+  RP-14 moves it from the OBPI to the work order (RP-12 ruling 2; RP-14 as amended 2026-11-03,
+  *"RO-14's migration really runs from OBPI to work order"*). Explained: construction is suspended
+  in safe mode, and the repair side's records come first. Two options were put: keep it with
+  RP-14, with W17 and W20 to W22 added to RP-14's scope (recommended), or move it earlier.
+  Operator: *"keep it with RP-14"*.
+- **W24 (2026-11-22, disentangling link 9; T35, first half).** The legacy
+  `REQ-<semver>-NN-NN` stays frozen under decision 2, and nothing was put on it. The question put:
+  do the 2026-10-16 *"WP-4 shapes"* stop standing as design input? Those are `REQ-C<n>`, one
+  `data/requirements_catalog.json` and feature areas. The contract's superseded section keeps
+  them standing (*"Standing from it: the WP-4 shapes as civil-rule design input"*), and the
+  requirements model replaced them on 2026-10-18. Operator: *"withdraw them"*. The contract's
+  sentence is amended under T10's route. The template's `REQ-C0000` goes with RP-4 (W1).
 
 ## 10. The gathering, closed
 
