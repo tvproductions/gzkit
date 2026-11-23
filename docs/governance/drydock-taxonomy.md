@@ -493,7 +493,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | # | Decision | Today |
 |---|---|---|
 | T1 | **Ruled W26: the table stays canon, and the constitution's tasking order is correct as written.** Keep § 1's four levels and names as canon, and amend the constitution's *Order* (*"a tasking order binds one work package"*) to them | canon since 2026-11-03; the constitution defines Order otherwise |
-| T2 | Package identifiers: one `WP-` series for both kinds, or the kind spelled in the id (`RP-` repair, `WP-` work); and what becomes of the legacy `WP-1` to `WP-16` | one `WP-` series (RO-5 ruling 6); the operator, 2026-11-22: *"I am happy for RP/RO and WP/WO"* |
+| T2 | **Ruled W29: `WP-` and `RP-`, each kind its own sequence.** Package identifiers: one `WP-` series for both kinds, or the kind spelled in the id (`RP-` repair, `WP-` work); and what becomes of the legacy `WP-1` to `WP-16` | one `WP-` series (RO-5 ruling 6); the operator, 2026-11-22: *"I am happy for RP/RO and WP/WO"* |
 | T3 | Order identifiers: one `ORD-` series, or the kind spelled (`RO-` repair, `WO-` work); whether *"a retired code is never reused"* binds work identifiers; and what becomes of the old `RO-n` and `WO-n` | one `ORD-` series (ruling 43); `RO-n` is RP-n's alias; `WO-n` retired |
 | T4 | The contract's `RP-0` to `RP-15`: records in the store, or short names resolving to records | prose; #1302 open |
 | T5 | Which repair orders are ledger records: RP-12's O1 to O9, the tranches of the other packages, and when O1 to O4's prose Gate 5s reach the ledger | prose until O9's carry (rulings 10, 165); the R&D ruled the order *"a real record"* |
@@ -804,6 +804,15 @@ put after it.
   - C: `errata`.
 
   Operator: *"a"*.
+- **W29 (2026-11-23, T2, package identifiers).** Two options were put:
+  - A: the kind spelled in the id, `WP-<n>-<slug>` for a work package and `RP-<n>-<slug>` for a
+    repair package, each kind with its own sequence. RP-0 to RP-15 keep their numbers as
+    records. `WP-01-astral-toolchain` becomes `RP-09-astral-toolchain`, with `WP-01` kept as its
+    alias and never reused, so the first work package is `WP-02`. The `kind` field must agree
+    with the prefix. Recommended.
+  - B: one `WP-` series, as RO-5 ruling 6 has it.
+
+  Operator: *"a"*. RO-5 ruling 6 is reversed. T2 is ruled.
 
 ## 10. The gathering, closed
 
