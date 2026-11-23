@@ -496,7 +496,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T2 | **Ruled W29: `WP-` and `RP-`, each kind its own sequence.** Package identifiers: one `WP-` series for both kinds, or the kind spelled in the id (`RP-` repair, `WP-` work); and what becomes of the legacy `WP-1` to `WP-16` | one `WP-` series (RO-5 ruling 6); the operator, 2026-11-22: *"I am happy for RP/RO and WP/WO"* |
 | T3 | **Ruled W30: `WO-nnnn-<slug>`, `RO-nnnn-<slug>`; four-digit minimum, six for `TASK-`.** Order identifiers: one `ORD-` series, or the kind spelled (`RO-` repair, `WO-` work); whether *"a retired code is never reused"* binds work identifiers; and what becomes of the old `RO-n` and `WO-n` | one `ORD-` series (ruling 43); `RO-n` is RP-n's alias; `WO-n` retired |
 | T4 | **Settled by W29: records.** The contract's `RP-0` to `RP-15`: records in the store, or short names resolving to records | prose; #1302 open |
-| T5 | Which repair orders are ledger records: RP-12's O1 to O9, the tranches of the other packages, and when O1 to O4's prose Gate 5s reach the ledger | prose until O9's carry (rulings 10, 165); the R&D ruled the order *"a real record"* |
+| T5 | **Ruled W31: every unit, past and open; past Gate 5s only on re-attestation.** Which repair orders are ledger records: RP-12's O1 to O9, the tranches of the other packages, and when O1 to O4's prose Gate 5s reach the ledger | prose until O9's carry (rulings 10, 165); the R&D ruled the order *"a real record"* |
 | T6 | The return to service package: its identifier, its record, the operator's act, and whether the drydock contract is that package | none; the doctrine calls the contract it, the contract does not |
 | T7 | The feature package's identifier | unnamed |
 | T8 | Family and outcome codes: apply the three-letter recode of 2026-10-30, with the depth rule, to the store, the pattern and the shipped seed | single letters in code, store and seed |
@@ -833,6 +833,17 @@ put after it.
     never-reused alias.
 
   T3 is ruled. T4 is settled by W29: RP-0 to RP-15 become records.
+- **W31 (2026-11-23, T5, which repair work becomes records).** The limit stated: no Gate 5 goes
+  on the ledger after the fact without the operator's words. Three options were put:
+  - A: every unit becomes a record now, past and open. Each past tranche and O-number is minted
+    as an `RO-nnnn` in its `RP-nnnn` with its commits as evidence. A past Gate 5 reaches the
+    ledger only on the operator's re-attestation citing the dated prose, and until then the order
+    is a discrepancy, as are RP-2's and RP-3's Gate-5-less closes. Open work (O5 to O9 and open
+    tranches) is minted before any more work is done. Ruling 165 is reversed. Recommended.
+  - B: only open work becomes records.
+  - C: keep ruling 165.
+
+  Operator: *"a"*. T5 is ruled.
 
 ## 10. The gathering, closed
 
