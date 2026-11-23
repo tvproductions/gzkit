@@ -511,7 +511,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T17 | **Settled by canon (2026-11-02, 2026-11-03); built under #1304.** Hangar and drydock: one depth as ruled 2026-11-02, or the two levels the marker field and the code keep; and the standby level | ruled one; built two |
 | T18 | **Ruled W41: the letters are the check levels; a visit is named by its subject.** Letters A to E (maintenance visits) against A to D (check levels) | both live |
 | T19 | **Ruled W42: the catalog absorbs the amendment; `AMD-` retires unbuilt.** The amendment (`AMD-`, ruled 2026-09-27) against the change ladder and the superseding REQ | never reconciled; `AMD-` was planned for an amendment ADR numbered `ADR-0.40.0` "as the queue stands" (`design-amendment.md:741`), never authored; the ledger's `ADR-0.40.0` is an unrelated ADR of 2026-03-28 |
-| T20 | The change ladder: four rungs or six; the supplement's record; whether a change order may change a contract row; the numbering of `CO-n` | canon four, code six |
+| T20 | **Ruled W43: a supplement is a new package record naming its parent; the rest settled by canon.** The change ladder: four rungs or six; the supplement's record; whether a change order may change a contract row; the numbering of `CO-n` | canon four, code six |
 | T21 | Control roles: the senses of tripwire and alarm (and dispatcher), which MEL entries are keyed on | the census's reading, unruled |
 | T22 | Positions, personas and dispatch roles: the mapping of each persona file to a position, the reviewer's name, the craftsman against `Implementer` | unmapped |
 | T23 | The construction side's one name (construction, catalog, delivery), and whether the maintenance visit is a third kind of package | three names; the store holds two kinds |
@@ -999,6 +999,25 @@ put after it.
   - C: leave it unreconciled until RP-4 and RP-6 land.
 
   Operator: *"A"*. T19 is ruled.
+- **W43 (2026-11-23, T20, the change ladder).** Three parts are settled by canon. *Four rungs*:
+  `harbor-ro5-work-packages.md` items 3 and 4 rule pen and ink, revision (W27), attachment and
+  supplement as the rungs, and alteration and departure from specification as a separate pair of
+  lists on the package, recorded on the same `work_package_changed` event; the code's six-valued
+  `WorkPackageRung` is RP-5's defect on T10's route. *A contract row*: *"A change order never changes
+  the contract"* (B1, DFARS 217.7103-6(b)); a row's text changes by contract amendment beside a
+  revision on the owning package, W35's pairing. *`CO-n`*: retired by W27. The open part, the
+  supplement's record, stood three ways: item 3, *"a new formal work package within the package"*;
+  the 2026-10-28 ruling, *"A change order that changes the frozen test opens a new work package, a
+  supplement"*; and `work_package_lifecycle.py:535-540`, which requires another work package the
+  store holds. Three options were put:
+  - A: a supplement is a new package record naming the package it supplements in a field (W3); the
+    opening package stays whole with its frozen test and evidence. Item 3's wording is corrected on
+    T10's route. Recommended.
+  - B: a new formal work package section inside the same record; the reopening ruling and the code
+    corrected.
+  - C: a section within the boundary, a new record on a reopening.
+
+  Operator: *"A (why is this important? are we being too pendantic?)"*. T20 is ruled.
 
 ## 10. The gathering, closed
 
