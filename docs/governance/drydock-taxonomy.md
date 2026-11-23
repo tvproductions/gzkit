@@ -759,6 +759,13 @@ put after it.
   them standing (*"Standing from it: the WP-4 shapes as civil-rule design input"*), and the
   requirements model replaced them on 2026-10-18. Operator: *"withdraw them"*. The contract's
   sentence is amended under T10's route. The template's `REQ-C0000` goes with RP-4 (W1).
+- **W25 (2026-11-22, observation on step 5).** Shown Gate 5 in eight places: the order (canon),
+  the charter (ADR and OBPI closeout only), the package close in code and RP-12 ruling 77, the
+  contract's exit item 9, the outcome in code, the constitution (*"which is return to service"*),
+  the unmarked corpus ruling of 2026-10-29, and the heavy-only OBPI contracts. The operator,
+  verbatim: *"those were all over the place, not good - we have no consistent canonical
+  manifestation of gate 5"*. This sharpens T12: Gate 5 needs one canonical definition, in the
+  charter, matching the order.
 
 ## 10. The gathering, closed
 
