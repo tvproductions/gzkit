@@ -506,7 +506,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T12 | **Ruled W36: Gate 5 at the order, defined once in the charter.** Gate 5's home: the order alone, or also the package close and the outcome; and the charter's closeout terms against the order's decisions | four homes in text and code |
 | T13 | **Ruled W37: nothing below the task; act only as a named position act.** Below the task: apply the retirement of *act* and *tranche*, or rule a named sub-unit | retired 2026-11-02 and still in use |
 | T14 | **Ruled W38: the ladder retired whole; the pool is intentions, not ADRs.** The 2026-10-05 ladder: retire the whole of it (EO, ECP, task card, block) and amend the program and the pool ADR; and whether the pool is ADRs or intentions | parts retired one by one; the pool ADR unamended |
-| T15 | "Work order" meaning a GHI: retire that sense, and name what a GHI is in the taxonomy | both senses live |
+| T15 | **Ruled W39: the GHI sense retired; a GHI carries a problem report.** "Work order" meaning a GHI: retire that sense, and name what a GHI is in the taxonomy | both senses live |
 | T16 | Squawk: one meaning (a GHI; a hangar visit on a reason; answered on the line) | three rulings |
 | T17 | Hangar and drydock: one depth as ruled 2026-11-02, or the two levels the marker field and the code keep; and the standby level | ruled one; built two |
 | T18 | Letters A to E (maintenance visits) against A to D (check levels) | both live |
@@ -933,6 +933,19 @@ put after it.
   - C: keep *change proposal*.
 
   Operator: *"A - and, i need a fresh handoff and git sync now"*. T14 is ruled.
+- **W39 (2026-11-23, T15, "work order" meaning a GHI).** The GHI sense lives in
+  `rnd-discipline.md:301` (*"a GHI is the work order and the receipt"*), the `ghi-author`
+  description and body, `ghi-close` and `chore-class-system.md` (lineage row 1, Aug–Oct); the order
+  sense in `rnd-discipline.md:432`, § 1 and W30. Three options were put:
+  - A: retire the GHI sense. *Work order* names only the order level (`WO-`, a work package's
+    order). A GHI is the carrier of a **problem report** (contractor kit B12: states recorded,
+    classified, resolved, closed; *GHI* and *write-up* kept), repaired by FIXes in a repair order
+    (W6, W9, W11). The surfaces carrying the old sense are corrected on T10's route (W35); the
+    meaning of *squawk* stays T16's. Recommended.
+  - B: keep both senses, told apart by context.
+  - C: retire the GHI sense and leave the GHI unnamed in the taxonomy.
+
+  Operator: *"A"*. T15 is ruled.
 
 ## 10. The gathering, closed
 
