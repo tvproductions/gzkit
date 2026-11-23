@@ -503,7 +503,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T9 | **Ruled W34: one domain module of identifier value objects, a correction under RP-2.** One identity seam: every identifier in §§ 2 to 4 resolves through it, with its witness | four kinds; three grammar homes |
 | T10 | **Ruled W35: one contract amendment and a revision per owning package.** The route for § 7.1's fifteen corrections: one contract amendment, change orders per package, or GHIs | unrouted |
 | T11 | **Ruled W14: the requirements model.** Where the ruled taxonomy lives as the one home, and what witnesses it | nowhere |
-| T12 | Gate 5's home: the order alone, or also the package close and the outcome; and the charter's closeout terms against the order's decisions | four homes in text and code |
+| T12 | **Ruled W36: Gate 5 at the order, defined once in the charter.** Gate 5's home: the order alone, or also the package close and the outcome; and the charter's closeout terms against the order's decisions | four homes in text and code |
 | T13 | Below the task: apply the retirement of *act* and *tranche*, or rule a named sub-unit | retired 2026-11-02 and still in use |
 | T14 | The 2026-10-05 ladder: retire the whole of it (EO, ECP, task card, block) and amend the program and the pool ADR; and whether the pool is ADRs or intentions | parts retired one by one; the pool ADR unamended |
 | T15 | "Work order" meaning a GHI: retire that sense, and name what a GHI is in the taxonomy | both senses live |
@@ -896,6 +896,21 @@ put after it.
   - C: a GHI per item.
 
   Operator: *"A"*. T10 is ruled. The execution plan follows the walk.
+- **W36 (2026-11-23, T12, one canonical Gate 5).** Shown that RP-12 rulings 76 and 77 agree: the
+  package close is an operator act with an attestor and no Gate 5 decision, and subagents are
+  refused. Three options were put:
+  - A: Gate 5 is defined once, in the charter, as the operator's attestation closing an order
+    (work or repair) with proceed, redirect, pause or terminate. The package close is a separate
+    operator act, and the leftover decision field goes. Return to service closes an RTS package
+    and the value attestation closes a feature package, each a named act and not Gate 5. ADR
+    and OBPI closeout terms are legacy until RP-14. The constitution's *"which is return to
+    service"* is corrected (U7), the 2026-10-29 corpus ruling is marked superseded, and the
+    heavy-only OBPI contracts are corrected (U12). Recommended.
+  - B: Gate 5 at both the order and the package close.
+  - C: Gate 5 at the package only.
+
+  Operator: *"A gate 5 came at obpi closeout/completion"*. That is A, with its lineage stated:
+  Gate 5 sat at OBPI completion, and the work order is the OBPI's successor. T12 is ruled.
 
 ## 10. The gathering, closed
 
