@@ -468,22 +468,22 @@ and no choice is put.
 
 ### 7.3 Defects found in flight, not taxonomy
 
-Each needs a GHI through `ghi-author`. None is filed yet.
+Filed 2026-11-22 through `ghi-author` on the operator's *"file them as GHIs first"*, each with its prior-art lookup; the issue number leads each row.
 
 | # | Defect | Evidence |
 |---|---|---|
-| X1 | `next_id` mints a work-package number from the store alone, so a number the ledger holds can be reissued | `work_package_store.py:31` against `order_store.py:43-44` (E C3) |
-| X2 | `gz chores propose-ghi` calls `gh issue create` directly, skipping `ghi-author`'s prior-art lookup | `chores_propose_ghi_cmd.py:91-109` (F C14) |
-| X3 | the audit report looks for `closeout/CLOSEOUT.md` (0 files), not `ADR-CLOSEOUT-FORM.md` (79 files) | `audit_cmd.py:124` (F C17) |
-| X4 | an ADR attested by audit receipt may derive Pending or Accepted, not Completed: free text overwrites `attestation_status` and the derivation matches three tokens (read, not run) | `ledger.py:1244-1250` (D C43) |
-| X5 | the closeout-ceremony skill names a state file, a folder layout and a runbook path that do not exist | the skill:105, 415; `references/folder-structure.md` (F C18 to C20) |
-| X6 | `gz wp attach` runs `gh issue edit`, which is not on the allowed list | `work_package_github.py:82` (F C11) |
-| X7 | the SingleDriver arm of ruling 175 is unreachable | `work_package_run.py:514-515` (B 4) |
-| X8 | `derive_obpi_semantics` never reads `superseded`, `parked` or `blocked_on_operator` | `obpi_lifecycle.py` (D C42) |
-| X9 | the charter links `config/governance_manifest.json`, which does not exist | `charter.md:119` |
-| X10 | RP-6's status, *"Nothing of RO-6 has landed"*, is stale against 190 `TASK-ro6-` commits | `harbor-ro6-canon-retirement.md` (C 13) |
-| X11 | requirements-model decision 1 (REQ grain) is missing; the numbering starts at 2 | `requirements-model.md` (D) |
-| X12 | the strict receipt regex rejects `arb-meta-receipt-bind-…` and `arb-red-…` ids the code mints | `step_reporter.py:21-25` (F C15) |
+| X1 | **#1351.** `next_id` mints a work-package number from the store alone, so a number the ledger holds can be reissued | `work_package_store.py:31` against `order_store.py:43-44` (E C3) |
+| X2 | **#1350 (operator question: OBPI-0.0.26-04 REQ 1 asserts the retired mechanism).** `gz chores propose-ghi` calls `gh issue create` directly, skipping `ghi-author`'s prior-art lookup | `chores_propose_ghi_cmd.py:91-109` (F C14) |
+| X3 | **#1345.** the audit report looks for `closeout/CLOSEOUT.md` (0 files), not `ADR-CLOSEOUT-FORM.md` (79 files) | `audit_cmd.py:124` (F C17) |
+| X4 | **#1352.** an ADR attested by audit receipt may derive Pending or Accepted, not Completed: free text overwrites `attestation_status` and the derivation matches three tokens (read, not run) | `ledger.py:1244-1250` (D C43) |
+| X5 | **#1346.** the closeout-ceremony skill names a state file, a folder layout and a runbook path that do not exist | the skill:105, 415; `references/folder-structure.md` (F C18 to C20) |
+| X6 | **#1349 (the rule's list, not the code; open ruling (11)).** `gz wp attach` runs `gh issue edit`, which is not on the allowed list | `work_package_github.py:82` (F C11) |
+| X7 | **#1353 (a conflict between rulings 175 and RP-14 ruling 9, for the operator).** the SingleDriver arm of ruling 175 is unreachable | `work_package_run.py:514-515` (B 4) |
+| X8 | **#1354.** `derive_obpi_semantics` never reads `superseded`, `parked` or `blocked_on_operator` | `obpi_lifecycle.py` (D C42) |
+| X9 | **filed as evidence on #1188, its duplicate.** the charter links `config/governance_manifest.json`, which does not exist | `charter.md:119` |
+| X10 | **Withdrawn 2026-11-22.** The draft said RP-6's status, *"Nothing of RO-6 has landed"*, is stale against 190 `TASK-ro6-` commits. The GHI drafting read showed 190 of 194 carry the free-text trailer `TASK-ro6-classic-adr` stamped on unrelated work, only 6 concern RP-6, and nothing of RP-6 has landed: the status is true (C 13 is wrong) | `harbor-ro6-canon-retirement.md` |
+| X11 | **#1347.** requirements-model decision 1 (REQ grain) is missing; the numbering starts at 2 | `requirements-model.md` (D) |
+| X12 | **#1348.** the strict receipt regex rejects `arb-meta-receipt-bind-…` and `arb-red-…` ids the code mints | `step_reporter.py:21-25` (F C15) |
 
 ## 8. Decisions for the operator
 
