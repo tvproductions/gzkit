@@ -505,7 +505,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T11 | **Ruled W14: the requirements model.** Where the ruled taxonomy lives as the one home, and what witnesses it | nowhere |
 | T12 | **Ruled W36: Gate 5 at the order, defined once in the charter.** Gate 5's home: the order alone, or also the package close and the outcome; and the charter's closeout terms against the order's decisions | four homes in text and code |
 | T13 | **Ruled W37: nothing below the task; act only as a named position act.** Below the task: apply the retirement of *act* and *tranche*, or rule a named sub-unit | retired 2026-11-02 and still in use |
-| T14 | The 2026-10-05 ladder: retire the whole of it (EO, ECP, task card, block) and amend the program and the pool ADR; and whether the pool is ADRs or intentions | parts retired one by one; the pool ADR unamended |
+| T14 | **Ruled W38: the ladder retired whole; the pool is intentions, not ADRs.** The 2026-10-05 ladder: retire the whole of it (EO, ECP, task card, block) and amend the program and the pool ADR; and whether the pool is ADRs or intentions | parts retired one by one; the pool ADR unamended |
 | T15 | "Work order" meaning a GHI: retire that sense, and name what a GHI is in the taxonomy | both senses live |
 | T16 | Squawk: one meaning (a GHI; a hangar visit on a reason; answered on the line) | three rulings |
 | T17 | Hangar and drydock: one depth as ruled 2026-11-02, or the two levels the marker field and the code keep; and the standby level | ruled one; built two |
@@ -921,6 +921,18 @@ put after it.
   - C: *act* kept as a sub-unit.
 
   Operator: *"A"*. T13 is ruled.
+- **W38 (2026-11-23, T14, the 2026-10-05 ladder and the pool).** *Engineering order* (U5), *task
+  card* (U6) and *block* (W1) are already settled. Three options were put:
+  - A: retire the whole ladder. `identifier-migration-program.md` becomes a dated record marked
+    superseded by the level table. `ADR-pool.identifier-ladder-migration` is withdrawn, its intent
+    fulfilled and replaced by this taxonomy. *Change proposal* and `ECP-` retire. A pool entry is
+    an intention, not an ADR, entering construction only through RP-11's pool door, and
+    `AGENTS.md`'s *"pool is an ADR kind"* is corrected. The pool's identifier and location are
+    T33. Recommended.
+  - B: retire the ladder and keep the pool as an ADR kind.
+  - C: keep *change proposal*.
+
+  Operator: *"A - and, i need a fresh handoff and git sync now"*. T14 is ruled.
 
 ## 10. The gathering, closed
 
