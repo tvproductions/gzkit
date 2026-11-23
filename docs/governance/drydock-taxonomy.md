@@ -481,7 +481,7 @@ Filed 2026-11-22 through `ghi-author` on the operator's *"file them as GHIs firs
 | X7 | **#1353 (a conflict between rulings 175 and RP-14 ruling 9, for the operator).** the SingleDriver arm of ruling 175 is unreachable | `work_package_run.py:514-515` (B 4) |
 | X8 | **#1354.** `derive_obpi_semantics` never reads `superseded`, `parked` or `blocked_on_operator` | `obpi_lifecycle.py` (D C42) |
 | X9 | **filed as evidence on #1188, its duplicate.** the charter links `config/governance_manifest.json`, which does not exist | `charter.md:119` |
-| X10 | **Withdrawn 2026-11-22.** The draft said RP-6's status, *"Nothing of RO-6 has landed"*, is stale against 190 `TASK-ro6-` commits. The GHI drafting read showed 190 of 194 carry the free-text trailer `TASK-ro6-classic-adr` stamped on unrelated work, only 6 concern RP-6, and nothing of RP-6 has landed: the status is true (C 13 is wrong) | `harbor-ro6-canon-retirement.md` |
+| X10 | **Withdrawn 2026-11-22; the narrower real defect filed as #1355 on the operator's *"A"*.** The draft said RP-6's status, *"Nothing of RO-6 has landed"*, is stale against 190 `TASK-ro6-` commits. The GHI drafting read showed 190 of 194 carry the free-text trailer `TASK-ro6-classic-adr` stamped on unrelated work, only 6 concern RP-6, and nothing of RP-6 has landed: the status is true (C 13 is wrong) | `harbor-ro6-canon-retirement.md` |
 | X11 | **#1347.** requirements-model decision 1 (REQ grain) is missing; the numbering starts at 2 | `requirements-model.md` (D) |
 | X12 | **#1348.** the strict receipt regex rejects `arb-meta-receipt-bind-…` and `arb-red-…` ids the code mints | `step_reporter.py:21-25` (F C15) |
 
