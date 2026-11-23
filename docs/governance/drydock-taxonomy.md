@@ -692,6 +692,25 @@ put after it.
   Operator: *"yes, one rule for every record id"*. This amends `REQ-<n>` (area-free, no slug) and
   W16 to carry a frozen slug. The prefixes themselves stay T2, T3 and T36. Short-form resolution
   is the identity seam's (T9).
+- **W18 (2026-11-22, FIX question 5).** The question: how is a FIX proved? Three options were
+  put:
+  - A: one path for REQ and FIX. `@covers` and the resolver accept both, the proof event (0 rows
+    today) is renamed to name either, such as `proof_recorded` with an `obligation` field, and a
+    FIX carries the same three kinds and rules. Recommended.
+  - B: keep `req_proof_recorded` for both.
+  - C: a separate FIX path.
+
+  Operator: *"A, one proof path for both"*.
+- **W19 (2026-11-22, FIX question 6).** C5 (2026-10-27) retired *fix cycle* for *rework* and
+  *buy-back*, and about 25 live uses remain in `src/gzkit`. The renaming put, applying C5:
+  - fix cycle → rework;
+  - the fix-cycle bound → the rework bound;
+  - the fix-cycle exit → the rework exit;
+  - the `fix_cycles` field → `reworks`.
+
+  Old ledger rows are read under their old field name, because the spent ledger is never
+  touched (W5). Operator: *"yes, confirm the renaming as listed"*. *Fix* now names the FIX
+  record and the ordinary-English `fix(…):` commit type only.
 
 ## 10. The gathering, closed
 
