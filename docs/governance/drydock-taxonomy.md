@@ -507,7 +507,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T13 | **Ruled W37: nothing below the task; act only as a named position act.** Below the task: apply the retirement of *act* and *tranche*, or rule a named sub-unit | retired 2026-11-02 and still in use |
 | T14 | **Ruled W38: the ladder retired whole; the pool is intentions, not ADRs.** The 2026-10-05 ladder: retire the whole of it (EO, ECP, task card, block) and amend the program and the pool ADR; and whether the pool is ADRs or intentions | parts retired one by one; the pool ADR unamended |
 | T15 | **Ruled W39: the GHI sense retired; a GHI carries a problem report.** "Work order" meaning a GHI: retire that sense, and name what a GHI is in the taxonomy | both senses live |
-| T16 | Squawk: one meaning (a GHI; a hangar visit on a reason; answered on the line) | three rulings |
+| T16 | **Ruled W40: a squawk is one reported discrepancy; the GHI is its write-up.** Squawk: one meaning (a GHI; a hangar visit on a reason; answered on the line) | three rulings |
 | T17 | Hangar and drydock: one depth as ruled 2026-11-02, or the two levels the marker field and the code keep; and the standby level | ruled one; built two |
 | T18 | Letters A to E (maintenance visits) against A to D (check levels) | both live |
 | T19 | The amendment (`AMD-`, ruled 2026-09-27) against the change ladder and the superseding REQ | never reconciled; ADR-0.40.0 carries `AMD-` |
@@ -946,6 +946,20 @@ put after it.
   - C: retire the GHI sense and leave the GHI unnamed in the taxonomy.
 
   Operator: *"A"*. T15 is ruled.
+- **W40 (2026-11-23, T16, squawk).** Three senses stood (lineage rows 7, 27, 49): the GHI itself
+  (2026-10-05; `maintenance-guide.md:99` widens it to *"GHI / ARB / insight"*); a hangar visit on a
+  reason (2026-10-17); and a discrepancy answered on the line (2026-11-02, the doctrine as amended
+  2026-11-03, `safe-mode-doctrine.md:15`). Row 49 never cited row 27. Three options were put:
+  - A: a squawk is **one reported discrepancy**, the on-demand kind of maintenance against the
+    scheduled A to D checks. Its write-up is the GHI, carrying the problem report (W39, B12); the
+    alarm test decides where it is answered, on the line by direct repair or out of service. Row 7
+    becomes *the GHI is the squawk's write-up*, its ARB and insight widening dropped; row 27 retires,
+    superseded by the one-depth ruling of 2026-11-02. Live surfaces carrying a retired sense are
+    corrected on T10's route (W35); the dated campaign plans are records and stand. Recommended.
+  - B: squawk is a synonym for the GHI; the other senses retire.
+  - C: retire *squawk*; *problem report* and *GHI* only.
+
+  Operator: *"A"*. T16 is ruled.
 
 ## 10. The gathering, closed
 
