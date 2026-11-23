@@ -501,7 +501,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T7 | **Ruled W33: `FP-nnnn-<slug>`.** The feature package's identifier | unnamed |
 | T8 | **Settled by W2 and RP-11 ruling 4; RP-11's, its scope widened under T10.** Family and outcome codes: apply the three-letter recode of 2026-10-30, with the depth rule, to the store, the pattern and the shipped seed | single letters in code, store and seed |
 | T9 | **Ruled W34: one domain module of identifier value objects, a correction under RP-2.** One identity seam: every identifier in §§ 2 to 4 resolves through it, with its witness | four kinds; three grammar homes |
-| T10 | The route for § 7.1's fifteen corrections: one contract amendment, change orders per package, or GHIs | unrouted |
+| T10 | **Ruled W35: one contract amendment and a revision per owning package.** The route for § 7.1's fifteen corrections: one contract amendment, change orders per package, or GHIs | unrouted |
 | T11 | **Ruled W14: the requirements model.** Where the ruled taxonomy lives as the one home, and what witnesses it | nowhere |
 | T12 | Gate 5's home: the order alone, or also the package close and the outcome; and the charter's closeout terms against the order's decisions | four homes in text and code |
 | T13 | Below the task: apply the retirement of *act* and *tranche*, or rule a named sub-unit | retired 2026-11-02 and still in use |
@@ -886,6 +886,16 @@ put after it.
   - no id grammar goes in config.
 
   Operator: *"yes, A in code, one domain module"*. T9 is ruled.
+- **W35 (2026-11-23, T10, the route).** What travels: the canon fold into the requirements model
+  (W14), the corrections U1 to U15, the scope changes to RP-2, RP-4, RP-6, RP-11, RP-12 and RP-14,
+  and the contract's own text. Three options were put:
+  - A: one contract amendment (the operator's act) adopting the walk's rulings as canon and
+    correcting the contract's text, plus a revision (W27's rung) on each owning package for its
+    new scope, with each U-correction assigned to the package that owns its text. Recommended.
+  - B: package revisions only.
+  - C: a GHI per item.
+
+  Operator: *"A"*. T10 is ruled. The execution plan follows the walk.
 
 ## 10. The gathering, closed
 
