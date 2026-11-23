@@ -494,8 +494,8 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 |---|---|---|
 | T1 | **Ruled W26: the table stays canon, and the constitution's tasking order is correct as written.** Keep § 1's four levels and names as canon, and amend the constitution's *Order* (*"a tasking order binds one work package"*) to them | canon since 2026-11-03; the constitution defines Order otherwise |
 | T2 | **Ruled W29: `WP-` and `RP-`, each kind its own sequence.** Package identifiers: one `WP-` series for both kinds, or the kind spelled in the id (`RP-` repair, `WP-` work); and what becomes of the legacy `WP-1` to `WP-16` | one `WP-` series (RO-5 ruling 6); the operator, 2026-11-22: *"I am happy for RP/RO and WP/WO"* |
-| T3 | Order identifiers: one `ORD-` series, or the kind spelled (`RO-` repair, `WO-` work); whether *"a retired code is never reused"* binds work identifiers; and what becomes of the old `RO-n` and `WO-n` | one `ORD-` series (ruling 43); `RO-n` is RP-n's alias; `WO-n` retired |
-| T4 | The contract's `RP-0` to `RP-15`: records in the store, or short names resolving to records | prose; #1302 open |
+| T3 | **Ruled W30: `WO-nnnn-<slug>`, `RO-nnnn-<slug>`; four-digit minimum, six for `TASK-`.** Order identifiers: one `ORD-` series, or the kind spelled (`RO-` repair, `WO-` work); whether *"a retired code is never reused"* binds work identifiers; and what becomes of the old `RO-n` and `WO-n` | one `ORD-` series (ruling 43); `RO-n` is RP-n's alias; `WO-n` retired |
+| T4 | **Settled by W29: records.** The contract's `RP-0` to `RP-15`: records in the store, or short names resolving to records | prose; #1302 open |
 | T5 | Which repair orders are ledger records: RP-12's O1 to O9, the tranches of the other packages, and when O1 to O4's prose Gate 5s reach the ledger | prose until O9's carry (rulings 10, 165); the R&D ruled the order *"a real record"* |
 | T6 | The return to service package: its identifier, its record, the operator's act, and whether the drydock contract is that package | none; the doctrine calls the contract it, the contract does not |
 | T7 | The feature package's identifier | unnamed |
@@ -813,6 +813,26 @@ put after it.
   - B: one `WP-` series, as RO-5 ruling 6 has it.
 
   Operator: *"a"*. RO-5 ruling 6 is reversed. T2 is ruled.
+- **W30 (2026-11-23, T3, order identifiers and id widths).** The agent first put
+  starting-number and series options. The operator: *"ID-nnnn-<slug>? what about that? we
+  already decided this earlier."* That was right: W17 ruled the shape, and RP-6 held ruling H5
+  (2026-11-08) ruled zero-padded minimum widths. Padded, a new id never matches an old bare name
+  (`RO-5`, `WO-3`, `WP-16`), so every sequence starts at `0001`. Asked *"i guess we run the risk
+  of exceeding the namepace this way?"*, the agent answered that the width is a minimum, so a
+  number grows past it. Measured: about 40 commits a day, so tasks would pass 9999 within
+  months. Three options were put:
+  - A: a four-digit minimum for every kind.
+  - B: a four-digit minimum, and six for tasks. Recommended.
+  - C: six for every kind.
+
+  Operator: *"b"*. So:
+  - work orders are `WO-nnnn-<slug>` and repair orders `RO-nnnn-<slug>`, each from `0001`, and
+    RP-12 ruling 43's single `ORD-` series is reversed;
+  - every record id is padded to at least four digits, and `TASK-` to at least six;
+  - under W29 the repair package becomes `RP-0009-astral-toolchain`, with `WP-0001` its
+    never-reused alias.
+
+  T3 is ruled. T4 is settled by W29: RP-0 to RP-15 become records.
 
 ## 10. The gathering, closed
 
