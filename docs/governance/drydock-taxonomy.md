@@ -796,6 +796,14 @@ put after it.
   Operator: *"c"*. The ladder is pen and ink, revision, attachment, supplement. `CO-n` retires,
   and each change becomes a ledger event on its package. The REQ counter's new name is still to
   be ruled, and `edition` was only an example.
+- **W28 (2026-11-23, the REQ's editorial counter).** The question: what replaces `revision` as
+  the name of the counter of editorial amendments (RP-12 ruling 31) on a REQ and a FIX? Three
+  options were put:
+  - A: `edits`, matching RP-5's `catalog edit` verb and `catalog_edited` event. Recommended.
+  - B: `edition`.
+  - C: `errata`.
+
+  Operator: *"a"*.
 
 ## 10. The gathering, closed
 
