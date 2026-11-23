@@ -504,7 +504,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T10 | **Ruled W35: one contract amendment and a revision per owning package.** The route for § 7.1's fifteen corrections: one contract amendment, change orders per package, or GHIs | unrouted |
 | T11 | **Ruled W14: the requirements model.** Where the ruled taxonomy lives as the one home, and what witnesses it | nowhere |
 | T12 | **Ruled W36: Gate 5 at the order, defined once in the charter.** Gate 5's home: the order alone, or also the package close and the outcome; and the charter's closeout terms against the order's decisions | four homes in text and code |
-| T13 | Below the task: apply the retirement of *act* and *tranche*, or rule a named sub-unit | retired 2026-11-02 and still in use |
+| T13 | **Ruled W37: nothing below the task; act only as a named position act.** Below the task: apply the retirement of *act* and *tranche*, or rule a named sub-unit | retired 2026-11-02 and still in use |
 | T14 | The 2026-10-05 ladder: retire the whole of it (EO, ECP, task card, block) and amend the program and the pool ADR; and whether the pool is ADRs or intentions | parts retired one by one; the pool ADR unamended |
 | T15 | "Work order" meaning a GHI: retire that sense, and name what a GHI is in the taxonomy | both senses live |
 | T16 | Squawk: one meaning (a GHI; a hangar visit on a reason; answered on the line) | three rulings |
@@ -911,6 +911,16 @@ put after it.
 
   Operator: *"A gate 5 came at obpi closeout/completion"*. That is A, with its lineage stated:
   Gate 5 sat at OBPI completion, and the work order is the OBPI's successor. T12 is ruled.
+- **W37 (2026-11-23, T13, below the task).** Three options were put:
+  - A: apply the 2026-11-02 retirement, so nothing sits below the task. *Tranche* retires
+    everywhere, the RP pages keeping it as dated history. *Act* survives only as a named act of a
+    position (initiation, commencement, stop work, return to service). The banner and doctrine say
+    *"every task is one commit with its `Task:` trailer"*. The maintenance record has one entry per
+    task, each `ENT-` naming its task, and larger work splits into more tasks (W22). Recommended.
+  - B: a named sub-unit, *step*.
+  - C: *act* kept as a sub-unit.
+
+  Operator: *"A"*. T13 is ruled.
 
 ## 10. The gathering, closed
 
