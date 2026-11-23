@@ -9774,7 +9774,7 @@
     {
       "file": "tests/commands/test_upgrade.py",
       "rule": "S110",
-      "count": 2
+      "count": 1
     },
     {
       "file": "tests/commands/test_upgrade_resources.py",

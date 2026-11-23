@@ -329,6 +329,7 @@ mismatched-sentinel-name = "error"
 missing-direct-dependency = "error"
 possibly-missing-attribute = "error"
 possibly-missing-import = "error"
+possibly-unresolved-reference = "error"
 unsupported-dynamic-base = "error"
 
 # behave ships no types and binds @given/@when/@then to placeholder objects a

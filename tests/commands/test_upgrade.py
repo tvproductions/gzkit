@@ -606,17 +606,11 @@ class TestUpgradeNoSideEffects(unittest.TestCase):
                 "gzkit.commands.upgrade._iter_canonical_surface_files",
                 return_value=[],
             ):
-                # If upgrade imports and calls any scaffold function, the patch
-                # below catches the call; we assert it was never called.
-                try:
-                    with patch(
-                        "gzkit.commands.upgrade.scaffold_core_skills",
-                        side_effect=AssertionError("scaffold_core_skills must not be called"),
-                    ):
-                        result = runner.invoke(main, ["upgrade"])
-                except Exception:
-                    # Patching a name that doesn't exist is fine at red phase
-                    pass
+                # upgrade imports scaffold_core_skills; the patch records any call,
+                # and CliRunner would swallow a raised side effect, so assert on it.
+                with patch("gzkit.commands.upgrade.scaffold_core_skills") as scaffold:
+                    result = runner.invoke(main, ["upgrade"])
+                scaffold.assert_not_called()
 
             # The real invariant: manifest unchanged (covered above).
             # Here we simply verify the command completes without a crash
