@@ -497,7 +497,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T3 | **Ruled W30: `WO-nnnn-<slug>`, `RO-nnnn-<slug>`; four-digit minimum, six for `TASK-`.** Order identifiers: one `ORD-` series, or the kind spelled (`RO-` repair, `WO-` work); whether *"a retired code is never reused"* binds work identifiers; and what becomes of the old `RO-n` and `WO-n` | one `ORD-` series (ruling 43); `RO-n` is RP-n's alias; `WO-n` retired |
 | T4 | **Settled by W29: records.** The contract's `RP-0` to `RP-15`: records in the store, or short names resolving to records | prose; #1302 open |
 | T5 | **Ruled W31: every unit, past and open; past Gate 5s only on re-attestation.** Which repair orders are ledger records: RP-12's O1 to O9, the tranches of the other packages, and when O1 to O4's prose Gate 5s reach the ledger | prose until O9's carry (rulings 10, 165); the R&D ruled the order *"a real record"* |
-| T6 | The return to service package: its identifier, its record, the operator's act, and whether the drydock contract is that package | none; the doctrine calls the contract it, the contract does not |
+| T6 | **Ruled W32: `RTS-nnnn-<slug>`, the contract its specification.** The return to service package: its identifier, its record, the operator's act, and whether the drydock contract is that package | none; the doctrine calls the contract it, the contract does not |
 | T7 | The feature package's identifier | unnamed |
 | T8 | Family and outcome codes: apply the three-letter recode of 2026-10-30, with the depth rule, to the store, the pattern and the shipped seed | single letters in code, store and seed |
 | T9 | One identity seam: every identifier in §§ 2 to 4 resolves through it, with its witness | four kinds; three grammar homes |
@@ -844,6 +844,19 @@ put after it.
   - C: keep ruling 165.
 
   Operator: *"a"*. T5 is ruled.
+- **W32 (2026-11-23, T6, the return to service package).** The doctrine already rules that every
+  opening of the flag has one (an incident's written from diagnosis, where the drydock contract is
+  that package; a scheduled check's generated from the level), and that return to service is the
+  operator's act at its close. Three options were put:
+  - A: a record `RTS-nnnn-<slug>`, one per opening of the flag, naming its specification (the
+    contract document, or the check level) and the repair packages it carries. `gz mx enter`
+    requires it (#1303). The operator's return-to-service words are its closing event, and the
+    flag closes on it. This drydock is `RTS-0001-harbor-pilotage`, carrying `RP-0000` to
+    `RP-0015`. Recommended.
+  - B: the contract document is the record.
+  - C: the MX session is the record.
+
+  Operator: *"A"*. T6 is ruled.
 
 ## 10. The gathering, closed
 
