@@ -510,7 +510,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T16 | **Ruled W40: a squawk is one reported discrepancy; the GHI is its write-up.** Squawk: one meaning (a GHI; a hangar visit on a reason; answered on the line) | three rulings |
 | T17 | **Settled by canon (2026-11-02, 2026-11-03); built under #1304.** Hangar and drydock: one depth as ruled 2026-11-02, or the two levels the marker field and the code keep; and the standby level | ruled one; built two |
 | T18 | **Ruled W41: the letters are the check levels; a visit is named by its subject.** Letters A to E (maintenance visits) against A to D (check levels) | both live |
-| T19 | The amendment (`AMD-`, ruled 2026-09-27) against the change ladder and the superseding REQ | never reconciled; ADR-0.40.0 carries `AMD-` |
+| T19 | **Ruled W42: the catalog absorbs the amendment; `AMD-` retires unbuilt.** The amendment (`AMD-`, ruled 2026-09-27) against the change ladder and the superseding REQ | never reconciled; `AMD-` was planned for an amendment ADR numbered `ADR-0.40.0` "as the queue stands" (`design-amendment.md:741`), never authored; the ledger's `ADR-0.40.0` is an unrelated ADR of 2026-03-28 |
 | T20 | The change ladder: four rungs or six; the supplement's record; whether a change order may change a contract row; the numbering of `CO-n` | canon four, code six |
 | T21 | Control roles: the senses of tripwire and alarm (and dispatcher), which MEL entries are keyed on | the census's reading, unruled |
 | T22 | Positions, personas and dispatch roles: the mapping of each persona file to a position, the reviewer's name, the craftsman against `Implementer` | unmapped |
@@ -981,6 +981,24 @@ put after it.
   - C: map the visits onto the check levels by letter.
 
   Operator: *"A"*. T18 is ruled.
+- **W42 (2026-11-23, T19, the amendment).** The design-amendment R&D (2026-09-27) ruled the old
+  REQ *"supersede[d] via ledger event"*, *"mark it, but not erase it"* (Q2), the ids `AMD-<semver>-NN`,
+  `REQ-<semver>-ANN-NN` and `TASK-<semver>-ANN-NN-NN`, and *"build it now and map to the catalog
+  later"* (Q10); none was built. Since then: requirements model § 12 (a change to the obligation
+  *"revises forward into a new REQ that supersedes the prior, and the prior REQ stays whole with its
+  evidence"*), W28 (`edits`), W27 (the package ladder), W16 and W17 (one id rule), W36 (Gate 5 at
+  the order). Three options were put:
+  - A: the catalog absorbs the amendment. A change to an obligation is a new REQ that `supersedes`
+    the prior, which stays whole with its evidence (Q2 in catalog form); wording only is an `edits`
+    bump; a package change is a ladder rung; the approving decision is Gate 5 at the order and
+    applicability comes from the release package. `AMD-`, `REQ-<semver>-ANN-NN` and
+    `TASK-<semver>-ANN-…` retire unbuilt, the catalog being Q10's mapping. The run's release
+    ride-along (Q1) and its Gate 5 acknowledgement of an amendment go to their owners, RP-4 and the
+    charter's Gate 5 (W36), on T10's route. Recommended.
+  - B: keep `AMD-<n>-<slug>` as its own record kind grouping the superseding REQs.
+  - C: leave it unreconciled until RP-4 and RP-6 land.
+
+  Operator: *"A"*. T19 is ruled.
 
 ## 10. The gathering, closed
 
