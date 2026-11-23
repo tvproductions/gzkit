@@ -782,8 +782,8 @@ put after it.
   - The constitution's § Terms "Order" becomes *Standing order* and *Tasking order*.
 
   Operator: *"this is the only one that needs discussion for possible removal: "Change order""*.
-  The agent takes A as ruled for the rest and asked the operator to confirm. T1 is ruled: the
-  level table stays canon.
+  The agent took that as A for the rest and asked the operator to confirm. Operator: *"yes,
+  confirm A for the rest"*. T1 is ruled: the level table stays canon. T31 is ruled for *order*.
 - **W27 (2026-11-23, the change order).** The rung's source is JFMM I-2.3.7's *revision*. It was
   renamed on 2026-10-26 (*"change order from dfars is worth mixing in"*; *"B avoids collision and
   fits"*) to avoid the REQ's `revision` field. Four options were put:
