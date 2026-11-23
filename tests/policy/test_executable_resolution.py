@@ -107,7 +107,9 @@ def _hook_scripts() -> Iterator[tuple[str, str]]:
     for module in HOOK_TEMPLATE_MODULES:
         for name, renderer in inspect.getmembers(module, inspect.isfunction):
             if renderer.__module__ == module.__name__ and name.endswith("_script"):
-                yield f"{module.__name__}.{name}", renderer()
+                script = renderer()
+                assert isinstance(script, str), f"{module.__name__}.{name} rendered no text"
+                yield f"{module.__name__}.{name}", script
 
 
 def _canonical_scripts() -> Iterator[Path]:
