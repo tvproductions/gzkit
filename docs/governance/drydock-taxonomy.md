@@ -736,6 +736,16 @@ put after it.
   - C: the record's list alone, with no baseline in the event.
 
   Operator: *"A"*. This reverses ruling 46's *"no REQ list"* and mirrors W13's FIXes.
+- **W22 (2026-11-22, disentangling link 7).** The question: how does a task bind? Asked
+  *"aren't tasks connected to a REQ or (now) a FIX?"*, the agent showed the whole hierarchy. Three
+  options were put:
+  - A: the task's parent is the one REQ or FIX it drives, and its start event records the order
+    it ran under, as a fact. A validator holds the REQ or FIX to that order's list. Recommended.
+  - B: the order as parent, the task naming one or more obligations.
+  - C: the obligation as parent, with the order derived.
+
+  Operator: *"A, a task under one REQ or FIX"*. By W17 the task's id is `TASK-<n>-<slug>`, and a
+  commit carries `Task: TASK-<n>`. The legacy task forms stay frozen for past work.
 
 ## 10. The gathering, closed
 
