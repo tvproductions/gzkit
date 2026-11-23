@@ -711,6 +711,31 @@ put after it.
   Old ledger rows are read under their old field name, because the spent ledger is never
   touched (W5). Operator: *"yes, confirm the renaming as listed"*. *Fix* now names the FIX
   record and the ordinary-English `fix(…):` commit type only.
+- **W20 (2026-11-22, disentangling link 5).** The question: a work package and its outcomes,
+  given § 12's *"drawing REQs from any outcomes"* against the code's single `outcome` field. Three
+  options were put:
+  - A: no field, the outcomes derived from the REQs its orders bind.
+  - B: a declared `outcomes` list set at initiation. An order binding a REQ outside it is refused,
+    and widening it is a change order. Recommended.
+  - C: keep one outcome.
+
+  Operator: *"B, a declared outcomes list at initiation"*. The operator then asked: *"so does the
+  catalog hold outcomes or requirements? I am confused"*.
+  Shown: the catalog holds both, as two levels of one tree. Outcomes are what is delivered and
+  what feature packages, work packages and Release Packages plan with. REQs are what must be
+  true, what work orders bind and `@covers` proves. They meet at the derived `validated`.
+  Operator: *"yes, that clears it up; go to link 6"*.
+- **W21 (2026-11-22, disentangling link 6).** The question: does a work order's record list the
+  REQs it binds? The R&D ruled the order *"a real record with … its REQ bindings"* (2026-11-02,
+  *"a"*), and RP-12 ruling 46 ruled it thin, with *"no REQ list"* (2026-11-05, *"b"*). Three
+  options were put:
+  - A: the record lists the REQ ids it binds, editable while `opened` and fixed at freeze. The
+    `frozen` event books each REQ at its revision, and a catalog REQ is bound by at most one open
+    order at a time. Recommended.
+  - B: keep ruling 46.
+  - C: the record's list alone, with no baseline in the event.
+
+  Operator: *"A"*. This reverses ruling 46's *"no REQ list"* and mirrors W13's FIXes.
 
 ## 10. The gathering, closed
 
