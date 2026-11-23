@@ -35,7 +35,7 @@ dependencies = [
     # source sensor that stdlib `ast` (Python-only) cannot be — gzkit is a
     # harness that runs on adopter codebases. Confined to the adapter in
     # src/gzkit/ontology/source.py per hexagonal-architecture.md.
-    "tree-sitter>=0.26",
+    "tree-sitter>=0.27",
     "tree-sitter-python>=0.25",
     # Stdlib-First named departures (ADR-0.0.27 § Decision; AGENTS.md
     # § STDLIB-FIRST DOCTRINE § "Existing dependencies inherit this rule").
@@ -51,7 +51,7 @@ dependencies = [
     # gz-mutation-witness is gzkit's former gzkit.mutation_witness; gz-mindload
     # is its former gzkit.complexity.cognitive. Both are stdlib plus Pydantic.
     "gz-mindload>=0.1.0",
-    "gz-mutation-witness>=0.2.0",
+    "gz-mutation-witness>=0.3.1",
 ]
 
 [project.scripts]
@@ -323,6 +323,8 @@ error-on-warning = true
 disjoint-cast = "error"
 division-by-zero = "error"
 invalid-legacy-positional-parameter = "error"
+mismatched-enum-name = "error"
+mismatched-namedtuple-name = "error"
 mismatched-sentinel-name = "error"
 missing-direct-dependency = "error"
 possibly-missing-attribute = "error"
@@ -388,7 +390,7 @@ dev = [
     # up, do not avoid hard work by clinging to older version of Ty." The 88
     # diagnostics 0.0.69 surfaced were latent defects the older release could not
     # see, so the checker moving is the signal to fix the code (GHI #789).
-    "ty>=0.0.107",
+    "ty>=0.0.109",
     # Pinned here rather than fetched via `uv run --with` (operator ruling
     # 2026-08-27, GHI #856). It backs the canonical "Tests pass" attestation
     # (`CANONICAL_STEP_COMMANDS["unittest"]`), and an ARB receipt is durable
