@@ -500,7 +500,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T6 | **Ruled W32: `RTS-nnnn-<slug>`, the contract its specification.** The return to service package: its identifier, its record, the operator's act, and whether the drydock contract is that package | none; the doctrine calls the contract it, the contract does not |
 | T7 | **Ruled W33: `FP-nnnn-<slug>`.** The feature package's identifier | unnamed |
 | T8 | **Settled by W2 and RP-11 ruling 4; RP-11's, its scope widened under T10.** Family and outcome codes: apply the three-letter recode of 2026-10-30, with the depth rule, to the store, the pattern and the shipped seed | single letters in code, store and seed |
-| T9 | One identity seam: every identifier in §§ 2 to 4 resolves through it, with its witness | four kinds; three grammar homes |
+| T9 | **Ruled W34: one domain module of identifier value objects, a correction under RP-2.** One identity seam: every identifier in §§ 2 to 4 resolves through it, with its witness | four kinds; three grammar homes |
 | T10 | The route for § 7.1's fifteen corrections: one contract amendment, change orders per package, or GHIs | unrouted |
 | T11 | **Ruled W14: the requirements model.** Where the ruled taxonomy lives as the one home, and what witnesses it | nowhere |
 | T12 | Gate 5's home: the order alone, or also the package close and the outcome; and the charter's closeout terms against the order's decisions | four homes in text and code |
@@ -866,6 +866,26 @@ put after it.
   Operator: *"A"*. T7 is ruled. T8 needs no question: canon rules it (W2, *"those single letters
   are superseded"*; RP-11 ruling 4) and RP-11 owns it, with the shipped seed and W3's parent
   fields added to RP-11's scope under T10.
+- **W34 (2026-11-23, T9, one identity seam).** RP-2 promised *"the keystone: one id-resolution
+  seam shared by every reader"* and is marked closed, while the seam knows four kinds over three
+  grammar homes. So this is a correction, owned by RP-2. Three options were put:
+  - A: one seam for every record kind, as a correction under RP-2 reopened as `RP-0002`.
+    Recommended.
+  - B: keep three homes and add a witness.
+  - C: a seam per family.
+
+  The operator agreed to A and asked: *"doesn't all of this belong in config? or, do we need the
+  grammar in code? if so, consolidatng into one package/module?"* Answered from the hexagonal
+  specification's ruled value-object rule (*"A rule about a value is a method on its type"*;
+  *"Raw strings with rules never enter the domain"*):
+  - grammar is a domain rule, so it lives in code, not in adopter-overridable configuration;
+  - there is one domain module of identifier value objects, one class per kind, each holding its
+    prefix, minimum width, slug rule, `create`, short-form resolution and numeric ordering;
+  - the table of kinds is derived from the classes;
+  - the requirements model lists the kinds, witnessed against the code;
+  - no id grammar goes in config.
+
+  Operator: *"yes, A in code, one domain module"*. T9 is ruled.
 
 ## 10. The gathering, closed
 
