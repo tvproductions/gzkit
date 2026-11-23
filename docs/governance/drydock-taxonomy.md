@@ -509,7 +509,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T15 | **Ruled W39: the GHI sense retired; a GHI carries a problem report.** "Work order" meaning a GHI: retire that sense, and name what a GHI is in the taxonomy | both senses live |
 | T16 | **Ruled W40: a squawk is one reported discrepancy; the GHI is its write-up.** Squawk: one meaning (a GHI; a hangar visit on a reason; answered on the line) | three rulings |
 | T17 | **Settled by canon (2026-11-02, 2026-11-03); built under #1304.** Hangar and drydock: one depth as ruled 2026-11-02, or the two levels the marker field and the code keep; and the standby level | ruled one; built two |
-| T18 | Letters A to E (maintenance visits) against A to D (check levels) | both live |
+| T18 | **Ruled W41: the letters are the check levels; a visit is named by its subject.** Letters A to E (maintenance visits) against A to D (check levels) | both live |
 | T19 | The amendment (`AMD-`, ruled 2026-09-27) against the change ladder and the superseding REQ | never reconciled; ADR-0.40.0 carries `AMD-` |
 | T20 | The change ladder: four rungs or six; the supplement's record; whether a change order may change a contract row; the numbering of `CO-n` | canon four, code six |
 | T21 | Control roles: the senses of tripwire and alarm (and dispatcher), which MEL entries are keyed on | the census's reading, unruled |
@@ -966,6 +966,21 @@ put after it.
   disassembly and disconnection"*; `safe-mode-doctrine.md` § Out of service and the four levels).
   The two levels the marker, `--level`/`--mode` and the banners keep (*"Safe mode opened"* beside
   *"MX session opened"*) are the defect #1304 owns, its boundary covering every reader and banner.
+- **W41 (2026-11-23, T18, the letters A to E against A to D).** The visits A to E of 2026-10-10
+  (`renewing-vows/maintenance-visit-advice.md` § Advice 2: the light check, the debt check, the
+  mining visit, the conformance sweep, control-surface coherence; *"the operator's label, not a term
+  with a source"*) and the check levels A to D of 2026-11-02/03 (`repair-work-organization.md:343`,
+  *"yes, adopt the four levels"*) share letters, neither citing the other, and their contents do not
+  align. Three options were put:
+  - A: the letters A to D name the check levels only. The visit letters retire; a packaged group of
+    chores is a **visit**, a phase of a check at its level (*"a check may be phased into smaller
+    visits"*), named by its subject, never by a letter. The dated citations of *"maintenance visit
+    A 2026-10-10"* (`memory-hygiene/CHORE.md:86`, `check_memory_drift.py:45`) are records and
+    stand. Each chore's level is the census's classification. Recommended.
+  - B: keep the visits under their own ids (`V1` to `V5`) beside the check levels.
+  - C: map the visits onto the check levels by letter.
+
+  Operator: *"A"*. T18 is ruled.
 
 ## 10. The gathering, closed
 
