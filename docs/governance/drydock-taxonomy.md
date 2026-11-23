@@ -498,8 +498,8 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T4 | **Settled by W29: records.** The contract's `RP-0` to `RP-15`: records in the store, or short names resolving to records | prose; #1302 open |
 | T5 | **Ruled W31: every unit, past and open; past Gate 5s only on re-attestation.** Which repair orders are ledger records: RP-12's O1 to O9, the tranches of the other packages, and when O1 to O4's prose Gate 5s reach the ledger | prose until O9's carry (rulings 10, 165); the R&D ruled the order *"a real record"* |
 | T6 | **Ruled W32: `RTS-nnnn-<slug>`, the contract its specification.** The return to service package: its identifier, its record, the operator's act, and whether the drydock contract is that package | none; the doctrine calls the contract it, the contract does not |
-| T7 | The feature package's identifier | unnamed |
-| T8 | Family and outcome codes: apply the three-letter recode of 2026-10-30, with the depth rule, to the store, the pattern and the shipped seed | single letters in code, store and seed |
+| T7 | **Ruled W33: `FP-nnnn-<slug>`.** The feature package's identifier | unnamed |
+| T8 | **Settled by W2 and RP-11 ruling 4; RP-11's, its scope widened under T10.** Family and outcome codes: apply the three-letter recode of 2026-10-30, with the depth rule, to the store, the pattern and the shipped seed | single letters in code, store and seed |
 | T9 | One identity seam: every identifier in §§ 2 to 4 resolves through it, with its witness | four kinds; three grammar homes |
 | T10 | The route for § 7.1's fifteen corrections: one contract amendment, change orders per package, or GHIs | unrouted |
 | T11 | **Ruled W14: the requirements model.** Where the ruled taxonomy lives as the one home, and what witnesses it | nowhere |
@@ -857,6 +857,15 @@ put after it.
   - C: the MX session is the record.
 
   Operator: *"A"*. T6 is ruled.
+- **W33 (2026-11-23, T7, the feature package's identifier).** Checked: neither `FP-` nor `FEAT-`
+  is used, and the PRD's `FR-nnn` looks close. Three options were put:
+  - A: `FP-nnnn-<slug>`. Recommended.
+  - B: `FEAT-nnnn-<slug>`.
+  - C: `FPK-nnnn-<slug>`.
+
+  Operator: *"A"*. T7 is ruled. T8 needs no question: canon rules it (W2, *"those single letters
+  are superseded"*; RP-11 ruling 4) and RP-11 owns it, with the shipped seed and W3's parent
+  fields added to RP-11's scope under T10.
 
 ## 10. The gathering, closed
 
