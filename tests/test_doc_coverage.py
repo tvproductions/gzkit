@@ -1035,7 +1035,7 @@ class TestSourceScanMemoization(unittest.TestCase):
 
         mapping = _build_import_map("from a.b import x\n")
         with self.assertRaises(TypeError):
-            mapping["injected"] = "evil"  # ty: ignore
+            mapping["injected"] = "evil"  # ty: ignore[invalid-assignment]
 
     def test_cached_docstrings_cannot_be_mutated_by_a_caller(self) -> None:
         from gzkit.doc_coverage.scanner import _extract_local_docstrings
@@ -1043,7 +1043,7 @@ class TestSourceScanMemoization(unittest.TestCase):
         docs = _extract_local_docstrings('def f():\n    """D."""\n')
         self.assertEqual(dict(docs), {"f": "D."})
         with self.assertRaises(TypeError):
-            docs["injected"] = "evil"  # ty: ignore
+            docs["injected"] = "evil"  # ty: ignore[invalid-assignment]
 
 
 if __name__ == "__main__":

@@ -320,6 +320,7 @@ error-on-warning = true
 # ten that still report findings (2,586 on ty 0.0.107) join this table rule by
 # rule as each is repaired by root cause (gz-deps-upgrade step 9a).
 [tool.ty.rules]
+blanket-ignore-comment = "error"
 disjoint-cast = "error"
 division-by-zero = "error"
 invalid-legacy-positional-parameter = "error"

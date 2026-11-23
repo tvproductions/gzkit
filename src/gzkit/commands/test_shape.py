@@ -6,27 +6,31 @@ the question that gate cannot — what debt remains, and in what shape.
 """
 
 import json
+from typing import TYPE_CHECKING
 
 from gzkit.commands.common import console, get_project_root
 from gzkit.test_shape import build_inventory
 
+if TYPE_CHECKING:
+    from gzkit.test_shape import TestShapeInventory
+
 _ADVISORY_EXIT = 0
 
 
-def _render_tautological(inventory: object) -> None:
-    ops = inventory.tautological  # ty: ignore
+def _render_tautological(inventory: TestShapeInventory) -> None:
+    ops = inventory.tautological
     console.print(f"\n[bold]Tautological-shaped operations[/bold] ({len(ops)})")
     if not ops:
         console.print("  [green]none[/green]")
         return
-    for disposition, count in sorted(inventory.by_disposition.items()):  # ty: ignore
+    for disposition, count in sorted(inventory.by_disposition.items()):
         console.print(f"  {disposition:<22} {count}")
     console.print("\n  [dim]Growth is gated by `gz validate --tautological-test-audit`.[/dim]")
 
 
-def _render_output(inventory: object, undeclared_only: bool) -> None:
-    all_assertions = inventory.output_assertions  # ty: ignore
-    undeclared = inventory.undeclared_output_assertions  # ty: ignore
+def _render_output(inventory: TestShapeInventory, undeclared_only: bool) -> None:
+    all_assertions = inventory.output_assertions
+    undeclared = inventory.undeclared_output_assertions
     shown = undeclared if undeclared_only else all_assertions
     console.print(
         f"\n[bold]Output/render assertions[/bold] "
