@@ -202,11 +202,21 @@ class TestTheOrdersGate(_OrderAcceptance):
         self.assertIn(f"gz wp tag clear {tag}", output)
         self.assertEqual(self.state(), "commenced")
 
+    def seat_raw_row(self, row: dict[str, str]) -> None:
+        """Append *row* as a hand-edited ledger holds it, past the writer's checks."""
+        with (Path(".gzkit") / "ledger.jsonl").open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps(row) + "\n")
+
     def test_a_malformed_tag_row_refuses_the_accept_and_names_its_void(self) -> None:
         """Ruling 141: the leaf reader's refusal is the verb's exit 3, never a crash."""
-        row = {"schema": "gzkit.ledger.v1", "event": "tag_hung", "id": "TAG-7-bad"}
-        with (Path(".gzkit") / "ledger.jsonl").open("a", encoding="utf-8") as stream:
-            stream.write(json.dumps({**row, "ts": "2026-11-18T00:00:00+00:00"}) + "\n")
+        self.seat_raw_row(
+            {
+                "schema": "gzkit.ledger.v1",
+                "event": "tag_hung",
+                "id": "TAG-7-bad",
+                "ts": "2026-11-18T00:00:00+00:00",
+            }
+        )
         self.assertIn("gz ledger correct", self.accept(code=3))
         self.assertEqual(self.state(), "commenced")
 

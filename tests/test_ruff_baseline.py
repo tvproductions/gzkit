@@ -499,24 +499,32 @@ class SealedRecordsTest(unittest.TestCase):
         sealed = {glob for glob in ruff["format"]["exclude"] if glob != "*.md"}
         self.assertEqual(sealed, set(SEALED_RECORD_GLOBS))
 
+    def _seed_format_config(self, root: Path) -> tuple[list[str], str]:
+        """Write the repository's format excludes into *root* over unformatted sources."""
+        sealed, plain = self._tree(root)
+        pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+        ruff = tomllib.loads(pyproject.read_text(encoding="utf-8"))["tool"]["ruff"]
+        excludes = ", ".join(json.dumps(glob) for glob in ruff["format"]["exclude"])
+        (root / "pyproject.toml").write_text(
+            f"[tool.ruff]\nforce-exclude = true\n[tool.ruff.format]\nexclude = [{excludes}]\n",
+            encoding="utf-8",
+        )
+        for path in [*sealed, plain]:
+            path.write_text("x=[1,2]\n", encoding="utf-8")
+        return [p.relative_to(root).as_posix() for p in sealed], plain.relative_to(root).as_posix()
+
     def test_a_named_sealed_script_survives_the_formatter_under_that_config(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            sealed, plain = self._tree(root)
-            pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
-            ruff = tomllib.loads(pyproject.read_text(encoding="utf-8"))["tool"]["ruff"]
-            excludes = ", ".join(json.dumps(glob) for glob in ruff["format"]["exclude"])
-            (root / "pyproject.toml").write_text(
-                f"[tool.ruff]\nforce-exclude = true\n[tool.ruff.format]\nexclude = [{excludes}]\n",
-                encoding="utf-8",
-            )
-            for path in [*sealed, plain]:
-                path.write_text("x=[1,2]\n", encoding="utf-8")
-            named = [p.relative_to(root).as_posix() for p in [*sealed, plain]]
-            done = self._ruff(["format", *named], root)
-            self.assertEqual(done.returncode, 0, done.stderr)
-            self.assertEqual([p.read_text(encoding="utf-8") for p in sealed], ["x=[1,2]\n"] * 3)
-            self.assertEqual(plain.read_text(encoding="utf-8"), "x = [1, 2]\n")
+            sealed, plain = self._seed_format_config(root)
+            # --check reports each file the formatter would rewrite and rewrites none.
+            checked = self._ruff(["format", "--check", *sealed, plain], root)
+            self.assertEqual(checked.returncode, 1, checked.stderr)
+            report = checked.stdout + checked.stderr
+            self.assertIn(plain, report)
+            for path in sealed:
+                with self.subTest(sealed=path):
+                    self.assertNotIn(path, report)
 
 
 if __name__ == "__main__":

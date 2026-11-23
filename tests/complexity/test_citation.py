@@ -8,7 +8,6 @@ per the brief's TDD-hygiene REQ; no live filesystem mutation under
 """
 
 import json
-import re
 import unittest
 from pathlib import Path
 from typing import override
@@ -17,7 +16,11 @@ from pydantic import ValidationError
 
 from gzkit.complexity.citation import Citation, is_portable, parse_citation
 from gzkit.traceability import covers
-from gzkit.validators.rule_version_markers import rule_version_of
+from gzkit.validators.rule_version_markers import (
+    audit_rule_version_markers,
+    canonical_rule_files,
+    rule_version_of,
+)
 from tests.vendor_surfaces import rule_mirror_paths
 
 CANONICAL_FORM = (
@@ -122,23 +125,18 @@ class TestRuleVersionConsistency(unittest.TestCase):
 
     @covers("REQ-0.0.27-05-06")
     def test_body_marker_and_block_quote_agree(self) -> None:
-        rule_path = Path(__file__).resolve().parents[2] / ".gzkit/rules/complexity-doctrine.md"
-        rule_body = rule_path.read_text(encoding="utf-8")
-        body_match = re.search(r"<!--\s*rule-version:\s*([0-9.]+)\s*-->", rule_body)
-        self.assertIsNotNone(body_match, "body-level rule-version marker missing")
-        assert body_match is not None
-        block_quote_match = re.search(
-            r">\s*\*\*Rule version:\*\*\s*`([0-9.]+)`",
-            rule_body,
-        )
-        self.assertIsNotNone(block_quote_match, "visible rule-version block quote missing")
-        assert block_quote_match is not None
-        body_version = body_match.group(1)
-        quote_version = block_quote_match.group(1)
-        self.assertEqual(body_version, quote_version)
-        # The version itself was pinned to 0.4.0 at authoring and went stale on
-        # the next banner bump; the REQ is the agreement, asserted above
+        # The rule-version-markers validator reads the body marker and the visible
+        # block quote and reports any drift between them; the REQ is that agreement
         # (surface repair 2026-10-18, attested-req-subject-retirement.md).
+        project_root = Path(__file__).resolve().parents[2]
+        checked = {path.name for path in canonical_rule_files(project_root / ".gzkit" / "rules")}
+        self.assertIn("complexity-doctrine.md", checked)
+        violations = [
+            violation
+            for violation in audit_rule_version_markers(project_root)
+            if violation.file == "complexity-doctrine.md"
+        ]
+        self.assertEqual(violations, [])
 
 
 class TestSchemaShape(unittest.TestCase):
