@@ -5,14 +5,18 @@ Covers REQ-0.0.68-01-01 (pre-push gz check hook declared and version-controlled)
 
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import yaml
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
-def covers(target: str):
+
+def covers[T](target: str) -> Callable[[T], T]:
     """Identity decorator linking test to ADR/OBPI target for traceability."""
 
-    def _identity(obj):
+    def _identity(obj: T) -> T:
         return obj
 
     return _identity

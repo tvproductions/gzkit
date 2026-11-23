@@ -5,6 +5,7 @@ import tempfile
 import unittest
 from io import StringIO
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 from rich.console import Console
@@ -33,6 +34,9 @@ from gzkit.obpi_completion_fence import (
 )
 from tests.commands.common import SilencedConsoleTestCase
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
 # This module exercises other completion gates/transactions. Acceptance execution
 # and ledger freshness are exercised through the actual store in test_acceptance*.
 _ACCEPTED_REVIEW = Review(
@@ -48,10 +52,10 @@ _ACCEPTED_REVIEW = Review(
 )
 
 
-def covers(target: str):
+def covers[T](target: str) -> Callable[[T], T]:
     """Identity decorator linking test to ADR/OBPI target for traceability."""
 
-    def _identity(obj):
+    def _identity(obj: T) -> T:
         return obj
 
     return _identity

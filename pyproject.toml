@@ -323,6 +323,7 @@ error-on-warning = true
 blanket-ignore-comment = "error"
 disjoint-cast = "error"
 division-by-zero = "error"
+dynamic-function-decorator-return = "error"
 invalid-legacy-positional-parameter = "error"
 mismatched-enum-name = "error"
 mismatched-namedtuple-name = "error"

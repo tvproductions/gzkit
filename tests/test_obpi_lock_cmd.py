@@ -7,6 +7,7 @@ import unittest
 from datetime import UTC, datetime, timedelta
 from io import StringIO
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 from pydantic import ValidationError
@@ -32,11 +33,14 @@ from gzkit.lock_manager import (
     write_lock,
 )
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
-def covers(target: str):
+
+def covers[T](target: str) -> Callable[[T], T]:
     """Identity decorator linking test to ADR/OBPI target for traceability."""
 
-    def _identity(obj):
+    def _identity(obj: T) -> T:
         return obj
 
     return _identity

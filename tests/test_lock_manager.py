@@ -6,6 +6,7 @@ import unittest
 import unittest.mock
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 from pydantic import ValidationError
@@ -25,11 +26,14 @@ from gzkit.lock_manager import (
 )
 from gzkit.mx.marker import SESSION_LOCK_KEY
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
-def covers(target: str):
+
+def covers[T](target: str) -> Callable[[T], T]:
     """Identity decorator linking test to ADR/OBPI target for traceability."""
 
-    def _identity(obj):
+    def _identity(obj: T) -> T:
         return obj
 
     return _identity

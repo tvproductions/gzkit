@@ -32,6 +32,7 @@ from gzkit.hooks.install_complexity_advisor import (
 )
 from gzkit.ledger import Ledger
 from gzkit.ledger_events import intrinsic_complexity_attestation_event
+from gzkit.traceability import covers
 from tests.commands.common import _isolated_git_env
 
 # --- test-data helpers ---------------------------------------------------
@@ -71,17 +72,6 @@ def _make_timeout_timed_out() -> TimeoutTimedOut:
 
 
 # --- covers decorators ---------------------------------------------------
-
-try:
-    from gzkit.testing import covers  # ty: ignore[import-not-found]
-except ImportError:
-
-    def covers(*_ids: str):
-        def decorator(fn):
-            return fn
-
-        return decorator
-
 
 # --- tests ----------------------------------------------------------------
 

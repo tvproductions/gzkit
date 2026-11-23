@@ -17,6 +17,7 @@ import unittest
 from datetime import UTC, datetime, timedelta
 from io import StringIO
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 from rich.console import Console
@@ -36,11 +37,14 @@ from gzkit.mx.marker import SESSION_LOCK_KEY
 from tests.commands.common import SilencedConsoleTestCase
 from tests.test_obpi_lock_cmd import _make_lock, _mock_config, _setup_project
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
-def covers(target: str):
+
+def covers[T](target: str) -> Callable[[T], T]:
     """Identity decorator linking test to ADR/OBPI target for traceability."""
 
-    def _identity(obj):
+    def _identity(obj: T) -> T:
         return obj
 
     return _identity

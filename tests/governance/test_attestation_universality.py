@@ -10,6 +10,7 @@ import subprocess
 import textwrap
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gzkit.commands.adr_audit import (
     _is_foundation_adr,
@@ -17,9 +18,12 @@ from gzkit.commands.adr_audit import (
 )
 from tests.commands.common import _isolated_git_env
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
-def covers(target: str):
-    def _identity(obj):
+
+def covers[T](target: str) -> Callable[[T], T]:
+    def _identity(obj: T) -> T:
         return obj
 
     return _identity

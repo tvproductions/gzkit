@@ -8,7 +8,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from typing import TypeVar, override
+from typing import TYPE_CHECKING, override
 
 from pydantic import ValidationError
 
@@ -35,15 +35,16 @@ from gzkit.doc_coverage.scanner import (
 )
 from gzkit.traceability import covers as _req_covers
 
-_T = TypeVar("_T")
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
-def covers(target: str):
+def covers[T](target: str) -> Callable[[T], T]:
     """Link test to ADR/OBPI/REQ target. REQ-level targets use the real traceability decorator."""
     if target.startswith("REQ-"):
         return _req_covers(target)
 
-    def _identity(obj: _T) -> _T:
+    def _identity(obj: T) -> T:
         return obj
 
     return _identity

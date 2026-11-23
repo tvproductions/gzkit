@@ -11,14 +11,18 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gzkit.governance.trust_audits.lock_exchange_coupling import (
     validate_lock_exchange_coupling,
 )
 from tests.commands.common import _isolated_git_env
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
-def covers(target: str):
+
+def covers[T](target: str) -> Callable[[T], T]:
     """Identity decorator linking test to ADR/OBPI target for @covers parity.
 
     Local (not imported from gzkit.traceability) so the brief-reconcile
@@ -32,7 +36,7 @@ def covers(target: str):
 
     """
 
-    def _identity(obj):
+    def _identity(obj: T) -> T:
         return obj
 
     return _identity

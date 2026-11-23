@@ -6,17 +6,21 @@ OR composition into ``_requires_human_obpi_attestation`` that closes the
 """
 
 import unittest
+from typing import TYPE_CHECKING
 
 from gzkit.commands.adr_audit import (
     _requires_human_obpi_attestation,
     _requires_security_review_attestation,
 )
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
-def covers(target: str):
+
+def covers[T](target: str) -> Callable[[T], T]:
     """Identity decorator linking test to ADR/OBPI target for traceability."""
 
-    def _identity(obj):
+    def _identity(obj: T) -> T:
         return obj
 
     return _identity
