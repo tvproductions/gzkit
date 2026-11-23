@@ -492,7 +492,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 
 | # | Decision | Today |
 |---|---|---|
-| T1 | Keep § 1's four levels and names as canon, and amend the constitution's *Order* (*"a tasking order binds one work package"*) to them | canon since 2026-11-03; the constitution defines Order otherwise |
+| T1 | **Ruled W26: the table stays canon, and the constitution's tasking order is correct as written.** Keep § 1's four levels and names as canon, and amend the constitution's *Order* (*"a tasking order binds one work package"*) to them | canon since 2026-11-03; the constitution defines Order otherwise |
 | T2 | Package identifiers: one `WP-` series for both kinds, or the kind spelled in the id (`RP-` repair, `WP-` work); and what becomes of the legacy `WP-1` to `WP-16` | one `WP-` series (RO-5 ruling 6); the operator, 2026-11-22: *"I am happy for RP/RO and WP/WO"* |
 | T3 | Order identifiers: one `ORD-` series, or the kind spelled (`RO-` repair, `WO-` work); whether *"a retired code is never reused"* binds work identifiers; and what becomes of the old `RO-n` and `WO-n` | one `ORD-` series (ruling 43); `RO-n` is RP-n's alias; `WO-n` retired |
 | T4 | The contract's `RP-0` to `RP-15`: records in the store, or short names resolving to records | prose; #1302 open |
@@ -766,6 +766,36 @@ put after it.
   verbatim: *"those were all over the place, not good - we have no consistent canonical
   manifestation of gate 5"*. This sharpens T12: Gate 5 needs one canonical definition, in the
   charter, matching the order.
+- **W26 (2026-11-23, T1 and the word "order").** The question first put was to amend the
+  constitution's *"a tasking order binds one work package"* to the level table. The operator, verbatim:
+  *"a standing order seems to be a overarching rule or law, a tasking order is as you state. what
+  is the issue?"*, then *"tasking order is the purpose or goal of the work package the way that an
+  mADR would have had. and the work package and work order relationship is the mADR relationship.
+  so, are we concerned that we are overloading the term 'order' too much?"* On that reading the
+  constitution is correct as written. The tasking order is the work package's charge, recorded
+  today as the operator's words on its `initiated` event, so no amendment is owed. The policy
+  then put:
+  - A: bare *order* means the Order level only.
+  - *Standing order*, *tasking order* and *change order* are always written in full.
+  - The unruled uses go: build orders, the contract's "Order" column, the *campaign order* and
+    the *order of working*.
+  - The constitution's § Terms "Order" becomes *Standing order* and *Tasking order*.
+
+  Operator: *"this is the only one that needs discussion for possible removal: "Change order""*.
+  The agent takes A as ruled for the rest and asked the operator to confirm. T1 is ruled: the
+  level table stays canon.
+- **W27 (2026-11-23, the change order).** The rung's source is JFMM I-2.3.7's *revision*. It was
+  renamed on 2026-10-26 (*"change order from dfars is worth mixing in"*; *"B avoids collision and
+  fits"*) to avoid the REQ's `revision` field. Four options were put:
+  - A: keep it in full.
+  - B: *modification*.
+  - C: back to JFMM's *revision*, with the REQ's editorial counter renamed, for example to
+    `edition`. Recommended.
+  - D: *amendment*.
+
+  Operator: *"c"*. The ladder is pen and ink, revision, attachment, supplement. `CO-n` retires,
+  and each change becomes a ledger event on its package. The REQ counter's new name is still to
+  be ruled, and `edition` was only an example.
 
 ## 10. The gathering, closed
 
