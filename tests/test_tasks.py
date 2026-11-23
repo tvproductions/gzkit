@@ -10,7 +10,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 
 from gzkit.cli import main as cli_main
 from gzkit.events import (
@@ -928,6 +928,7 @@ class _TaskCliBase(unittest.TestCase):
     mutations don't leak between tests, but no per-class ``gz init`` runs.
     """
 
+    @override
     def setUp(self) -> None:
         import os
 

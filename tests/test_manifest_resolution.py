@@ -2,6 +2,7 @@
 
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.commands.common import manifest_path
 
@@ -18,6 +19,7 @@ def covers(target: str):
 class TestManifestPathV2(unittest.TestCase):
     """manifest_path() with v2 sectioned manifests."""
 
+    @override
     def setUp(self):
         self.manifest = {
             "schema": "gzkit.manifest.v2",
@@ -73,6 +75,7 @@ class TestManifestPathV2(unittest.TestCase):
 class TestManifestPathV1Fallback(unittest.TestCase):
     """manifest_path() with v1 flat manifests (no sectioned dicts)."""
 
+    @override
     def setUp(self):
         self.manifest = {
             "eval_datasets": "data/eval",

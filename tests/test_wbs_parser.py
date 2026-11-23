@@ -4,6 +4,7 @@
 """
 
 import unittest
+from typing import override
 
 from gzkit.commands.specify_cmd import (
     _build_item_requirements,
@@ -107,6 +108,7 @@ class TestParseWbsTable(unittest.TestCase):
 class TestResolveLaneFromWbs(unittest.TestCase):
     """Verify lane resolution priority: CLI > WBS > fallback."""
 
+    @override
     def setUp(self):
         self.wbs_rows = parse_wbs_table(SAMPLE_ADR)
 
@@ -134,6 +136,7 @@ class TestResolveLaneFromWbs(unittest.TestCase):
 class TestResolveObjectiveFromWbs(unittest.TestCase):
     """Verify objective extraction from WBS spec summary."""
 
+    @override
     def setUp(self):
         self.wbs_rows = parse_wbs_table(SAMPLE_ADR)
 

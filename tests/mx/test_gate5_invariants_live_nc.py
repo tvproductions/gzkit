@@ -24,6 +24,7 @@ REQ-0.0.74-17-04 [behavior]: gate5-attestation @enforces NC catches the ABSENCE 
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import override
 
 from gzkit.enforcement import (
     EnforcementClaimRecord,
@@ -51,10 +52,12 @@ class TestGate5NamedNotEnforced(unittest.TestCase):
     surfaced through the _GATE5_NAMED_NOT_ENFORCED constant instead.
     """
 
+    @override
     def setUp(self) -> None:
         reset_enforcement_registry()
         _ensure_gate5_claims_registered()
 
+    @override
     def tearDown(self) -> None:
         reset_enforcement_registry()
 
@@ -108,10 +111,12 @@ class TestGate5LedgerLiveNC(unittest.TestCase):
     run through that genuine path.
     """
 
+    @override
     def setUp(self) -> None:
         reset_enforcement_registry()
         _ensure_gate5_claims_registered()
 
+    @override
     def tearDown(self) -> None:
         reset_enforcement_registry()
 
@@ -178,10 +183,12 @@ class TestGate5AttestationAbsenceLiveNC(unittest.TestCase):
     case is NC-able.
     """
 
+    @override
     def setUp(self) -> None:
         reset_enforcement_registry()
         _ensure_gate5_claims_registered()
 
+    @override
     def tearDown(self) -> None:
         reset_enforcement_registry()
 
@@ -226,9 +233,11 @@ class TestGate5AttestationAbsenceLiveNC(unittest.TestCase):
 class TestGate5EnrollmentIsIdempotent(unittest.TestCase):
     """Registration is reset-safe and idempotent (no duplicate registry entries)."""
 
+    @override
     def setUp(self) -> None:
         reset_enforcement_registry()
 
+    @override
     def tearDown(self) -> None:
         reset_enforcement_registry()
 

@@ -22,6 +22,7 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from pydantic import ValidationError
@@ -67,10 +68,12 @@ class TestTimeoutResult(unittest.TestCase):
 class TestRunWithTimeout(unittest.TestCase):
     """Verify run_with_timeout behavior."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.log_path = Path(self._tmp.name) / "advisor-failures.jsonl"
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 
@@ -166,6 +169,7 @@ class TestRunWithTimeout(unittest.TestCase):
 class TestPrimitiveHonoursConfiguredTimeout(unittest.TestCase):
     """The primitive, not only the reader, honours advisor_timeout_seconds (GHI #1105)."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         root = Path(self._tmp.name)
@@ -176,6 +180,7 @@ class TestPrimitiveHonoursConfiguredTimeout(unittest.TestCase):
         self._prior = Path.cwd()
         os.chdir(root)
 
+    @override
     def tearDown(self) -> None:
         os.chdir(self._prior)
         self._tmp.cleanup()
@@ -201,10 +206,12 @@ class TestPrimitiveHonoursConfiguredTimeout(unittest.TestCase):
 class TestAdvisorConfig(unittest.TestCase):
     """Verify config reader for advisor_timeout_seconds."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.config_path = Path(self._tmp.name) / ".gzkit.json"
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 

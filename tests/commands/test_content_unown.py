@@ -23,6 +23,7 @@ import tempfile
 import threading
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 import gzkit.commands.content.unown as unown_module
@@ -199,6 +200,7 @@ def _unown(runner: CliRunner, *, section: str = "alpha-section", attestor: str, 
 class TestContentUnownFailClosed(unittest.TestCase):
     """REQ-0.35.0-04-04: empty/whitespace attestor or reason -> refuse, nothing written."""
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -265,6 +267,7 @@ class TestContentUnownFailClosed(unittest.TestCase):
 class TestContentUnownRaisesTheFloor(unittest.TestCase):
     """REQ-0.35.0-04-05: attested raise-path un-owns a corpus-owned section."""
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -312,6 +315,7 @@ class TestContentUnownAttestedRoundTrip(unittest.TestCase):
     against the very ledger event this same command emits.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -340,6 +344,7 @@ class TestContentUnownPartialFailure(unittest.TestCase):
     declaration is byte-unchanged.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -374,6 +379,7 @@ class TestContentUnownIsSerialized(unittest.TestCase):
     discarded, on the ONE governed path that may raise the ratchet at all.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -465,6 +471,7 @@ class TestContentUnownIsRecoverable(unittest.TestCase):
     finishes the interrupted append instead of starting a new transition.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -731,6 +738,7 @@ class TestContentUnownFailuresSpeakInProse(unittest.TestCase):
     ADR-0.35.0 exists to close. A raw traceback is the same defect, worse.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -849,6 +857,7 @@ class TestContentUnownReplayJournalValidation(unittest.TestCase):
 
     _JOURNAL_PATH = Path(".gzkit") / "ownership" / "Doc.md.json.journal"
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -1232,6 +1241,7 @@ class TestAlreadyLandedReplayBindsTheLandedMap(unittest.TestCase):
 
     _JOURNAL_PATH = Path(".gzkit") / "ownership" / "Doc.md.json.journal"
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -1426,6 +1436,7 @@ class TestContentUnownReadsTheSurfaceInsideTheLock(unittest.TestCase):
     witness a span the surface no longer had.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -1573,6 +1584,7 @@ class TestContentUnownReadsTheSurfaceInsideTheLock(unittest.TestCase):
 class TestContentUnownJournalFailureProseIsHonest(unittest.TestCase):
     """Step-4b round-6 finding 4 — the journal branch inherited a false premise."""
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -1640,6 +1652,7 @@ class TestContentUnownBindsTheSurfaceToTheTransaction(unittest.TestCase):
     clean success.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -1790,6 +1803,7 @@ class TestContentUnownRound8(unittest.TestCase):
         "alpha body line two\n" + "grown by an editor\n" * 12,
     )
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -2262,6 +2276,7 @@ class TestContentUnownRound9(unittest.TestCase):
     through journal, declaration, witness and prose.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -3196,6 +3211,7 @@ class TestWitnessSourceIsTheFixedDestination(unittest.TestCase):
     module keeps producing.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -3334,6 +3350,7 @@ class TestRecoveryProtocolStateB(unittest.TestCase):
 
     _JOURNAL = _DECLARATION_PATH.parent / "Doc.md.json.journal"
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -3464,6 +3481,7 @@ class TestRecoveryProtocolStateE(unittest.TestCase):
     _SNAPSHOT = _DECLARATION_PATH.parent / "Doc.md.json.journal.source"
     _EXTRACTED = Path("Doc.md.unowning-recovery")
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -3645,6 +3663,7 @@ class TestForgedJournalAdviceIsStateDerived(unittest.TestCase):
 
     _JOURNAL = _DECLARATION_PATH.parent / "Doc.md.json.journal"
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -3790,6 +3809,7 @@ class TestRecoveryProtocolStateA(unittest.TestCase):
     _JOURNAL = _DECLARATION_PATH.parent / "Doc.md.json.journal"
     _SNAPSHOT = _DECLARATION_PATH.parent / "Doc.md.json.journal.source"
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -3933,6 +3953,7 @@ class TestRecoveryProtocolStateD(unittest.TestCase):
     _JOURNAL = _DECLARATION_PATH.parent / "Doc.md.json.journal"
     _SNAPSHOT = _DECLARATION_PATH.parent / "Doc.md.json.journal.source"
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -4235,6 +4256,7 @@ class TestMovedSurfaceRefusalNamesItsStateAndPaths(unittest.TestCase):
         "alpha body line two\n" + "alpha body grown by an editor\n" * 12,
     )
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -4362,6 +4384,7 @@ class TestRecoveryProtocolStateDPlusE(unittest.TestCase):
         "alpha body line two\n" + "alpha body grown by an editor\n" * 12,
     )
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -4675,6 +4698,7 @@ class TestRecoveryCleanupIsItsOwnObligation(unittest.TestCase):
     _SNAPSHOT = _DECLARATION_PATH.parent / "Doc.md.json.journal.source"
     _EXTRACTED = Path("Doc.md.unowning-recovery")
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -4951,6 +4975,7 @@ class TestOrphanResidueSweepReportsOnlyWhatItObserved(unittest.TestCase):
     _JOURNAL = _DECLARATION_PATH.parent / "Doc.md.json.journal"
     _SNAPSHOT_NAME = "Doc.md.json.journal.source"
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -5084,6 +5109,7 @@ class TestRecoveryStagingInspectionFailures(unittest.TestCase):
     _SNAPSHOT = _DECLARATION_PATH.with_name("Doc.md.json.journal.source")
     _EXTRACT = Path("Doc.md.unowning-recovery")
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -5335,6 +5361,7 @@ class TestJournalStorageFaultIsNotForgery(unittest.TestCase):
 
     _JOURNAL = _DECLARATION_PATH.parent / "Doc.md.json.journal"
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -5428,6 +5455,7 @@ class TestLegacyJournalStillObservesTheLiveSurface(unittest.TestCase):
     _JOURNAL = _DECLARATION_PATH.parent / "Doc.md.json.journal"
     _SNAPSHOT = _DECLARATION_PATH.parent / "Doc.md.json.journal.source"
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -5598,6 +5626,7 @@ class TestJournalAbsenceIsMadeDurableBeforeDependentsMove(unittest.TestCase):
     _SNAPSHOT = _DECLARATION_PATH.parent / "Doc.md.json.journal.source"
     _EXTRACT = Path("Doc.md.unowning-recovery")
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -5701,6 +5730,7 @@ class TestOrphanResidueWarnsAndPermitsFreshWork(unittest.TestCase):
     _SNAPSHOT = _DECLARATION_PATH.parent / "Doc.md.json.journal.source"
     _EXTRACT = Path("Doc.md.unowning-recovery")
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -5858,6 +5888,7 @@ class TestEntryBoundarySweepIsNotClaimedAway(unittest.TestCase):
     _EXTRACT = Path("Doc.md.unowning-recovery")
     _JOURNAL = _DECLARATION_PATH.parent / "Doc.md.json.journal"
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -5960,6 +5991,7 @@ class TestUnavailableBarrierPreservesRecoveryMaterial(unittest.TestCase):
     _EXTRACT = Path("Doc.md.unowning-recovery")
     _ERRNOS = ("EINVAL", "ENOSYS", "ENOTSUP", "EOPNOTSUPP")
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -6133,6 +6165,7 @@ class TestRetryProseMatchesWhatTheRetryDoes(unittest.TestCase):
     _JOURNAL = _DECLARATION_PATH.parent / "Doc.md.json.journal"
     _SNAPSHOT = _DECLARATION_PATH.parent / "Doc.md.json.journal.source"
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -6185,6 +6218,7 @@ class _RolledBackUnderAPendingJournal(unittest.TestCase):
     _JOURNAL = _DECLARATION_PATH.parent / "Doc.md.json.journal"
     _SNAPSHOT = _DECLARATION_PATH.parent / "Doc.md.json.journal.source"
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 

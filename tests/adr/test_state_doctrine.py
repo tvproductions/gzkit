@@ -12,7 +12,7 @@ import unittest
 from datetime import UTC, datetime, timedelta
 from io import StringIO
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 from unittest.mock import MagicMock, patch
 
 from rich.console import Console
@@ -395,6 +395,7 @@ def _but(marker: dict[str, Any], *keys: str) -> dict[str, Any]:
 class _RepairableRun(unittest.TestCase):
     """A project whose ledger holds pipeline runs, repaired through ``state_repair``."""
 
+    @override
     def setUp(self) -> None:
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)

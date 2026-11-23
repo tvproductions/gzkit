@@ -4,6 +4,7 @@ import json
 import textwrap
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from gzkit.cli.main import main
@@ -16,6 +17,7 @@ class TestCliAuditCrossCoverage(unittest.TestCase):
     _json_data: dict
     _human_output: str
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         # ``gz cli audit`` runs the full cross-coverage scanner every time

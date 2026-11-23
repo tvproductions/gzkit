@@ -13,6 +13,7 @@ Test structure per ``.gzkit/rules/tests.md`` § Red-Green-Refactor:
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.complexity.advisor.diagnosis import (
     AdvisorDiagnosis,
@@ -32,6 +33,7 @@ from gzkit.traceability import covers
 class TestAdHocPresenter(unittest.TestCase):
     """Test AdHocPresenter verbose output (OBPI-0.0.29-06)."""
 
+    @override
     def setUp(self) -> None:
         """Set up a temp directory with a real Python file for proof reading."""
         self.temp_dir = tempfile.TemporaryDirectory()
@@ -46,6 +48,7 @@ class TestAdHocPresenter(unittest.TestCase):
         )
         self.presenter = AdHocPresenter()
 
+    @override
     def tearDown(self) -> None:
         """Clean up temp directory."""
         self.temp_dir.cleanup()
@@ -145,6 +148,7 @@ class TestAdHocPresenter(unittest.TestCase):
 class TestAutoChainPresenter(unittest.TestCase):
     """Test AutoChainPresenter concise output (OBPI-0.0.29-06)."""
 
+    @override
     def setUp(self) -> None:
         """Set up a temp directory with a real Python file for proof reading."""
         self.temp_dir = tempfile.TemporaryDirectory()
@@ -162,6 +166,7 @@ class TestAutoChainPresenter(unittest.TestCase):
         )
         self.presenter = AutoChainPresenter()
 
+    @override
     def tearDown(self) -> None:
         """Clean up temp directory."""
         self.temp_dir.cleanup()
@@ -259,6 +264,7 @@ class TestAutoChainPresenter(unittest.TestCase):
 class TestPresenterProtocol(unittest.TestCase):
     """Test Presenter protocol contract and substitutability (OBPI-0.0.29-06)."""
 
+    @override
     def setUp(self) -> None:
         """Set up a temp directory with a real Python file."""
         self.temp_dir = tempfile.TemporaryDirectory()
@@ -269,6 +275,7 @@ class TestPresenterProtocol(unittest.TestCase):
             encoding="utf-8",
         )
 
+    @override
     def tearDown(self) -> None:
         """Clean up temp directory."""
         self.temp_dir.cleanup()

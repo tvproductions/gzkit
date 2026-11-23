@@ -11,6 +11,7 @@ import json
 import re
 import unittest
 from pathlib import Path
+from typing import override
 
 from pydantic import ValidationError
 
@@ -83,6 +84,7 @@ class TestParseCitationRejectsIncomplete(unittest.TestCase):
 class TestRuleCitationContractSection(unittest.TestCase):
     """The rule body formalizes tuple, percentile + absolute pairing, and refresh portability."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         cls.rule_path = Path(__file__).resolve().parents[2] / ".gzkit/rules/complexity-doctrine.md"

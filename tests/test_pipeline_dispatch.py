@@ -9,6 +9,7 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.acceptance import Readiness
 from gzkit.pipeline_runtime import (
@@ -1138,6 +1139,7 @@ class TestDispatchPromptsCarryTheContract(unittest.TestCase):
     literals restated in the prompt (GHI #861).
     """
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)

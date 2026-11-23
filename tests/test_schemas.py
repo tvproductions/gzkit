@@ -8,7 +8,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from typing import ClassVar, Literal, get_args, get_origin
+from typing import ClassVar, Literal, get_args, get_origin, override
 
 from pydantic import BaseModel, ValidationError
 
@@ -491,6 +491,7 @@ def _union_event_tags() -> set[str]:
 class TestLedgerSchemaAlignment(unittest.TestCase):
     """Verify typed event models match ledger.json event definitions."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
@@ -1104,6 +1105,7 @@ class TestSkillSchemaAlignment(unittest.TestCase):
     @covers REQ-0.17.0-04-05
     """
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
@@ -1214,6 +1216,7 @@ class TestInstructionSchemaAlignment(unittest.TestCase):
     @covers REQ-0.17.0-04-06
     """
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()

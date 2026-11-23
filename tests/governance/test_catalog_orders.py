@@ -10,6 +10,7 @@ until RP-14 moves construction onto the order (ruling 44).
 
 import json
 import unittest
+from typing import override
 
 from pydantic import ValidationError as PydanticValidationError
 
@@ -58,6 +59,7 @@ class TestOrderModel(unittest.TestCase):
 class TestOrderStore(_Tree):
     """`gz validate --catalog` over `data/catalog/orders.json`."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.write(
@@ -170,6 +172,7 @@ class TestOrderStore(_Tree):
 class TestBookedOrders(_Tree):
     """Ruling 52: an order is born on the ledger, so the store keeps every order it names."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.write("work_packages", [_wp("WP-01-x")])

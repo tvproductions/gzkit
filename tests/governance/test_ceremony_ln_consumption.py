@@ -18,6 +18,7 @@ exercise is ``_gate_closeout_proof`` (the ADR-0.0.69 rename of the original
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import MagicMock, patch
 
 import yaml
@@ -156,10 +157,12 @@ class TestGateScopedToCeremonyAdr(unittest.TestCase):
     parked ceremony is irrelevant to A's gate.
     """
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 

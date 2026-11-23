@@ -16,6 +16,7 @@ brief had already answered the other way.
 import re
 import unittest
 from pathlib import Path
+from typing import override
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 CANONICAL = PROJECT_ROOT / ".gzkit" / "skills" / "ghi-author" / "SKILL.md"
@@ -30,6 +31,7 @@ def _step_zero(text: str) -> str:
 
 
 class TestStepZeroSeesWorkOwningBriefs(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self.skill = CANONICAL.read_text(encoding="utf-8")
         self.step0 = _step_zero(self.skill)
@@ -85,6 +87,7 @@ class TestRoutingCriteriaAskWhoOwnsTheWork(unittest.TestCase):
     doc is the linked home that section already points readers to.
     """
 
+    @override
     def setUp(self) -> None:
         # Read in setUp, not inline: `gz validate --tautological-test-audit`
         # flags a read_text co-occurring with an assertion, and separating

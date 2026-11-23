@@ -16,6 +16,7 @@ that test.
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.content.corpus_store import append_entry
 from gzkit.content.models.corpus import CorpusEntry
@@ -57,6 +58,7 @@ def _entry(
 
 
 class _TempProject(QuietAdvisoriesMixin, unittest.TestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self._tmp = tempfile.TemporaryDirectory()
@@ -65,6 +67,7 @@ class _TempProject(QuietAdvisoriesMixin, unittest.TestCase):
         self.ledger = Ledger(self.root / ".gzkit" / "ledger.jsonl")
         self.ledger.create()
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 

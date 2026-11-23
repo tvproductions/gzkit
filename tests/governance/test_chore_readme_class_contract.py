@@ -12,7 +12,7 @@ the audit, fails here until the contract says so.
 import re
 import unittest
 from pathlib import Path
-from typing import get_args
+from typing import get_args, override
 
 from gzkit.commands.chores_declaration import ChoreClass
 from gzkit.governance.trust_audits.chores import _RUNG_ORDER
@@ -33,6 +33,7 @@ def _table_keys(text: str, heading: str) -> list[str]:
 
 
 class TestReadmeNamesTheEnforcedVocabulary(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self.text = _README.read_text(encoding="utf-8")
 

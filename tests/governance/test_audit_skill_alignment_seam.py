@@ -23,6 +23,7 @@ import tempfile
 import unittest
 import unittest.mock
 from pathlib import Path
+from typing import override
 
 from gzkit.governance.trust_audits.cli import audit_skill_alignment
 from gzkit.traceability import covers
@@ -31,6 +32,7 @@ from gzkit.traceability import covers
 class TestAuditSkillAlignmentSeam(unittest.TestCase):
     """REQ-0.0.69-03-04 — fail-open seam regression for audit_skill_alignment."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
@@ -38,6 +40,7 @@ class TestAuditSkillAlignmentSeam(unittest.TestCase):
         # fire, ensuring execution reaches the _known_cli_verb_paths() call.
         (self.root / ".gzkit" / "skills").mkdir(parents=True)
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 
@@ -90,6 +93,7 @@ if __name__ == "__main__":
 class TestWieldingReadsServedProcedures(unittest.TestCase):
     """REQ-0.35.0-20-03: a verb named only in a served stage procedure counts as wielded."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
@@ -99,6 +103,7 @@ class TestWieldingReadsServedProcedures(unittest.TestCase):
             "---\nname: gz-demo\n---\n\n# demo\n", encoding="utf-8"
         )
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 

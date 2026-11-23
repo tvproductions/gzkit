@@ -11,7 +11,7 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 from unittest.mock import patch
 
 from pydantic import ValidationError as PydanticValidationError
@@ -113,6 +113,7 @@ def _departure(dfs_id: str, duration: str = "temporary", **fields: object) -> di
 class _Tree(unittest.TestCase):
     """A temp project with a valid catalog; each test breaks one thing."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)

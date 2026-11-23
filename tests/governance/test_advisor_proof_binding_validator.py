@@ -13,6 +13,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.governance.trust_audits.advisor_proof_binding import (
     validate_advisor_proof_binding,
@@ -85,12 +86,14 @@ def _write_schema(project_root: Path, *, proof_min_items: int | None = 1) -> Pat
 
 
 class _ProjectRootMixin(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.project_root = Path(self._tmp.name)
         # By default plant a conforming schema so unrelated scopes don't fire.
         _write_schema(self.project_root, proof_min_items=1)
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 

@@ -16,6 +16,7 @@ never a write to L1 canon.
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.airlock.exit import (
     EXIT_DECISION_MENU,
@@ -47,6 +48,7 @@ class _AirlockExitCase(SilencedConsoleTestCase):
     has no CLI capture and leaks to the suite's stdout. No test here asserts on
     that output — the assertions read ledger events and returned models."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.tmp = Path(self.enterContext(tempfile.TemporaryDirectory()))

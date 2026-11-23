@@ -14,6 +14,7 @@ import re
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from typing import override
 
 from gzkit.cli import main
 from gzkit.traceability import covers
@@ -50,6 +51,7 @@ def _flag_names_from_help(help_text: str) -> set[str]:
 class GzJustifyManpageContract(unittest.TestCase):
     """Manpage at docs/user/manpages/justify.md must satisfy REQ-0.0.19-05-01."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         cls._content = _MANPAGE_PATH.read_text(encoding="utf-8") if _MANPAGE_PATH.exists() else ""
@@ -159,6 +161,7 @@ _COMMANDS_INDEX = _PROJECT_ROOT / "docs" / "user" / "manpages" / "index.md"
 class GzJustifyCommandDocContract(unittest.TestCase):
     """Operator command doc at docs/user/manpages/justify.md (REQ-0.0.19-05-02)."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         cls._doc = _COMMAND_DOC_PATH.read_text(encoding="utf-8")
@@ -199,6 +202,7 @@ class GzJustifyCommandDocContract(unittest.TestCase):
 class GzJustifyOperatorRunbookContract(unittest.TestCase):
     """Operator runbook integration (REQ-0.0.19-05-03)."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         cls._runbook = _OPERATOR_RUNBOOK.read_text(encoding="utf-8")
@@ -243,6 +247,7 @@ class GzJustifyOperatorRunbookContract(unittest.TestCase):
 class GzJustifyGovernanceRunbookContract(unittest.TestCase):
     """Governance runbook 5b extension (REQ-0.0.19-05-04)."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         cls._runbook = _GOVERNANCE_RUNBOOK.read_text(encoding="utf-8")

@@ -5,6 +5,7 @@ and behavioral docstring presence.
 """
 
 import unittest
+from typing import override
 
 from gzkit.flags.decisions import FeatureDecisions, _reset_decisions, get_decisions
 from gzkit.flags.models import FlagCategory, FlagSpec
@@ -66,9 +67,11 @@ class TestProductProofEnforced(unittest.TestCase):
 class TestGetDecisionsSingleton(unittest.TestCase):
     """get_decisions() module-level singleton."""
 
+    @override
     def setUp(self):
         _reset_decisions()
 
+    @override
     def tearDown(self):
         _reset_decisions()
 

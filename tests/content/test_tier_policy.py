@@ -4,6 +4,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from gzkit.content.composer import compose
@@ -306,11 +307,13 @@ class TestComposerRoutesThroughPolicy(unittest.TestCase):
     policy, not a duplicated inline check. If the composer kept its own inline
     check, the patched-policy test below would see zero calls."""
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self._root = Path(self._tempdir.name)
         _seed_composer_project(self._root)
 
+    @override
     def tearDown(self) -> None:
         self._tempdir.cleanup()
 

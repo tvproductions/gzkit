@@ -12,7 +12,7 @@ RO-9 tranche 3 the `dist` job builds and the `pypi` job publishes.
 
 import unittest
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 
 import yaml
 
@@ -34,6 +34,7 @@ def _step_index(steps: list[dict[str, Any]], needle: str) -> int:
 class TestPypiDispatch(unittest.TestCase):
     """Since RO-9 tranche 3, `dist` builds the named tag and `pypi` publishes it."""
 
+    @override
     def setUp(self) -> None:
         self.workflow = _load()
         self.jobs = self.workflow["jobs"]
@@ -77,6 +78,7 @@ class TestPypiDispatch(unittest.TestCase):
 class TestPublishThroughUv(unittest.TestCase):
     """RO-9 tranche 3: the build holds no credential, and a published version is left alone."""
 
+    @override
     def setUp(self) -> None:
         self.workflow = _load()
         self.jobs = self.workflow["jobs"]

@@ -9,6 +9,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from gzkit.arb.ruff_reporter import run_ruff_via_arb
@@ -37,6 +38,7 @@ def _fake_run_factory(ruff_returncode: int, ruff_stdout: str = "", ruff_stderr: 
 class TestRunRuffViaArb(unittest.TestCase):
     """run_ruff_via_arb wraps ruff and emits schema-compliant lint receipts."""
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self._receipts_dir = Path(self._tempdir.name) / "receipts"
@@ -45,6 +47,7 @@ class TestRunRuffViaArb(unittest.TestCase):
         self._prior_env = os.environ.get("GZKIT_ARB_RECEIPTS_ROOT")
         os.environ["GZKIT_ARB_RECEIPTS_ROOT"] = str(self._receipts_dir)
 
+    @override
     def tearDown(self) -> None:
         if self._prior_env is None:
             os.environ.pop("GZKIT_ARB_RECEIPTS_ROOT", None)

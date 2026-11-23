@@ -18,7 +18,7 @@ import sys
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal, TextIO
+from typing import Literal, TextIO, override
 
 from gzkit.color_env import should_disable_color, should_force_terminal
 
@@ -101,6 +101,7 @@ class _JsonFormatter(logging.Formatter):
         super().__init__()
         self._callsite = callsite
 
+    @override
     def format(self, record: logging.LogRecord) -> str:
         payload: dict[str, object] = {
             "event": record.getMessage(),
@@ -126,6 +127,7 @@ class _ConsoleFormatter(logging.Formatter):
         self._color = color
         self._callsite = callsite
 
+    @override
     def format(self, record: logging.LogRecord) -> str:
         level = f"[{record.levelname.lower():<8}]"
         if self._color:

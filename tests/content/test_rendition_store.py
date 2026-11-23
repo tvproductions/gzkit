@@ -10,6 +10,7 @@ against (REQ-0.0.37-22-03 substance — replaces the mtime tautology).
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.content.models.corpus import Corpus, CorpusEntry
 from gzkit.content.rendition_store import (
@@ -45,11 +46,13 @@ def _entry(
 
 
 class TestRenditionStorePath(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self._root = Path(self._tempdir.name)
         (self._root / ".gzkit").mkdir()
 
+    @override
     def tearDown(self) -> None:
         self._tempdir.cleanup()
 
@@ -69,11 +72,13 @@ class TestRenditionStorePath(unittest.TestCase):
 
 
 class TestRenditionStoreExists(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self._root = Path(self._tempdir.name)
         (self._root / ".gzkit").mkdir()
 
+    @override
     def tearDown(self) -> None:
         self._tempdir.cleanup()
 
@@ -90,11 +95,13 @@ class TestRenditionStoreExists(unittest.TestCase):
 
 
 class TestRenditionStoreLoadSave(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self._root = Path(self._tempdir.name)
         (self._root / ".gzkit").mkdir()
 
+    @override
     def tearDown(self) -> None:
         self._tempdir.cleanup()
 
@@ -185,11 +192,13 @@ class TestCorpusFingerprint(unittest.TestCase):
 class TestRenditionProvenanceSidecar(unittest.TestCase):
     """The provenance sidecar freezes the corpus fingerprint at commit time (REQ-0.0.37-22-03)."""
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self._root = Path(self._tempdir.name)
         (self._root / ".gzkit").mkdir()
 
+    @override
     def tearDown(self) -> None:
         self._tempdir.cleanup()
 

@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from contextlib import AbstractContextManager
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 from unittest.mock import MagicMock, patch
 
 from gzkit.traceability import covers
@@ -51,6 +51,7 @@ def _chores_root_patcher(tmp_path: Path) -> AbstractContextManager[Any]:
 class TestChoreProposeGhiTtyConfirm(unittest.TestCase):
     """REQ-0.0.26-04-01: TTY + PROPOSE confirmation → GHI filed."""
 
+    @override
     def setUp(self) -> None:
         import contextlib  # noqa: PLC0415
         import io  # noqa: PLC0415
@@ -58,6 +59,7 @@ class TestChoreProposeGhiTtyConfirm(unittest.TestCase):
         self._stdout_redirect = contextlib.redirect_stdout(io.StringIO())
         self._stdout_redirect.__enter__()
 
+    @override
     def tearDown(self) -> None:
         self._stdout_redirect.__exit__(None, None, None)
 
@@ -208,6 +210,7 @@ class TestChoreProposeGhiTtyConfirm(unittest.TestCase):
 class TestChoreProposeGhiHeadless(unittest.TestCase):
     """REQ-0.0.26-04-02: Headless → no GHI, record advisory=True."""
 
+    @override
     def setUp(self) -> None:
         import contextlib  # noqa: PLC0415
         import io  # noqa: PLC0415
@@ -215,6 +218,7 @@ class TestChoreProposeGhiHeadless(unittest.TestCase):
         self._stdout_redirect = contextlib.redirect_stdout(io.StringIO())
         self._stdout_redirect.__enter__()
 
+    @override
     def tearDown(self) -> None:
         self._stdout_redirect.__exit__(None, None, None)
 
@@ -255,6 +259,7 @@ class TestChoreProposeGhiHeadless(unittest.TestCase):
 class TestChoreProposeGhiIdempotent(unittest.TestCase):
     """REQ-0.0.26-04-03: Idempotency checks."""
 
+    @override
     def setUp(self) -> None:
         import contextlib  # noqa: PLC0415
         import io  # noqa: PLC0415
@@ -262,6 +267,7 @@ class TestChoreProposeGhiIdempotent(unittest.TestCase):
         self._stdout_redirect = contextlib.redirect_stdout(io.StringIO())
         self._stdout_redirect.__enter__()
 
+    @override
     def tearDown(self) -> None:
         self._stdout_redirect.__exit__(None, None, None)
 

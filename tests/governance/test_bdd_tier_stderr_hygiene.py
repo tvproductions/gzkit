@@ -22,6 +22,7 @@ import sys
 import types
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.triangle import extract_reqs_from_brief
 
@@ -90,6 +91,7 @@ class FixtureBriefParses(unittest.TestCase):
 class ExpectedWarningCapture(unittest.TestCase):
     """Scenarios whose observable is a warning capture it rather than leaking it."""
 
+    @override
     def setUp(self) -> None:
         self.env = _load("_bdd_environment", _PROJECT_ROOT / "features" / "environment.py")
         self.context = types.SimpleNamespace()

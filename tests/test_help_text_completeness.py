@@ -15,6 +15,7 @@ Walks the entire ``gz`` parser tree and asserts:
 import argparse
 import re
 import unittest
+from typing import override
 
 from gzkit.traceability import covers
 
@@ -46,6 +47,7 @@ def _walk_arguments(parser, path="gz"):
 class TestHelpTextCompleteness(unittest.TestCase):
     """Recursive parser audit for CLI help text completeness."""
 
+    @override
     @classmethod
     def setUpClass(cls):
         from gzkit.cli.main import _build_parser

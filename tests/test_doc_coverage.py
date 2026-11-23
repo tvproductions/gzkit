@@ -8,7 +8,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from typing import TypeVar
+from typing import TypeVar, override
 
 from pydantic import ValidationError
 
@@ -61,6 +61,7 @@ def covers(target: str):
 class TestDiscoverCommands(unittest.TestCase):
     """Test AST-based command discovery against the real cli/main.py."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         cli_dir = Path(__file__).resolve().parent.parent / "src" / "gzkit" / "cli"
@@ -450,6 +451,7 @@ class TestModels(unittest.TestCase):
 class TestIntegration(unittest.TestCase):
     """End-to-end integration tests using the actual project root."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         cls.project_root = Path(__file__).resolve().parent.parent
@@ -747,6 +749,7 @@ class TestFindUndeclaredCommands(unittest.TestCase):
 class TestManifestIntegration(unittest.TestCase):
     """Test the real manifest against the real project."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         cls.project_root = Path(__file__).resolve().parent.parent
@@ -880,6 +883,7 @@ class TestGapReportModels(unittest.TestCase):
 class TestBuildGapReport(unittest.TestCase):
     """Test the runner gap report against the real project."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         cls.project_root = Path(__file__).resolve().parent.parent
@@ -919,6 +923,7 @@ class TestBuildGapReport(unittest.TestCase):
 class TestRunDocCoverage(unittest.TestCase):
     """Test the run_doc_coverage entry point."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         import contextlib
@@ -970,6 +975,7 @@ class TestRunDocCoverage(unittest.TestCase):
 class TestChoreRegistration(unittest.TestCase):
     """Verify the doc-coverage chore is properly registered."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         cls.project_root = Path(__file__).resolve().parent.parent

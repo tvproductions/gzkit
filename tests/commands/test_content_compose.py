@@ -10,7 +10,7 @@ import io
 import json
 import unittest
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 from unittest.mock import MagicMock, patch
 
 from gzkit.cli.main import main
@@ -106,6 +106,7 @@ def _seed_generated_fixture(root: Path, *, manifest: dict | None = None) -> None
 
 
 class TestContentComposeCmd(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 

@@ -17,6 +17,7 @@ import unittest
 import unittest.mock
 from pathlib import Path
 from types import SimpleNamespace
+from typing import override
 from unittest.mock import patch
 
 from gzkit.cli import main
@@ -38,6 +39,7 @@ def _never() -> Path:
 
 
 class StampRefusal(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
@@ -135,6 +137,7 @@ class StampRefusal(unittest.TestCase):
 class LinkedWorktreeAdmitted(unittest.TestCase):
     """Ruling 51: a linked worktree of the stamped root, under ``.claude/worktrees/``, is it."""
 
+    @override
     def setUp(self) -> None:
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)

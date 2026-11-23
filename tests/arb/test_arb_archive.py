@@ -10,6 +10,7 @@ import tempfile
 import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import override
 
 from gzkit.arb.archive import execute_receipt_archive, plan_receipt_archive
 
@@ -27,6 +28,7 @@ def _write_receipt(root: Path, name: str, *, age_days: int | None) -> Path:
 
 
 class ReceiptArchiveTestCase(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.base = Path(self._tmp.name)

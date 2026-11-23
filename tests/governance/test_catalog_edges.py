@@ -17,6 +17,7 @@ import textwrap
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import override
 from unittest.mock import patch
 
 from gzkit.advisory import advisory_lines
@@ -253,6 +254,7 @@ class TestBddAlignment(unittest.TestCase):
 class TestAuditOverAProject(unittest.TestCase):
     """`audit_catalog` reads the PRD, the manifest, the ledger, features and tests itself."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)

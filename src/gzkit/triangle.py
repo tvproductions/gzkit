@@ -8,6 +8,7 @@ import enum
 import logging
 import pathlib
 import re
+from typing import override
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -74,6 +75,7 @@ class ReqId(BaseModel):
             criterion_index=m.group("criterion"),
         )
 
+    @override
     def __str__(self) -> str:
         """Return the canonical REQ identifier string."""
         return compose_req_id(self.semver, self.obpi_item, self.criterion_index)

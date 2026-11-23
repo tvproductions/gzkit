@@ -10,6 +10,7 @@ import re
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.templates import load_template, render_surface_template
 from gzkit.traceability import covers
@@ -18,6 +19,7 @@ from gzkit.traceability import covers
 class TestAgentsPersonaSection(unittest.TestCase):
     """Verify the mandatory Persona section in generated AGENTS.md."""
 
+    @override
     def setUp(self) -> None:
         self.content = render_surface_template(
             "agents",
@@ -64,6 +66,7 @@ class TestAgentsPersonaSection(unittest.TestCase):
 class TestAgentsPersonaReference(unittest.TestCase):
     """Verify persona reference integration in AGENTS.md (ADR-0.0.12-07)."""
 
+    @override
     def setUp(self) -> None:
         self.content = render_surface_template(
             "agents",

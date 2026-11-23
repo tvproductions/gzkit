@@ -11,6 +11,7 @@ import subprocess
 import sys
 import unittest
 from pathlib import Path
+from typing import override
 from unittest import mock
 
 from gzkit.cli import main
@@ -48,6 +49,7 @@ class TestImport(unittest.TestCase):
 
 
 class TestWithdrawLegacy(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self.runner = CliRunner()
         self.enterContext(self.runner.isolated_filesystem())

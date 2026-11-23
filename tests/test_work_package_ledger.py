@@ -13,6 +13,7 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import override
 
 from gzkit.events import (
     BaselinedReq,
@@ -177,6 +178,7 @@ _LIFECYCLE = tuple(_PAYLOADS)
 
 
 class _LedgerCase(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._dir = TemporaryDirectory()
         self.addCleanup(self._dir.cleanup)
@@ -265,6 +267,7 @@ class TransitionTests(_LedgerCase):
 
 
 class FreezeTests(_LedgerCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.move("initiated", operator_text="start the resume package")
@@ -307,6 +310,7 @@ class FreezeTests(_LedgerCase):
 class RepairLifecycleTests(_LedgerCase):
     """RP-12 ruling 44: a repair package moves only initiated -> closed; ruling 62 its close."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.move("initiated", work_package="WP-02-astral", operator_text="start the repair")
@@ -486,6 +490,7 @@ class SealedFootprintTests(_LedgerCase):
 
 
 class CloseTests(_LedgerCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.walk_to("accepted")
@@ -497,9 +502,9 @@ class CloseTests(_LedgerCase):
                 self.assert_refused(self.move, to_state="closed", **fields)
 
     def test_every_alteration_is_accounted_and_only_held_departures_named_open(self) -> None:
-        for override in ({"configuration_changes": ()}, {"open_departures": ("DFS-9",)}):
-            with self.subTest(override=override):
-                self.assert_refused(self.move, to_state="closed", **{**_CLOSE, **override})
+        for alteration in ({"configuration_changes": ()}, {"open_departures": ("DFS-9",)}):
+            with self.subTest(alteration=alteration):
+                self.assert_refused(self.move, to_state="closed", **{**_CLOSE, **alteration})
 
     def test_the_close_records_the_decision_and_the_open_departures(self) -> None:
         event = self.move("closed", **_CLOSE)
@@ -535,6 +540,7 @@ class LaneTests(unittest.TestCase):
 
 
 class ChangeTests(_LedgerCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.move("initiated", operator_text="start the resume package")
@@ -605,6 +611,7 @@ class ChangeTests(_LedgerCase):
 class IssueClosedTests(_LedgerCase):
     """Ruling 10: an issue's close is recorded against its repair package, never closing it."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         request = TransitionRequest(

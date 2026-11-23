@@ -11,6 +11,7 @@ missing REQ-22-01 substance — ``save_rendition`` previously had no governed ca
 import json
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.cli.main import main
 from gzkit.content.corpus_store import append_entry, load_corpus
@@ -129,6 +130,7 @@ def _ledger_line_count() -> int:
 
 
 class TestContentCommitCmd(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -237,6 +239,7 @@ class TestCommitAttestationGranularity(unittest.TestCase):
     change to how the exemption is detected cannot quietly change WHAT is exempt.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -336,6 +339,7 @@ class TestCommitNamesThePlaybackWriter(unittest.TestCase):
     the three-part bar in `.claude/rules/guardrail-feedback-prose.md`.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -395,6 +399,7 @@ class TestContentCommitRetentionGate(unittest.TestCase):
     operator ruling that compression may never lose meaning (GHI #1090, #1091).
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -1326,6 +1331,7 @@ class TestContentCommitRetentionGateVacuousCases(unittest.TestCase):
     real and must return empty.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -1373,6 +1379,7 @@ class TestContentCommitRetentionGateGHI1090Replay(unittest.TestCase):
     compressed candidate: a map marking it KEPT fails the span check.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 

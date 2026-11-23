@@ -12,6 +12,7 @@ import json
 import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from pydantic import ValidationError
@@ -142,6 +143,7 @@ class TestStatusReadsOneCheckPackage(unittest.TestCase):
 class TestRegistryAdmitsTheAdvice(unittest.TestCase):
     """Every registered chore carries a provisional level and a date interval."""
 
+    @override
     def setUp(self) -> None:
         self.chores = json.loads(_REGISTRY.read_text(encoding="utf-8"))["chores"]
 

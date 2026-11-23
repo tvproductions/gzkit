@@ -13,6 +13,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 from unittest import mock
 
 from gzkit.red_witness import (
@@ -79,6 +80,7 @@ class TestClassifyFailure(unittest.TestCase):
 class _GitFixture(unittest.TestCase):
     """A real git repo: a base commit, then working-tree changes on top."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)

@@ -22,6 +22,7 @@ import threading
 import types
 import unittest
 from pathlib import Path
+from typing import override
 from unittest import mock
 
 from gzkit import file_lock
@@ -61,11 +62,13 @@ class _Contender:
 class TestExclusiveFileLock(unittest.TestCase):
     """The primitive's own contract."""
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self.root = Path(self._tempdir.name)
         self.target = self.root / "store.jsonl"
 
+    @override
     def tearDown(self) -> None:
         self._tempdir.cleanup()
 
@@ -149,10 +152,12 @@ class TestContendedWindowsAcquirerKeepsWaiting(unittest.TestCase):
     _LK_LOCK = 1
     _LK_NBLCK = 2
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self.target = Path(self._tempdir.name) / "store.jsonl"
 
+    @override
     def tearDown(self) -> None:
         self._tempdir.cleanup()
 
@@ -284,10 +289,12 @@ class TestOneImplementationTwoCallers(unittest.TestCase):
     drift GHI #945 exists to make impossible, so it is asserted directly.
     """
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self.root = Path(self._tempdir.name)
 
+    @override
     def tearDown(self) -> None:
         self._tempdir.cleanup()
 

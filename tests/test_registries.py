@@ -10,6 +10,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.registries import (
     RegistryError,
@@ -22,6 +23,7 @@ from gzkit.registries import (
 class SeamReads(unittest.TestCase):
     """`load_registry` parses a registry or raises one typed error."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
@@ -73,6 +75,7 @@ class SeamReads(unittest.TestCase):
 class SeamSubdirectories(unittest.TestCase):
     """The seam admits its one declared subdirectory, `catalog/`, and no other path (RO-3)."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
@@ -120,6 +123,7 @@ class SeamSubdirectories(unittest.TestCase):
 class SeamFieldReads(unittest.TestCase):
     """`load_registry_field` defaults for an absent field, never for a broken file."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)

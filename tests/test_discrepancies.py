@@ -18,7 +18,7 @@ import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 from gzkit.events import (
     BaselinedReq,
@@ -156,6 +156,7 @@ class _DiscrepancyCase(unittest.TestCase):
     """The repair package initiated, its order commenced with no isolation, an Implementer
     dispatched on it against the order's frozen REQ."""
 
+    @override
     def setUp(self) -> None:
         self._dir = TemporaryDirectory()
         self.addCleanup(self._dir.cleanup)
@@ -772,6 +773,7 @@ class ClearTests(_DiscrepancyCase):
 
 
 class ClearRefusalTests(_DiscrepancyCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.line = self.recorded(grade="due-by-event", due_by="the fix")
@@ -932,6 +934,7 @@ class ClearRefusalTests(_DiscrepancyCase):
 class CarryClearTests(_DiscrepancyCase):
     """Ruling 185: a line acceptance carried a tag on is cleared only by that tag's clear."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.seat_tag("TAG-01-size")

@@ -14,6 +14,7 @@ Tests assert semantics, not strings (Invariant 6f).
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.governance.trust_audits import audit_kind_invariance
 from gzkit.traceability import covers
@@ -55,10 +56,12 @@ _SUBSTANTIVE_BODY = (
 
 
 class TestKindInvarianceAudit(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._tmpdir = tempfile.TemporaryDirectory()
         self.root = Path(self._tmpdir.name)
 
+    @override
     def tearDown(self) -> None:
         self._tmpdir.cleanup()
 

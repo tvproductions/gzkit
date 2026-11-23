@@ -20,6 +20,7 @@ import threading
 import unittest
 from itertools import starmap
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 import gzkit.commands.content.unown as unown_module
@@ -216,6 +217,7 @@ def _declaration() -> dict:
 class TestContentOwnReproducesTheMissingTransition(unittest.TestCase):
     """GHI #974: the overgrown-unowned state has exactly one content-preserving exit."""
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -310,6 +312,7 @@ class TestContentOwnReproducesTheMissingTransition(unittest.TestCase):
 class TestContentOwnFailsClosed(unittest.TestCase):
     """Every refusal writes nothing: declaration byte-unchanged, no witness."""
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -412,6 +415,7 @@ class TestContentOwnFailsClosed(unittest.TestCase):
 
 
 class TestContentOwnPreservesUnrelatedState(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -444,6 +448,7 @@ class TestContentOwnPreservesUnrelatedState(unittest.TestCase):
 class TestContentOwnIsRecoverable(unittest.TestCase):
     """The transition shares the un-owning journal and its recovery protocol."""
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -538,6 +543,7 @@ class TestContentOwnIsRecoverable(unittest.TestCase):
 class TestOwnAndUnownShareOneJournal(unittest.TestCase):
     """One surface, one pending transition: whichever verb runs next completes it."""
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -599,6 +605,7 @@ class TestInterruptedOwningIsRecoverableButNotCurrent(unittest.TestCase):
     `tests/commands/test_content_unown.py::TestDeclarationRolledBackUnderAPendingJournal`.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -672,6 +679,7 @@ class TestOwningReplayMayNotMintFromAStalePredecessor(unittest.TestCase):
     `tests/commands/test_content_unown.py::TestReplayMayNotMintFromAStalePredecessor`.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -722,6 +730,7 @@ class TestOwningReplayMayNotMintFromAStalePredecessor(unittest.TestCase):
 
 
 class TestContentOwnIsSerialized(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -797,6 +806,7 @@ class TestContentOwnReplayJournalValidation(unittest.TestCase):
     that only the check under test can refuse it.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -888,6 +898,7 @@ class TestGrowthRefusalPrescribesAUsableRecovery(unittest.TestCase):
     loader accepts.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -1009,6 +1020,7 @@ class TestUnownHelpAttributesTheLoweringPath(unittest.TestCase):
     touches the declaration; `gz content own` is the lowering move. Both halves
     are bound to observed behaviour, never to the help text alone."""
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -1115,6 +1127,7 @@ class TestDeclarationDamageRefusalsPrescribeConditionalRecovery(unittest.TestCas
     Everything here drives the real loader and the real CLI.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 

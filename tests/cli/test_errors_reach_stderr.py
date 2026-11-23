@@ -12,6 +12,7 @@ import io
 import logging
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
+from typing import override
 from unittest.mock import patch
 
 from gzkit.cli.main import main
@@ -22,11 +23,13 @@ from tests.commands.common import CliRunner
 class TestTheErrorBoundaryWritesToStderr(unittest.TestCase):
     """Each failure branch of `main()` leaves stdout empty and reports on stderr."""
 
+    @override
     def setUp(self) -> None:
         root = logging.getLogger()
         self._root_handlers = list(root.handlers)
         self._root_level = root.level
 
+    @override
     def tearDown(self) -> None:
         root = logging.getLogger()
         root.handlers[:] = self._root_handlers

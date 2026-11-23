@@ -15,6 +15,7 @@ import shlex
 import unittest
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import override
 from unittest import mock
 
 from gzkit.cli.main import main
@@ -83,6 +84,7 @@ def _seed_committed_rendition(
 
 
 class TestContentRemember(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -198,6 +200,7 @@ class _AdvisoryWriteFails(io.StringIO):
         super().__init__()
         self.hits = 0
 
+    @override
     def write(self, text: str) -> int:
         if "Warning: this" in text:
             self.hits += 1
@@ -215,6 +218,7 @@ class TestContentRememberDriftWarning(unittest.TestCase):
     code, because the append itself succeeded and IS the intended effect.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -650,6 +654,7 @@ class TestContentRememberRefusesLiveDuplicates(unittest.TestCase):
     because byte-identical copies are both satisfied by one rendered occurrence.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -742,6 +747,7 @@ class TestRememberWitnessProvenance(unittest.TestCase):
     optional on every tier and its absence is never an error.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 

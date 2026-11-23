@@ -13,6 +13,7 @@ nothing downstream would catch the substitution.
 import json
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.cli.main import main
 from gzkit.content.corpus_store import append_entry
@@ -44,6 +45,7 @@ def _events() -> list[dict]:
 
 
 class TestReconcileRetirements(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 

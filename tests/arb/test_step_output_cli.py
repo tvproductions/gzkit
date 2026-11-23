@@ -7,11 +7,13 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 
 class TestStepOutputRetentionCli(unittest.TestCase):
     """Exercise parser, handler, child execution and receipt storage without mocks."""
 
+    @override
     def setUp(self):
         self.workspace = tempfile.TemporaryDirectory()
         self.addCleanup(self.workspace.cleanup)

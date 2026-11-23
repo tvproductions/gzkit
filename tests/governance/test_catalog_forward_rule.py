@@ -14,6 +14,7 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import override
 from unittest.mock import patch
 
 from gzkit.governance.trust_audits.catalog import audit_catalog
@@ -172,6 +173,7 @@ class TestRegistry(unittest.TestCase):
 class TestAuditRefuses(unittest.TestCase):
     """The audit refuses the unnamed events as one finding (RO-5 tranche 4)."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)

@@ -11,7 +11,7 @@ from contextlib import contextmanager, redirect_stderr, redirect_stdout
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, override
 from unittest.mock import patch
 
 from rich.color import ColorSystem
@@ -137,6 +137,7 @@ class SilencedConsoleTestCase(unittest.TestCase):
     output — their output is incidental, so no assertion is weakened.
     """
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         patcher = patch.object(_cli_console, "quiet", True)

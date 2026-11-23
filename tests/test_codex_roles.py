@@ -6,6 +6,7 @@ import tempfile
 import tomllib
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.codex_roles import (
     MARKER,
@@ -110,6 +111,7 @@ developer_instructions = 'nested'
 
 
 class TestCodexRoleSync(unittest.TestCase):
+    @override
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
@@ -229,6 +231,7 @@ class TestCodexRoleSync(unittest.TestCase):
 class TestClaudeRoleSync(unittest.TestCase):
     """Claude role files are generated from canon, their frontmatter kept (GHI #1328)."""
 
+    @override
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)

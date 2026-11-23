@@ -9,6 +9,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.governance.trust_audits.red_parity import CUTOVER, audit_red_parity
 
@@ -28,6 +29,7 @@ class _Project(unittest.TestCase):
     OBPI = "OBPI-0.1.0-01-thing"
     REQ = "REQ-0.1.0-01-01"
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)

@@ -2,6 +2,7 @@
 
 import json
 import unittest
+from typing import override
 
 from gzkit.acceptance_context import build_review_context
 from gzkit.acceptance_execution import canonical_obligations, input_digest
@@ -13,6 +14,7 @@ from tests.test_acceptance_execution import REQ
 
 
 class ReviewContextTests(unittest.TestCase):
+    @override
     def setUp(self):
         self.fixture = store_tests.AcceptanceStoreTests()
         self.fixture.setUp()

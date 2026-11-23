@@ -6,7 +6,7 @@ the OBPI-receipt evidence payloads) live in :mod:`gzkit.event_evidence`.
 """
 
 from datetime import UTC, datetime
-from typing import Annotated, Any, ClassVar, Literal
+from typing import Annotated, Any, ClassVar, Literal, override
 
 from pydantic import (
     BaseModel,
@@ -950,6 +950,7 @@ class RenditionLandedEvent(_EventBase):
     consumers: list[LandedConsumer] = Field(..., min_length=1)
     task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
 
+    @override
     @model_serializer
     def _serialize(self) -> dict[str, Any]:
         """Flatten like every event, dumping the nested manifest to plain JSON values."""

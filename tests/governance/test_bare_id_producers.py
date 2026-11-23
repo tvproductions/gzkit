@@ -10,6 +10,7 @@ the bare id also let a second agent claim the same brief under its slug.
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.airlock.enter import airlock_enter
 from gzkit.airlock.exit import airlock_exit
@@ -80,6 +81,7 @@ class SlugIdForTests(unittest.TestCase):
 class AirlockProducerTests(unittest.TestCase):
     """``airlock_in`` / ``airlock_out`` book the brief's slug for a bare target."""
 
+    @override
     def setUp(self) -> None:
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)

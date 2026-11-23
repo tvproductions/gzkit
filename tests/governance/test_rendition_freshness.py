@@ -15,6 +15,7 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.content.models.corpus import Corpus, CorpusEntry
 from gzkit.content.rendition_store import (
@@ -32,12 +33,14 @@ from tests.mx.held import open_marker
 
 
 class _TempProjectMixin(QuietAdvisoriesMixin):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
         (self.root / ".gzkit").mkdir()
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 

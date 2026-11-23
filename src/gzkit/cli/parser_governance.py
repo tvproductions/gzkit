@@ -10,6 +10,7 @@ the resolved callable.
 """
 
 import argparse
+from typing import override
 
 from gzkit.cli.helpers import (
     add_adr_option,
@@ -53,6 +54,7 @@ class _SingleValueAction(argparse.Action):
     one intent reaches the handler.
     """
 
+    @override
     def __call__(
         self,
         parser: argparse.ArgumentParser,

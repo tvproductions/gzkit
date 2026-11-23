@@ -7,7 +7,7 @@ decorated callables, and the structural fence (single enforcement-claim surface)
 
 import functools
 import unittest
-from typing import Any
+from typing import Any, override
 
 from gzkit.enforcement import (
     EnforcementClaimRecord,
@@ -25,10 +25,12 @@ _TEST_CLAIMS = frozenset({"lint", "format", "typecheck", "test"})
 class TestEnforcesRegistration(unittest.TestCase):
     """@enforces registers an EnforcementClaimRecord; registry is queryable (REQ-15-01)."""
 
+    @override
     def setUp(self) -> None:
         reset_enforcement_registry()
         set_known_claims(_TEST_CLAIMS)
 
+    @override
     def tearDown(self) -> None:
         reset_enforcement_registry()
 
@@ -106,10 +108,12 @@ class TestEnforcesRegistration(unittest.TestCase):
 class TestEnforcesFailClose(unittest.TestCase):
     """Decoration fails closed on malformed/typo or unknown claim id (REQ-15-02)."""
 
+    @override
     def setUp(self) -> None:
         reset_enforcement_registry()
         set_known_claims(_TEST_CLAIMS)
 
+    @override
     def tearDown(self) -> None:
         reset_enforcement_registry()
 
@@ -179,10 +183,12 @@ class TestEnforcesFailClose(unittest.TestCase):
 class TestEnforcesMetadataOnly(unittest.TestCase):
     """Registration is metadata-only — decorated callable runs unchanged (REQ-15-03)."""
 
+    @override
     def setUp(self) -> None:
         reset_enforcement_registry()
         set_known_claims(_TEST_CLAIMS)
 
+    @override
     def tearDown(self) -> None:
         reset_enforcement_registry()
 
@@ -260,10 +266,12 @@ class ClaimRecordsItsDelegatedGateTests(unittest.TestCase):
     The delegation is recoverable because the registry HOLDS the live callable.
     """
 
+    @override
     def setUp(self) -> None:
         reset_enforcement_registry()
         set_known_claims(_TEST_CLAIMS)
 
+    @override
     def tearDown(self) -> None:
         reset_enforcement_registry()
 
@@ -360,10 +368,12 @@ class ADelegatedClaimNamesItsCommandNotItsPlumbingTests(unittest.TestCase):
     the entrypoint is the gate. The declaration names the command and clears the targets.
     """
 
+    @override
     def setUp(self) -> None:
         reset_enforcement_registry()
         set_known_claims(_TEST_CLAIMS)
 
+    @override
     def tearDown(self) -> None:
         reset_enforcement_registry()
 
@@ -505,10 +515,12 @@ class LiveRegistryResolvesTheKnownTruePairsTests(unittest.TestCase):
 class TestEnforcesStructuralFence(unittest.TestCase):
     """Single enforcement-claim surface — no second NC framework forked (REQ-15-04)."""
 
+    @override
     def setUp(self) -> None:
         reset_enforcement_registry()
         set_known_claims(_TEST_CLAIMS)
 
+    @override
     def tearDown(self) -> None:
         reset_enforcement_registry()
 

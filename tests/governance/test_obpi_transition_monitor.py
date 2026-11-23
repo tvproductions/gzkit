@@ -4,6 +4,7 @@ Tests the classifier that validates status transitions against OBPI-01's
 CANONICAL_TRANSITIONS.
 """
 
+from typing import override
 from unittest import TestCase
 
 from gzkit.core.obpi_state_machine import CANONICAL_TRANSITIONS, OBPIState
@@ -14,6 +15,7 @@ from gzkit.traceability import covers
 class TestTransitionMonitor(TestCase):
     """Verify the transition classifier."""
 
+    @override
     def setUp(self) -> None:
         """Initialize the monitor once per test."""
         self.monitor = TransitionMonitor()
@@ -136,6 +138,7 @@ class TestTransitionReachability(TestCase):
     reach nothing, and the machine has no backward edges.
     """
 
+    @override
     def setUp(self) -> None:
         """Initialize the monitor once per test."""
         self.monitor = TransitionMonitor()

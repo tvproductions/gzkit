@@ -23,6 +23,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.hooks.commit_ledger import (
     RECORDER_HOOK_MARKER,
@@ -207,6 +208,7 @@ class RecorderSurvivesPreCommitStash(unittest.TestCase):
 class RecorderHookInstallation(unittest.TestCase):
     """``install_recorder_hook`` writes a hook pre-commit will run, and never clobbers."""
 
+    @override
     def setUp(self) -> None:
         self.hooks_dir = Path(tempfile.mkdtemp(prefix="gzkit-1092-hooks-"))
 

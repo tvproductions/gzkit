@@ -1,6 +1,7 @@
 """Behave environment hooks for isolated BDD scenarios."""
 
 import os
+from typing import override
 
 # Neutralize ambient color-forcing at environment-module import — which behave
 # loads BEFORE any step module — so the pop lands ahead of the step files'
@@ -53,6 +54,7 @@ class _ExpectedWarnings(logging.Handler):
         super().__init__(level=logging.WARNING)
         self.records: list[logging.LogRecord] = []
 
+    @override
     def emit(self, record: logging.LogRecord) -> None:
         self.records.append(record)
 

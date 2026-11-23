@@ -12,6 +12,7 @@ import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import override
 from unittest.mock import patch
 
 from gzkit.cli import main
@@ -94,6 +95,7 @@ class TestTheConsoleTakesAnyText(unittest.TestCase):
 
 
 class TestTheSweep(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self.held = TemporaryDirectory()
         self.addCleanup(self.held.cleanup)
@@ -126,6 +128,7 @@ class TestTheSweep(unittest.TestCase):
 
 
 class TestThroughTheCommands(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self.runner = CliRunner()
         self.enterContext(self.runner.isolated_filesystem())

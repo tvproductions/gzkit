@@ -18,6 +18,7 @@ import unittest
 from datetime import UTC, date, datetime, timedelta, timezone
 from pathlib import Path
 from types import ModuleType
+from typing import override
 from unittest import mock
 
 from gzkit.commands.common import get_project_root
@@ -60,6 +61,7 @@ def _target(start_count: int = 240, rate: int = 20) -> dict:
 class TestCeiling(unittest.TestCase):
     """The ceiling declines with elapsed time, never below zero."""
 
+    @override
     def setUp(self) -> None:
         self.gate = _load_gate()
 
@@ -87,6 +89,7 @@ class TestCeiling(unittest.TestCase):
 class TestOutstandingDebt(unittest.TestCase):
     """Debt is live ops not dispositioned by a file waiver."""
 
+    @override
     def setUp(self) -> None:
         self.gate = _load_gate()
 
@@ -102,6 +105,7 @@ class TestOutstandingDebt(unittest.TestCase):
 class TestVerdict(unittest.TestCase):
     """A stall turns red: debt above the ceiling is a breach."""
 
+    @override
     def setUp(self) -> None:
         self.gate = _load_gate()
 
@@ -127,6 +131,7 @@ class TestScheduleDate(unittest.TestCase):
 
     script = _SCRIPT
 
+    @override
     def setUp(self) -> None:
         self.gate = _load_gate(self.script)
         # 2026-10-06T00:03Z: the UTC date has turned and a caller at UTC-5 still

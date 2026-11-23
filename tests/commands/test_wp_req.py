@@ -11,7 +11,7 @@ exits 3 and writes nothing; an unknown package exits 1.
 import json
 import unittest
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 from unittest.mock import patch
 
 from gzkit.cli import main
@@ -61,6 +61,7 @@ def _reqs() -> list[dict[str, Any]]:
 
 
 class _ReqCase(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self.runner = CliRunner()
         self.enterContext(self.runner.isolated_filesystem())

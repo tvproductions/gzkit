@@ -11,6 +11,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.core.exceptions import PolicyBreachError
 from gzkit.governance.trust_audits import gate_population as gp
@@ -57,6 +58,7 @@ def _audit(entries: list[dict[str, str]] | None, *, members=None, claimed=None) 
 
 
 class TestThePopulationsAreReadFromCode(unittest.TestCase):
+    @override
     def setUp(self):
         self.members = gp.population_members()
 

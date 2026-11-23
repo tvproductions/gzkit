@@ -5,6 +5,7 @@
 
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.templates import (
     MissingTemplateVariableError,
@@ -112,6 +113,7 @@ class TestAgentsTemplateSemantic(unittest.TestCase):
     Prevents sync from silently dropping governance rules.
     """
 
+    @override
     def setUp(self) -> None:
         self.content = render_surface_template(
             "agents",
@@ -201,6 +203,7 @@ class TestRootSurfaceSlimming(unittest.TestCase):
     @covers REQ-0.17.0-03-06
     """
 
+    @override
     def setUp(self) -> None:
         self.agents = render_surface_template(
             "agents",
@@ -261,6 +264,7 @@ class TestObpiDiscoveryChecklistOrder(unittest.TestCase):
     ADR's Decision (Opus 4.7 § 2.3.6.2 failure pattern).
     """
 
+    @override
     def setUp(self) -> None:
         self.content = load_template("obpi")
         self.checklist = self._extract_section(self.content, "## Discovery Checklist")
@@ -342,6 +346,7 @@ class TestObpiTemplateDemoSection(unittest.TestCase):
     invocations. The template prompt is the upstream class fix.
     """
 
+    @override
     def setUp(self) -> None:
         self.content = load_template("obpi")
 
@@ -777,6 +782,7 @@ class TestAdopterScaffoldKeepsFoundationOpen(unittest.TestCase):
     leak in, and the kind must not be quietly dropped out.
     """
 
+    @override
     def setUp(self) -> None:
         self._template = (_PROJECT_ROOT / "src" / "gzkit" / "templates" / "agents.md").read_text(
             encoding="utf-8"

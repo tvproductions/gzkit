@@ -9,6 +9,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from jsonschema import Draft202012Validator
@@ -24,6 +25,7 @@ def _load_schema() -> dict:
 class TestRunStepViaArb(unittest.TestCase):
     """run_step_via_arb wraps arbitrary commands and emits step receipts."""
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self._receipts_dir = Path(self._tempdir.name) / "receipts"
@@ -36,6 +38,7 @@ class TestRunStepViaArb(unittest.TestCase):
         )
         self._git_patcher.start()
 
+    @override
     def tearDown(self) -> None:
         self._git_patcher.stop()
         if self._prior_env is None:
@@ -136,6 +139,7 @@ class TestStepNameCanonicalRegex(unittest.TestCase):
     inconsistency cannot reach attestation. (GHI #441.)
     """
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self._receipts_dir = Path(self._tempdir.name) / "receipts"
@@ -147,6 +151,7 @@ class TestStepNameCanonicalRegex(unittest.TestCase):
         )
         self._git_patcher.start()
 
+    @override
     def tearDown(self) -> None:
         self._git_patcher.stop()
         if self._prior_env is None:

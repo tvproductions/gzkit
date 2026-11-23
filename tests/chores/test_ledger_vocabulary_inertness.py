@@ -32,7 +32,7 @@ import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 from unittest.mock import patch
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -54,6 +54,7 @@ def _load(script: Path = _SCRIPT) -> Any:
 class TheBaselineOnlyEverDecreases(unittest.TestCase):
     """`--report --write` re-baselines DOWNWARD or refuses; it never absorbs growth."""
 
+    @override
     def setUp(self) -> None:
         self.chore = _load()
         # The chore script reports to stdout; keep the suite's output to dots

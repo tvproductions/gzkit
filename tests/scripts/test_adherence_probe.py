@@ -26,6 +26,7 @@ import importlib.util
 import sys
 import unittest
 from pathlib import Path
+from typing import override
 
 _MODULE_PATH = Path(__file__).resolve().parents[2] / "scripts" / "adherence_probe.py"
 _spec = importlib.util.spec_from_file_location("adherence_probe", _MODULE_PATH)
@@ -185,6 +186,7 @@ class TestProbeDoesNotLeakTheAnswer(unittest.TestCase):
 class TestScoring(unittest.TestCase):
     """Recall is scored on distinctive tokens, not on plausibility."""
 
+    @override
     def setUp(self):
         self.section = probe.parse_sections(SURFACE)[0]
 

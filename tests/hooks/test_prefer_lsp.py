@@ -14,6 +14,7 @@ import tempfile
 import types
 import unittest
 from pathlib import Path
+from typing import override
 from unittest import mock
 
 from gzkit.hooks.scripts.lsp import prefer_lsp_script
@@ -26,6 +27,7 @@ def _load_hook() -> types.ModuleType:
 
 
 class _HookCase(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self.hook = _load_hook()
         self._tmp = tempfile.TemporaryDirectory()

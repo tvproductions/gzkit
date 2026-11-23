@@ -19,6 +19,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.arb.validator import CANONICAL_STEP_COMMANDS
 from gzkit.governance.trust_audits import (
@@ -67,6 +68,7 @@ def _write_step_receipt(root: Path, run_id: str, name: str, *, exit_status: int 
 class AttestationReceiptValidatorTest(unittest.TestCase):
     """Worker-function semantics for ``validate_attestation_receipts``."""
 
+    @override
     def setUp(self) -> None:
         self._tmpdir = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmpdir.cleanup)
@@ -74,6 +76,7 @@ class AttestationReceiptValidatorTest(unittest.TestCase):
         self._prev_env = os.environ.get(_RECEIPTS_ENV)
         os.environ[_RECEIPTS_ENV] = str(self.receipts_root)
 
+    @override
     def tearDown(self) -> None:
         if self._prev_env is None:
             os.environ.pop(_RECEIPTS_ENV, None)

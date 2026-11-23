@@ -14,6 +14,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.governance.trust_audits.adversarial_validation import (
     CUTOVER,
@@ -82,6 +83,7 @@ class _Project:
 
 
 class _ProjectTest(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)

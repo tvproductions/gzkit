@@ -20,6 +20,7 @@ import textwrap
 import time
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from gzkit import quality
@@ -47,6 +48,7 @@ def _sleep_argv(seconds: int = _SLEEP_SECONDS) -> list[str]:
 class TestQualityCommandTimeout(unittest.TestCase):
     """The hang bound, its tree kill, and its JSON authority."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
@@ -59,6 +61,7 @@ class TestQualityCommandTimeout(unittest.TestCase):
         locator.start()
         self.addCleanup(locator.stop)
 
+    @override
     def tearDown(self) -> None:
         # The grandchild may still hold its heartbeat file open for a moment on
         # Windows; retry cleanup rather than fail the test on a sharing violation.

@@ -20,6 +20,7 @@ without needing to run on either one.
 import importlib.util
 import unittest
 from pathlib import Path, PureWindowsPath
+from typing import override
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = REPO_ROOT / "scripts" / "settings_local_backup.py"
@@ -37,6 +38,7 @@ def _load_module():
 class SettingsLocalVaultTests(unittest.TestCase):
     """The vault never lands inside the repository it protects."""
 
+    @override
     def setUp(self) -> None:
         self.module = _load_module()
 

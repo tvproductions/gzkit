@@ -7,6 +7,7 @@ checks exercise acceptance sequencing, not the complete project QA suite.
 
 import io
 import json
+from typing import override
 from unittest.mock import patch
 
 from rich.console import Console
@@ -29,6 +30,7 @@ from tests.test_acceptance_store import OBPI, captured_receipt
 
 
 class TestAcceptanceAdvancement(ExecutionFixture):
+    @override
     def setUp(self):
         super().setUp()
         self.write(".gzkit.json", json.dumps({"paths": {"design_root": "design"}}))

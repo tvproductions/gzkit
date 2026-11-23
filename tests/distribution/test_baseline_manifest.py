@@ -11,6 +11,7 @@ surface.
 import json
 import unittest
 from pathlib import Path
+from typing import override
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _MANIFEST_PATH = _PROJECT_ROOT / "data" / "distribution_baseline_manifest.json"
@@ -27,6 +28,7 @@ def _load_manifest() -> dict:
 class TestManifestSchemaValidation(unittest.TestCase):
     """Manifest parses against the frozen schema."""
 
+    @override
     def setUp(self) -> None:
         self.manifest = _load_manifest()
 
@@ -56,6 +58,7 @@ class TestManifestSchemaValidation(unittest.TestCase):
 class TestManifestFileResolution(unittest.TestCase):
     """Every manifest entry resolves to a real file under src/gzkit/<surface>/."""
 
+    @override
     def setUp(self) -> None:
         self.manifest = _load_manifest()
 
@@ -98,6 +101,7 @@ class TestManifestFileResolution(unittest.TestCase):
 class TestManifestDuplicateDetection(unittest.TestCase):
     """No surface contains duplicate entries."""
 
+    @override
     def setUp(self) -> None:
         self.manifest = _load_manifest()
 

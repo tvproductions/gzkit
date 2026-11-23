@@ -10,6 +10,7 @@ label when the repository lacks it (operator, 2026-10-28: "Verb ensures it
 import json
 import subprocess
 import unittest
+from typing import override
 from unittest.mock import patch
 
 from gzkit.work_package_github import (
@@ -29,6 +30,7 @@ def _argvs(run: object) -> list[list[str]]:
 
 
 class _GhCase(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self.enterContext(patch("gzkit.work_package_github.resolve_executable", return_value="gh"))
 

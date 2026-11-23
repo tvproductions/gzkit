@@ -9,6 +9,7 @@ script and must remain importable when the wider gzkit package is broken.
 
 import json
 from pathlib import Path
+from typing import override
 
 MX_BANNER = (
     "MX MODE ACTIVE — most guards advisory; gate5_invariants and the PRIME DIRECTIVE still bind"
@@ -155,6 +156,7 @@ class LivenessResult:
         self.ok = ok
         self.defect = defect
 
+    @override
     def __repr__(self) -> str:
         """Return the debug representation of the liveness result."""
         if self.ok:

@@ -13,7 +13,7 @@ import tempfile
 import tomllib
 import unittest
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 from unittest import mock
 
 from gzkit import ruff_baseline
@@ -88,6 +88,7 @@ class _Tree:
 
 
 class CompareTest(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self.tree = _Tree()
         self.addCleanup(self.tree.close)
@@ -133,6 +134,7 @@ class CompareTest(unittest.TestCase):
 
 
 class LintAgainstBaselineTest(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self.tree = _Tree()
         self.addCleanup(self.tree.close)
@@ -200,6 +202,7 @@ class LintAgainstBaselineTest(unittest.TestCase):
 
 
 class BaselineFileTest(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self.tree = _Tree()
         self.addCleanup(self.tree.close)
@@ -239,6 +242,7 @@ class BaselineFileTest(unittest.TestCase):
 
 
 class RatchetTest(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self.tree = _Tree()
         self.addCleanup(self.tree.close)
@@ -375,6 +379,7 @@ class RunRuffWalkTest(unittest.TestCase):
 class RuffRuleCodesTest(unittest.TestCase):
     """Rule names (RUF201's form) translate to codes through Ruff's own table."""
 
+    @override
     def setUp(self) -> None:
         ruff_baseline.ruff_rule_codes.cache_clear()
         self.addCleanup(ruff_baseline.ruff_rule_codes.cache_clear)
@@ -403,6 +408,7 @@ class RuffRuleCodesTest(unittest.TestCase):
 class RenderReportRendering(unittest.TestCase):
     # output-contract: the recovery prose is the named contract of a fail-closed
     # surface (.gzkit/rules/guardrail-feedback-prose.md).
+    @override
     def setUp(self) -> None:
         self.tree = _Tree()
         self.addCleanup(self.tree.close)

@@ -7,6 +7,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.cli.main import main
 from gzkit.content.models import Rule, Skill
@@ -18,11 +19,13 @@ from tests.commands.common import CliRunner
 class TestContentImportCmd(unittest.TestCase):
     """CLI smoke tests for gz content import."""
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
         self._tempdir = tempfile.TemporaryDirectory()
         self._tmp = Path(self._tempdir.name)
 
+    @override
     def tearDown(self) -> None:
         self._tempdir.cleanup()
 

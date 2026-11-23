@@ -4,6 +4,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from gz_mutation_witness import Mutation
@@ -48,6 +49,7 @@ class EngineTests(unittest.TestCase):
 
 
 class ExecutionFixture(unittest.TestCase):
+    @override
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)

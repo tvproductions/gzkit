@@ -13,7 +13,7 @@ import re
 import tempfile
 import unittest
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 
 from gzkit.eval.datasets import (
     KNOWN_SURFACES,
@@ -63,6 +63,7 @@ class TestSchemaAndValidatorAgree(unittest.TestCase):
     lists; a field added to one and not the other fails here.
     """
 
+    @override
     def setUp(self) -> None:
         self.schema = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
 
@@ -120,6 +121,7 @@ class TestDatasetFixtures(unittest.TestCase):
 class TestSurfaceCoverage(unittest.TestCase):
     """Verify every AI-sensitive surface has golden-path and edge-case datasets."""
 
+    @override
     def setUp(self) -> None:
         self.datasets = load_all_datasets(data_dir=_DATA_DIR)
         self.surfaces = {ds.surface for ds in self.datasets}

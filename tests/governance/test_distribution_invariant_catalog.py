@@ -9,6 +9,7 @@ so the ADR-0.0.25 REQ-coverage gate finds the canonical anchor.
 import re
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.traceability import covers
 
@@ -19,6 +20,7 @@ _GOVERNANCE_RUNBOOK = _PROJECT_ROOT / "docs" / "governance" / "governance_runboo
 
 
 class DistributionInvariantCatalogStructure(unittest.TestCase):
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         cls.catalog_text = _CATALOG.read_text(encoding="utf-8")

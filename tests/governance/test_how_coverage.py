@@ -11,6 +11,7 @@ flow file is orphaned.
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.governance.trust_audits.how_coverage import audit_how_coverage
 
@@ -167,6 +168,7 @@ class TestAgentCanSelectGzHow(unittest.TestCase):
     advisory.
     """
 
+    @override
     def setUp(self) -> None:
         text = (REPO_ROOT / ".gzkit" / "skills" / "gz-how" / "SKILL.md").read_text(encoding="utf-8")
         self.frontmatter = text.split("---", 2)[1]

@@ -11,6 +11,7 @@ import tempfile
 import unittest
 from collections.abc import Callable
 from pathlib import Path
+from typing import override
 
 from gzkit.commands.obpi_precomplete import resolve_brief_path
 from gzkit.commands.task import _resolve_obpi_id, _resolve_task_context
@@ -33,6 +34,7 @@ def _brief(root: Path, rel_dir: Path, stem: str) -> Path:
 class TestBriefFindersExpandOnlyAcrossASeparator(unittest.TestCase):
     """Two briefs under one item prefix are ambiguous; item 1 is not item 10."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)
@@ -88,6 +90,7 @@ def _ledger(root: Path, obpi_ids: list[str], parked: tuple[str, ...] = ()) -> Le
 class TestTaskResolvesOBPIThroughTheSeam(unittest.TestCase):
     """The short OBPI id a TASK carries resolves by the one resolver."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)

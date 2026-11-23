@@ -4,6 +4,7 @@ import tempfile
 import unittest
 from datetime import date, timedelta
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from gzkit import skills_audit
@@ -1148,6 +1149,7 @@ class DisabledVendorMirrorAuditTest(unittest.TestCase):
     produce and no sync could ever clear it.
     """
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)

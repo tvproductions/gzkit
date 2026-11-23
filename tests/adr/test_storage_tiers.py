@@ -9,6 +9,7 @@ Uses git ls-files and the live working tree to avoid expensive clone operations.
 import subprocess
 import unittest
 from pathlib import Path
+from typing import override
 
 from tests.commands.common import _isolated_git_env
 
@@ -41,6 +42,7 @@ def _run(args: list[str], cwd: Path, *, check: bool = True) -> subprocess.Comple
 class TestGitCloneRecovery(unittest.TestCase):
     """Verify Tier A + B state is intact."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         cls.root = _repo_root()

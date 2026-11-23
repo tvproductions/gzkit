@@ -6,6 +6,7 @@ purity invariant.
 """
 
 import unittest
+from typing import override
 
 from gzkit.content.migration import MIGRATIONS, MigrationError, apply_migrations
 from gzkit.content.models import CONTENT_MODELS, AgentContract, Bullet, Rule
@@ -67,9 +68,11 @@ class TestMigrationRegistry(unittest.TestCase):
 class TestAutoMigrationOnParse(unittest.TestCase):
     """REQ-0.0.34-07-03: parser auto-migrates when source schema_version differs."""
 
+    @override
     def setUp(self) -> None:
         self._registered_keys: list[tuple[str, int, int]] = []
 
+    @override
     def tearDown(self) -> None:
         for key in self._registered_keys:
             MIGRATIONS.pop(key, None)
@@ -105,9 +108,11 @@ class TestAutoMigrationOnParse(unittest.TestCase):
 class TestUnknownVersionFailClosed(unittest.TestCase):
     """REQ-0.0.34-07-04: unknown / missing migration paths fail-closed."""
 
+    @override
     def setUp(self) -> None:
         self._registered_keys: list[tuple[str, int, int]] = []
 
+    @override
     def tearDown(self) -> None:
         for key in self._registered_keys:
             MIGRATIONS.pop(key, None)

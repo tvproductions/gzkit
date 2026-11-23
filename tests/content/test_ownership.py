@@ -20,7 +20,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
-from typing import get_args
+from typing import get_args, override
 from unittest import mock
 
 import jsonschema
@@ -77,6 +77,7 @@ _SIMPLE_SURFACE = (
 class _DeclarationFixtureMixin(unittest.TestCase):
     """Shared temp-dir + declaration-writer setup for load_declaration tests."""
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self.addCleanup(self._tempdir.cleanup)
@@ -1292,6 +1293,7 @@ class TestRecordUnownedTotalRatchet(unittest.TestCase):
     or disprove it (the defect this rewrite exists to catch).
     """
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self.addCleanup(self._tempdir.cleanup)
@@ -1427,6 +1429,7 @@ class TestRecordUnownedTotalRefusesAnOnDiskSurfaceMismatch(unittest.TestCase):
     review, closure minor A).
     """
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self.addCleanup(self._tempdir.cleanup)
@@ -1474,6 +1477,7 @@ class TestRecordUnownedTotalIsTransactional(unittest.TestCase):
     so these are properties of this writer, not of its sibling.
     """
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self.addCleanup(self._tempdir.cleanup)
@@ -1824,6 +1828,7 @@ class TestWriteDeclarationAtomically(unittest.TestCase):
     ADR-0.35.0 exists to close.
     """
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self.addCleanup(self._tempdir.cleanup)
@@ -2357,6 +2362,7 @@ class TestRecordUnownedTotalReadsTheFloorInsideTheLock(unittest.TestCase):
     disk at write time.
     """
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self.addCleanup(self._tempdir.cleanup)
@@ -2552,6 +2558,7 @@ class TestSectionOwnershipReanchoredEmitter(unittest.TestCase):
     _EVENT_ID = "section-ownership-reanchored-agents-md"
     _REASON = "sections_digest field added to the declaration mid-flight"
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self.addCleanup(self._tempdir.cleanup)
@@ -2640,6 +2647,7 @@ class TestNoDefinitionInThisModuleIsShadowed(unittest.TestCase):
     nothing reported it. The hazard is self-detecting from here on.
     """
 
+    @override
     def setUp(self) -> None:
         self._module = ast.parse(Path(__file__).read_text(encoding="utf-8"), filename=__file__)
 
@@ -3436,6 +3444,7 @@ class TestDeclarationMustNameItsChainTip(_DeclarationFixtureMixin, unittest.Test
         "beta-section": "unowned",
     }
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self._spans = measure_section_spans(_SIMPLE_SURFACE)

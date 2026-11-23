@@ -1,6 +1,7 @@
 import json
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from gzkit.cli import main
@@ -19,6 +20,7 @@ from tests.governance.common import init_committed_repo
 class TestAdrRuntimeCommands(unittest.TestCase):
     """Behavioral tests for closeout/audit-check/emit-receipt runtime surfaces."""
 
+    @override
     def setUp(self) -> None:
         # The prior GHI #290 TTY 'ATTEST' authenticity gate has been removed:
         # the operator's verbatim attestation relayed via --attestation-text /

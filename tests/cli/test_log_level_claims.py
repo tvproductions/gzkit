@@ -10,6 +10,7 @@ silent, and when a record reaches stdout.
 import logging
 import sys
 import unittest
+from typing import override
 from unittest import mock
 
 from gzkit.cli import logging as cli_logging
@@ -30,10 +31,12 @@ def _record():
 
 
 class TestLogLevelsFollowSpecControl(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         root = logging.getLogger()
         self._handlers, self._level = list(root.handlers), root.level
 
+    @override
     def tearDown(self) -> None:
         root = logging.getLogger()
         root.handlers[:] = self._handlers

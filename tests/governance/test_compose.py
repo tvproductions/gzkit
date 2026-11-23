@@ -22,6 +22,7 @@ which cannot fail whatever the production code does (.gzkit/rules/tests.md
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.content.rendition_store import save_rendition
 from gzkit.governance.compose import render_agents_md
@@ -31,6 +32,7 @@ from gzkit.traceability import covers
 class TestRenderAgentsMdDeterminism(unittest.TestCase):
     """REQ-0.0.37-02-01: byte-deterministic output (rendition-playback semantics)."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self._root = Path(self._tmp.name)
@@ -38,6 +40,7 @@ class TestRenderAgentsMdDeterminism(unittest.TestCase):
         self._rendition = b"# AGENTS.md\n\nDeterministic rendition content.\n"
         save_rendition(self._root, "AGENTS.md", "root", self._rendition)
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 
@@ -74,11 +77,13 @@ class TestRenderAgentsMdDeterminism(unittest.TestCase):
 class TestRenderAgentsMdPlaybackSource(unittest.TestCase):
     """REQ-0.0.37-02-03: content derives from the committed rendition."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self._root = Path(self._tmp.name)
         (self._root / ".gzkit").mkdir()
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 

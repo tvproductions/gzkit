@@ -10,6 +10,7 @@ import tempfile
 import textwrap
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from gzkit.traceability import (
@@ -52,10 +53,12 @@ _TEST_REQS = frozenset(
 class TestCoversFormatValidation(unittest.TestCase):
     """REQ format validation at decoration time."""
 
+    @override
     def setUp(self):
         reset_registry()
         set_known_reqs(_TEST_REQS)
 
+    @override
     def tearDown(self):
         reset_registry()
 
@@ -101,10 +104,12 @@ class TestCoversFormatValidation(unittest.TestCase):
 class TestCoversExistenceValidation(unittest.TestCase):
     """Brief-backed REQ existence validation."""
 
+    @override
     def setUp(self):
         reset_registry()
         set_known_reqs(_TEST_REQS)
 
+    @override
     def tearDown(self):
         reset_registry()
 
@@ -139,10 +144,12 @@ class TestCoversExistenceValidation(unittest.TestCase):
 class TestCoversLinkageRegistration(unittest.TestCase):
     """LinkageRecord registration and structure."""
 
+    @override
     def setUp(self):
         reset_registry()
         set_known_reqs(_TEST_REQS)
 
+    @override
     def tearDown(self):
         reset_registry()
 
@@ -191,10 +198,12 @@ class TestCoversLinkageRegistration(unittest.TestCase):
 class TestCoversMetadataOnly(unittest.TestCase):
     """@covers is metadata-only -- no behavior change."""
 
+    @override
     def setUp(self):
         reset_registry()
         set_known_reqs(_TEST_REQS)
 
+    @override
     def tearDown(self):
         reset_registry()
 
@@ -224,10 +233,12 @@ class TestCoversMetadataOnly(unittest.TestCase):
 class TestCoversWithTestCase(unittest.TestCase):
     """@covers works with unittest.TestCase methods."""
 
+    @override
     def setUp(self):
         reset_registry()
         set_known_reqs(_TEST_REQS)
 
+    @override
     def tearDown(self):
         reset_registry()
 
@@ -253,10 +264,12 @@ class TestCoversWithTestCase(unittest.TestCase):
 class TestCoversWithStandaloneFunction(unittest.TestCase):
     """@covers works with standalone test functions."""
 
+    @override
     def setUp(self):
         reset_registry()
         set_known_reqs(_TEST_REQS)
 
+    @override
     def tearDown(self):
         reset_registry()
 
@@ -275,10 +288,12 @@ class TestCoversWithStandaloneFunction(unittest.TestCase):
 class TestGlobalRegistry(unittest.TestCase):
     """Global registry collects all registered linkages."""
 
+    @override
     def setUp(self):
         reset_registry()
         set_known_reqs(_TEST_REQS)
 
+    @override
     def tearDown(self):
         reset_registry()
 
@@ -953,6 +968,7 @@ class TestCoversCLIHelp(unittest.TestCase):
 class TestCoversCLIOutput(unittest.TestCase):
     """gz covers produces correct output in all three modes."""
 
+    @override
     def setUp(self):
         self._tmpdir = tempfile.TemporaryDirectory()
         self.tmp = Path(self._tmpdir.name)
@@ -988,6 +1004,7 @@ class TestCoversCLIOutput(unittest.TestCase):
             encoding="utf-8",
         )
 
+    @override
     def tearDown(self):
         self._tmpdir.cleanup()
 
@@ -1136,6 +1153,7 @@ class TestExtractAdrSemver(unittest.TestCase):
 class TestComputeAdrCoverage(unittest.TestCase):
     """_compute_adr_coverage returns scoped coverage data for an ADR."""
 
+    @override
     def setUp(self):
         self._tmpdir = tempfile.TemporaryDirectory()
         self.root = Path(self._tmpdir.name)
@@ -1174,6 +1192,7 @@ class TestComputeAdrCoverage(unittest.TestCase):
             encoding="utf-8",
         )
 
+    @override
     def tearDown(self):
         self._tmpdir.cleanup()
 
@@ -1273,6 +1292,7 @@ class TestComputeAdrCoverage(unittest.TestCase):
 class TestComputeAdrCoverageDocProofChannels(unittest.TestCase):
     """@covers GHI #165 — doc-kind REQs are covered by non-@covers proof channels."""
 
+    @override
     def setUp(self):
         self._tmpdir = tempfile.TemporaryDirectory()
         self.root = Path(self._tmpdir.name)
@@ -1281,6 +1301,7 @@ class TestComputeAdrCoverageDocProofChannels(unittest.TestCase):
         self.obpis = adr_pkg / "obpis"
         self.obpis.mkdir(parents=True)
 
+    @override
     def tearDown(self):
         self._tmpdir.cleanup()
 
@@ -1509,10 +1530,12 @@ class TestScanFeatureTree(unittest.TestCase):
 class TestCoversAcceptsACatalogReq(unittest.TestCase):
     """``@covers`` takes a catalog ``REQ-<n>`` the catalog holds ("Widen both bindings")."""
 
+    @override
     def setUp(self):
         reset_registry()
         set_known_reqs(frozenset({"REQ-7", *_TEST_REQS}))
 
+    @override
     def tearDown(self):
         reset_registry()
 

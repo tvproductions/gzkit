@@ -18,6 +18,7 @@ import io
 import logging
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
+from typing import override
 
 from gzkit.cli.main import main
 from tests.commands.common import CliRunner, parse_json_document
@@ -28,12 +29,14 @@ _FALLBACK_EVENT = "chore.resolver.fallback"
 class TestJsonStdoutCarriesOnlyJson(unittest.TestCase):
     """A log event emitted during a `--json` command never reaches stdout."""
 
+    @override
     def setUp(self) -> None:
         # Start from logging's unconfigured state, the state a fresh `gz` process is in.
         root = logging.getLogger()
         self._root_handlers = list(root.handlers)
         self._root_level = root.level
 
+    @override
     def tearDown(self) -> None:
         root = logging.getLogger()
         root.handlers[:] = self._root_handlers

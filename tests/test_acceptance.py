@@ -1,7 +1,7 @@
 """Acceptance preserves contract obligations through independent repair review."""
 
 import unittest
-from typing import Any
+from typing import Any, override
 
 from gzkit.acceptance import (
     Closure,
@@ -17,6 +17,7 @@ from gzkit.acceptance import (
 class TestAcceptance(unittest.TestCase):
     """Exercise readiness transitions, including legitimate successful completion."""
 
+    @override
     def setUp(self) -> None:
         self.obligation = Obligation(
             id="REQ-02",

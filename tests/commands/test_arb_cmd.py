@@ -13,12 +13,14 @@ import tempfile
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 
 class TestArbCommands(unittest.TestCase):
     """CLI dispatcher functions honor exit codes and emit receipts."""
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self.addCleanup(self._tempdir.cleanup)
@@ -29,6 +31,7 @@ class TestArbCommands(unittest.TestCase):
         # (RO-9 tranche 4); a root with none judges every finding, as plain Ruff.
         self.enterContext(contextlib.chdir(self._tempdir.name))
 
+    @override
     def tearDown(self) -> None:
         if self._prior_env is None:
             os.environ.pop("GZKIT_ARB_RECEIPTS_ROOT", None)

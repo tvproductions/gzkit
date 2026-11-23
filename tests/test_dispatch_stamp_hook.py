@@ -18,7 +18,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 from unittest.mock import patch
 
 from gzkit.config import GzkitConfig
@@ -63,6 +63,7 @@ def _raised(act: Callable[[], object]) -> Exception | None:
 class _Session(unittest.TestCase):
     """A project with a ledger, and a parent session whose subagent was prompted."""
 
+    @override
     def setUp(self) -> None:
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)

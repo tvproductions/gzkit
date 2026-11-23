@@ -10,6 +10,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.events import parse_typed_event
 from gzkit.tautological_processed import (
@@ -24,6 +25,7 @@ _FILE = "tests/test_example.py"
 
 
 class RecordProcessed(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)

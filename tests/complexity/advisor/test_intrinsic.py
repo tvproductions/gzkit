@@ -7,6 +7,7 @@ Coverage:
 
 import inspect
 import unittest
+from typing import override
 
 from gzkit.complexity.advisor.intrinsic import (
     clear_registry,
@@ -17,6 +18,7 @@ from gzkit.traceability import covers
 
 
 class TestIntrinsicComplexityDecorator(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         clear_registry()
 

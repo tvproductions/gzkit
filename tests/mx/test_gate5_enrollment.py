@@ -22,6 +22,7 @@ import inspect
 import re
 import unittest
 from pathlib import Path
+from typing import override
 from unittest import mock
 
 from gzkit import enforcement
@@ -38,6 +39,7 @@ from gzkit.mx.invariants import GATE5_INVARIANTS, unenrolled_gate5_members
 class TestGate5EnrollmentCompleteness(unittest.TestCase):
     """The enumeration itself — membership drives the check, not the registry."""
 
+    @override
     def tearDown(self) -> None:
         # The enumeration tests do not mutate the registry, but the meta-validator
         # test below registers production claims; reset so ordering cannot leak.

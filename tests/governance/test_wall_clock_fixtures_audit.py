@@ -14,6 +14,7 @@ then failed forever in a change that touched zero Python.
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.governance.trust_audits.wall_clock_fixtures import (
     FINDING_PREFIX,
@@ -22,6 +23,7 @@ from gzkit.governance.trust_audits.wall_clock_fixtures import (
 
 
 class TestWallClockFixtureAudit(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
@@ -107,6 +109,7 @@ class TestPredicateRequiresBothHalves(unittest.TestCase):
     one-half predicate a proxy rather than a detector.
     """
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)

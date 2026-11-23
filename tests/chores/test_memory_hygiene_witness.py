@@ -13,7 +13,7 @@ import unittest
 from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 from unittest.mock import patch
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -29,6 +29,7 @@ def _load() -> Any:
 
 
 class TestAutoMemorySetting(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self.chore = _load()
         self.home = Path(self.enterContext(tempfile.TemporaryDirectory()))
@@ -53,6 +54,7 @@ class TestAutoMemorySetting(unittest.TestCase):
 
 
 class TestWitnessReportsTheSwitch(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self.chore = _load()
         self.home = Path(self.enterContext(tempfile.TemporaryDirectory()))

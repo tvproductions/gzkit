@@ -18,7 +18,7 @@ from collections.abc import Callable, Generator
 from contextlib import ExitStack, contextmanager
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 from unittest.mock import Mock, patch
 
 from gzkit import obpi_dispatch_channel as chan
@@ -364,6 +364,7 @@ def stage4_work_replaced(*, review_stage: str = "adversarial") -> Any:
 class _RunFixture(unittest.TestCase):
     """A project root holding a launched run's two marker files and its ledger."""
 
+    @override
     def setUp(self) -> None:
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
@@ -639,6 +640,7 @@ class TestAnAdvancedMarkerKeepsEveryReaderWorking(_RunFixture):
 class _RecordingFixture(_RunFixture):
     """A launched run whose boundaries are recorded through ``record_position``."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.ledger = Ledger(self.root / ".gzkit" / "ledger.jsonl")
@@ -1491,6 +1493,7 @@ class _LaunchableThroughTheCli(unittest.TestCase):
     takes it: the ledger rows and the two marker files.
     """
 
+    @override
     def setUp(self) -> None:
         self.runner = CliRunner()
         self.enterContext(self.runner.isolated_filesystem())
@@ -3789,6 +3792,7 @@ class TestStaleMarkerHandlingIsUnchanged(unittest.TestCase):
         ("bytes that are not UTF-8", b"\xff\xfe\x00{}"),
     )
 
+    @override
     def setUp(self) -> None:
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
@@ -3983,6 +3987,7 @@ class TestPipelineSectionShowsWhereARunIs(unittest.TestCase):
         ("verify", (("task-start", TASK),), "verify", "implement", "task", TASK),
     )
 
+    @override
     def setUp(self) -> None:
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 10, 12, 12, 0, 0, tzinfo=UTC)

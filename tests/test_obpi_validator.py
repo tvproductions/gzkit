@@ -7,6 +7,7 @@ import unittest
 from contextlib import redirect_stderr
 from datetime import date
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from gzkit.hooks.core import record_artifact_edit
@@ -25,6 +26,7 @@ from tests.commands.common import _ignore_transient_git, _isolated_git_env
 class TestObpiValidator(unittest.TestCase):
     _template_dir: tempfile.TemporaryDirectory
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         import shutil
@@ -83,10 +85,12 @@ class TestObpiValidator(unittest.TestCase):
         )
         cls._shutil = shutil
 
+    @override
     @classmethod
     def tearDownClass(cls) -> None:
         cls._template_dir.cleanup()
 
+    @override
     def setUp(self):
         self._tmp_ctx = tempfile.TemporaryDirectory()
         self.test_dir = Path(self._tmp_ctx.name)
@@ -101,6 +105,7 @@ class TestObpiValidator(unittest.TestCase):
 
         self.validator = ObpiValidator(self.project_root)
 
+    @override
     def tearDown(self):
         self._tmp_ctx.cleanup()
 

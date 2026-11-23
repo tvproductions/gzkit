@@ -18,7 +18,7 @@ import os
 import shlex
 import unittest
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 
 from gzkit.cli import main
 from gzkit.cli.main import _build_parser
@@ -57,6 +57,7 @@ def _tag_rows(event: str = "tag_issued") -> list[dict[str, Any]]:
 
 
 class _TagCase(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         for name in (STAMP_ROOT_ENV, STAMP_ID_ENV):
             if name in os.environ:
@@ -312,6 +313,7 @@ class TagShowWiringTests(_TagCase):
 class _HungTagCase(_TagCase):
     """A tag issued on ORD-01-import, the order frozen, a Repair dispatch booked on it."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         open_marker(Path.cwd())
@@ -440,6 +442,7 @@ class TagHangWiringTests(_HungTagCase):
 class TagAuthorizeWiringTests(_HungTagCase):
     """The tag hung, the order commenced, the hanging dispatch voided after a kill."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.stamp_as(self.dispatch)
@@ -519,6 +522,7 @@ class TagAuthorizeWiringTests(_HungTagCase):
 class TagClearWiringTests(_HungTagCase):
     """The tag hung, the order commenced, the clearance authorized, a Restoration booked."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.stamp_as(self.dispatch)

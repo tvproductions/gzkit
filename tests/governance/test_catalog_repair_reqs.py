@@ -10,7 +10,7 @@ to (ruling 45). Both live in `data/catalog/reqs.json`, one `REQ-<n>` sequence.
 
 import json
 import unittest
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 from pydantic import TypeAdapter
 from pydantic import ValidationError as PydanticValidationError
@@ -85,6 +85,7 @@ class TestSpecializations(unittest.TestCase):
 class TestRepairReqStore(_Tree):
     """`gz validate --catalog` over the repair requirements in `data/catalog/reqs.json`."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         packages: list[object] = [

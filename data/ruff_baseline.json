@@ -1848,11 +1848,6 @@
     },
     {
       "file": "scripts/profile_module_setup.py",
-      "rule": "N802",
-      "count": 2
-    },
-    {
-      "file": "scripts/profile_module_setup.py",
       "rule": "PLR2004",
       "count": 1
     },
@@ -1875,11 +1870,6 @@
       "file": "scripts/profile_unittest_modules.py",
       "rule": "INP001",
       "count": 1
-    },
-    {
-      "file": "scripts/profile_unittest_modules.py",
-      "rule": "N802",
-      "count": 2
     },
     {
       "file": "scripts/profile_unittest_modules.py",
@@ -2535,16 +2525,6 @@
       "file": "src/gzkit/cli/parser.py",
       "rule": "ANN401",
       "count": 1
-    },
-    {
-      "file": "src/gzkit/cli/parser.py",
-      "rule": "ARG002",
-      "count": 1
-    },
-    {
-      "file": "src/gzkit/cli/parser.py",
-      "rule": "PLR6301",
-      "count": 2
     },
     {
       "file": "src/gzkit/cli/parser_acceptance.py",
@@ -12665,11 +12645,6 @@
       "file": "tests/tools/test_health_profiler.py",
       "rule": "ISC004",
       "count": 1
-    },
-    {
-      "file": "tests/tools/test_health_profiler.py",
-      "rule": "N802",
-      "count": 2
     },
     {
       "file": "tests/tools/test_health_profiler.py",

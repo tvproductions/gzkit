@@ -33,7 +33,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 
 from jsonschema.validators import validator_for
 from pydantic import ValidationError
@@ -382,6 +382,7 @@ class LoaderIntegration(unittest.TestCase):
 class JsonSchemaMirror(unittest.TestCase):
     """Pin the JSON Schema mirror parity with the Pydantic model."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         cls.schema = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))

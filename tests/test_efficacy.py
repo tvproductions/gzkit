@@ -12,6 +12,7 @@ import tempfile
 import unittest
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import override
 
 from gzkit.arb.advisor import collect_arb_advice
 from gzkit.arb.coverage import measure_receipt_coverage
@@ -68,6 +69,7 @@ class TestRenderKeepsTheDenominatorAttached(unittest.TestCase):
 
 
 class ReceiptStoreTestCase(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)

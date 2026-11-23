@@ -13,6 +13,7 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import override
 
 from gzkit.events import TagClearedEvent, TagHungEvent, TagIssuedEvent
 from gzkit.ledger import Ledger, ledger_row
@@ -111,6 +112,7 @@ def seat_clear(ledger: Ledger, n: int, order: str = _ORDER) -> None:
 
 
 class _RowsCase(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._dir = TemporaryDirectory()
         self.addCleanup(self._dir.cleanup)

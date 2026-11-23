@@ -35,6 +35,7 @@ reads state from JSON, never from markdown).
 import json
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.commands.obpi_complete_adversarial import (
     _RUNTIME_WRAPPERS,
@@ -60,6 +61,7 @@ def _proves(argv: list[str]) -> bool:
 class MandatedTier1DispatchCoherence(unittest.TestCase):
     """The registry, the wrapper set, and the directive must describe one state."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         cls.registry = json.loads(REGISTRY.read_text(encoding="utf-8"))

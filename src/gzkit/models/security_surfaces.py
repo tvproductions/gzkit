@@ -17,7 +17,7 @@ import json
 import re
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Literal
+from typing import Literal, override
 
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
 
@@ -58,6 +58,7 @@ class SecuritySurfaceEntry(BaseModel):
     )
     rationale: str = Field(..., min_length=1, description="Why this surface is security-sensitive.")
 
+    @override
     def model_post_init(self, _context: object) -> None:
         """Reject empty glob entries after model construction."""
         for glob in self.globs:

@@ -3,6 +3,7 @@
 import re
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.traceability import covers
 
@@ -32,6 +33,7 @@ PLANNING_PLACEHOLDERS = [
 class TestOBPIBriefTemplate(unittest.TestCase):
     """Ensure the OBPI brief template includes Closing Argument guidance."""
 
+    @override
     @classmethod
     def setUpClass(cls):
         cls.template_text = TEMPLATE_PATH.read_text(encoding="utf-8")

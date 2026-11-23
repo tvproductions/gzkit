@@ -15,6 +15,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.governance.trust_audits.config_derivation import (
     audit_derivation,
@@ -30,6 +31,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 class DerivationIsRecordedOrGrandfathered(unittest.TestCase):
     """A registry records its authority, or the shrink-only baseline names it."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
@@ -123,6 +125,7 @@ class DerivationRecognition(unittest.TestCase):
 class ModuleConstantsAreRostered(unittest.TestCase):
     """A policy threshold in a module body is unreachable by the data/*.json gate."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
@@ -199,6 +202,7 @@ class LiveTreeIsFenced(unittest.TestCase):
 class DirectDataReachIsRostered(unittest.TestCase):
     """A single read seam is single only while nothing routes around it (GHI #1067)."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)

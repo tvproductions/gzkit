@@ -21,6 +21,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stderr
 from pathlib import Path
+from typing import override
 from unittest import mock
 
 from gzkit.advisory import advisory_lines
@@ -786,6 +787,7 @@ def _entry(entry_id: str, classification: str, **fields: str | None) -> CorpusEn
 class _OwnershipFixtureMixin(unittest.TestCase):
     """Isolated root with an enrolled surface: one corpus-owned and one unowned section."""
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self.addCleanup(self._tempdir.cleanup)

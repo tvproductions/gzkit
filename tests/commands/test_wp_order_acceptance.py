@@ -13,6 +13,7 @@ import os
 import unittest
 import uuid
 from pathlib import Path
+from typing import override
 from unittest import mock
 
 from gzkit.acceptance import Proof
@@ -42,6 +43,7 @@ _READY, _NOT_READY = True, False
 
 
 class _OrderAcceptance(_CommencedOrder):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.root = Path.cwd()
@@ -312,6 +314,7 @@ class TestTheOrdersRoundBound(_OrderAcceptance):
 class TestTheOrdersDeparture(_OrderAcceptance):
     """A departure exit on the order moves its REQ out of the order's acceptance."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         store = Path("data") / "catalog" / "work_packages.json"
@@ -536,6 +539,7 @@ class TestAStoppedOrdersGateFive(_OrderAcceptance):
 class TestTheOrdersGateFive(_OrderAcceptance):
     """`gz wp order close`: Gate 5 at the order (RP-12 rulings 73 to 77)."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.init()

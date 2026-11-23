@@ -20,6 +20,7 @@ import tempfile
 import unittest
 from datetime import UTC
 from pathlib import Path
+from typing import override
 
 from gzkit.commands.validate_cmd import dispatch_validator_scope
 
@@ -107,10 +108,12 @@ class TestCloseoutProofExitCodes(unittest.TestCase):
     Never reads from stored proof blocks — result is always freshly computed.
     """
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 
@@ -244,10 +247,12 @@ class TestCloseoutProofRerunCommand(unittest.TestCase):
     (``uv run gz validate --<scope>``). It must NOT inline raw stderr output.
     """
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 
@@ -347,10 +352,12 @@ class TestCloseoutProofKindTagRequired(unittest.TestCase):
     must be reported as unproven (exit 3).
     """
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 
@@ -407,10 +414,12 @@ class TestCloseoutProofFailOpenSeams(unittest.TestCase):
     break the whole check.
     """
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 
@@ -473,10 +482,12 @@ class TestCloseoutProofSupportGrandfatherMalformed(unittest.TestCase):
     pydantic.ValidationError (regression guard for the GHI #660 fail-close fix).
     """
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 
@@ -557,10 +568,12 @@ class TestCloseoutProofExemptions(unittest.TestCase):
     neighborhood scanner does not associate this test with those briefs.)
     """
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 
@@ -637,10 +650,12 @@ class TestCloseoutProofEnforcementFence(unittest.TestCase):
     ``## Boundary Invariants`` heading alone — the facade this test forbids.
     """
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 
@@ -720,10 +735,12 @@ class TestCloseoutProofMetaPropertyDeferral(unittest.TestCase):
     resolve_fence_proof's own contract documents but never wired.)
     """
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 

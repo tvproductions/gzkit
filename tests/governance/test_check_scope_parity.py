@@ -27,6 +27,7 @@ import json
 import re
 import unittest
 from pathlib import Path
+from typing import override
 
 _FLAG_RE = re.compile(r"gz validate ((?:--[a-z0-9-]+\s*)+)")
 
@@ -247,6 +248,7 @@ class TestExtractorsDetectRealChanges(unittest.TestCase):
 class TestCommittedCheckMembership(unittest.TestCase):
     """Fail-closed parity between the declared roster and the real source."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         cls._roster = json.loads(_ROSTER.read_text(encoding="utf-8"))

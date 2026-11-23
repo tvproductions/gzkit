@@ -8,6 +8,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+from typing import override
 from unittest.mock import patch
 
 from rich import box
@@ -36,6 +37,7 @@ class _FakeLedger(Ledger):
         super().__init__(Path("nonexistent-ledger.jsonl"))
         self.events: list[object] = []
 
+    @override
     def append(self, event: object) -> None:
         self.events.append(event)
 
@@ -126,6 +128,7 @@ class TestStatusTables(unittest.TestCase):
 class TestCheckSymbols(unittest.TestCase):
     """REQ-0.0.4-08-02: gz check output uses check/cross status symbols."""
 
+    @override
     def setUp(self) -> None:
         """Root `check()` at a scratch dir, never the real repo.
 
@@ -306,6 +309,7 @@ class TestBlockersPrefix(unittest.TestCase):
 class TestColorConventions(unittest.TestCase):
     """REQ-0.0.4-08-07: Color conventions applied consistently."""
 
+    @override
     def setUp(self) -> None:
         """Root `check()` at a scratch dir, never the real repo.
 

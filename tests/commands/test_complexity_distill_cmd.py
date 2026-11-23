@@ -23,7 +23,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 
 from gzkit.commands.complexity_distill_cmd import complexity_distill_cmd
 from gzkit.traceability import covers
@@ -57,6 +57,7 @@ def _invoke(**kwargs: Any) -> tuple[int, str, str]:
 class TestComplexityDistillBehavior(unittest.TestCase):
     """REQ-derived semantic assertions for ``gz complexity distill``."""
 
+    @override
     def setUp(self) -> None:
         self._tmpdir = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmpdir.cleanup)
@@ -202,6 +203,7 @@ class TestComplexityDistillOutputForm(unittest.TestCase):
     ``.gzkit/rules/tests.md`` § Output-form fixture carve-out.
     """
 
+    @override
     def setUp(self) -> None:
         self._tmpdir = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmpdir.cleanup)

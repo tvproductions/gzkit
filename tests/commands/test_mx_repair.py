@@ -9,6 +9,7 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import override
 
 from gzkit.commands.mx_cmd import mx_enter_cmd, mx_repair_cmd
 from gzkit.mx import marker
@@ -26,6 +27,7 @@ def _events(root: Path, event_type: str) -> list[dict]:
 
 
 class TestMxRepair(SilencedConsoleTestCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self._tmp = TemporaryDirectory()

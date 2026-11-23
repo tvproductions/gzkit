@@ -4,6 +4,7 @@ import json
 import unittest
 import uuid
 from types import SimpleNamespace
+from typing import override
 from unittest.mock import patch
 
 from gzkit.acceptance import Proof
@@ -60,6 +61,7 @@ def captured_receipt(proof, stage="adversarial", *, findings=(), closures=(), ve
 
 
 class AcceptanceStoreTests(ExecutionFixture):
+    @override
     def setUp(self):
         super().setUp()
         self.write(".gzkit.json", json.dumps({"paths": {"design_root": "design"}}))

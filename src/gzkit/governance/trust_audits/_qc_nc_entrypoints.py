@@ -22,7 +22,7 @@ import http.server
 import json
 import threading
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 from gzkit.core.validation_rules import ValidationError
 
@@ -427,7 +427,8 @@ def _osv_handler(vuln_ids: Sequence[str]) -> type[http.server.BaseHTTPRequestHan
         do_GET = _answer  # noqa: N815 — the name http.server dispatches to
         do_POST = _answer  # noqa: N815 — the name http.server dispatches to
 
-        def log_message(self, format: str, *args: object) -> None:  # noqa: A002 — stdlib signature
+        @override
+        def log_message(self, format: str, *args: object) -> None:
             """Keep the stub silent; its requests are not the run's output."""
 
     return _Handler

@@ -21,6 +21,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.fidelity import WORKTREE_UNAVAILABLE, FidelityAssertion, run_fidelity_gate
 from tests.commands.common import _isolated_git_env
@@ -57,6 +58,7 @@ def _git(root: Path, *args: str) -> str:
 class _LiveRootCase(unittest.TestCase):
     """A temp git repo with one commit, entered as the process cwd."""
 
+    @override
     def setUp(self) -> None:
         tmp = tempfile.TemporaryDirectory(prefix="gzkit-fid-live-")
         self.addCleanup(tmp.cleanup)
@@ -116,6 +118,7 @@ class TestEachRowStartsFromHead(unittest.TestCase):
     an ignored file must not change what the next row sees.
     """
 
+    @override
     def setUp(self) -> None:
         tmp = tempfile.TemporaryDirectory(prefix="gzkit-fid-rows-")
         self.addCleanup(tmp.cleanup)

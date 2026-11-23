@@ -13,7 +13,7 @@ import pathlib
 import re
 import types
 from collections.abc import Callable, Iterable
-from typing import TypeVar
+from typing import TypeVar, override
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -74,6 +74,7 @@ class TaskId(BaseModel):
             seq=m.group("seq"),
         )
 
+    @override
     def __str__(self) -> str:
         """Return the canonical TASK identifier string."""
         return compose_task_id(self.semver, self.obpi_item, self.req_index, self.seq)

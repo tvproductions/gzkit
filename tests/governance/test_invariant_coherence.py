@@ -22,6 +22,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.content.rendition_store import save_rendition
 from gzkit.governance.trust_audits.invariant_coherence import validate_invariant_coherence
@@ -81,10 +82,12 @@ def _read_ledger_events(root: Path) -> list[dict]:
 class _TempProjectMixin(unittest.TestCase):
     """Mixin providing a fresh temp project root for each test."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 

@@ -24,7 +24,7 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 from gzkit.events import (
     BaselinedReq,
@@ -212,6 +212,7 @@ def _rows(path: Path) -> list[dict[str, object]]:
 
 
 class _TagCase(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._dir = TemporaryDirectory()
         self.addCleanup(self._dir.cleanup)
@@ -506,6 +507,7 @@ class RefusalProseOutputContract(_TagCase):
 class _HangCase(_TagCase):
     """A tag issued on the opened order, the order frozen, a Repair dispatch booked on it."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.tag = self.issue()
@@ -819,6 +821,7 @@ class HungTagLogTests(_HangCase):
 class _ClearanceCase(_HangCase):
     """The tag hung, the order commenced, the hanging dispatch's subagent ended."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.hang()
@@ -892,6 +895,7 @@ class ClearanceTests(_ClearanceCase):
 class _UnendedCase(_HangCase):
     """The tag hung and the order commenced; the hanging dispatch neither ended nor voided."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.hang()
@@ -977,6 +981,7 @@ class _NoWitnesses:
 class PausedCarryTests(_ClearanceCase):
     """Ruling 187: a carried tag is cleared on its paused order, the carry's exit."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         line = DiscrepancyRecord(
@@ -1189,6 +1194,7 @@ class FrozenClearanceTests(_HangCase):
 class _ClearCase(_ClearanceCase):
     """The tag's clearance authorized and a Restoration dispatch booked on the commenced order."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.clearance = self.authorize()

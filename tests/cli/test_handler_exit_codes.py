@@ -9,6 +9,7 @@ import argparse
 import json
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from gzkit.cli import main
@@ -47,6 +48,7 @@ class TestMainHonoursAReturnedExitCode(unittest.TestCase):
 class _ProjectCase(unittest.TestCase):
     """A real project in a temporary directory, driven through the CLI."""
 
+    @override
     def setUp(self) -> None:
         self.runner = CliRunner()
         self.enterContext(self.runner.isolated_filesystem())

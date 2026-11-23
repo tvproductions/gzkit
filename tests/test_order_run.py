@@ -13,7 +13,7 @@ writes nothing.
 import tempfile
 import unittest
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, cast, override
 
 from gzkit.events import BaselinedReq, OrderTransitionedEvent
 from gzkit.ledger import ledger_row
@@ -75,6 +75,7 @@ _ROOT = "/elsewhere/project"
 class _OrderRun(_OrderCase):
     """Two orders on one repair package, the first commenced on REQ-1."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.walk_to("commenced")
@@ -619,6 +620,7 @@ class OrderFence(_OrderRun):
 class FrozenOrderFence(_OrderRun):
     """Rulings 116, 145 and 147: a frozen order fences its sealed footprint until it commences."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.root = Path(self._dir.name)

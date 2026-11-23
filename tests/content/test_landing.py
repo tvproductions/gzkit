@@ -13,7 +13,7 @@ import os
 import tempfile
 import unittest
 from pathlib import Path, PurePosixPath
-from typing import Any
+from typing import Any, override
 from unittest import mock
 
 from pydantic import ValidationError
@@ -133,6 +133,7 @@ def _must_succeed(test: unittest.TestCase, call, *args):
 
 
 class _TempRoot(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)

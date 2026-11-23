@@ -9,6 +9,7 @@ import tempfile
 import textwrap
 import unittest
 from pathlib import Path
+from typing import override
 
 from pydantic import ValidationError
 
@@ -127,12 +128,14 @@ class TestFidelityAssertionModel(unittest.TestCase):
 class TestFidelityAssertionParser(unittest.TestCase):
     """REQ-0.0.73-03-02: Parser extracts one assertion per row from the table."""
 
+    @override
     def setUp(self) -> None:
         import tempfile
 
         self._tmp = tempfile.TemporaryDirectory()
         self._tmpdir = Path(self._tmp.name)
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 

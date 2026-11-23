@@ -10,6 +10,7 @@ import json
 import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from gzkit.cli.main import main
@@ -87,6 +88,7 @@ def _rewrite_ts(old: str, new: datetime) -> str:
 class TestInsightsRecurrenceCommand(unittest.TestCase):
     """The verb resolves citations to full timestamps and applies the JSON threshold."""
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 

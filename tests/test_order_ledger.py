@@ -14,7 +14,7 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 from gzkit.events import (
     BaselinedReq,
@@ -154,6 +154,7 @@ _PAYLOADS: dict[str, dict[str, object]] = {
 
 
 class _OrderCase(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._dir = TemporaryDirectory()
         self.addCleanup(self._dir.cleanup)
@@ -299,6 +300,7 @@ class LifecycleTests(_OrderCase):
 
 
 class FreezeTests(_OrderCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.move("opened", **_PAYLOADS["opened"])
@@ -574,6 +576,7 @@ class GateFiveTests(_OrderCase):
 class FootprintSealTests(_OrderCase):
     """Ruling 56: each order's freeze seals its repair package's footprint."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.move("opened", **_PAYLOADS["opened"])
@@ -636,6 +639,7 @@ def _alteration(alteration_id: str) -> Alteration:
 class AlterationApprovalTests(_OrderCase):
     """Ruling 63: each order's freeze approves the alterations no earlier freeze approved."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.plan("ALT-1", "ALT-2")
@@ -714,6 +718,7 @@ if __name__ == "__main__":
 class CommencementTagTests(_OrderCase):
     """Rulings 108, 117 and 143: commencement waits on the tags issued on the order."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.walk_to("frozen")
@@ -798,6 +803,7 @@ class CommencementTagTests(_OrderCase):
 class AcceptanceTagTests(_OrderCase):
     """Refusal 6, rulings 129, 135 and 142: acceptance waits on every tag the order hung."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.walk_to("frozen")
@@ -877,6 +883,7 @@ def seat_cleared_line(ledger: Ledger, discrepancy_id: str) -> None:
 class CarryTests(_OrderCase):
     """Rulings 30, 142, 171, 184 and 186: a due-by line carries a hung tag past acceptance."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.walk_to("frozen")

@@ -5,6 +5,7 @@
 
 import argparse
 import unittest
+from typing import override
 
 from gzkit.cli.main import _build_parser
 
@@ -12,6 +13,7 @@ from gzkit.cli.main import _build_parser
 class TestArbParserRegistration(unittest.TestCase):
     """gz arb is registered with all seven sub-verbs."""
 
+    @override
     def setUp(self) -> None:
         self.parser = _build_parser()
 

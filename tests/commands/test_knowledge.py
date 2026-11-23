@@ -13,6 +13,7 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.cli.main import main
 from gzkit.commands.knowledge import knowledge_cmd
@@ -23,11 +24,13 @@ from tests.commands.common import CliRunner
 class TestKnowledgeGenerate(unittest.TestCase):
     """REQ-0.30.0-04-01: knowledge generate emits the bundle and exits 0."""
 
+    @override
     def setUp(self) -> None:
         self._original_cwd = Path.cwd()
         self._tmpdir = Path(tempfile.mkdtemp(prefix="gzkit-knowledge-test-"))
         os.chdir(self._tmpdir)
 
+    @override
     def tearDown(self) -> None:
         os.chdir(self._original_cwd)
         shutil.rmtree(self._tmpdir, ignore_errors=True)
@@ -54,11 +57,13 @@ class TestKnowledgeGenerate(unittest.TestCase):
 class TestKnowledgeRefresh(unittest.TestCase):
     """REQ-0.30.0-04-02: knowledge refresh is idempotent over unchanged sources."""
 
+    @override
     def setUp(self) -> None:
         self._original_cwd = Path.cwd()
         self._tmpdir = Path(tempfile.mkdtemp(prefix="gzkit-knowledge-test-"))
         os.chdir(self._tmpdir)
 
+    @override
     def tearDown(self) -> None:
         os.chdir(self._original_cwd)
         shutil.rmtree(self._tmpdir, ignore_errors=True)
@@ -139,11 +144,13 @@ class TestKnowledgeManpage(unittest.TestCase):
 class TestKnowledgeSmoke(unittest.TestCase):
     """REQ-0.30.0-04-04: end-to-end CLI smoke — generate then refresh via CLI surface."""
 
+    @override
     def setUp(self) -> None:
         self._original_cwd = Path.cwd()
         self._tmpdir = Path(tempfile.mkdtemp(prefix="gzkit-knowledge-test-"))
         os.chdir(self._tmpdir)
 
+    @override
     def tearDown(self) -> None:
         os.chdir(self._original_cwd)
         shutil.rmtree(self._tmpdir, ignore_errors=True)

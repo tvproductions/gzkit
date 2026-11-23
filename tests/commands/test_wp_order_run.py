@@ -9,7 +9,7 @@ refusal exits 3 and books nothing; a wrong flag combination exits 2.
 import json
 import unittest
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 
 from gzkit.cli import main
 from tests.commands.test_wp_order import _ledger_rows, _OrderCase
@@ -21,6 +21,7 @@ _ORDER = "ORD-01-import"
 class _CommencedOrder(_OrderCase):
     """One repair REQ, frozen into ORD-01-import, which is commenced."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         store = Path("data") / "catalog" / "work_packages.json"

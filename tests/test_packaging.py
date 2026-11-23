@@ -15,6 +15,7 @@ import tomllib
 import unittest
 import zipfile
 from pathlib import Path
+from typing import override
 
 from gzkit.traceability import covers
 
@@ -54,6 +55,7 @@ def _build_wheel_into(tmpdir: Path) -> Path:
 class TestWheelChoresShipping(unittest.TestCase):
     """REQ-0.0.21-03-01..03 + 07: wheel contents contract."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         cls._tmp = tempfile.TemporaryDirectory()
@@ -62,6 +64,7 @@ class TestWheelChoresShipping(unittest.TestCase):
         with zipfile.ZipFile(cls._wheel) as z:
             cls._namelist = list(z.namelist())
 
+    @override
     @classmethod
     def tearDownClass(cls) -> None:
         cls._tmp.cleanup()

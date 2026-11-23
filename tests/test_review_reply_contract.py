@@ -12,6 +12,7 @@ import json
 import re
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.acceptance import ReviewResponse
 from gzkit.acceptance_store import acceptance_status, load_history, record_review
@@ -153,6 +154,7 @@ class TestLegacyResultDerivesFromTheEnvelope(unittest.TestCase):
 class TestVerificationGapsAreNonGoverning(unittest.TestCase):
     """A reviewer's own coverage limits import, and never approve or block (GHI #941)."""
 
+    @override
     def setUp(self) -> None:
         self.fixture = store_tests.AcceptanceStoreTests()
         self.fixture.setUp()

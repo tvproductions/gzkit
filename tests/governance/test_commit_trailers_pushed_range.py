@@ -14,6 +14,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from gzkit.check_fingerprint import record_verified, staged_fingerprint
@@ -51,6 +52,7 @@ def _commit(root: Path, rel: str, message: str) -> str:
 class PushedRangeTests(unittest.TestCase):
     """Every unpushed commit is checked; published ones are not re-flagged."""
 
+    @override
     def setUp(self) -> None:
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
@@ -129,6 +131,7 @@ class ReuseSkipDoesNotBypassTheTrailerWitness(unittest.TestCase):
     unread -- 57a94bd58 reached origin that way.
     """
 
+    @override
     def setUp(self) -> None:
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)

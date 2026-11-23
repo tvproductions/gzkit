@@ -17,6 +17,7 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import override
 from unittest import mock
 
 from gzkit.mx import marker
@@ -218,6 +219,7 @@ class TestLevel(unittest.TestCase):
 class TestCondition(unittest.TestCase):
     """GHI #1273: one reading of *on*, ruled in the contractor-kit record (operator: "A")."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)

@@ -6,6 +6,7 @@ import subprocess
 import sys
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.traceability import covers
 
@@ -61,6 +62,7 @@ class TestRubricScoringE2E(unittest.TestCase):
 class TestTriageScriptE2E(unittest.TestCase):
     """REQ-0.0.57-05-04: E2E triage script via subprocess (exercises OBPI-03 surface)."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         """Run triage script once and parse output for all tests in this class."""

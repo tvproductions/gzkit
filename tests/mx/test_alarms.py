@@ -5,6 +5,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 from unittest import mock
 
 from gzkit.commands.quality import _STEP_GUARD_META
@@ -18,11 +19,13 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 class TestAlarmsOff(unittest.TestCase):
+    @override
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
         (self.root / ".gzkit").mkdir()
 
+    @override
     def tearDown(self):
         self._tmp.cleanup()
 

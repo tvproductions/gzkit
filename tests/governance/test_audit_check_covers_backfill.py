@@ -20,7 +20,7 @@ import tempfile
 import unittest
 from datetime import date
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 
 from pydantic import ValidationError
 
@@ -1613,6 +1613,7 @@ class TestAdrAuditCheckIntegration(unittest.TestCase):
     exit-code precedence) — not the heuristic internals (covered above).
     """
 
+    @override
     def setUp(self) -> None:
         import contextlib  # noqa: PLC0415
         import io  # noqa: PLC0415
@@ -1620,6 +1621,7 @@ class TestAdrAuditCheckIntegration(unittest.TestCase):
         self._stdout_redirect = contextlib.redirect_stdout(io.StringIO())
         self._stdout_redirect.__enter__()
 
+    @override
     def tearDown(self) -> None:
         # Backstop: halt every patcher started in this test, including any
         # unmanaged ``patch(...).start()`` calls that don't pair with a

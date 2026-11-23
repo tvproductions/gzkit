@@ -9,6 +9,7 @@ import json
 import os
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from gzkit.cli import main
@@ -324,6 +325,7 @@ class TestRunVerbs(_RunCase):
 class PackageRunOutputContract(_PackageCase):
     """A delivery package's block and unblock name the package, as the manpages show."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self._commence()
@@ -355,6 +357,7 @@ class PackageRunOutputContract(_PackageCase):
 class PackageDispatchOutputContract(_PackageCase):
     """A delivery package's dispatch names the package, as the manpage shows."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self._commence()

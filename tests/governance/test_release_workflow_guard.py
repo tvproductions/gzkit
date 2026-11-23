@@ -29,7 +29,7 @@ can be re-expressed without the witness going quiet.
 
 import unittest
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 
 import yaml
 
@@ -206,6 +206,7 @@ class TestGatePredicate(unittest.TestCase):
 class TestShippedReleaseWorkflow(unittest.TestCase):
     """The real workflow must carry both gates."""
 
+    @override
     def setUp(self) -> None:
         self.workflow = yaml.safe_load(_WORKFLOW.read_text(encoding="utf-8"))
 

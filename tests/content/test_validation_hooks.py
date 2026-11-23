@@ -19,6 +19,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from gzkit.content.models import AgentContract
@@ -314,10 +315,12 @@ class TestRenderPipelineWired(unittest.TestCase):
 class TestEditSaveHookWired(unittest.TestCase):
     """content_edit_cmd() calls validate_save before atomic file write."""
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self._tmp = Path(self._tempdir.name)
 
+    @override
     def tearDown(self) -> None:
         self._tempdir.cleanup()
 

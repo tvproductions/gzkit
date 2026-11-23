@@ -16,6 +16,7 @@ import io
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 from unittest import mock
 
 from gzkit.commands.quality import _STEP_GUARD_META, _build_check_steps, _select_check_steps
@@ -52,6 +53,7 @@ class TestTheAuditRunsAtFullTierOnly(unittest.TestCase):
 
 
 class TestTheAuditJudgesTheLock(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         def mkroot(slug: str) -> Path:
             tmp = tempfile.TemporaryDirectory(prefix=f"gzkit-qc-nc-{slug}-")

@@ -13,6 +13,7 @@ import unittest
 from contextlib import redirect_stderr
 from pathlib import Path
 from types import ModuleType
+from typing import override
 from unittest import mock
 
 from gzkit.commands.smoke_cmd import smoke_cmd, smoke_gate
@@ -79,6 +80,7 @@ class EmptyTierIsABreachWhenRequired(SilencedConsoleTestCase):
 class BudgetIsEnforced(SilencedConsoleTestCase):
     """The ceiling must have teeth, and the default must come from the rule."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         result = unittest.TestResult()
@@ -115,6 +117,7 @@ class ExitCodeReachesTheShell(SilencedConsoleTestCase):
     before this test existed.
     """
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         result = unittest.TestResult()

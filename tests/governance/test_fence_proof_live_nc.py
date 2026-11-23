@@ -10,6 +10,7 @@ parent-ADR ## Boundary Invariants anchor, no regression.
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.traceability import covers
 
@@ -29,6 +30,7 @@ def _make_fake_adr(project_root: Path, semver: str, *, has_boundary_invariants: 
 class TestEnforcementAssertingFencePath(unittest.TestCase):
     """REQ-0.0.74-18-01: enforcement fence is claim-bound — pass only for its own live claim."""
 
+    @override
     def setUp(self) -> None:
         from gzkit.enforcement import reset_enforcement_registry
 
@@ -37,6 +39,7 @@ class TestEnforcementAssertingFencePath(unittest.TestCase):
         # under test: a clean registry must not produce a spurious unproven-fence.
         reset_enforcement_registry()
 
+    @override
     def tearDown(self) -> None:
         from gzkit.enforcement import reset_enforcement_registry
 

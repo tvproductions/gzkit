@@ -33,6 +33,7 @@ import unittest
 from contextlib import redirect_stdout
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import override
 
 from gzkit.handoff_api import create_handoff, resume_handoff
 from gzkit.handoff_resume_gate import newest_handoff
@@ -110,6 +111,7 @@ class TestBothSelectionReadersAgree(unittest.TestCase):
     necessity. Only a differential holds them together.
     """
 
+    @override
     def setUp(self) -> None:
         self.orientation = _load_orientation()
         self.now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=UTC)
@@ -314,6 +316,7 @@ class TestTheAccountAnchorAgreesWithSelection(unittest.TestCase):
     anchor at all. That divergence is asserted, not merely tolerated.
     """
 
+    @override
     def setUp(self) -> None:
         self.mod = _load_orientation()
         self.now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=UTC)
@@ -394,6 +397,7 @@ class TestBothRenderersCarryTheSameStalenessQualifiers(unittest.TestCase):
     renderer and not the other fails here rather than in a future session.
     """
 
+    @override
     def setUp(self) -> None:
         self.orientation = _load_orientation()
         self.now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=UTC)
@@ -584,6 +588,7 @@ class TestTheProbeMeasuresTheRealTree(unittest.TestCase):
     clothes, and it is invisible to a differential over rendering.
     """
 
+    @override
     def setUp(self) -> None:
         """Clear the offline escape hatch for the duration of these two tests.
 

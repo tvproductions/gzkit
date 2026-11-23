@@ -11,6 +11,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from gzkit.cli.logging import (
@@ -25,9 +26,11 @@ from gzkit.traceability import covers
 class TestConfigureLogging(unittest.TestCase):
     """Test the single configuration entry point."""
 
+    @override
     def setUp(self) -> None:
         bind_correlation_id("test-corr-id")
 
+    @override
     def tearDown(self) -> None:
         # Clean up root logger handlers
         root = logging.getLogger()
@@ -61,9 +64,11 @@ class TestVerbosityLevels(unittest.TestCase):
     everything but errors (§ Output Modes).
     """
 
+    @override
     def setUp(self) -> None:
         bind_correlation_id("test-corr-id")
 
+    @override
     def tearDown(self) -> None:
         root = logging.getLogger()
         for handler in root.handlers:
@@ -129,9 +134,11 @@ class TestVerbosityLevels(unittest.TestCase):
 class TestJsonFileOutput(unittest.TestCase):
     """Test JSON file output for machine consumption."""
 
+    @override
     def setUp(self) -> None:
         bind_correlation_id("json-test-id")
 
+    @override
     def tearDown(self) -> None:
         root = logging.getLogger()
         for handler in root.handlers:
@@ -205,9 +212,11 @@ class TestJsonFileOutput(unittest.TestCase):
 class TestConsoleOutput(unittest.TestCase):
     """Test human-readable console output."""
 
+    @override
     def setUp(self) -> None:
         bind_correlation_id("console-test")
 
+    @override
     def tearDown(self) -> None:
         root = logging.getLogger()
         for handler in root.handlers:
@@ -248,11 +257,13 @@ def _raise_boom() -> None:
 class TestRecordDetail(unittest.TestCase):
     """What each formatter carries beyond the event: callsite, exception, stack, an own ID."""
 
+    @override
     def setUp(self) -> None:
         bind_correlation_id("detail-test")
         self._tmp = tempfile.TemporaryDirectory()
         self._log_path = Path(self._tmp.name) / "detail.log"
 
+    @override
     def tearDown(self) -> None:
         root = logging.getLogger()
         for handler in root.handlers:
@@ -323,6 +334,7 @@ class TestRecordDetail(unittest.TestCase):
 class TestCorrelationId(unittest.TestCase):
     """Test correlation ID binding and propagation."""
 
+    @override
     def tearDown(self) -> None:
         root = logging.getLogger()
         for handler in root.handlers:
@@ -446,6 +458,7 @@ class TestConsoleColorsFollowThePlatformDefault(unittest.TestCase):
     """
 
     class _Terminal(io.StringIO):
+        @override
         def isatty(self) -> bool:
             return True
 
@@ -463,6 +476,7 @@ class TestConsoleColorsFollowThePlatformDefault(unittest.TestCase):
     def _environment_without_color_settings(self) -> dict[str, str]:
         return {k: v for k, v in os.environ.items() if k not in {"NO_COLOR", "FORCE_COLOR"}}
 
+    @override
     def tearDown(self) -> None:
         root = logging.getLogger()
         for handler in root.handlers:

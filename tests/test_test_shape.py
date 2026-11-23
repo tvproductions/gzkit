@@ -12,12 +12,14 @@ trunk. `test_command_always_exits_zero` is what stops a later change from making
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 from unittest import mock
 
 from gzkit.test_shape import scan_output_assertions
 
 
 class _TreeFixture(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)

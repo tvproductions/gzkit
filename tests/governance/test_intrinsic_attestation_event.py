@@ -10,6 +10,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.governance.trust_audits.intrinsic_attestation import validate_intrinsic_attestation
 from gzkit.traceability import covers
@@ -53,10 +54,12 @@ def _well_formed_event(
 class TestIntrinsicAttestationEventShape(unittest.TestCase):
     """REQ-0.0.29-07-06: validate event shapes, tempfile-backed ledger."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.project_root = Path(self._tmp.name)
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 

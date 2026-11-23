@@ -10,6 +10,7 @@ explanation) — never on the verdict value itself (ADR-0.0.39).
 import json
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.cli.main import main
 from gzkit.traceability import covers
@@ -28,6 +29,7 @@ def _ledger_events() -> list[dict]:
 
 
 class TestContentAdviseRenditionCmd(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 

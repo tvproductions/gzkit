@@ -16,6 +16,7 @@ import tempfile
 import unittest
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import override
 from unittest import mock
 
 from gzkit.commands.common import _prefix_match_candidates
@@ -38,6 +39,7 @@ from gzkit.ledger import Ledger
 class TestForeignRepositoryReferencesAreNotResolvedLocally(unittest.TestCase):
     """A citation naming another repository resolves UNKNOWN, unread."""
 
+    @override
     def setUp(self) -> None:
         self._root = tempfile.TemporaryDirectory()
         self.addCleanup(self._root.cleanup)
@@ -110,6 +112,7 @@ class TestObpiCitationsResolveFromTheLedger(unittest.TestCase):
     for ADR (GHI #1076).
     """
 
+    @override
     def setUp(self) -> None:
         self._root = tempfile.TemporaryDirectory()
         self.addCleanup(self._root.cleanup)
@@ -288,6 +291,7 @@ class TestAdrCitationsResolveFromRecordedCloseout(unittest.TestCase):
     so it reads LIVE and a step advising it is not silenced.
     """
 
+    @override
     def setUp(self) -> None:
         self._root = tempfile.TemporaryDirectory()
         self.addCleanup(self._root.cleanup)
@@ -502,6 +506,7 @@ class TestCitationsResolveThroughPrefixesTheProseActuallyWrites(unittest.TestCas
     the live one. Ambiguity is two or more ACTIVE siblings.
     """
 
+    @override
     def setUp(self) -> None:
         self._root = tempfile.TemporaryDirectory()
         self.addCleanup(self._root.cleanup)
@@ -1007,6 +1012,7 @@ class TestLiveCheckerPrefetchesCitationsInOneRead(unittest.TestCase):
     changes a verdict: the same answer maps to the same state on either transport.
     """
 
+    @override
     def setUp(self) -> None:
         self.batches: list[list[str]] = []
         self.answers: dict[str, IssueAnswer] = {}

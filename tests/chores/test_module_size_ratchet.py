@@ -27,6 +27,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from types import ModuleType
+from typing import override
 from unittest import mock
 
 from gzkit.commands.common import get_project_root
@@ -91,6 +92,7 @@ class TestTheGateMeasuresLizardFileNloc(unittest.TestCase):
 class TestSlackDirection(unittest.TestCase):
     """An entry looser than its module must fail closed."""
 
+    @override
     def setUp(self) -> None:
         self.gate = _load_gate()
         self.block = 1000.0

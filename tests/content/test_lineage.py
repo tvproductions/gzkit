@@ -11,6 +11,7 @@ import tempfile
 import unittest
 import unittest.mock
 from pathlib import Path
+from typing import override
 
 from pydantic import ValidationError
 
@@ -44,6 +45,7 @@ class TestSectionLineageSpanValidation(unittest.TestCase):
 
 
 class TestSaveCandidateLineageShape(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self.addCleanup(self._tempdir.cleanup)
@@ -94,6 +96,7 @@ class TestSaveCandidateLineagePersistsExactBytes(unittest.TestCase):
     where the translation happens to be a no-op.
     """
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self.addCleanup(self._tempdir.cleanup)
@@ -149,6 +152,7 @@ class TestLineagePaths(unittest.TestCase):
 
 
 class TestCandidateLineageRoundTrip(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self.addCleanup(self._tempdir.cleanup)

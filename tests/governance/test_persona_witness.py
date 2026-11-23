@@ -21,6 +21,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.governance.trust_audits import audit_persona_witness
 
@@ -63,10 +64,12 @@ def _write_grandfather(root: Path, ids: list[str]) -> None:
 
 
 class TestPersonaWitnessAudit(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._tmpdir = tempfile.TemporaryDirectory()
         self.root = Path(self._tmpdir.name)
 
+    @override
     def tearDown(self) -> None:
         self._tmpdir.cleanup()
 

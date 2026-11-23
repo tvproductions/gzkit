@@ -10,7 +10,7 @@ Tests derive from acceptance criteria in the OBPI brief:
 import tempfile
 import unittest
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 from unittest.mock import patch
 
 from gzkit.enforcement import (
@@ -85,10 +85,12 @@ def _entrypoint_raises(root: Path) -> list[str]:
 class TestRunSingleClaim(unittest.TestCase):
     """_run_single_claim(record) returns ClaimRunResult with correct outcome (REQ-16-01)."""
 
+    @override
     def setUp(self) -> None:
         reset_enforcement_registry()
         set_known_claims(_TEST_CLAIMS)
 
+    @override
     def tearDown(self) -> None:
         reset_enforcement_registry()
 
@@ -184,10 +186,12 @@ class TestRunSingleClaim(unittest.TestCase):
 class TestRunMetaValidator(unittest.TestCase):
     """run_meta_validator() collects results and returns RunnerResult (REQ-16-01, -02, -03)."""
 
+    @override
     def setUp(self) -> None:
         reset_enforcement_registry()
         set_known_claims(_TEST_CLAIMS)
 
+    @override
     def tearDown(self) -> None:
         reset_enforcement_registry()
 
@@ -313,10 +317,12 @@ class TestRunMetaValidator(unittest.TestCase):
 class TestRunnerResultFields(unittest.TestCase):
     """RunnerResult carries all claim results for introspection (REQ-16-01)."""
 
+    @override
     def setUp(self) -> None:
         reset_enforcement_registry()
         set_known_claims(_TEST_CLAIMS)
 
+    @override
     def tearDown(self) -> None:
         reset_enforcement_registry()
 
@@ -495,11 +501,13 @@ class TestProductionRegistryDiscovery(unittest.TestCase):
     enforcement registry, and asserts the production invariant.
     """
 
+    @override
     def setUp(self) -> None:
         # Reset so the no-arg run re-derives the production registry from scratch
         # (and is not contaminated by another test's injected known-claims set).
         reset_enforcement_registry()
 
+    @override
     def tearDown(self) -> None:
         reset_enforcement_registry()
 

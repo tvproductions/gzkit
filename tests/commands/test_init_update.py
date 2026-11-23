@@ -18,6 +18,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 from unittest import mock
 
 from gzkit.canonical_history import (
@@ -156,6 +157,7 @@ class TestInitManpageDocumentsUpdateMode(unittest.TestCase):
     (0 success, 1 usage error, 3 unresolved conflicts).
     """
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         repo_root = Path(__file__).resolve().parents[2]

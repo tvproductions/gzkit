@@ -25,6 +25,7 @@ welded to the rationale that justifies it.
 
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.governance.trust_audits.release import (
     _scorecard_row_scores,
@@ -44,6 +45,7 @@ def _doc(*rows: str) -> str:
 class TheLiveScorecardHasNoDropouts(unittest.TestCase):
     """The corpus itself, which is what the check is deployed to protect."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         cls.text = SCORECARD.read_text(encoding="utf-8")

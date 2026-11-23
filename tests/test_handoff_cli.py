@@ -17,7 +17,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 from unittest import mock
 
 from gzkit import handoff_api
@@ -47,6 +47,7 @@ _CHAIN_DEPTH_BOUND = handoff_api._MAX_CHAIN_DEPTH
 
 
 class _HandoffCliCase(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         # Chain to super() so a subclass can mix in SilencedConsoleTestCase for
         # the handler-direct cases whose console output has no capture. The

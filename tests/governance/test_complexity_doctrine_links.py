@@ -8,6 +8,7 @@ gz validate --all and gz check.
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.governance.trust_audits import validate_complexity_doctrine_links
 from gzkit.traceability import covers
@@ -16,6 +17,7 @@ from gzkit.traceability import covers
 class TestComplexityDoctrineLinks(unittest.TestCase):
     """Unit tests for the complexity-doctrine link-integrity validator."""
 
+    @override
     def setUp(self):
         """Set up a temporary project root with fixture ADRs and distilled docs."""
         self.temp_dir = tempfile.TemporaryDirectory()
@@ -39,6 +41,7 @@ class TestComplexityDoctrineLinks(unittest.TestCase):
         rules_dir = self.project_root / ".gzkit" / "rules"
         rules_dir.mkdir(parents=True, exist_ok=True)
 
+    @override
     def tearDown(self):
         """Clean up the temporary directory."""
         self.temp_dir.cleanup()
@@ -314,6 +317,7 @@ class TestComplexityDoctrineLinks(unittest.TestCase):
 class TestComplexityDoctrineLinksFunctional(unittest.TestCase):
     """Functional tests for the complexity-doctrine validator."""
 
+    @override
     def setUp(self):
         """Set up a temporary project root."""
         self.temp_dir = tempfile.TemporaryDirectory()
@@ -343,6 +347,7 @@ class TestComplexityDoctrineLinksFunctional(unittest.TestCase):
         rules_dir = self.project_root / ".gzkit" / "rules"
         rules_dir.mkdir(parents=True, exist_ok=True)
 
+    @override
     def tearDown(self):
         """Clean up the temporary directory."""
         self.temp_dir.cleanup()

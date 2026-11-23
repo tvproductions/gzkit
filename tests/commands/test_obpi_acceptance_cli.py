@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import override
 
 from gzkit.acceptance import Proof
 from tests.test_acceptance_execution import REQ, SELECTOR, TEST, ExecutionFixture
@@ -20,6 +21,7 @@ from tests.test_acceptance_store import OBPI, captured_receipt
 class TestAcceptanceProcessExit(ExecutionFixture):
     """The shell must see refusal and success from the same actual command path."""
 
+    @override
     def setUp(self):
         super().setUp()
         self.write(".gzkit.json", json.dumps({"paths": {"design_root": "design"}}))

@@ -8,6 +8,7 @@ import subprocess
 import unittest
 from contextlib import redirect_stderr
 from pathlib import Path
+from typing import override
 
 from tests.commands.common import _isolated_git_env
 
@@ -32,6 +33,7 @@ class QuietAdvisoriesMixin(unittest.TestCase):
     the emitted prose.
     """
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.advisory_output = io.StringIO()

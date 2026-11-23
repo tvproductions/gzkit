@@ -8,7 +8,7 @@ help text.
 import argparse
 import sys
 import textwrap
-from typing import Any
+from typing import Any, override
 
 
 class _NoHyphenBreaksFormatter(argparse.RawDescriptionHelpFormatter):
@@ -18,10 +18,12 @@ class _NoHyphenBreaksFormatter(argparse.RawDescriptionHelpFormatter):
     ``OBPI-0.0.4-01`` from being split across lines.
     """
 
+    @override
     def _split_lines(self, text: str, width: int) -> list[str]:
         text = textwrap.dedent(text)
         return textwrap.wrap(text, width, break_on_hyphens=False)
 
+    @override
     def _fill_text(self, text: str, width: int, indent: str) -> str:
         text = textwrap.dedent(text)
         # Preserve newlines for description/epilog (RawDescriptionHelpFormatter
@@ -46,6 +48,7 @@ class StableArgumentParser(argparse.ArgumentParser):
         kwargs.setdefault("formatter_class", _NoHyphenBreaksFormatter)
         super().__init__(**kwargs)
 
+    @override
     def error(self, message: str) -> None:  # ty: ignore[incompatible-method-override]
         """Print a structured error and exit with code 2."""
         sys.stderr.write(f"BLOCKERS: {self.prog}: error: {message}\n")

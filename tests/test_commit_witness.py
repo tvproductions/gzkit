@@ -14,6 +14,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 from unittest import mock
 
 from gzkit.arb.validator import validate_receipts
@@ -43,6 +44,7 @@ _BASE_TEST = (
 class _CommitRepo(unittest.TestCase):
     """A throwaway repository whose last commit is the shape under test."""
 
+    @override
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
@@ -55,6 +57,7 @@ class _CommitRepo(unittest.TestCase):
         (self.root / "tests" / "test_mod.py").write_text(_BASE_TEST, encoding="utf-8")
         self._commit("base")
 
+    @override
     def tearDown(self):
         self._tmp.cleanup()
 
@@ -638,6 +641,7 @@ class TestCommitModeRecordsItsVerdict(unittest.TestCase):
         ):
             return arb_red_cmd(commit="HEAD"), root
 
+    @override
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)

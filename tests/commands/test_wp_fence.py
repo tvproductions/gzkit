@@ -18,6 +18,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 from unittest import mock
 
 from gzkit.cli import main
@@ -115,6 +116,7 @@ def _seat_frozen_order(modules: list[str]) -> None:
 
 
 class _FenceCase(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         # Acceptance is not this suite's subject: tests/commands/test_wp_acceptance.py is.
         gate = mock.patch("gzkit.commands.wp.acceptance_blockers", return_value=[])

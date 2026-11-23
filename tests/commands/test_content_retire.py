@@ -12,6 +12,7 @@ import shlex
 import unicodedata
 import unittest
 from pathlib import Path
+from typing import override
 
 # `gzkit.ledger_events` is not importable before `gzkit.ledger` (production import
 # cycle, recorded 2026-10-03 via gz insights); this module must load when run alone.
@@ -157,6 +158,7 @@ class TestContentRetireDriftWarning(unittest.TestCase):
     operator told no recompose was due.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -407,6 +409,7 @@ class TestContentRetireDriftWarning(unittest.TestCase):
 
 
 class TestContentRetire(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -600,6 +603,7 @@ class TestContentRetireAttestation(unittest.TestCase):
     the decision. Compressible-tier retirement stays frictionless.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -1763,6 +1767,7 @@ class TestContentRetireManpageOutputForm(unittest.TestCase):
     # not a REQ-derived code behavior, so they live in their own class.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 

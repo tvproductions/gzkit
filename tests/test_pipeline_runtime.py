@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 from unittest.mock import patch
 
 from gzkit.ledger import pipeline_marker_purged_event
@@ -1332,6 +1332,7 @@ class TestMarkerWritersFollowTheStageReached(unittest.TestCase):
     _OBPI = "OBPI-0.99.0-01-run-position-demo"
     _CROSSED_AT = "2026-10-11T10:30:00.250000+00:00"
 
+    @override
     def setUp(self) -> None:
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
@@ -1414,6 +1415,7 @@ class TestTheDispatchCacheReadsWhatItWrites(unittest.TestCase):
 
     _OBPI = "OBPI-0.99.0-01-run-position-demo"
 
+    @override
     def setUp(self) -> None:
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)

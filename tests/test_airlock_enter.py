@@ -9,6 +9,7 @@ so the core runs with NO ontology projection built (hexagonal rule 6).
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.airlock.enter import CaptainOverride, airlock_enter, build_refusal
 from gzkit.airlock.model import Authority, Decision
@@ -38,6 +39,7 @@ is deliberately never named, so it stays un-accounted.
 
 
 class _AirlockEnterCase(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self.tmp = Path(self.enterContext(tempfile.TemporaryDirectory()))
         self._brief_seq = 0
@@ -336,6 +338,7 @@ class TestAirlockEnforcementClaimRegistration(unittest.TestCase):
     and that the un-forced negative control genuinely bites.
     """
 
+    @override
     def setUp(self) -> None:
         from gzkit.enforcement import reset_enforcement_registry
 

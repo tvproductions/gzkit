@@ -8,6 +8,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from gzkit.content.composer import _byte_evidence, compose, generate_candidate
@@ -70,11 +71,13 @@ def _seed_project(root: Path) -> None:
 
 
 class TestComposerEngine(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self._root = Path(self._tempdir.name)
         _seed_project(self._root)
 
+    @override
     def tearDown(self) -> None:
         self._tempdir.cleanup()
 
@@ -145,6 +148,7 @@ class ComposeResolvesContentTypeFromSurfaceTest(unittest.TestCase):
         "surface_content_types": {_RULE_SURFACE: "Rule"},
     }
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)
@@ -198,11 +202,13 @@ class TestByteEvidenceAccounting(unittest.TestCase):
     pin the replacement accounting (REQ-0.35.0-05-06/07).
     """
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self._root = Path(self._tempdir.name)
         _seed_project(self._root)
 
+    @override
     def tearDown(self) -> None:
         self._tempdir.cleanup()
 
@@ -468,6 +474,7 @@ _GEN_DECL_SECTIONS = {"owned-section": "corpus-owned", "unowned-section": "unown
 class _GenerateCandidateFixtureMixin(unittest.TestCase):
     """Shared temp-dir + fixture-writer setup for `generate_candidate` tests."""
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self.addCleanup(self._tempdir.cleanup)

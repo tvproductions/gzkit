@@ -4,6 +4,7 @@
 """
 
 import unittest
+from typing import override
 
 from pydantic import ValidationError
 
@@ -58,6 +59,7 @@ class TestContentTypeModel(unittest.TestCase):
 class TestContentTypeRegistry(unittest.TestCase):
     """ContentTypeRegistry register/get/list_all behavior."""
 
+    @override
     def setUp(self) -> None:
         self.reg = ContentTypeRegistry()
 
@@ -89,6 +91,7 @@ class TestContentTypeRegistry(unittest.TestCase):
 class TestValidateArtifact(unittest.TestCase):
     """ContentTypeRegistry.validate_artifact() behavior."""
 
+    @override
     def setUp(self) -> None:
         self.reg = ContentTypeRegistry()
         self.reg.register(

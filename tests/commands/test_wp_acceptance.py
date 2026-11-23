@@ -11,7 +11,7 @@ import json
 import unittest
 import uuid
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 from unittest import mock
 
 from gz_mutation_witness import Mutation
@@ -154,6 +154,7 @@ def _finding(finding_id: str, obligation: str, kind: str = "counterexample") -> 
 
 
 class _PackageCase(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self.runner = CliRunner()
         self.enterContext(self.runner.isolated_filesystem())

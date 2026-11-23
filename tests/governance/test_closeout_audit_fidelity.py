@@ -23,6 +23,7 @@ import tempfile
 import textwrap
 import unittest
 from pathlib import Path
+from typing import override
 from unittest import mock
 
 from gzkit.core.exceptions import PolicyBreachError
@@ -117,10 +118,12 @@ def _write_adr(tmpdir: Path, content: str) -> Path:
 
 
 class TestSharedFidelityGate(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self._dir = init_committed_repo(Path(self._tmp.name))
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 
@@ -183,10 +186,12 @@ class TestOneGateTwoConsumers(unittest.TestCase):
 
 
 class TestCloseoutWiring(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self._dir = init_committed_repo(Path(self._tmp.name))
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 

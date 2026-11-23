@@ -9,6 +9,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from pydantic import ValidationError
@@ -752,6 +753,7 @@ class TestHandoffAbsorptionBrief(unittest.TestCase):
     @covers REQ-0.25.0-32-05
     """
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         cls.brief_text = _brief_path().read_text(encoding="utf-8")

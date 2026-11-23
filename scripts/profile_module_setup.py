@@ -11,6 +11,7 @@ import sys
 import time
 import unittest
 from pathlib import Path
+from typing import override
 
 sys.path.insert(0, ".")
 sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[missing-union-attribute]
@@ -22,10 +23,12 @@ class TimingResult(unittest.TextTestResult):
         self.timings: list[tuple[str, float]] = []
         self._t0 = 0.0
 
+    @override
     def startTest(self, test):
         self._t0 = time.perf_counter()
         super().startTest(test)
 
+    @override
     def stopTest(self, test):
         self.timings.append((test.id(), time.perf_counter() - self._t0))
         super().stopTest(test)

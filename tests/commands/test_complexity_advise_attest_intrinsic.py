@@ -17,6 +17,7 @@ import unittest
 from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from gzkit.commands.complexity_advise import complexity_advise_cmd
@@ -187,9 +188,11 @@ def _write_simple_function(target: Path) -> None:
 class TestComplexityAdviseRegistryEnrichment(unittest.TestCase):
     """Task 2 — REQ-02 — registry enrichment path inside ``complexity_advise_cmd``."""
 
+    @override
     def setUp(self) -> None:
         clear_registry()
 
+    @override
     def tearDown(self) -> None:
         clear_registry()
 
@@ -264,6 +267,7 @@ class TestComplexityAdviseRegistryEnrichment(unittest.TestCase):
 class TestComplexityAdviseAttestIntrinsic(unittest.TestCase):
     """Task 3 — --attest-intrinsic commit-time path."""
 
+    @override
     def setUp(self) -> None:
         clear_registry()
         self._tmp = tempfile.TemporaryDirectory()
@@ -271,6 +275,7 @@ class TestComplexityAdviseAttestIntrinsic(unittest.TestCase):
         self.ledger_path = self.tmp / ".gzkit" / "ledger.jsonl"
         self.ledger_path.parent.mkdir(parents=True, exist_ok=True)
 
+    @override
     def tearDown(self) -> None:
         clear_registry()
         self._tmp.cleanup()
@@ -441,9 +446,11 @@ class TestComplexityAdviseAttestIntrinsic(unittest.TestCase):
 class TestIntrinsicComplexityCliPath(unittest.TestCase):
     """Task 2 — CLI-side coverage that decorator + advisor compose end-to-end."""
 
+    @override
     def setUp(self) -> None:
         clear_registry()
 
+    @override
     def tearDown(self) -> None:
         clear_registry()
 

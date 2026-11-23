@@ -27,6 +27,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from types import ModuleType
+from typing import override
 
 from gzkit.commands.common import get_project_root
 from gzkit.hooks import guards
@@ -66,6 +67,7 @@ def _git_repo(root: Path) -> None:
 class RepoContentWalkTest(unittest.TestCase):
     """Both scanners must see tracked content and must not see ignored output."""
 
+    @override
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory(prefix="gzkit-walk-")
         self.root = Path(self._tmp.name)

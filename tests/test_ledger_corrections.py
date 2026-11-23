@@ -19,6 +19,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from pydantic import ValidationError
 
@@ -195,6 +196,7 @@ class TestCorrectionEventFailsClosed(unittest.TestCase):
 class TestSubjectResolution(unittest.TestCase):
     """A correction must name exactly the rows it means, and nothing adjacent."""
 
+    @override
     def setUp(self) -> None:
         self.blocked_a = _row(
             "task_blocked", "TASK-0.35.0-08-05-01", "2026-08-23T14:27:39.933308+00:00", reason="a"
@@ -230,6 +232,7 @@ class TestSubjectResolution(unittest.TestCase):
 class TestNettingSemantics(unittest.TestCase):
     """``void`` and ``discharged`` differ mechanically, not only in prose."""
 
+    @override
     def setUp(self) -> None:
         self.launched = _row(
             "pipeline_launched", "OBPI-0.35.0-08", "2026-08-23T13:12:21.832251+00:00"
@@ -1320,6 +1323,7 @@ class TestValidationAndReplayRefuseTheSameCorrections(unittest.TestCase):
         "lane": "lite",
     }
 
+    @override
     def setUp(self) -> None:
         self.subject = _row(
             "pipeline_launched", "OBPI-0.35.0-08", self.SUBJECT_TS, **self.LAUNCH_FIELDS
@@ -1533,6 +1537,7 @@ class TestAStoredRowsEnvelopeIsNeverManufactured(unittest.TestCase):
         "lane": "lite",
     }
 
+    @override
     def setUp(self) -> None:
         self.created = _row(
             "obpi_created", self.OBPI, "2026-07-21T23:36:03+00:00", parent="ADR-0.35.0"

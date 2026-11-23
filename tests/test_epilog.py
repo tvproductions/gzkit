@@ -13,6 +13,7 @@ Covers OBPI-0.0.4-05 requirements:
 import argparse
 import inspect
 import unittest
+from typing import override
 
 from gzkit.cli.helpers.epilog import build_epilog
 from gzkit.cli.main import _build_parser
@@ -89,6 +90,7 @@ def _collect_parsers(parser, prefix=""):
 class TestEpilogPresence(unittest.TestCase):
     """REQ-0.0.4-05-02/03/04: Every command and subcommand has an epilog."""
 
+    @override
     @classmethod
     def setUpClass(cls):
         cls.parser = _build_parser()
@@ -137,6 +139,7 @@ class TestEpilogPresence(unittest.TestCase):
 class TestEpilogExamples(unittest.TestCase):
     """REQ-0.0.4-05-05: All example commands are valid gz invocations."""
 
+    @override
     @classmethod
     def setUpClass(cls):
         parser = _build_parser()

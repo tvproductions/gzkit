@@ -24,6 +24,7 @@ import tempfile
 import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import override
 from unittest import mock
 
 from gzkit.guard_canary import load_canaries
@@ -55,6 +56,7 @@ SECTION_HEADINGS = (
 
 
 class TestFreshnessClassification(unittest.TestCase):
+    @override
     def setUp(self):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=UTC)
@@ -77,6 +79,7 @@ class TestFreshnessClassification(unittest.TestCase):
 
 
 class TestRenderEmitsAllSections(unittest.TestCase):
+    @override
     def setUp(self):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=UTC)
@@ -159,6 +162,7 @@ class TestRenderEmitsAllSections(unittest.TestCase):
 
 
 class TestCollectHandoff(unittest.TestCase):
+    @override
     def setUp(self):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=UTC)
@@ -328,6 +332,7 @@ class TestCollectHandoff(unittest.TestCase):
 class TestCollectRemoteState(unittest.TestCase):
     """GHI #338 — orientation surfaces git-remote-divergence at session start."""
 
+    @override
     def setUp(self):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 4, 26, 12, 0, 0, tzinfo=UTC)
@@ -425,6 +430,7 @@ class TestCollectRemoteState(unittest.TestCase):
 class TestRenderRemoteStateBlock(unittest.TestCase):
     """GHI #338 — render emits a binding nudge when the clone is behind origin."""
 
+    @override
     def setUp(self):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 4, 26, 12, 0, 0, tzinfo=UTC)
@@ -517,6 +523,7 @@ class TestCollectCampaign(unittest.TestCase):
     can begin without the campaign in view.
     """
 
+    @override
     def setUp(self):
         self.mod = _load_orientation_module()
 
@@ -693,6 +700,7 @@ class TestHandoffSelectionUnderBehindClone(unittest.TestCase):
     while the section directly above it said `behind=20`.
     """
 
+    @override
     def setUp(self):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 6, 10, 12, 0, 0, tzinfo=UTC)
@@ -733,6 +741,7 @@ class TestHandoffSelectionUnderBehindClone(unittest.TestCase):
 
 
 class TestRenderCampaignBlock(unittest.TestCase):
+    @override
     def setUp(self):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 6, 10, 12, 0, 0, tzinfo=UTC)
@@ -833,6 +842,7 @@ class TestCampaignBlockIsBounded(unittest.TestCase):
 
     CAP = 2500
 
+    @override
     def setUp(self):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 10, 15, 12, 0, 0, tzinfo=UTC)
@@ -957,6 +967,7 @@ class TestCollectObpiLocks(unittest.TestCase):
     held ones — the auto-reap cadence token-block-discipline § Sub-Invariant 4
     promises, instead of the prior hardcoded ``obpi_locks: []`` fiction."""
 
+    @override
     def setUp(self):
         self.mod = _load_orientation_module()
 
@@ -1073,6 +1084,7 @@ class TestCollectPipelineRuns(unittest.TestCase):
     OBPI = "OBPI-0.3.0-01-example"
     RESUME = f"uv run gz obpi pipeline {OBPI} --from=verify"
 
+    @override
     def setUp(self):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 10, 4, 12, 0, 0, tzinfo=UTC)
@@ -1247,6 +1259,7 @@ class TestLiveAdrCountsOverrideCampaignProse(unittest.TestCase):
     it, so Layer-2 truth is present without any session holding a ruling.
     """
 
+    @override
     def setUp(self):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 7, 29, 12, 0, 0, tzinfo=UTC)
@@ -1369,6 +1382,7 @@ class TestChoreStalenessAnnouncement(unittest.TestCase):
     ``gz chores status --json``, never recomputed here.
     """
 
+    @override
     def setUp(self):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 9, 14, 12, 0, 0, tzinfo=UTC)
@@ -1450,6 +1464,7 @@ class TestUnreviewedCanariesReachSessionStart(unittest.TestCase):
     section is conditional, like the chore one: absent when every canary is reviewed.
     """
 
+    @override
     def setUp(self):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 10, 2, 12, 0, 0, tzinfo=UTC)
@@ -1553,6 +1568,7 @@ class TestSessionStartBudgetIsReadAndSelfChecked(unittest.TestCase):
     ``data/instructions_files_budget.json`` § injected_hook_text at every boot.
     """
 
+    @override
     def setUp(self):
         self.mod = _load_orientation_module()
 
@@ -1629,6 +1645,7 @@ class TestFloorBookmarksDoNotShadowAuthoredHandoffs(unittest.TestCase):
     writer") while a 24,877-byte authored handoff sat 48 minutes beneath it.
     """
 
+    @override
     def setUp(self):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=UTC)
@@ -1683,6 +1700,7 @@ class TestExitBookmarkSensemakingSection(unittest.TestCase):
     merely misleading — this section is the half that keeps them visible.
     """
 
+    @override
     def setUp(self):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=UTC)
@@ -1792,6 +1810,7 @@ class TestHandoffAccountSynthesis(unittest.TestCase):
     answer whether a document is still true.
     """
 
+    @override
     def setUp(self):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=UTC)
@@ -2014,6 +2033,7 @@ class TestSessionStartIsOneChannelUnderBudget(unittest.TestCase):
     the whole text fits the contract's per-turn hook-text number.
     """
 
+    @override
     def setUp(self):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 10, 17, 12, 0, 0, tzinfo=UTC)
@@ -2214,6 +2234,7 @@ class TestMxHangarReachesSessionStart(unittest.TestCase):
     Operator ruling 2026-10-18: at expiry, book a status and notify, never evict.
     """
 
+    @override
     def setUp(self):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 10, 18, 12, 0, 0, tzinfo=UTC)
@@ -2350,6 +2371,7 @@ class TestUndeliveredHooksReachSessionStart(unittest.TestCase):
     by selection: session-start orientation reports undelivered hooks.
     """
 
+    @override
     def setUp(self):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 11, 19, 12, 0, 0, tzinfo=UTC)

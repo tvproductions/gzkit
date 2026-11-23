@@ -11,6 +11,7 @@ import hashlib
 import json
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.cli.main import main
 from gzkit.events import InsightRecordedEvent, parse_typed_event
@@ -51,6 +52,7 @@ def _remember(runner: CliRunner, *extra: str):
 
 
 class TestInsightRecordedPointer(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 

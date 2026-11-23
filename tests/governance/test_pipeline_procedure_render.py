@@ -21,6 +21,7 @@ going with the load cuts").
 import hashlib
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.content.retention import split_blocks
 from gzkit.governance.pipeline_control_inventory import (
@@ -145,6 +146,7 @@ class TestStageRanges(unittest.TestCase):
 class TestRenderedBody(unittest.TestCase):
     """REQ-0.35.0-20-01 and -05: invocation text only, plus the served-procedure statement."""
 
+    @override
     def setUp(self):
         self.inv = _inventory()
         self.rendered = render_served_set(self.inv)
@@ -178,6 +180,7 @@ class TestRenderedBody(unittest.TestCase):
 class TestRenderedStages(unittest.TestCase):
     """REQ-0.35.0-20-01 and -02 on the served procedures."""
 
+    @override
     def setUp(self):
         self.inv = _inventory()
         self.rendered = render_served_set(self.inv)

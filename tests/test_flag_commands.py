@@ -17,6 +17,7 @@ import json
 import unittest
 import unittest.mock
 from datetime import date
+from typing import override
 from unittest.mock import patch
 
 from gzkit.cli.main import main
@@ -83,6 +84,7 @@ _MOCK_REGISTRY_PATH = "gzkit.commands.flags.load_registry"
 class _RegistryMixin(unittest.TestCase):
     """Mixin that patches load_registry and suppresses stdout for all flag command tests."""
 
+    @override
     def setUp(self) -> None:
         patcher = patch(_MOCK_REGISTRY_PATH, return_value=dict(_REGISTRY))
         self._mock_load = patcher.start()

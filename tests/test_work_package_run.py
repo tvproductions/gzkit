@@ -10,6 +10,7 @@ exit. The replayed sequences are the dispatch rows of
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import override
 
 from gzkit.events import BaselinedReq, WorkPackageDispatchedEvent
 from gzkit.ledger import Ledger
@@ -224,6 +225,7 @@ class CountFixCycles(unittest.TestCase):
 
 
 class _Run(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         directory = TemporaryDirectory()
         self.addCleanup(directory.cleanup)

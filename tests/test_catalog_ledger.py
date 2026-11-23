@@ -10,6 +10,7 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import override
 
 from gzkit.catalog_ledger import (
     CatalogLedgerError,
@@ -81,11 +82,13 @@ def _rows(ledger_path: Path) -> list[dict[str, object]]:
 
 
 class _LedgerCase(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._dir = TemporaryDirectory()
         self.path = Path(self._dir.name) / "ledger.jsonl"
         self.ledger = Ledger(self.path)
 
+    @override
     def tearDown(self) -> None:
         self._dir.cleanup()
 
@@ -206,6 +209,7 @@ class CorpusAccountingTests(_LedgerCase):
 class RepairReqProofTests(_LedgerCase):
     """RP-12 ruling 45: proof runs one path for both specializations."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         repair = RepairReq(

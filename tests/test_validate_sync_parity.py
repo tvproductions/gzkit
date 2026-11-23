@@ -5,6 +5,7 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from gzkit.cli import main
@@ -145,6 +146,7 @@ class _SyncParityBase(unittest.TestCase):
     # Subclasses override with paths (relative to project root) they may mutate.
     _mutable_paths: tuple[str, ...] = ()
 
+    @override
     def setUp(self) -> None:
         assert _project_dir is not None
         if Path.cwd() != _project_dir:
@@ -158,6 +160,7 @@ class _SyncParityBase(unittest.TestCase):
                 # tree's line endings and polluting sibling tests.
                 self._snapshots[p] = p.read_bytes()
 
+    @override
     def tearDown(self) -> None:
         for p, content in self._snapshots.items():
             p.write_bytes(content)

@@ -13,7 +13,7 @@ import os
 import shlex
 import unittest
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 from unittest.mock import patch
 
 from gzkit.airlock.model import TransitObservation
@@ -87,6 +87,7 @@ def _ledger_rows() -> list[dict[str, Any]]:
 
 
 class _OrderCase(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self.runner = CliRunner()
         self.enterContext(self.runner.isolated_filesystem())
@@ -285,6 +286,7 @@ class OrderNewTests(_OrderCase):
 class _LifecycleCase(_OrderCase):
     """A repair package with one footprint module, one repair REQ and one opened order."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         store = Path("data") / "catalog" / "work_packages.json"

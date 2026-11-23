@@ -10,6 +10,7 @@ import argparse
 import subprocess
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.cli.main import _build_parser
 
@@ -40,6 +41,7 @@ UNDERSCORE_ALIAS_ALLOWLIST: frozenset[str] = frozenset()
 class TestCLIConsistency(unittest.TestCase):
     """Enforce CLI consistency rules via recursive parser audit."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         """Build parser once for all tests in this class."""

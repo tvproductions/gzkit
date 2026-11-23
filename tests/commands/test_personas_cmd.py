@@ -3,6 +3,7 @@
 import json
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.cli import main
 from gzkit.traceability import covers
@@ -39,6 +40,7 @@ grounding: Evidence-first.
 class TestPersonasListCmd(unittest.TestCase):
     """Tests for ``gz personas list``."""
 
+    @override
     def setUp(self) -> None:
         self.runner = CliRunner()
 
@@ -120,6 +122,7 @@ class TestPersonasListCmd(unittest.TestCase):
 class TestPersonasDriftCmd(unittest.TestCase):
     """Tests for ``gz personas drift``."""
 
+    @override
     def setUp(self) -> None:
         self.runner = CliRunner()
 

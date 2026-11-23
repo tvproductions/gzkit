@@ -9,6 +9,7 @@ helper, and fails closed (non-zero exit, no line written) on an empty
 import json
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.cli.main import main
 from gzkit.insights.model import InsightRecord
@@ -25,6 +26,7 @@ def _lines() -> list[str]:
 
 
 class TestInsightsRemember(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 

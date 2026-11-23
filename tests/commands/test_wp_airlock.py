@@ -19,7 +19,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, override
 from unittest import mock
 
 from gzkit.cli import main
@@ -146,6 +146,7 @@ def _stopped() -> Generator[None]:
 class _AirlockCase(unittest.TestCase):
     modules: tuple[str, ...] = (_MODULE,)
 
+    @override
     def setUp(self) -> None:
         # Acceptance is not this suite's subject: tests/commands/test_wp_acceptance.py is.
         for seam in ("gzkit.commands.wp", "gzkit.commands.wp_order"):
@@ -553,6 +554,7 @@ class TestFootprintOrders(_AirlockCase):
 class TestMirrors(_AirlockCase):
     modules = (".gzkit/skills/gz-wp/",)
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         Path(self.modules[0]).mkdir(parents=True, exist_ok=True)
@@ -588,6 +590,7 @@ class TestVendorMirror(_AirlockCase):
 
 
 class TestDelivery(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self.runner = CliRunner()
         self.enterContext(self.runner.isolated_filesystem())

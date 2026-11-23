@@ -41,7 +41,7 @@ import tempfile
 import typing
 import unittest
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any, ClassVar, override
 
 from pydantic import BaseModel
 
@@ -179,6 +179,7 @@ def _typed_verdict(row: dict[str, Any]) -> str:
 class LedgerDeclarationCoherence(unittest.TestCase):
     """The two readers' DECLARATIONS must agree, which is where drift starts."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         cls.schema = _schema_events()
@@ -499,6 +500,7 @@ class LedgerValidatorEnforcesDeclaredTypes(unittest.TestCase):
         "array": [],
     }
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         spec = _schema_events()["brief_reconciled"]
@@ -578,6 +580,7 @@ class PatternsAgreeAcrossBothReaders(unittest.TestCase):
     (``pattern``, ECMA-262, not implicitly anchored); Pydantic's ``Field(pattern=)``.
     """
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         models = _typed_models()

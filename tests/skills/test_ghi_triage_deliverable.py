@@ -19,6 +19,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 _SCRIPT = (
     Path(__file__).resolve().parents[2]
@@ -56,6 +57,7 @@ def _issue(number: int, title: str, body: str = "", labels: tuple[str, ...] = ()
 class TestRankDeliverableIsByteStable(unittest.TestCase):
     """deliverable == script(static_args, agent_cognition_input)."""
 
+    @override
     def setUp(self) -> None:
         self.issues = [
             _issue(324, "ghi-triage skill: vibed deliverable contract", labels=("defect",)),
@@ -126,6 +128,7 @@ class TestRankDeliverableIsByteStable(unittest.TestCase):
 class TestRankInputStructuralSchema(unittest.TestCase):
     """Schema is structural-only — number + severity, no prose (GHI #424 round 3)."""
 
+    @override
     def setUp(self) -> None:
         self.known = {324, 323}
 
@@ -187,6 +190,7 @@ class TestReadinessGrouping(unittest.TestCase):
     ready group, the ruling docket the ruling group. No prose enters the input (GHI #424).
     """
 
+    @override
     def setUp(self) -> None:
         self.issues = [
             _issue(11, "ready one"),
@@ -316,6 +320,7 @@ class TestRankInputCachePathRequirement(unittest.TestCase):
     never echoed into the chat surface.
     """
 
+    @override
     def setUp(self) -> None:
         self._tmpdir = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmpdir.cleanup)

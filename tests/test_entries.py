@@ -15,7 +15,7 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 from gzkit.events import (
     BaselinedReq,
@@ -137,6 +137,7 @@ class _EntryCase(unittest.TestCase):
     """The repair package initiated, its order commenced with no isolation, an Implementer
     dispatched on it against the order's frozen REQ."""
 
+    @override
     def setUp(self) -> None:
         self._dir = TemporaryDirectory()
         self.addCleanup(self._dir.cleanup)

@@ -18,6 +18,7 @@ Coverage:
 """
 
 import unittest
+from typing import override
 
 from pydantic import ValidationError
 
@@ -214,6 +215,7 @@ class TestExtraFieldForbidden(unittest.TestCase):
 class TestLedgerSchemaAdmitsTaskId(unittest.TestCase):
     """REQ-0.0.64-01-03: ledger.json schema admits legacy and new-shape events."""
 
+    @override
     def setUp(self) -> None:
         self._schema = load_schema("ledger")
         self._event_rules: dict = self._schema.get("events", {})
@@ -320,6 +322,7 @@ class TestTaskBoundaryEventsUnchanged(unittest.TestCase):
 class TestLedgerSchemaTaskIdProperty(unittest.TestCase):
     """REQ-0.0.64-01-05: 8 event types carry task_id property; not in required."""
 
+    @override
     def setUp(self) -> None:
         self._schema = load_schema("ledger")
         self._event_rules: dict = self._schema.get("events", {})

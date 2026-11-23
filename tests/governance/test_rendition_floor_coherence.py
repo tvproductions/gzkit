@@ -10,6 +10,7 @@ string shape of any one message.
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.content.corpus_store import append_entry
 from gzkit.content.models.corpus import CorpusEntry
@@ -41,12 +42,14 @@ def _entry(text: str, *, tier: str = "invariant", entry_id: str = "corpus-x") ->
 
 
 class _TempProject(QuietAdvisoriesMixin):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
         (self.root / ".gzkit").mkdir()
 
+    @override
     def tearDown(self) -> None:
         self._tmp.cleanup()
 

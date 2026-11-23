@@ -14,6 +14,7 @@ import tempfile
 import textwrap
 import unittest
 from pathlib import Path
+from typing import override
 from unittest import mock
 
 from gzkit.cli.main import main
@@ -226,6 +227,7 @@ class TheScopeIsWiredIntoGzCheckTest(unittest.TestCase):
 class TheNegativeControlDiscriminatesTest(unittest.TestCase):
     """The registered control reports the planted breach and stays silent on the decoy."""
 
+    @override
     def setUp(self) -> None:
         from gzkit.governance.trust_audits import _qc_negative_controls as nc  # noqa: PLC0415
 

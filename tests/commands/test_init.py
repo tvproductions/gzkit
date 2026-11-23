@@ -7,6 +7,7 @@ import tempfile
 import tomllib
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from gzkit.cli import main
@@ -678,6 +679,7 @@ class TestScaffoldCoreChores(unittest.TestCase):
 class TestMergeChoresRegistry(unittest.TestCase):
     """Tests for gzkit.chores.merge_chores_registry (REQ-0.0.21-05-04)."""
 
+    @override
     def setUp(self) -> None:
         import contextlib  # noqa: PLC0415
         import io  # noqa: PLC0415
@@ -685,6 +687,7 @@ class TestMergeChoresRegistry(unittest.TestCase):
         self._stdout_redirect = contextlib.redirect_stdout(io.StringIO())
         self._stdout_redirect.__enter__()
 
+    @override
     def tearDown(self) -> None:
         self._stdout_redirect.__exit__(None, None, None)
 

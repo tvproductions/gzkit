@@ -4,6 +4,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from pydantic import ValidationError
 
@@ -13,6 +14,7 @@ from gzkit.traceability import covers
 class TestFoundationTriageRankEntry(unittest.TestCase):
     """REQ-0.0.57-04-01 and REQ-0.0.57-04-03: model constraints."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         from gzkit.foundation.rubric import EvidenceRef, FoundationTriageRankEntry
@@ -174,6 +176,7 @@ class TestStructuralOnly(unittest.TestCase):
 class TestRubricSignals(unittest.TestCase):
     """REQ-0.0.57-04-02 and REQ-0.0.57-04-06: signal dimension counting."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         cls.fixtures = Path(__file__).parent / "fixtures" / "foundation_triage_rubric"

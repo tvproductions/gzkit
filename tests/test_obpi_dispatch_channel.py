@@ -11,7 +11,7 @@ import tempfile
 import unittest
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 from unittest.mock import patch
 
 from gzkit import obpi_dispatch_channel as chan
@@ -268,6 +268,7 @@ class TestPrecompleteNamesTheObpiOnceAtEntry(unittest.TestCase):
     _SIBLING = "OBPI-0.12.0-04-interrogate"
     _ADR = "ADR-0.12.0"
 
+    @override
     def setUp(self) -> None:
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
@@ -1157,6 +1158,7 @@ class TestBothMarkerFilesAgreeAfterADispatch(unittest.TestCase):
 
     _OBPI = "OBPI-0.12.0-04"
 
+    @override
     def setUp(self) -> None:
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
@@ -1299,6 +1301,7 @@ class TestADispatchRecordsTheTaskAndCreditStaysOnTheLedger(unittest.TestCase):
     stands in for the other.
     """
 
+    @override
     def setUp(self) -> None:
         self.root, self.obpi_id = _plans()
         self.addCleanup(shutil.rmtree, self.root, ignore_errors=True)

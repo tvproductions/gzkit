@@ -16,7 +16,7 @@ import shlex
 import subprocess
 import unittest
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 from unittest.mock import patch
 
 from gzkit.cli import main
@@ -84,6 +84,7 @@ def _entry_rows() -> list[dict[str, Any]]:
 class _EntryCase(unittest.TestCase):
     """A repair package initiated, its order frozen and commenced, a Restoration booked on it."""
 
+    @override
     def setUp(self) -> None:
         for name in (STAMP_ROOT_ENV, STAMP_ID_ENV):
             if name in os.environ:

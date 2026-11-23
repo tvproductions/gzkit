@@ -8,6 +8,7 @@ validation rules.
 
 from datetime import date
 from enum import StrEnum
+from typing import override
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -21,6 +22,7 @@ from gzkit.core.exceptions import GzkitError
 class FlagError(GzkitError):
     """Base exception for all flag-related errors."""
 
+    @override
     @property
     def exit_code(self) -> int:
         """Exit code 1 for flag errors."""

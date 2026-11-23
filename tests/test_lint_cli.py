@@ -12,7 +12,7 @@ import unittest
 from collections import Counter
 from contextlib import redirect_stdout
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 from unittest import mock
 
 from rich.console import Console
@@ -38,6 +38,7 @@ _BARE = "ruff check . --fix"
 class LintVerbRoutingTest(unittest.TestCase):
     """Each mode of `gz lint` reaches the baseline's verdict."""
 
+    @override
     def setUp(self) -> None:
         self.root = Path("/repo")
         patcher = mock.patch.object(quality_cmd, "get_project_root", return_value=self.root)

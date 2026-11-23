@@ -34,6 +34,7 @@ import json
 import re
 import unittest
 from pathlib import Path
+from typing import override
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 REGISTRY = REPO_ROOT / "data" / "active_campaign.json"
@@ -56,6 +57,7 @@ def _status_line(text: str) -> str:
 class CampaignRegistryCoherence(unittest.TestCase):
     """The registry, the files on disk, and the banners must describe one state."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
@@ -142,6 +144,7 @@ class ScannersFollowTheGoverningEdition(CampaignRegistryCoherence):
     is already the authority.
     """
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()

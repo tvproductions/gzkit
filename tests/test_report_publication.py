@@ -4,6 +4,7 @@ import hashlib
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 from gzkit.config import GzkitConfig, PathConfig
@@ -12,6 +13,7 @@ from gzkit.reports import publish_report
 
 
 class TestReportPublication(unittest.TestCase):
+    @override
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)

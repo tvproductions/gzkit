@@ -10,6 +10,8 @@ The canonical base is ``GzkitError``.  ``GzError`` is retained as a
 backward-compatibility alias.
 """
 
+from typing import override
+
 
 class GzkitError(Exception):
     """Base exception for all gzkit domain errors.
@@ -34,6 +36,7 @@ GzError = GzkitError
 class ValidationError(GzkitError):
     """Input or configuration validation failure."""
 
+    @override
     @property
     def exit_code(self) -> int:
         """Exit code 1 for user/config errors."""
@@ -43,6 +46,7 @@ class ValidationError(GzkitError):
 class ResourceNotFoundError(GzkitError):
     """A required file, ADR, OBPI, or governance resource was not found."""
 
+    @override
     @property
     def exit_code(self) -> int:
         """Exit code 1 for resource-not-found errors."""
@@ -52,6 +56,7 @@ class ResourceNotFoundError(GzkitError):
 class PermanentError(GzkitError):
     """Non-retryable failure — data corruption, schema mismatch."""
 
+    @override
     @property
     def exit_code(self) -> int:
         """Exit code 1 for permanent errors."""
@@ -61,6 +66,7 @@ class PermanentError(GzkitError):
 class OperatorError(GzkitError):
     """Human-action-needed failure — config errors, permission issues."""
 
+    @override
     @property
     def exit_code(self) -> int:
         """Exit code 1 for operator errors."""
@@ -73,6 +79,7 @@ class OperatorError(GzkitError):
 class TransientError(GzkitError):
     """Retryable failure — network issues, temporary I/O errors."""
 
+    @override
     @property
     def exit_code(self) -> int:
         """Exit code 2 for system/IO errors."""
@@ -85,6 +92,7 @@ class TransientError(GzkitError):
 class PolicyBreachError(GzkitError):
     """Governance policy breach — exit code 3."""
 
+    @override
     @property
     def exit_code(self) -> int:
         """Exit code 3 for policy breaches."""

@@ -11,6 +11,7 @@ import threading
 import unittest
 from collections.abc import Callable
 from pathlib import Path
+from typing import override
 from unittest import mock
 
 from gzkit.content.corpus_store import append_entry, corpus_path, load_corpus
@@ -32,11 +33,13 @@ def _entry(entry_id: str, *, section: str = "behavior-rules") -> CorpusEntry:
 
 
 class TestCorpusStore(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self._root = Path(self._tempdir.name)
         (self._root / ".gzkit").mkdir()
 
+    @override
     def tearDown(self) -> None:
         self._tempdir.cleanup()
 
@@ -98,11 +101,13 @@ class TestAppendValidatesBeforePersisting(unittest.TestCase):
     no delete path in a state that cannot be read at all.
     """
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self._root = Path(self._tempdir.name)
         (self._root / ".gzkit").mkdir()
 
+    @override
     def tearDown(self) -> None:
         self._tempdir.cleanup()
 
@@ -141,11 +146,13 @@ class TestAppendCommitsAtomically(unittest.TestCase):
     store's only mutation of the target must be a single atomic commit step.
     """
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self._root = Path(self._tempdir.name)
         (self._root / ".gzkit").mkdir()
 
+    @override
     def tearDown(self) -> None:
         self._tempdir.cleanup()
 
@@ -208,11 +215,13 @@ class TestConcurrentAppendsAllLand(unittest.TestCase):
 
     TRIALS = 20
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self._root = Path(self._tempdir.name)
         (self._root / ".gzkit").mkdir()
 
+    @override
     def tearDown(self) -> None:
         self._tempdir.cleanup()
 
@@ -284,11 +293,13 @@ class TestConcurrentDoubleRetireIsRefused(unittest.TestCase):
 
     TRIALS = 20
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self._root = Path(self._tempdir.name)
         (self._root / ".gzkit").mkdir()
 
+    @override
     def tearDown(self) -> None:
         self._tempdir.cleanup()
 
@@ -324,11 +335,13 @@ class TestDuplicateIdNeverReachesDisk(unittest.TestCase):
     store is append-only and has no delete path to recover through.
     """
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self._root = Path(self._tempdir.name)
         (self._root / ".gzkit").mkdir()
 
+    @override
     def tearDown(self) -> None:
         self._tempdir.cleanup()
 

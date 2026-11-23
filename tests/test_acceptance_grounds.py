@@ -23,6 +23,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.acceptance import Proof
 from gzkit.acceptance_execution import canonical_obligations, input_digest
@@ -58,6 +59,7 @@ def _agent(root: Path, name: str, tools: str) -> None:
 
 
 class CitedApprovalTests(ExecutionFixture):
+    @override
     def setUp(self):
         super().setUp()
         self.write(".gzkit.json", json.dumps({"paths": {"design_root": "design"}}))

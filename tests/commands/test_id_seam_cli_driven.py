@@ -11,6 +11,7 @@ fails here.
 import json
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.cli import main
 from gzkit.config import GzkitConfig
@@ -26,6 +27,7 @@ class _SeededRepo(unittest.TestCase):
 
     with_obpi = False
 
+    @override
     def setUp(self) -> None:
         self.runner = CliRunner()
         self._fs = self.runner.isolated_filesystem()

@@ -8,6 +8,7 @@ behavior on decorated functions, and registry query API.
 import re
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.tasks import (
     TaskAttributionRecord,
@@ -31,10 +32,12 @@ _TEST_TASK_REQS = frozenset(
 class TestAdvancesFormatValidation(unittest.TestCase):
     """TASK ID format validation at decoration time."""
 
+    @override
     def setUp(self):
         reset_task_registry()
         set_known_task_reqs(_TEST_TASK_REQS)
 
+    @override
     def tearDown(self):
         reset_task_registry()
 
@@ -79,10 +82,12 @@ class TestAdvancesFormatValidation(unittest.TestCase):
 class TestAdvancesRegistry(unittest.TestCase):
     """TaskAttributionRecord registration and registry query API."""
 
+    @override
     def setUp(self):
         reset_task_registry()
         set_known_task_reqs(_TEST_TASK_REQS)
 
+    @override
     def tearDown(self):
         reset_task_registry()
 
@@ -159,10 +164,12 @@ class TestAdvancesRegistry(unittest.TestCase):
 class TestAdvancesMultipleDecorations(unittest.TestCase):
     """Multiple @advances decorations and interleaving with @covers."""
 
+    @override
     def setUp(self):
         reset_task_registry()
         set_known_task_reqs(_TEST_TASK_REQS)
 
+    @override
     def tearDown(self):
         reset_task_registry()
 

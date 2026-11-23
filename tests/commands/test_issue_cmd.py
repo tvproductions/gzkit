@@ -8,6 +8,7 @@ surface, and dry-run preview without contacting the live tracker.
 
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import MagicMock, patch
 
 from gzkit.cli import main
@@ -147,6 +148,7 @@ class TestValidateGzkitSurfaceReference(unittest.TestCase):
 class TestIssueFileCli(unittest.TestCase):
     """End-to-end CLI invocations of gz issue file."""
 
+    @override
     def setUp(self) -> None:
         self.runner = CliRunner()
         self.run_patcher = patch("gzkit.commands.issue_cmd.subprocess.run")
@@ -157,6 +159,7 @@ class TestIssueFileCli(unittest.TestCase):
             stderr="",
         )
 
+    @override
     def tearDown(self) -> None:
         self.run_patcher.stop()
 
@@ -273,6 +276,7 @@ class TestIssueFileCli(unittest.TestCase):
 class TestGhCliRuleSubsection(unittest.TestCase):
     """Doctrine + version-marker REQs that don't ride a code path."""
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         from pathlib import Path

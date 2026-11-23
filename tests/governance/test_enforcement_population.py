@@ -12,6 +12,7 @@ cannot false-pass.
 
 import unittest
 from pathlib import Path
+from typing import override
 
 from gzkit.core.validation_rules import ValidationError
 from gzkit.enforcement import (
@@ -112,9 +113,11 @@ class PopulationClaimsAreProvenAtEveryMemberTests(unittest.TestCase):
 class PopulationDeclarationIsValidatedAtDecorationTests(unittest.TestCase):
     """A declaration naming nothing checkable must fail at import, like a bad claim id."""
 
+    @override
     def setUp(self) -> None:
         set_known_claims(frozenset({"population-test"}))
 
+    @override
     def tearDown(self) -> None:
         reset_enforcement_registry()
 

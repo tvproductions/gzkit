@@ -29,6 +29,7 @@ import textwrap
 from collections import Counter
 from collections.abc import Iterable
 from pathlib import Path
+from typing import override
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -223,6 +224,7 @@ class _Scanner(ast.NodeVisitor):
         for kind in _grammar_kinds(text or ""):
             self._add(kind, line)
 
+    @override
     def visit_Call(self, node: ast.Call) -> None:
         if _is_re_call(node.func) and node.args:
             self._add_grammar(node.args[0], node.lineno)
@@ -235,11 +237,13 @@ class _Scanner(ast.NodeVisitor):
             self._scan_embedded(node.args[0], node.lineno)
         self.generic_visit(node)
 
+    @override
     def visit_JoinedStr(self, node: ast.JoinedStr) -> None:
         if id(node) not in self.consumed and _composes_id(node):
             self._add("compose", node.lineno)
         self.generic_visit(node)
 
+    @override
     def visit_Subscript(self, node: ast.Subscript) -> None:
         if isinstance(node.slice, ast.Slice) and _names_an_id(node.value):
             self._add("parent", node.lineno)

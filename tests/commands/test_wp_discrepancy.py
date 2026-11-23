@@ -14,7 +14,7 @@ import os
 import shlex
 import unittest
 from pathlib import Path
-from typing import Any, get_args
+from typing import Any, get_args, override
 
 from gzkit.cli import main
 from gzkit.cli.main import _build_parser
@@ -47,6 +47,7 @@ def _rows(event: str) -> list[dict[str, Any]]:
 class _DiscrepancyCase(_EntryCase):
     """The entry case's commenced order and its Restoration dispatch, an MX session open."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         open_marker(Path.cwd())
@@ -144,6 +145,7 @@ class RecordWiringTests(_DiscrepancyCase):
 
 
 class ClearWiringTests(_DiscrepancyCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.stamp_as(self.dispatch)

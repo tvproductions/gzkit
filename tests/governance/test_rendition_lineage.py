@@ -16,7 +16,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stderr
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 
 from gzkit.content.corpus_store import append_entry, load_corpus
 from gzkit.content.lineage import lineage_path
@@ -62,6 +62,7 @@ def _span_of(chunk: str) -> int:
 class _LineageFixtureMixin(unittest.TestCase):
     """Isolated tmp root plus the four fixture writers this gate's inputs need."""
 
+    @override
     def setUp(self) -> None:
         self._tempdir = tempfile.TemporaryDirectory()
         self.addCleanup(self._tempdir.cleanup)

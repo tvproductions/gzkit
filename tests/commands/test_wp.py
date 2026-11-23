@@ -10,7 +10,7 @@ exits 3 with nothing written.
 import json
 import unittest
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 from unittest.mock import patch
 
 from gzkit.cli import main
@@ -69,6 +69,7 @@ def _ledger_rows(event: str) -> list[dict[str, Any]]:
 
 
 class _WpCase(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         # Acceptance is not this suite's subject: tests/commands/test_wp_acceptance.py is.
         gate = patch("gzkit.commands.wp.acceptance_blockers", return_value=[])
@@ -160,6 +161,7 @@ class GithubTaggingTests(_WpCase):
 class EvidenceTests(_WpCase):
     """Amendment 1: OQE is recorded from initiation, append-only (RO-5 tranche 5 correction)."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.gz("new", "--kind", "delivery", "--slug", "resume", "--outcome", "H1")
@@ -198,6 +200,7 @@ class EvidenceTests(_WpCase):
 class ResolveTests(_WpCase):
     """Ruling 10: gz wp resolve books an issue's close; the package closes only through Gate 5."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.new_repair()
@@ -232,6 +235,7 @@ class ResolveTests(_WpCase):
 
 
 class LifecycleTests(_WpCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.gz("new", "--kind", "delivery", "--slug", "resume", "--outcome", "H1")
@@ -274,6 +278,7 @@ class LifecycleTests(_WpCase):
 
 
 class ChangeTests(_WpCase):
+    @override
     def setUp(self) -> None:
         super().setUp()
         self.gz("new", "--kind", "delivery", "--slug", "resume", "--outcome", "H1")

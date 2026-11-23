@@ -17,6 +17,7 @@ import hashlib
 import json
 import unittest
 from pathlib import Path
+from typing import override
 from unittest import mock
 
 from gzkit.cli.main import main
@@ -193,6 +194,7 @@ def _land_args(*extra: str, attestor: str = "g0", text: str = "corpus delta atte
 class TestLandSurfaceIsRequired(unittest.TestCase):
     """REQ-0.35.0-07-01: the positional surface is required, matching compose/commit."""
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -216,6 +218,7 @@ class TestLandAttestationFailClosed(unittest.TestCase):
     rendition, no sidecar, and a byte-identical ledger.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -282,6 +285,7 @@ class TestLandAttestationFailClosed(unittest.TestCase):
 class TestLandRetentionGateRefusesWholeLanding(unittest.TestCase):
     """REQ-0.35.0-07-10 (refusal half): an unaccounted removed block refuses EVERY consumer."""
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -317,6 +321,7 @@ class TestLandRetentionGateRefusesWholeLanding(unittest.TestCase):
 class TestLandDryRunWritesNothing(unittest.TestCase):
     """--dry-run prints the plan for every consumer and writes nothing, not even the ledger."""
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -356,6 +361,7 @@ def _surface_dir(root: Path) -> Path:
 class TestLandPublishesTheWholeSet(unittest.TestCase):
     """REQ-04/05 and the REQ-03/10 success halves, end to end through the real CLI."""
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -493,6 +499,7 @@ class TestLandStatusRendering(unittest.TestCase):
     operator-facing status contract, so it is parsed here.
     """
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -529,6 +536,7 @@ class TestLandStatusRendering(unittest.TestCase):
 class TestLandResume(unittest.TestCase):
     """REQ-0.35.0-07-07/08 through the CLI: re-running `land` resumes the journaled landing."""
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -627,6 +635,7 @@ class _HardKill(BaseException):
 class TestLandResumeAfterKillMidStaging(unittest.TestCase):
     """REQ-0.35.0-07-08 through the CLI: a kill mid-staging resumes with no attestation."""
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 
@@ -672,6 +681,7 @@ class TestLandResumeAfterKillMidStaging(unittest.TestCase):
 class TestLandResumeRetentionAfterKill(unittest.TestCase):
     """REQ-0.35.0-07-08 through the CLI: a retention landing killed before staging resumes."""
 
+    @override
     def setUp(self) -> None:
         self._runner = CliRunner()
 

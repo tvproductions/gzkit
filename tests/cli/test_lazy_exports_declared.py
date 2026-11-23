@@ -11,6 +11,7 @@ import ast
 import importlib
 import unittest
 from pathlib import Path
+from typing import override
 
 _CLI_INIT = Path("src") / "gzkit" / "cli" / "__init__.py"
 
@@ -56,6 +57,7 @@ def _declared_all(tree: ast.Module) -> list[str]:
 
 
 class TestLazyExportsDeclared(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         self.tree = ast.parse(_CLI_INIT.read_text(encoding="utf-8"))
 

@@ -13,6 +13,7 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import override
 
 from gzkit.commands.tag_surfaces import ProjectSurfaces
 from gzkit.core.exceptions import ValidationError
@@ -45,6 +46,7 @@ repos:
 
 
 class _ProjectCase(unittest.TestCase):
+    @override
     def setUp(self) -> None:
         outer = Path(self.enterContext(TemporaryDirectory()))
         self.root = outer / "project"

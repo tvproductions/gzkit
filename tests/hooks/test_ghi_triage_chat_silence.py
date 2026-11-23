@@ -15,6 +15,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import override
 from unittest.mock import patch
 
 _HOOK_PATH = (
@@ -91,6 +92,7 @@ class TestFindViolationPairs(unittest.TestCase):
 class TestHookGating(unittest.TestCase):
     """Hook only fires for the precise tool + command shape it guards."""
 
+    @override
     def setUp(self) -> None:
         self._tmpdir = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmpdir.cleanup)

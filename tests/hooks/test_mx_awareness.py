@@ -14,7 +14,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from typing import Literal
+from typing import Literal, override
 from unittest.mock import patch
 
 from gzkit.mx import awareness
@@ -211,6 +211,7 @@ class TestGetBannerFunction(unittest.TestCase):
 class TestHookAdapterBannerInjection(unittest.TestCase):
     """Hook adapter injects banner to stdout when marker present; silent when absent."""
 
+    @override
     def setUp(self):
         self._hook = _load_hook_module()
 

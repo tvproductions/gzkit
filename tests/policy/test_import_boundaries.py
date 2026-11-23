@@ -12,6 +12,7 @@ import sys
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import override
 
 from gzkit.kernel.dependency_checker import check, compare, load_baseline, load_package_map
 
@@ -768,6 +769,7 @@ class TestHexagonDependencyRatchet(unittest.TestCase):
     and so does an entry the tree no longer produces.
     """
 
+    @override
     @classmethod
     def setUpClass(cls) -> None:
         package_map = load_package_map(REPO_ROOT / "pyproject.toml")

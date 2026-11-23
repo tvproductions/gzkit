@@ -6,7 +6,7 @@ JSON schema. Pure domain logic — no I/O operations.
 
 import enum
 import re
-from typing import Any, Literal, get_args, get_origin
+from typing import Any, Literal, get_args, get_origin, override
 
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic import ValidationError as PydanticValidationError
@@ -487,6 +487,7 @@ class AdrId(BaseModel):
         """Parse and validate an ADR identifier string."""
         return cls(raw=value.strip())
 
+    @override
     def __str__(self) -> str:
         """Return the raw identifier string."""
         return self.raw
@@ -509,6 +510,7 @@ class ObpiId(BaseModel):
         """Parse and validate an OBPI identifier string."""
         return cls(raw=value.strip())
 
+    @override
     def __str__(self) -> str:
         """Return the raw identifier string."""
         return self.raw
@@ -529,6 +531,7 @@ class ReqId(BaseModel):
         """Parse and validate a REQ identifier string."""
         return cls(raw=value.strip())
 
+    @override
     def __str__(self) -> str:
         """Return the raw identifier string."""
         return self.raw
@@ -551,6 +554,7 @@ class TaskId(BaseModel):
         """Parse and validate a TASK identifier string."""
         return cls(raw=value.strip())
 
+    @override
     def __str__(self) -> str:
         """Return the raw identifier string."""
         return self.raw
@@ -573,6 +577,7 @@ class EvidenceId(BaseModel):
         """Parse and validate an Evidence identifier string."""
         return cls(raw=value.strip())
 
+    @override
     def __str__(self) -> str:
         """Return the raw identifier string."""
         return self.raw

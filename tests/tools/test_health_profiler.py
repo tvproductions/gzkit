@@ -33,6 +33,7 @@ import time
 import unittest
 from collections import defaultdict
 from pathlib import Path
+from typing import override
 
 TEST_MAX_SECONDS = 3.0
 # Canonical project-scoped chores root (ADR-0.0.21 Decision #9). The legacy
@@ -80,10 +81,12 @@ class _TimingResult(unittest.TestResult):
         super().__init__()
         self.timings: list[tuple[float, str]] = []
 
+    @override
     def startTest(self, test: unittest.TestCase) -> None:
         super().startTest(test)
         self._start = time.perf_counter()
 
+    @override
     def stopTest(self, test: unittest.TestCase) -> None:
         elapsed = time.perf_counter() - self._start
         self.timings.append((elapsed, str(test)))
