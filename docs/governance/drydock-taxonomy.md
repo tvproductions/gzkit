@@ -516,7 +516,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T22 | **Ruled W45: a position is obligation, authority and responsibility, a persona is disposition; the crosswalk binds them and the dispatch record names both; one reviewer position with spec and quality sub-roles; the craftsman is a position, repair and restoration its sub-positions.** Positions, personas and dispatch roles: the mapping of each persona file to a position, the reviewer's name, the craftsman against `Implementer` | unmapped |
 | T23 | **Ruled W46: the side is construction and its package the work package, store kind `delivery` renamed `work`, `catalog` kept as the REQ specialization; the maintenance visit settled by W41, not a third kind.** The construction side's one name (construction, catalog, delivery), and whether the maintenance visit is a third kind of package | three names; the store holds two kinds |
 | T24 | **Settled by canon (2026-10-18, RO-5 tranche 1): construction work takes its lane from the outcome's `user_facing`, which binds Gate 4 (`requirements-model.md` § 10, decision 10); a repair package holds its own lane (`catalog.py`, `WorkPackage`); the ADR lane retires, and `AGENTS.md` § Gate Covenant's wording is the coupled surface the model names.** Lane's home: the ADR, the outcome's `user_facing`, or the package | three homes |
-| T25 | Who opens and closes the hangar (rulings 447 and 448 against the skill and the doctrine), and the floor's one list | contradicted |
+| T25 | **Ruled W47: the operator rules and the agent acts through the skill; the floor is `GATE5_INVARIANTS`, and what safe mode never suspends is the floor plus the conduct rules and the level-pinned checks.** Who opens and closes the hangar (rulings 447 and 448 against the skill and the doctrine), and the floor's one list | contradicted |
 | T26 | The handback: before or after the exit, and the subagent's "handback" renamed | contradicted |
 | T27 | *"The briefing gates nothing"* (the constitution) against kit ruling 19's turnover gate | contradicted |
 | T28 | The passage log: rows per act after *act* retired, and RP-12's missing rows | stale since 2026-11-04 |
@@ -1091,6 +1091,33 @@ put after it.
   - C: as A, with the REQ specialization also renamed `construction`.
 
   Operator: *"A: Construction / work"*. The `kind` rename is owed on T10's route. T23 is ruled.
+- **W47 (2026-11-24, T25, who opens the hangar and the floor's one list).** Put in two parts.
+  - *Who opens and closes.* Ruling 447 (2026-08-22, `.gzkit/handoffs/rulings.jsonl`): *"The agent
+    opens and closes the MX hangar, not the operator (verbatim: "the mx system isn't going to work
+    if you expect me to open and close it"). Standing from this session forward."* Later text says
+    the operator: *"Entry: the operator invokes the `gz-mx` skill"* (`safe-mode-doctrine.md:98`,
+    2026-10-16) and *"enters and exits through the `gz-mx` skill"* (the contract, 2026-10-17); the
+    skill reads *"The operator operates this skill … The operator never types the verb"*, and
+    `mx_cmd.py:5` *"The agent never opens the hangar on its own"*. Options put: A, entry, exit and
+    lease renewal happen only on the operator's word and the agent performs them through the
+    `gz-mx` skill, ruling 447 standing for who performs the act and the doctrine's and contract's
+    *"the operator invokes"* amended to *"on the operator's word"*; B, the agent on its own
+    judgment, the doctrine, contract and code amended; C, the operator runs it, 447 reversed.
+    Operator: *"A: Operator rules, agent acts"*.
+  - *The floor's one list.* The doctrine (§ What safe mode never suspends): *"Gate 5 attestation;
+    the ledger through verbs; operator PII; the PRIME DIRECTIVE; and no control is removed. These
+    are the hangar's `gate5_invariants`"*. `GATE5_INVARIANTS` (`mx/invariants.py`, ADR-0.0.74
+    item 3): gate5-attestation, secrets, operator-pii, ledger, grader-gaming. Options put: A, two
+    lists named apart, the floor being `GATE5_INVARIANTS`, the five guards pinned by name, which
+    the doctrine gains secrets and grader-gaming to match, and *what safe mode never suspends*
+    being the floor plus the two conduct rules (the PRIME DIRECTIVE, no control removed) and the
+    checks pinned by level (lint and the fast static checks, the pytest ban, authorship), the
+    doctrine's *"These are the hangar's `gate5_invariants`"* amended to say so; B, one list of
+    seven under the constant, the two conduct rules named but not enforced; C, the constant trimmed
+    to the doctrine's three, demoting secrets and grader-gaming against *"no control is removed"*.
+    Operator: *"A: Floor + never-suspended"*.
+
+  The doctrine, contract and skill wording is owed on T10's route. T25 is ruled.
 
 ## 10. The gathering, closed
 
