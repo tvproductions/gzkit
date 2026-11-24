@@ -519,7 +519,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T25 | **Ruled W47: the operator rules and the agent acts through the skill; the floor is `GATE5_INVARIANTS`, and what safe mode never suspends is the floor plus the conduct rules and the level-pinned checks.** Who opens and closes the hangar (rulings 447 and 448 against the skill and the doctrine), and the floor's one list | contradicted |
 | T26 | **Ruled W48: `gz mx exit`'s re-run, then the handback, then the flag closes on the operator's return-to-service words; the subagent's report is the dispatch report.** The handback: before or after the exit, and the subagent's "handback" renamed | contradicted |
 | T27 | **Ruled W49: different acts; the briefing gates no work, and the record is validated.** *"The briefing gates nothing"* (the constitution) against kit ruling 19's turnover gate | contradicted |
-| T28 | The passage log: rows per act after *act* retired, and RP-12's missing rows | stale since 2026-11-04 |
+| T28 | **Ruled W50: the passage log closes as a dated record; the maintenance record is its successor, one entry per task; no backfill.** The passage log: rows per act after *act* retired, and RP-12's missing rows | stale since 2026-11-04 |
 | T29 | The task trailer for order work, and the task's ledger binding to its order | four trailer spellings; TASK events lack `order` |
 | T30 | The specification pages' file names (`harbor-roN`), RP-0's page, and how sub-ids are namespaced | unruled |
 | T31 | The overloaded words: order, level, run, block, package, repair, freeze, proceed, pause, hold, departure, terminate, advisory, clearance, gate, sortie, checkpoint, dispatch | each with two to six senses (A, B, F collisions) |
@@ -1158,6 +1158,22 @@ put after it.
     handoff while the hangar is open.
 
   Operator: *"A: Different acts"*. The constitution's clause is owed on T10's route. T27 is ruled.
+- **W50 (2026-11-24, T28, the passage log).** The contract's ruling of 2026-10-28 makes the
+  maintenance record *"absorbing the passage log's per-act role"*, and W37 gives it one `ENT-`
+  entry per task. The contract still requires *"§ Passage log is appended per act"* (§ Records)
+  and carries *"this passage log"* at exit item 9. Measured: 169 rows, the last of 2026-11-19, none
+  for RP-12's rulings or its O1 to O4 work; `gz wp entry book` is built and no entry is booked.
+  Three options were put:
+  - A: the passage log closes as a dated record, its rows standing and its *Act* column kept as
+    history; the maintenance record succeeds it, one entry per task from the next task on;
+    RP-12's work is not backfilled, its rulings standing on its page and its commits carrying
+    their `Task:` trailers; § Records and exit item 9 amended to carry the maintenance record.
+    Recommended.
+  - B: the log kept live beside the maintenance record, *Act* renamed *Task*, RP-12 backfilled.
+  - C: as A, RP-12's O1 to O4 backfilled first.
+
+  Operator: *"A: Close, no backfill"*. The contract amendments are owed on T10's route. T28 is
+  ruled.
 
 ## 10. The gathering, closed
 
