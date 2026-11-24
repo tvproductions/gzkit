@@ -513,7 +513,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T19 | **Ruled W42: the catalog absorbs the amendment; `AMD-` retires unbuilt.** The amendment (`AMD-`, ruled 2026-09-27) against the change ladder and the superseding REQ | never reconciled; `AMD-` was planned for an amendment ADR numbered `ADR-0.40.0` "as the queue stands" (`design-amendment.md:741`), never authored; the ledger's `ADR-0.40.0` is an unrelated ADR of 2026-03-28 |
 | T20 | **Ruled W43: a supplement is a new package record naming its parent; the rest settled by canon.** The change ladder: four rungs or six; the supplement's record; whether a change order may change a contract row; the numbering of `CO-n` | canon four, code six |
 | T21 | **Ruled W44: alarm and tripwire keep RP-10's senses; the census role set is the MEL role field, its colliding names renamed interlock and annunciator.** Control roles: the senses of tripwire and alarm (and dispatcher), which MEL entries are keyed on | the census's reading, unruled |
-| T22 | Positions, personas and dispatch roles: the mapping of each persona file to a position, the reviewer's name, the craftsman against `Implementer` | unmapped |
+| T22 | **Ruled W45: a position is obligation, authority and responsibility, a persona is disposition; the crosswalk binds them and the dispatch record names both; one reviewer position with spec and quality sub-roles; the craftsman is a position, repair and restoration its sub-positions.** Positions, personas and dispatch roles: the mapping of each persona file to a position, the reviewer's name, the craftsman against `Implementer` | unmapped |
 | T23 | The construction side's one name (construction, catalog, delivery), and whether the maintenance visit is a third kind of package | three names; the store holds two kinds |
 | T24 | Lane's home: the ADR, the outcome's `user_facing`, or the package | three homes |
 | T25 | Who opens and closes the hangar (rulings 447 and 448 against the skill and the doctrine), and the floor's one list | contradicted |
@@ -1035,6 +1035,46 @@ put after it.
     auditor's working note.
 
   Operator: *"A: RP-10 senses (Recommended)"*. T21 is ruled.
+- **W45 (2026-11-24, T22, positions, personas and dispatch roles).** Put in three parts after a
+  clarifying question. The operator asked *"what will actually distinguish a position, which a
+  role, from a persona, which is a disposition?"*. Canon answers it: a position is *"An obligation
+  and a role to fulfil it"* and the role *"has bounds and auspices, and the holder has no authority
+  apart from it"* (`command-doctrine.md`, ruling of 2026-10-08); *"A position is told by its
+  dispatch record"* (kit ruling 1), so a guard can refuse on it; a persona is traits, anti-traits
+  and grounding, delivered as prompt lines by `pipeline_dispatch._persona_frame`, and no guard keys
+  on it. The code collapses the two: `ROLE_PERSONA_MAP` keys a dispatch role straight to a persona
+  file, and the persona files call themselves *"operating in the X role"*. Operator: *"yes on
+  obligation/authority/responsibility (role) vs. disposition"*.
+  - *The binding.* Options put: A, `data/maintenance_crosswalk.json` (owed to RP-12 O6 and O8)
+    declares which personas may fill which positions, each dispatch record names both the position
+    and the persona it was given, the persona files stop calling themselves roles, and
+    `ROLE_PERSONA_MAP` becomes a reader of the crosswalk; B, the record only, any persona in any
+    position; C, the code map stays the authority, rekeyed by position. Operator: *"A: Crosswalk +
+    record"*.
+  - *The reviewers.* The handoff's carried draft, *"the reviewer position is inspector"*,
+    contradicted C3 (`docs/rnd/contractor-kit.md`, *"A: three tiers (Recommended)"*), which places
+    the pipeline's spec and quality reviewers in the second-person tier, below and apart from the
+    QAI's inspection, and *"A lower tier never satisfies a higher mark"*; it was dropped. Options
+    put: A, one reviewer position at the second-person tier holding two sub-obligations, spec and
+    quality, the dispatch roles spelled `SpecReviewer` and `QualityReviewer` everywhere and
+    `pipeline_dispatch`'s bare `"Reviewer"` renamed; B, two peer positions; C, the position named
+    *second person*. Operator: *"A: One reviewer, 2 subs"*.
+  - *The craftsman.* The operator cautioned: *"be careful, some of the documentation we referenced
+    called repair/drydock workers \"craftsman\""*. In JFMM the craftsman is a position: duties
+    (I-1.6.11, I-1.7.9), a qualification (301, the prerequisite of the 303 QAI) and the (V) mark.
+    A4's *"craftsman persona carrying the trade"* holds those duties; only what each position
+    resists (*"bias toward the present shape"*, *"green by the wrong route"*) is disposition.
+    Options put: A, the craftsman is a position in JFMM's sense with repair and restoration its two
+    sub-positions, A4's duties move to the position and only the resistances stay persona, the
+    crosswalk maps the runtime's `Implementer` dispatch on a repair package to the craftsman
+    position so ruling 175 stands and no dispatch rule changes, A4's wording amended; B, as A with
+    the persona renamed away from *craftsman*; C, A4 kept and JFMM's sense noted as a liberty.
+    Operator: *"A: Craftsman = position"*.
+
+  § 5.3's position list stands; A4's *"craftsman persona"* is read as the craftsman position under
+  this ruling. The crosswalk, the dispatch record's persona field, the persona files' wording and
+  the reviewer spelling are owed on T10's route. The SingleDriver arm stays with GHI #1353. T22 is
+  ruled.
 
 ## 10. The gathering, closed
 
