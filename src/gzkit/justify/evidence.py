@@ -247,7 +247,7 @@ def _matched_globs(
         for glob in rule_globs:
             if glob == "**" or glob == "**/*":
                 matched.append(glob)
-    elif anchor.kind == "draft":
+    else:  # anchor.kind == "draft", the remaining kind
         for glob in rule_globs:
             if glob in ("**", "**/*") or glob.endswith("*.py"):
                 matched.append(glob)

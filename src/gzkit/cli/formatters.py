@@ -138,7 +138,7 @@ class OutputFormatter:
         ``env`` overrides the process environment for the colour decision
         (GHI #663); ``None`` reads ``os.environ`` as before.
         """
-        if isinstance(mode, str) and not isinstance(mode, OutputMode):
+        if not isinstance(mode, OutputMode):
             try:
                 mode = OutputMode(mode)
             except ValueError:

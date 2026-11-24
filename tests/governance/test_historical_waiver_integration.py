@@ -226,7 +226,7 @@ class TestHistoricalWaiverIntegration(unittest.TestCase):
             self.assertGreater(len(errors), 0)
 
             # 2. At least one error should name the offending entry or field
-            error_messages = [e.message for e in errors if isinstance(e, ValidationError)]
+            error_messages = [e.message for e in errors]
             self.assertTrue(
                 any("added_under" in msg for msg in error_messages)
                 or any("OBPI-0.0.36-99-fake" in msg for msg in error_messages)

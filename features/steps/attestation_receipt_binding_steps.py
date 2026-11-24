@@ -33,14 +33,18 @@ import json
 import os
 from contextlib import nullcontext, redirect_stderr, redirect_stdout
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 from behave import given, then, when
 
-from gzkit.acceptance import Review
+from gzkit.acceptance_store import CompletionReview
 from gzkit.cli import main
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger, adr_created_event, obpi_created_event
+
+if TYPE_CHECKING:
+    from gzkit.acceptance import Review
 
 # ---------------------------------------------------------------------------
 # Receipt fixture builders
@@ -110,7 +114,7 @@ def _write_lint_receipt(root: Path, run_id: str, *, exit_status: int) -> None:
 # Synthetic ready-review fixture: these scenarios exercise the earlier
 # receipt/coverage gate, whose real checks remain active. Acceptance readiness
 # itself is exercised with real proof in tests/test_acceptance_integration.py.
-_ACCEPTED_REVIEW_FIXTURE = Review(
+_ACCEPTED_REVIEW_FIXTURE = CompletionReview(
     id="synthetic-bdd-review",
     stage="adversarial",
     input_digest="synthetic-input",
@@ -121,6 +125,7 @@ _ACCEPTED_REVIEW_FIXTURE = Review(
     receipt_id="arb-step-synthetic-bdd-review",
     tier=2,
     fallback_reason="synthetic unavailable-vendor fixture",
+    supporting_reviews=(),
 )
 
 
@@ -137,7 +142,7 @@ def _invoke(args: list[str], *, accepted_review: Review | None = None) -> tuple[
         except SystemExit as exc:
             raw = exc.code
             code = raw if isinstance(raw, int) else 1
-    return 0 if code is None else int(code), output.getvalue()
+    return int(code), output.getvalue()
 
 
 # ---------------------------------------------------------------------------

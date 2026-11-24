@@ -143,5 +143,5 @@ def step_run_printed_land_command(context, attestor: str, text: str) -> None:
         except SystemExit as exc:
             raw = exc.code
             code = raw if isinstance(raw, int) else 1
-    context.exit_code = 0 if code is None else int(code)
+    context.exit_code = int(code)
     context.output = output.getvalue()

@@ -281,9 +281,11 @@ def obpi_lock_release_cmd(
     )
 
     if as_json:
-        payload: dict[str, object] = {"status": "released", "obpi_id": obpi_id}
-        if handoff_path_str is not None:
-            payload["handoff_path"] = handoff_path_str
+        payload: dict[str, object] = {
+            "status": "released",
+            "obpi_id": obpi_id,
+            "handoff_path": handoff_path_str,
+        }
         if abandon_spec is not None:
             payload["abandoned"] = True
             payload["category"] = abandon_spec.category

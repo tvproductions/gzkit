@@ -570,8 +570,6 @@ def find_exchange_for_release(
             fm = parse_frontmatter(text)
         except OSError, yaml.YAMLError, HandoffValidationError:
             continue
-        if not isinstance(fm, dict):
-            continue
         if fm.get("obpi_id") != obpi_id:
             continue
         ts = str(fm.get("timestamp", ""))

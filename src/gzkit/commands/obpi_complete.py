@@ -16,7 +16,7 @@ from typing import Any, NoReturn, cast
 
 from rich.markup import escape
 
-from gzkit.acceptance_store import CompletionReview, completion_review
+from gzkit.acceptance_store import completion_review
 from gzkit.arb.paths import receipts_root
 from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
 from gzkit.commands.adr_audit import (
@@ -1107,7 +1107,7 @@ def _current_adversarial_event(
         tier=review.tier,
         receipt=review.receipt_id,
     )
-    if event is not None and isinstance(review, CompletionReview):
+    if event is not None:
         event.extra["acceptance_review_ids"] = [item.id for item in review.supporting_reviews]
     return event
 

@@ -234,7 +234,7 @@ def _covering_handoff(project_root: Path) -> str | None:
             frontmatter = parse_frontmatter(candidate.read_text(encoding="utf-8"))
         except Exception:  # noqa: BLE001 — an unreadable candidate is skipped, never fatal
             continue
-        if not isinstance(frontmatter, dict) or frontmatter.get("abandoned"):
+        if frontmatter.get("abandoned"):
             continue
         if is_floor_bookmark(frontmatter.get("agent")):
             continue

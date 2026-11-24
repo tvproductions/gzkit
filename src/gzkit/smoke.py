@@ -34,6 +34,10 @@ import time
 import unittest
 from collections.abc import Callable, Iterator
 from pathlib import Path
+from typing import TYPE_CHECKING, cast
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 #: The ceiling `.gzkit/rules/tests.md` § General Rules declares for this tier.
 SMOKE_BUDGET_SECONDS = 60.0
@@ -68,7 +72,9 @@ def smoke[F: Callable[..., object]](fn: F) -> F:
 
 def _walk(suite: unittest.TestSuite) -> Iterator[unittest.TestCase]:
     """Yield every leaf TestCase in a (possibly nested) suite."""
-    for item in suite:
+    # addTest accepts any callable, so a member is read as an object and filtered.
+    members = cast("Iterable[object]", suite)
+    for item in members:
         if isinstance(item, unittest.TestSuite):
             yield from _walk(item)
         elif isinstance(item, unittest.TestCase):

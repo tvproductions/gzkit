@@ -626,7 +626,7 @@ def _ruling_source(previous: Path, base_path: Path) -> Path | None:
         frontmatter = parse_frontmatter(previous.read_text(encoding="utf-8"))
     except OSError, UnicodeDecodeError, HandoffValidationError:
         return previous
-    if not isinstance(frontmatter, dict) or not is_floor_bookmark(frontmatter.get("agent")):
+    if not is_floor_bookmark(frontmatter.get("agent")):
         return previous
 
     refs = continues_from_refs(frontmatter.get("continues_from"))
@@ -1262,8 +1262,6 @@ def list_handoffs(*, adr_id: str | None = None, base_path: Path = Path()) -> lis
             # single non-UTF-8 file cannot abort the whole scan (GHI #582 class,
             # file-read side).
             continue
-        if not isinstance(fm, dict):
-            continue
         if not fm.get("mode"):
             continue
         fm_adr = fm.get("adr_id")
@@ -1341,7 +1339,7 @@ def _walk_handoff_chain(handoff_path: Path, base_path: Path) -> tuple[list[Path]
             fm = parse_frontmatter(current.read_text(encoding="utf-8"))
         except OSError, UnicodeDecodeError, HandoffValidationError:
             continue
-        refs = continues_from_refs(fm.get("continues_from") if isinstance(fm, dict) else None)
+        refs = continues_from_refs(fm.get("continues_from"))
         ancestors = [resolve_continues_from(ref, current, base_path) for ref in refs]
         parents[resolved] = [path.resolve() for path in ancestors]
         queue.extend(ancestors)

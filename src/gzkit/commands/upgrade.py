@@ -167,7 +167,7 @@ def upgrade_cmd(args: argparse.Namespace) -> None:
                 elif state == "STALE":
                     console.print(f"[dry-run] STALE: {display}")
                     stale_refreshed += 1
-                elif state == "EDITED":
+                else:
                     console.print(f"[dry-run] EDITED (conflict): {display}")
                     edited_conflicts.append(display)
             elif args.force:
@@ -198,7 +198,7 @@ def upgrade_cmd(args: argparse.Namespace) -> None:
                     identical += 1
                 elif state == "STALE":
                     stale_refreshed += 1
-                elif state == "EDITED":
+                else:
                     console.print(f"EDITED conflict (skipped): {display}")
                     edited_conflicts.append(display)
 

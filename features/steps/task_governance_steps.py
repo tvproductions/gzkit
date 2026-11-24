@@ -20,7 +20,7 @@ def _invoke(args: list[str]) -> tuple[int, str]:
         except SystemExit as exc:
             raw = exc.code
             code = raw if isinstance(raw, int) else 1
-    return 0 if code is None else int(code), output.getvalue()
+    return int(code), output.getvalue()
 
 
 @given("an OBPI exists for ADR-0.1.0")

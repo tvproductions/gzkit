@@ -334,7 +334,7 @@
     {
       "file": "src/gzkit/commands/obpi_lock.py",
       "function": "obpi_lock_release_cmd",
-      "score": 30
+      "score": 28
     },
     {
       "file": "src/gzkit/commands/obpi_stages.py",
@@ -489,7 +489,7 @@
     {
       "file": "src/gzkit/commands/validate_cmd.py",
       "function": "_dispatch_early_return_scopes",
-      "score": 18
+      "score": 17
     },
     {
       "file": "src/gzkit/commands/validate_cmd.py",
@@ -1129,7 +1129,7 @@
     {
       "file": "src/gzkit/session_exit.py",
       "function": "_covering_handoff",
-      "score": 19
+      "score": 18
     },
     {
       "file": "src/gzkit/skill_contract.py",

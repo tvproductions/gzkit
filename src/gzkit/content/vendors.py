@@ -107,7 +107,7 @@ def _load_manifest(project_root: Path) -> dict[str, list[str]]:
     # Normalize to dict[str, list[str]] — drop anything that does not conform.
     typed: dict[str, list[str]] = {}
     for key, value in routes.items():
-        if isinstance(key, str) and isinstance(value, list):
+        if isinstance(value, list):
             typed[key] = [v for v in value if isinstance(v, str)]
     return typed
 
@@ -117,7 +117,7 @@ def _load_temperatures(project_root: Path) -> dict[str, dict[str, str]]:
     temps = _read_manifest_key(project_root, "content_type_temperatures")
     typed: dict[str, dict[str, str]] = {}
     for ct, vendor_map in temps.items():
-        if isinstance(ct, str) and isinstance(vendor_map, dict):
+        if isinstance(vendor_map, dict):
             typed[ct] = {
                 k: v for k, v in vendor_map.items() if isinstance(k, str) and isinstance(v, str)
             }

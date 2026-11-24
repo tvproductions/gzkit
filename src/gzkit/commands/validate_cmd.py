@@ -1580,7 +1580,7 @@ def _dispatch_early_return_scopes(
     if check_sensitivity:
         _run_sensitivity_scope(project_root, as_json=as_json, explain=sensitivity_explain)
         return True
-    if sensitivity_explain and not check_sensitivity:
+    if sensitivity_explain:
         # `--explain` without `--sensitivity` is the explain-only fast-path.
         _run_sensitivity_scope(project_root, as_json=as_json, explain=sensitivity_explain)
         return True

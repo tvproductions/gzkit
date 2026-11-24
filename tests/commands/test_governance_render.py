@@ -35,9 +35,7 @@ def _invoke_cli(*args: str) -> tuple[int, str, str]:
     exit_code = 0
     with redirect_stdout(stdout_buf), redirect_stderr(stderr_buf):
         try:
-            result = main(list(args))
-            if isinstance(result, int):
-                exit_code = result
+            exit_code = main(list(args))
         except SystemExit as exc:
             code = exc.code
             exit_code = code if isinstance(code, int) else 1

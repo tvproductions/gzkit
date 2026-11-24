@@ -352,8 +352,6 @@ def _latest_receipt_event(obpi_id: str, events: Sequence[Mapping]) -> Mapping | 
     """
     candidates: list[Mapping] = []
     for event in events:
-        if not isinstance(event, Mapping):
-            continue
         if event.get("event") != "obpi_receipt_emitted":
             continue
         event_id = str(event.get("id") or "")

@@ -32,7 +32,7 @@ def _invoke(args: list[str]) -> tuple[int, str, str]:
         except SystemExit as exc:
             raw = exc.code
             code = raw if isinstance(raw, int) else 1
-    return 0 if code is None else int(code), out.getvalue(), err.getvalue()
+    return int(code), out.getvalue(), err.getvalue()
 
 
 @given('an OBPI lock exists for "{obpi_id}" held by agent "{agent_name}"')

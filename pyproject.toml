@@ -333,6 +333,7 @@ missing-override-decorator = "error"
 possibly-missing-attribute = "error"
 possibly-missing-import = "error"
 possibly-unresolved-reference = "error"
+redundant-condition-strict = "error"
 unsound-yield = "error"
 unsupported-dynamic-base = "error"
 
@@ -368,13 +369,16 @@ unused-ignore-comment = "ignore"
 
 # Dated evidence scripts are sealed records (the Ruff per-file-ignores above give
 # the reason). ty 0.0.92 refuses `sorted(rows, key=lambda r: r["comp"])` over the
-# untyped dict rows in docs/governance/completion-cost-2026-10-02-evidence; editing
-# the script would rewrite the record, so the one rule is exempted for these files.
+# untyped dict rows in docs/governance/completion-cost-2026-10-02-evidence, and
+# ty 0.0.109's redundant-condition-strict an always-true `isinstance` in its
+# gate_population_snapshot.py; editing the script would rewrite the record, so
+# both rules are exempted for these files.
 [[tool.ty.overrides]]
 include = ["docs/governance/*-evidence/*.py"]
 
 [tool.ty.overrides.rules]
 no-matching-overload = "ignore"
+redundant-condition-strict = "ignore"
 
 [dependency-groups]
 dev = [

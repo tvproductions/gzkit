@@ -159,7 +159,7 @@ def _frontmatter(path: Path) -> dict | None:
         parsed = parse_frontmatter(path.read_text(encoding="utf-8"))
     except OSError, UnicodeDecodeError, HandoffValidationError:
         return None
-    return parsed if isinstance(parsed, dict) else None
+    return parsed
 
 
 def _parse_ts(raw: object) -> datetime | None:

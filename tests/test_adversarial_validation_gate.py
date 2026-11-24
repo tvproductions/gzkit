@@ -83,7 +83,9 @@ class TestCompletionTakesNoVerdictFromItsCaller(unittest.TestCase):
                 "membership assertions added; the adversary's check re-run",
             ]
         )
-        review = SimpleNamespace(tier=2, reviewer_id="claude/reviewer", receipt_id="arb-step-x")
+        review = SimpleNamespace(
+            tier=2, reviewer_id="claude/reviewer", receipt_id="arb-step-x", supporting_reviews=()
+        )
         with mock.patch.object(mod, "completion_review", return_value=review):
             event = mod._current_adversarial_event(
                 Path("."),

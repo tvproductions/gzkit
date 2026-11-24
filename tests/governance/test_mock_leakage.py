@@ -32,7 +32,11 @@ it can sit in the default suite rather than behind a marker.
 
 import sys
 import unittest
+from typing import TYPE_CHECKING
 from unittest.mock import NonCallableMock
+
+if TYPE_CHECKING:
+    from types import ModuleType
 
 
 class TestNoLeakedMocksOnGzkitModules(unittest.TestCase):
@@ -40,7 +44,9 @@ class TestNoLeakedMocksOnGzkitModules(unittest.TestCase):
 
     def test_no_gzkit_module_attribute_is_a_mock(self) -> None:
         leaked: list[str] = []
-        for module_name, module in list(sys.modules.items()):
+        # An import blocker leaves None in sys.modules, which typeshed does not admit.
+        entries: list[tuple[str, ModuleType | None]] = list(sys.modules.items())
+        for module_name, module in entries:
             if not module_name.startswith("gzkit") or module is None:
                 continue
             for attr in dir(module):

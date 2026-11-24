@@ -22,7 +22,7 @@ def _invoke(args: list[str]) -> tuple[int, str]:
         except SystemExit as exc:
             raw = exc.code
             code = raw if isinstance(raw, int) else 1
-    return 0 if code is None else int(code), output.getvalue()
+    return int(code), output.getvalue()
 
 
 @when('I emit-receipt for OBPI "{obpi_id}" with attestor "{attestor}" and evidence')

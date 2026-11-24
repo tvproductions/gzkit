@@ -28,7 +28,7 @@ from unittest.mock import MagicMock, patch
 from pydantic import ValidationError
 from rich.console import Console
 
-from gzkit.acceptance import Review
+from gzkit.acceptance_store import CompletionReview
 from gzkit.events import SecurityFloorOverriddenEvent, parse_typed_event
 from gzkit.ledger_events import security_floor_overridden_event
 from gzkit.traceability import covers
@@ -291,7 +291,7 @@ class _EmissionFixture(unittest.TestCase):
                 # acceptance itself is exercised by test_acceptance_integration.
                 patch(
                     "gzkit.commands.obpi_complete.completion_review",
-                    return_value=Review(
+                    return_value=CompletionReview(
                         id="synthetic-security-test-review",
                         stage="adversarial",
                         input_digest="synthetic-input",
@@ -302,6 +302,7 @@ class _EmissionFixture(unittest.TestCase):
                         reviewer_id="reviewer",
                         tier=2,
                         fallback_reason="synthetic unavailable-vendor fixture",
+                        supporting_reviews=(),
                     ),
                 ),
                 patch("gzkit.commands.obpi_complete._execute_transaction", exec_mock),

@@ -10,7 +10,7 @@ from unittest.mock import MagicMock, patch
 
 from rich.console import Console
 
-from gzkit.acceptance import Review
+from gzkit.acceptance_store import CompletionReview
 from gzkit.commands.obpi_complete import (
     _append_audit_ledger,
     _build_attestation_audit_entry,
@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 
 # This module exercises other completion gates/transactions. Acceptance execution
 # and ledger freshness are exercised through the actual store in test_acceptance*.
-_ACCEPTED_REVIEW = Review(
+_ACCEPTED_REVIEW = CompletionReview(
     id="review-fixture",
     stage="adversarial",
     input_digest="fixture-input",
@@ -49,6 +49,7 @@ _ACCEPTED_REVIEW = Review(
     tier=1,
     receipt_id="arb-step-review-fixture",
     reviewer_id="independent-reviewer",
+    supporting_reviews=(),
 )
 
 

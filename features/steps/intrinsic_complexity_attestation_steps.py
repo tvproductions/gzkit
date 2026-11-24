@@ -37,7 +37,7 @@ def _invoke(args: list[str]) -> tuple[int, str]:
         except SystemExit as exc:
             raw = exc.code
             code = raw if isinstance(raw, int) else 1
-    return 0 if code is None else int(code), output.getvalue()
+    return int(code), output.getvalue()
 
 
 @given('the function "{qualname}" in "{filename}" is decorated with @intrinsic_complexity')

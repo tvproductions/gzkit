@@ -370,7 +370,7 @@ def _build_obpi_status_entry(
     raw_info = graph.get(obpi_id)
     _resolved_id, obpi_file = resolve_obpi(project_root, config, ledger, obpi_id)
     linked_in_ledger = bool(raw_info and raw_info.get("type") == "obpi")
-    info: dict[str, Any] = raw_info if linked_in_ledger and isinstance(raw_info, dict) else {}
+    info: dict[str, Any] = raw_info if linked_in_ledger else {}
 
     parent_adr = info.get("parent")
     if obpi_file and not isinstance(parent_adr, str):

@@ -411,14 +411,11 @@ def handle_task_result(
             return "handoff"
         return "redispatch"
 
-    if result.status == HandoffStatus.BLOCKED:
-        if record.dispatch_count < MAX_BLOCKED_FIX_ATTEMPTS:
-            return "fix"
-        record.status = TaskStatus.BLOCKED
-        record.concerns.extend(result.concerns)
-        return "handoff"
-
+    # HandoffStatus.BLOCKED, the one member left.
+    if record.dispatch_count < MAX_BLOCKED_FIX_ATTEMPTS:
+        return "fix"
     record.status = TaskStatus.BLOCKED
+    record.concerns.extend(result.concerns)
     return "handoff"
 
 

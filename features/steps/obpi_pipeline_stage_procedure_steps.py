@@ -29,7 +29,7 @@ def _gz(*args: str, exit_code: int = 0) -> str:
             code = main(list(args))
         except SystemExit as exc:
             code = exc.code if isinstance(exc.code, int) else 1
-    code = 0 if code is None else int(code)
+    code = int(code)
     assert code == exit_code, f"gz {' '.join(args)} exited {code}: {output.getvalue()}"
     return output.getvalue()
 
