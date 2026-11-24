@@ -194,7 +194,7 @@ def _execute(
             return _execute_review(root, obpi_id, receipt, launch_id)
         return _execute_human_review(root, obpi_id, attestor, ruling, launch_id)
     if action == "init":
-        if not author:
+        if author in {None, ""}:
             raise InitRequiresAuthorError
         contract = initialize(root, obpi_id, author)
         return contract.model_dump(mode="json"), True
@@ -209,7 +209,7 @@ def _execute_proof(
     root: Path, obpi_id: str, specification: str | None
 ) -> tuple[dict[str, Any], bool]:
     """Execute a proof request and persist its observed result."""
-    if not specification:
+    if specification in {None, ""}:
         raise ProveRequiresSpecError
     request = ProofRequest.model_validate_json(Path(specification).read_text(encoding="utf-8"))
     if load_history(root, obpi_id).contract is None:
@@ -218,7 +218,7 @@ def _execute_proof(
         root,
         resolve_brief(root, obpi_id),
         request.req_id,
-        source=Path(request.source) if request.source else None,
+        source=Path(request.source) if request.source not in {None, ""} else None,
         mutations=request.mutations,
         selectors=request.selectors,
         environment_keys=tuple(request.environment_keys),
@@ -266,7 +266,7 @@ def _execute_review(
         ReceiptIdentityMismatchError: When the receipt's run ID disagrees with its filename.
 
     """
-    if not receipt or Path(receipt).name != receipt:
+    if receipt in {None, ""} or Path(receipt).name != receipt:
         raise ReviewRequiresReceiptError
     config = GzkitConfig.load(root / ".gzkit.json")
     path = receipts_root(config=config, project_root=root) / f"{receipt}.json"
@@ -294,7 +294,7 @@ def _execute_human_review(
         HumanReviewRequiresRulingError: When ``attestor`` or ``ruling`` is missing.
 
     """
-    if not attestor or not ruling:
+    if attestor in {None, ""} or ruling in {None, ""}:
         raise HumanReviewRequiresRulingError
     review = record_human_review(
         root, obpi_id, attestor=attestor, ruling=ruling, dispatch_scope=dispatch_validator_scope
@@ -311,7 +311,7 @@ def _status_report(
         root,
         obpi_id,
         stage=stage,
-        obligation_ids=tuple(req_ids) if req_ids else None,
+        obligation_ids=tuple(req_ids) if req_ids not in (None, []) else None,
         dispatch_scope=dispatch_validator_scope,
     )
     return context.model_dump(mode="json"), context.ready

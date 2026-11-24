@@ -267,7 +267,7 @@ def compute_three_channel_coverage(
             resolved_kind = cache[entry.req_id]
             inferred = False
             status_suffix = resolved_kind.value.lower().replace("_", "-")
-        elif dreq is not None and dreq.entity.taxonomy_kind:
+        elif dreq is not None and dreq.entity.taxonomy_kind is not None:
             # Validated by `ReqEntity`; no coercing lookup needed (GHI #615).
             resolved_kind = dreq.entity.taxonomy_kind
             inferred = False

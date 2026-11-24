@@ -263,7 +263,7 @@ def parse_checklist_items(content: str) -> list[str]:
         line = raw_line.rstrip()
         match = item_re.match(line)
         if match:
-            if active_item:
+            if active_item is not None:
                 normalized = re.sub(r"\s+", " ", " ".join(active_item)).strip()
                 if normalized:
                     items.append(normalized)
@@ -276,7 +276,7 @@ def parse_checklist_items(content: str) -> list[str]:
             continue
         active_item.append(stripped)
 
-    if active_item:
+    if active_item is not None:
         normalized = re.sub(r"\s+", " ", " ".join(active_item)).strip()
         if normalized:
             items.append(normalized)

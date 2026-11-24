@@ -542,7 +542,7 @@
         "replace": "    if False:\n",
         "label": "a 3.14 floor whose Ruff config does not ban the PEP 563 import is never refused"
       },
-      "binding_sha256": "2f0f2d5724cd9f2776559f210444755c53b7d3810f694bdf7c874f452b785f33",
+      "binding_sha256": "fe2014305e4e3599798880da1f4820a7342ad7a59d1312699ee6f07df382def7",
       "authority": "docs/governance/harbor-ro9-astral-toolchain.md (drydock RO-9 tranche 4, the PEP 563 ban; operator 2026-10-24: \"Remove first, then ban (Rec.)\"); scorecard row 23b; GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-10-24",
       "reviewed_by": "g0"
@@ -580,11 +580,11 @@
       "guard": "gzkit.governance.trust_audits.catalog:_kind_breaches",
       "failing_test": "tests.governance.test_catalog.TestWorkPackages.test_a_delivery_package_names_an_outcome_the_catalog_holds",
       "mutation": {
-        "find": "        if package.outcome and package.outcome not in outcomes:\n",
+        "find": "        if package.outcome is not None and package.outcome not in outcomes:\n",
         "replace": "        if False:\n",
         "label": "a delivery package naming an outcome the catalog lacks is accepted"
       },
-      "binding_sha256": "c9031d64c48cb91dd5db010211da8da5c0a7e0c365f84b63f5aa8f04afdcfc86",
+      "binding_sha256": "1082c689dc02c4895b11ada3b5144b04c850f68434c6c4e962bb2b3d9ee92bf9",
       "authority": "docs/governance/harbor-ro5-work-packages.md (drydock RO-5 tranche 1)",
       "proposed_by": "claude-code session 2026-10-28",
       "reviewed_by": "g0"

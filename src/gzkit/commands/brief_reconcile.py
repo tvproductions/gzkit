@@ -224,7 +224,7 @@ def brief_reconcile_cmd(
     brief_path = _resolve_brief_path(root, obpi_id)
     if brief_path is None:
         raise BriefNotFoundError(obpi_id)
-    if apply and not attestor:
+    if apply and attestor in {None, ""}:
         raise ApplyRequiresAttestorError
 
     result = reconcile_brief(brief_path, root)

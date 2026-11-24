@@ -46,7 +46,7 @@ def _make_tree(
         rules_dir.mkdir(parents=True, exist_ok=True)
         (rules_dir / "test-rule.md").write_text(rule_content, encoding="utf-8")
 
-    if extra_files:
+    if extra_files is not None and len(extra_files) > 0:
         for rel_path, content in extra_files.items():
             p = root / rel_path
             p.parent.mkdir(parents=True, exist_ok=True)

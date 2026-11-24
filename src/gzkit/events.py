@@ -60,7 +60,7 @@ class _EventBase(BaseModel):
             "id": self.id,
             "ts": self.ts,
         }
-        if self.parent:
+        if self.parent not in {None, ""}:
             result["parent"] = self.parent
         # Flatten event-specific fields
         for name in type(self).model_fields:
@@ -960,7 +960,7 @@ class RenditionLandedEvent(_EventBase):
             "id": self.id,
             "ts": self.ts,
         }
-        if self.parent:
+        if self.parent not in {None, ""}:
             result["parent"] = self.parent
         for name in type(self).model_fields:
             if name in self._BASE_FIELDS:

@@ -97,7 +97,7 @@ def _rich_cell(cell: str | TableCell) -> Text:
     if not isinstance(cell, TableCell):
         return Text(cell)
     text = Text(cell.text)
-    if cell.style:
+    if cell.style not in {None, ""}:
         text.stylize(cell.style)
     return text
 

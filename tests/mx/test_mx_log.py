@@ -88,7 +88,7 @@ def _book_entry(
         {
             "event": "entry_booked",
             "id": entry_id,
-            **({"ts": ts} if ts else {}),
+            **({"ts": ts} if ts not in {None, ""} else {}),
             "entry_id": entry_id,
             "order": order,
             "work_package": "WP-01-stamp",

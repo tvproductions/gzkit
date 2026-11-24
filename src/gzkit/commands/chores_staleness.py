@@ -175,7 +175,7 @@ def _band(
             band="unmeasured",
             reason="accumulated-work declares no counter to compare against a threshold",
         )
-    last_run = newest_pass_stamp(log_text) if log_text else None
+    last_run = newest_pass_stamp(log_text) if log_text not in {None, ""} else None
     # Every chore is due by date (operator, 2026-11-03: *"A, admit as advised"*). An
     # accumulated-work chore declares no counter yet, so its period alone dates it.
     if signal in {"elapsed-time", "accumulated-work"}:
@@ -193,7 +193,7 @@ def _by_date(
     signal = staleness.signal
     period = timedelta(days=staleness.period_days or 0)
     witness = "passing run"
-    if staleness.artifacts:
+    if staleness.artifacts is not None:
         last_run = artifact_changed(staleness.artifacts)
         witness = "scan record change"
     if last_run is None:
@@ -238,7 +238,11 @@ def _by_surfaces(
     grace = timedelta(days=staleness.grace_days)
     moved_at = history.first_commit_after(surfaces, last_run)
     # A declared period dates the chore beside its surfaces: due at whichever comes first.
-    dated_at = last_run + timedelta(days=staleness.period_days) if staleness.period_days else None
+    dated_at = (
+        last_run + timedelta(days=staleness.period_days)
+        if staleness.period_days is not None
+        else None
+    )
     if dated_at is not None and dated_at <= now and (moved_at is None or dated_at < moved_at):
         cause = f"{staleness.period_days}d period elapsed since the last passing run"
         return _by_grace(slug, signal, last_run, dated_at, grace, now=now, cause=cause)

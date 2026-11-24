@@ -447,14 +447,14 @@ def _blockers(results: list[TranscriptResult], transcripts: list[Transcript]) ->
             )
         # The next two are read off the command text, so a timeout cannot hide them
         # (GHI #1164); everything after them judges output a timed-out run never gave.
-        if result.masked_verifier:
+        if result.masked_verifier not in {None, ""}:
             blockers.append(
                 f"Command discards {result.masked_verifier}'s exit status, so the replay "
                 f"observes something else's success, not the verifier's: {result.command}. "
                 "A pipe reports the last stage, a sequence reports the last statement, "
                 "and a `||` branch reports the branch (GHI #940, #970)."
             )
-        if result.status_suppressor:
+        if result.status_suppressor not in {None, ""}:
             blockers.append(
                 f"Trailing `{result.status_suppressor}` discards the command's exit "
                 f"status without emitting it, so a failure replays as success and "

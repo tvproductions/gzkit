@@ -312,7 +312,7 @@ def _draft_sections(
     """
     transcript_line = (
         _portable_transcript_reference(transcript_path)
-        if transcript_path
+        if transcript_path not in {None, ""}
         else "No transcript path was supplied by the harness."
     )
     return {

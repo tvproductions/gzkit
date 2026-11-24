@@ -256,7 +256,7 @@ def _matches_retired_canon(name: str, observed: Any, timestamp: Any) -> bool:
 
     """
     retired = RETIRED_STEP_COMMANDS.get(name)
-    if not retired or not isinstance(timestamp, str):
+    if retired is None or len(retired) == 0 or not isinstance(timestamp, str):
         return False
     try:
         emitted_at = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))

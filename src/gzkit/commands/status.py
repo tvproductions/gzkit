@@ -278,7 +278,7 @@ def _collect_adr_statuses(
 def _filename_derived_epic(adr_id: str) -> str | None:
     """Return the first hyphen-delimited token after ``ADR-pool.``, or None."""
     slug = pool_slug(adr_id)
-    return slug.split("-", 1)[0] if slug else None
+    return slug.split("-", 1)[0] if slug not in {None, ""} else None
 
 
 def _filter_adrs_by_epic(
@@ -545,7 +545,7 @@ def _build_adr_status_result(adr: str) -> dict[str, Any]:
     adr_id = resolve_adr_ledger_id(adr_file, adr_id, ledger)
     graph = ledger.get_artifact_graph()
     info = graph.get(adr_id)
-    if not info or info.get("type") != "adr":
+    if info is None or len(info) == 0 or info.get("type") != "adr":
         msg = f"ADR not found in ledger: {adr_id}"
         raise GzCliError(msg)
 

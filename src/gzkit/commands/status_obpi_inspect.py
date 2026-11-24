@@ -90,14 +90,14 @@ def _section_body_with_prefix(content: str, heading_prefix: str) -> str | None:
 
 def _has_substantive_section(content: str, heading: str) -> bool:
     body = _section_body(content, heading)
-    if not body:
+    if body is None:
         return False
     normalized = body.strip().lower()
     return normalized not in {"", "-", "...", "tbd", "(none)", "n/a", "paste test output here"}
 
 
 def _has_substantive_body(body: str | None) -> bool:
-    if not body:
+    if body in {None, ""}:
         return False
     normalized = body.strip().lower()
     return normalized not in {"", "-", "...", "tbd", "(none)", "n/a", "paste test output here"}
@@ -124,7 +124,7 @@ def _has_substantive_implementation_summary(content: str) -> bool:
 
 def _implementation_summary_validation_commands(content: str) -> str | None:
     body = _section_body(content, "Implementation Summary")
-    if not body:
+    if body is None:
         return None
 
     lines = body.splitlines()
@@ -147,7 +147,7 @@ def _implementation_summary_validation_commands(content: str) -> str | None:
 def _resolved_key_proof_body(content: str) -> str | None:
     for heading in ("Key Proof", "Verification", "Gate Evidence"):
         body = _section_body(content, heading)
-        if body and _has_substantive_section(content, heading):
+        if body is not None and _has_substantive_section(content, heading):
             return body
     prefixed_verification = _section_body_with_prefix(content, "Verification")
     if _has_substantive_body(prefixed_verification):
@@ -165,7 +165,7 @@ def _resolved_key_proof_body(content: str) -> str | None:
 
 def _extract_human_attestation(content: str) -> dict[str, Any]:
     body = _section_body(content, "Human Attestation")
-    if not body:
+    if body is None:
         return {"present": False, "valid": False}
 
     attestor_match = re.search(r"^- Attestor:\s*(.+)$", body, flags=re.MULTILINE)
@@ -176,7 +176,7 @@ def _extract_human_attestation(content: str) -> dict[str, Any]:
     # Strip markdown backticks and trailing annotations (e.g. "--- required ...")
     attestor = (
         attestor_raw.strip("`").split("\u2014")[0].split(" \u2014 ")[0].strip()
-        if attestor_raw
+        if attestor_raw not in {None, ""}
         else None
     )
     attestation_text = attestation_match.group(1).strip() if attestation_match else None
@@ -211,7 +211,7 @@ def _extract_tracked_defects(content: str) -> list[dict[str, Any]]:
 
     """
     body = _section_body(content, "Tracked Defects")
-    if not body:
+    if body is None:
         return []
 
     defects: list[dict[str, Any]] = []
@@ -438,7 +438,11 @@ def _inspect_obpi_brief(
     key_proof_ok = key_proof_body is not None
     human_attestation = _extract_human_attestation(content)
     tracked_defects = _resolve_tracked_defects(_extract_tracked_defects(content), reference_checker)
-    info = graph.get(obpi_id, {}) if obpi_id and graph else {}
+    info = (
+        graph.get(obpi_id, {})
+        if obpi_id not in {None, ""} and graph is not None and len(graph) > 0
+        else {}
+    )
     semantics = derive_obpi_semantics(
         info,
         obpi_id=obpi_id,

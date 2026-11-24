@@ -456,7 +456,7 @@ def _write_obpi(
         key_proof,
         "",
     ]
-    if tracked_defects:
+    if tracked_defects is not None and len(tracked_defects) > 0:
         lines.extend(
             [
                 "## Tracked Defects",

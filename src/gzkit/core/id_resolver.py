@@ -302,7 +302,7 @@ def parent_of(identifier: str, context: IdentityContext) -> ParentLink | None:
         if isinstance(stored, str) and stored:
             return ParentLink(parent_id=stored, source="ledger")
         briefed = context.brief_parents.get(canonical)
-        if briefed:
+        if briefed not in {None, ""}:
             return ParentLink(parent_id=briefed, source="brief")
         if resolution.kind is IdKind.ADR:
             return None
@@ -343,7 +343,7 @@ def load_identity_context(
         brief_id = fields.get("id", "")
         if not brief_id.startswith("OBPI-"):
             continue
-        if fields.get("parent"):
+        if fields.get("parent") not in {None, ""}:
             brief_parents[brief_id] = fields["parent"]
         for req in extract_reqs_from_brief(content, brief_id):
             req_owners.setdefault(str(req.id), []).append(brief_id)

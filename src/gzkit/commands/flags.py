@@ -163,9 +163,9 @@ def flag_explain_cmd(*, key: str, as_json: bool = False) -> None:
     if explanation.is_stale:
         console.print("  [red bold]STALE[/red bold]")
 
-    if spec.linked_adr:
+    if spec.linked_adr not in {None, ""}:
         console.print(f"  Linked ADR:    {spec.linked_adr}")
-    if spec.linked_issue:
+    if spec.linked_issue not in {None, ""}:
         console.print(f"  Linked issue:  {spec.linked_issue}")
 
     console.print()

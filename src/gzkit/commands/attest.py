@@ -85,7 +85,7 @@ def _warn_if_closeout_active(ledger: Ledger, adr_id: str) -> None:
     """Print a deprecation warning when closeout is already active for this ADR."""
     graph = ledger.get_artifact_graph()
     adr_info = graph.get(adr_id)
-    if adr_info and adr_info.get("closeout_initiated"):
+    if adr_info is not None and adr_info.get("closeout_initiated"):
         console.print(
             "[yellow]Deprecated:[/yellow] Closeout is active for "
             f"{adr_id}. Attestation is now managed by "
@@ -98,15 +98,15 @@ def _validate_attest_inputs(
     attest_status: str, reason: str | None, force: bool, snapshot: dict[str, object]
 ) -> None:
     """Validate attestation inputs and gate prerequisites. Raises GzCliError on failure."""
-    if attest_status in ("partial", "dropped") and not reason:
+    if attest_status in ("partial", "dropped") and reason in {None, ""}:
         msg = f"--reason required for {attest_status} status"
         raise GzCliError(msg)
 
-    if force and not snapshot["ready"] and not reason:
+    if force and not snapshot["ready"] and reason in {None, ""}:
         msg = "--reason required when --force bypasses failing gate prerequisites"
         raise GzCliError(msg)
 
-    if force and reason:
+    if force and reason not in {None, ""}:
         stripped = reason.strip()
         if len(stripped) < 20:
             msg = f"--force reason must be at least 20 characters (got {len(stripped)})"
@@ -139,7 +139,7 @@ def attest(
     config = ensure_initialized()
     project_root = get_project_root()
 
-    if attest_status in ("partial", "dropped") and not reason:
+    if attest_status in ("partial", "dropped") and reason in {None, ""}:
         msg = f"--reason required for {attest_status} status"
         raise GzCliError(msg)
 
@@ -180,7 +180,7 @@ def attest(
         console.print(f"  Term: {canonical_term}")
         console.print(f"  Raw status token: {attest_status}")
         console.print(f"  By: {attester}")
-        if reason:
+        if reason not in {None, ""}:
             console.print(f"  Reason: {escape(reason)}")
         return
 
@@ -237,5 +237,5 @@ def attest(
     console.print(f"  Raw status token: {attest_status}")
     console.print(f"  By: {attester}")
     console.print(f"  Date: {today}")
-    if reason:
+    if reason not in {None, ""}:
         console.print(f"  Reason: {escape(reason)}")

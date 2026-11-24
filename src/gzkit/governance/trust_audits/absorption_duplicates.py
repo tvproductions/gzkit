@@ -114,7 +114,7 @@ def audit_absorption_duplicates(project_root: Path) -> list[ValidationError]:
         parents = {parent for _id, parent, _pw, _path in records}
         if len(parents) <= 1:
             continue
-        paired_targets = {pw for _id, _p, pw, _path in records if pw}
+        paired_targets = {pw for _id, _p, pw, _path in records if pw is not None}
         for obpi_id, parent, paired_with, brief_path in records:
             if paired_with is not None or obpi_id in paired_targets:
                 continue

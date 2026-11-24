@@ -54,7 +54,7 @@ def apply_configured_attestor(args: argparse.Namespace) -> None:
     from gzkit.attestor import configured_attestor_handle  # noqa: PLC0415
 
     handle = configured_attestor_handle()
-    if handle:
+    if handle not in {None, ""}:
         setattr(args, dest, handle)
     elif getattr(args, _REQUIRED_KEY):
         getattr(args, _PARSER_KEY).error("the following arguments are required: --attestor")

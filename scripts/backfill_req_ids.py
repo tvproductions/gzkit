@@ -168,7 +168,7 @@ def derive_semver_and_item(path: Path, fm: dict[str, str]) -> tuple[str | None, 
     """Resolve semver + obpi item from frontmatter with filename fallback."""
     semver = derive_semver(fm.get("parent", ""))
     item = fm.get("item") or fm.get("sequence")
-    if not semver or not item:
+    if semver is None or item in {None, ""}:
         fm_match = re.match(r"OBPI-(\d+\.\d+\.\d+)-(\d+)", path.name)
         if fm_match:
             semver = semver or fm_match.group(1)
@@ -185,7 +185,7 @@ def process_obpi_file(path: Path, dry_run: bool) -> tuple[str, int]:
 
     fm = parse_frontmatter(content)
     semver, item = derive_semver_and_item(path, fm)
-    if not semver or not item:
+    if semver is None or item in {None, ""}:
         return ("missing-frontmatter", 0)
 
     # Mode D: existing Acceptance Criteria section with bare `- [ ]` lines

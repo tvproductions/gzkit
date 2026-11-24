@@ -633,7 +633,7 @@ def _collect_private_cross_package_imports(src_root: Path) -> set[str]:
         for node in ast.walk(tree):
             if not isinstance(node, ast.ImportFrom):
                 continue
-            if not node.module or not node.module.startswith("gzkit."):
+            if node.module is None or not node.module.startswith("gzkit."):
                 continue
             owner = Path(node.module[len("gzkit.") :].replace(".", "/"))
             if owner.parent == rel.parent:

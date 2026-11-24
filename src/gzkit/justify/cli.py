@@ -58,7 +58,7 @@ def handle_justify(
         print(ADR_REJECTION_MESSAGE, file=sys.stderr)
         return EXIT_USER_ERROR
 
-    if draft is not None and save and not draft_slug:
+    if draft is not None and save and draft_slug in {None, ""}:
         print(DRAFT_SLUG_REQUIRED_MESSAGE, file=sys.stderr)
         return EXIT_USER_ERROR
 
@@ -88,7 +88,9 @@ def handle_justify(
         return EXIT_SYSTEM_ERROR
 
     related_list = (
-        [token.strip() for token in related.split(",") if token.strip()] if related else None
+        [token.strip() for token in related.split(",") if token.strip()]
+        if related not in {None, ""}
+        else None
     )
     evidence = gather_evidence(
         anchor_ref,
@@ -137,7 +139,7 @@ def handle_validate(*, file: str | None, json_output: bool) -> int:
         missing or unnamed; the system-error code when it cannot be read or parsed.
 
     """
-    if not file:
+    if file in {None, ""}:
         print("justify validate: <file> is required", file=sys.stderr)
         return EXIT_USER_ERROR
 

@@ -27,7 +27,7 @@ def _write_registry(
     schema_path = tmp / "flags.schema.json"
 
     payload: dict[str, object] = {"flags": flags}
-    if extra_keys:
+    if extra_keys is not None and len(extra_keys) > 0:
         payload.update(extra_keys)
 
     registry_path.write_text(json.dumps(payload), encoding="utf-8")

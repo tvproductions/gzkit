@@ -155,7 +155,7 @@ class _AdrCloseoutFixture(unittest.TestCase):
             gzkit_dir = root / ".gzkit"
             gzkit_dir.mkdir(parents=True, exist_ok=True)
             ledger_path = gzkit_dir / "ledger.jsonl"
-            if waiver_events:
+            if waiver_events is not None and len(waiver_events) > 0:
                 ledger_path.write_text("\n".join(waiver_events) + "\n", encoding="utf-8")
             else:
                 ledger_path.write_text("", encoding="utf-8")

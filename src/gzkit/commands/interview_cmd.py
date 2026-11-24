@@ -255,7 +255,7 @@ def interview(document_type: str, from_file: str | None = None) -> None:
     config = ensure_initialized()
     project_root = get_project_root()
 
-    if from_file:
+    if from_file not in {None, ""}:
         console.print(f"\n[bold]Creating {document_type.upper()} from {from_file}[/bold]\n")
         answers = _load_answers_from_file(from_file, document_type)
     else:

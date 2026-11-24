@@ -845,7 +845,7 @@ def _commits_gap(
     git_runner: GitRunner,
 ) -> float:
     """Return ``|count(intro..receipt)|`` or :data:`math.inf` on git failure."""
-    if not receipt_sha:
+    if receipt_sha in {None, ""}:
         return math.inf
     if intro_sha == receipt_sha:
         return 0

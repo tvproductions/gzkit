@@ -155,7 +155,7 @@ class TestGateImportsExcludePipelineMarkers(unittest.TestCase):
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 imported_modules.extend(alias.name for alias in node.names)
-            elif isinstance(node, ast.ImportFrom) and node.module:
+            elif isinstance(node, ast.ImportFrom) and node.module is not None:
                 imported_modules.append(node.module)
 
         for mod in imported_modules:

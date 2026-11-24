@@ -211,7 +211,7 @@ def _select_citations(ordinal: int, anchor: AnchorRef, evidence: EvidenceBundle)
 
 
 def _extract_anchor_body_citations(body: str | None) -> list[str]:
-    if not body:
+    if body in {None, ""}:
         return []
     seen: set[str] = set()
     ordered: list[str] = []
@@ -238,7 +238,7 @@ def _format_grounding_evidence(evidence: EvidenceBundle) -> list[str]:
 
 
 def _anchor_id_for_frontmatter(anchor: AnchorRef) -> str:
-    if anchor.identifier:
+    if anchor.identifier not in {None, ""}:
         return anchor.identifier
     slug = anchor.draft_slug or "unnamed"
     return f"draft-{slug}"

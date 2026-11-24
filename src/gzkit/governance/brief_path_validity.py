@@ -266,7 +266,7 @@ def check_brief_path_validity_for_brief(
 
     """
     allowed = extract_allowed_paths(brief_path)
-    if not allowed:
+    if allowed is None or len(allowed) == 0:
         return []
     creates = extract_brief_creates_paths(brief_path)
     return check_brief_path_validity(project_root, allowed, creates)

@@ -242,7 +242,7 @@ class LedgerEvent(BaseModel):
             "id": self.id,
             "ts": self.ts,
         }
-        if self.parent:
+        if self.parent not in {None, ""}:
             result["parent"] = self.parent
         if self.extra:
             result.update(self.extra)
@@ -851,10 +851,10 @@ class Ledger:
             "history": self.read_history,
         }[stream]()
 
-        if event_type:
+        if event_type not in {None, ""}:
             events = [e for e in events if e.event == event_type]
 
-        if artifact_id:
+        if artifact_id not in {None, ""}:
             events = [e for e in events if e.id == artifact_id]
 
         return events
@@ -1157,7 +1157,7 @@ class Ledger:
         canonical_id: str,
     ) -> None:
         """Attach child to parent node if both are represented in the graph."""
-        if not canonical_parent or canonical_parent not in graph:
+        if canonical_parent in {None, ""} or canonical_parent not in graph:
             return
         children = graph[canonical_parent]["children"]
         if canonical_id not in children:
@@ -1463,7 +1463,9 @@ class Ledger:
         for event in events:
             canonical_id = self._canonicalize_with_map(event.id, rename_map)
             canonical_parent = (
-                self._canonicalize_with_map(event.parent, rename_map) if event.parent else None
+                self._canonicalize_with_map(event.parent, rename_map)
+                if event.parent not in {None, ""}
+                else None
             )
 
             self._ensure_artifact_entry(graph, event, canonical_id, canonical_parent)

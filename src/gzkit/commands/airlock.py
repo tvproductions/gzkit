@@ -66,7 +66,10 @@ def _render_human(target: str, phase: str | None, preflight: Preflight, dry_run:
     decision = preflight.decision
     label = decision.value if decision is not None else "none"
     mode = " (dry-run)" if dry_run else ""
-    console.print(f"[bold]airlock in[/bold]{mode} — {target}" + (f" @ {phase}" if phase else ""))
+    console.print(
+        f"[bold]airlock in[/bold]{mode} — {target}"
+        + (f" @ {phase}" if phase not in {None, ""} else "")
+    )
     console.print(f"  decision: {label}")
     console.print(
         f"  seams: bodies={len(seam_map.bodies)} push={len(seam_map.push_edges)} "

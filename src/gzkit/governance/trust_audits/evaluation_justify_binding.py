@@ -226,12 +226,12 @@ def _names_subject(anchor: AnchorRef, artifact_id: str) -> bool:
 
 def _claimed_subject(anchor: AnchorRef) -> tuple[str, str, str | None] | None:
     """Return the subject key a walkthrough's anchor claims, or None for a GHI anchor."""
-    if anchor.kind == "draft" and anchor.draft_slug:
+    if anchor.kind == "draft" and anchor.draft_slug not in {None, ""}:
         adr = _ADR_SLUG_RE.match(anchor.draft_slug)
         if adr:
             return ("adr", ".".join(adr.group(1, 2, 3)), adr.group(4))
         return ("id", anchor.draft_slug, None)
-    if anchor.kind == "obpi" and anchor.identifier:
+    if anchor.kind == "obpi" and anchor.identifier not in {None, ""}:
         claimed = _subject_key(anchor.identifier)
         return claimed if claimed[0] == "obpi" else None  # an obpi anchor must carry an OBPI id
     return None

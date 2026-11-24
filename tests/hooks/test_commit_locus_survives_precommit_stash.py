@@ -75,8 +75,8 @@ repos:
 
 def _pre_commit_command() -> list[str] | None:
     """Return a runnable pre-commit, or None. pre-commit is not a gzkit dependency."""
-    candidates = [["pre-commit"]] if shutil.which("pre-commit") else []
-    if shutil.which("uvx"):
+    candidates = [["pre-commit"]] if shutil.which("pre-commit") is not None else []
+    if shutil.which("uvx") is not None:
         candidates.append(["uvx", "--offline", "pre-commit"])
     for command in candidates:
         try:

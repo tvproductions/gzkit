@@ -499,7 +499,9 @@ def _scan_feature_source(feature_path: pathlib.Path, source: str) -> list[Linkag
 
         if scenario_match:
             scenario_name = scenario_match.group("name")
-            identifier = f"{feature_name}::{scenario_name}" if feature_name else scenario_name
+            identifier = (
+                f"{feature_name}::{scenario_name}" if feature_name is not None else scenario_name
+            )
             _emit_pending_records(records, pending, feature_path, identifier)
             pending = []
             # A @REQ tag written inline on the same scenario line also counts.

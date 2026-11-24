@@ -265,7 +265,7 @@ def _check_min_info(
     errors: list[ValidationError] = []
     for field in _MIN_INFO_FRONTMATTER_FIELDS:
         value = _parse_frontmatter_field(content, field)
-        if not value:
+        if value in {None, ""}:
             errors.append(
                 ValidationError(
                     type="lock_exchange_coupling",
@@ -355,7 +355,7 @@ def _parse_frontmatter_field(content: str, key: str) -> str | None:
 
 def _parse_ts(value: str | None) -> datetime | None:
     """Parse ISO-8601 timestamp (accepting Z or +00:00 suffix) to aware UTC."""
-    if not value:
+    if value in {None, ""}:
         return None
     try:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))

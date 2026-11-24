@@ -444,7 +444,7 @@ def covers_channel_reqs(reqs: list[ReqEntity]) -> list[ReqEntity]:
             continue
         if entity.taxonomy_kind in _NON_COVERS_TAXONOMY_KINDS:
             continue
-        if entity.brief_status and _is_retired_brief_status(entity.brief_status):
+        if entity.brief_status not in {None, ""} and _is_retired_brief_status(entity.brief_status):
             continue
         in_scope.append(entity)
     return in_scope

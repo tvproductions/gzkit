@@ -368,10 +368,10 @@ def _complete_args(
     ]
     if attestor_present:
         args.append("--attestor-present")
-    if accept_uncovered:
+    if accept_uncovered is not None and len(accept_uncovered) > 0:
         for req in accept_uncovered:
             args += ["--accept-uncovered", req]
-    if accept_uncovered_reason:
+    if accept_uncovered_reason is not None and len(accept_uncovered_reason) > 0:
         for reason in accept_uncovered_reason:
             args += ["--accept-uncovered-reason", reason]
     return args

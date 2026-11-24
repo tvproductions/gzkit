@@ -232,7 +232,7 @@ class LedgerDeclarationCoherence(unittest.TestCase):
                 if not isinstance(rule, dict) or not _declares_array(rule):
                     continue
                 info = model.model_fields.get(field)
-                if info is None or not _model_item_type(info.annotation):
+                if info is None or _model_item_type(info.annotation) is None:
                     continue
                 if not isinstance(rule.get("items"), dict):
                     undeclared.append(f"{event}.{field}")
@@ -264,7 +264,7 @@ class LedgerDeclarationCoherence(unittest.TestCase):
                 if info is None or not isinstance(items, dict):
                     continue
                 expected = _model_item_type(info.annotation)
-                if expected and items.get("type") != expected:
+                if expected is not None and items.get("type") != expected:
                     mismatched.append(
                         f"{event}.{field}: schema={items.get('type')!r} model={expected!r}"
                     )

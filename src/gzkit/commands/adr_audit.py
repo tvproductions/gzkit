@@ -1177,7 +1177,7 @@ def adr_emit_receipt_cmd(
         return
 
     evidence: dict[str, Any] | None = None
-    if evidence_json:
+    if evidence_json not in {None, ""}:
         try:
             parsed = json.loads(evidence_json)
         except json.JSONDecodeError as exc:

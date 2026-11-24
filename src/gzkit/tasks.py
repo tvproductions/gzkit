@@ -338,7 +338,7 @@ def in_scope_task_id(ledger_path: pathlib.Path, scope_id: str | None) -> str | N
 
     """
     scope = None
-    if scope_id:
+    if scope_id not in {None, ""}:
         scope = _OBPI_SCOPE_RE.match(scope_id) or _ADR_SCOPE_RE.match(scope_id)
     if scope is None:
         return None

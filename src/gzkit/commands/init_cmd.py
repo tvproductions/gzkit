@@ -188,7 +188,8 @@ def delivery_scope(project_root: Path) -> set[str]:
 def delivered_bytes(surface: str, rel_path: Path, canonical: Traversable, scope: set[str]) -> bytes:
     """Return the bytes delivery writes for a wheel file: routers scoped, others verbatim."""
     payload = canonical.read_bytes()
-    if skill_body_slug(f"{surface}/{rel_path.as_posix()}"):
+    slug = skill_body_slug(f"{surface}/{rel_path.as_posix()}")
+    if slug not in {None, ""}:
         return delivered_skill_body(payload, scope)
     return payload
 
@@ -815,7 +816,7 @@ def _session_green_gate_statuses(project_root: Path, *, dry_run: bool = False) -
             _install_pre_commit_hooks(project_root, dry_run=dry_run),
             _install_commit_locus_recorder(project_root, dry_run=dry_run),
         )
-        if status
+        if status is not None and len(status) > 0
     ]
 
 
@@ -854,7 +855,7 @@ def _present(*statuses: str | None) -> list[str]:
         The non-empty statuses, in order.
 
     """
-    return [status for status in statuses if status]
+    return [status for status in statuses if status is not None and len(status) > 0]
 
 
 def _seed_astral_baseline(project_root: Path, *, dry_run: bool = False) -> str | None:
@@ -1130,7 +1131,7 @@ def _first_init_authorship(attestor_handle: str | None) -> AuthorshipConfig:
 
     """
     handle = attestor_handle if attestor_handle is not None else _prompt_attestor_handle()
-    if handle:
+    if handle not in {None, ""}:
         console.print(f"  Recorded attestor handle: {handle}")
     else:
         console.print("  No attestor handle set; `gz init --attestor-handle <handle>` records one.")
@@ -1224,7 +1225,7 @@ def _repair_missing_artifacts(
     # Hydrate virtualenv
     if not no_skeleton:
         uv_status = _run_uv_sync(project_root, dry_run=dry_run)
-        if uv_status:
+        if uv_status not in {None, ""}:
             repaired.append(uv_status)
 
     # Repair .gitignore, the Astral-discipline baseline and the requirements catalog
@@ -1517,7 +1518,7 @@ def init(
         for item in skeleton:
             console.print(f"  {item}")
         uv_status = _run_uv_sync(project_root)
-        if uv_status:
+        if uv_status not in {None, ""}:
             console.print(f"  {uv_status}")
 
     # Create .gitignore, seed the Astral-discipline baseline from what the project

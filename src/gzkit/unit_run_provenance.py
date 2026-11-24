@@ -190,7 +190,7 @@ def judge_unit_run(output: str, project_root: Path) -> str | None:
         return reason
     total = int(_RAN_RE.findall(output)[-1])
     floor, floor_problem = _read_floor(project_root)
-    if floor_problem:
+    if floor_problem is not None:
         return floor_problem
     below_floor = f"the run collected {total} tests, below the declared floor of {floor}"
     return below_floor if floor is not None and total < floor else None

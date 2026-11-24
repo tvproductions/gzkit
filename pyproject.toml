@@ -334,6 +334,7 @@ possibly-missing-attribute = "error"
 possibly-missing-import = "error"
 possibly-unresolved-reference = "error"
 redundant-condition-strict = "error"
+truthiness-test-of-none-union = "error"
 unsound-yield = "error"
 unsupported-dynamic-base = "error"
 

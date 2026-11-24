@@ -18,7 +18,11 @@ def _rich_names(tree: ast.Module) -> set[str]:
     """Return every local name bound to something imported from ``rich``."""
     names: set[str] = set()
     for node in ast.walk(tree):
-        if isinstance(node, ast.ImportFrom) and node.module and node.module.split(".")[0] == "rich":
+        if (
+            isinstance(node, ast.ImportFrom)
+            and node.module is not None
+            and node.module.split(".")[0] == "rich"
+        ):
             names.update(alias.asname or alias.name for alias in node.names)
         elif isinstance(node, ast.Import):
             names.update(

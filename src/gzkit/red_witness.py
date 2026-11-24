@@ -584,7 +584,11 @@ def run_red_witness(
             ),
         )
     base, provenance = resolved
-    runner = list(test_runner) if test_runner else list(DEFAULT_TEST_RUNNER)
+    runner = (
+        list(test_runner)
+        if test_runner is not None and len(test_runner) > 0
+        else list(DEFAULT_TEST_RUNNER)
+    )
 
     def void(exit_status: int, reason: str, output: str) -> RedWitness:
         """Report a run that could not tell, carrying its reason (GHI #839, #1154)."""

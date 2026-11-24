@@ -144,7 +144,7 @@ def complexity_advise_cmd(
 
 
 def _load_table_or_exit(rule_path: str | None) -> ThresholdTable:
-    target = Path(rule_path) if rule_path else DEFAULT_RULE_PATH
+    target = Path(rule_path) if rule_path not in {None, ""} else DEFAULT_RULE_PATH
     if not target.exists():
         print(
             f"error: threshold rule not found: {target.as_posix()}",
@@ -265,10 +265,10 @@ def _run_attest_intrinsic(
 
     file_path_str, qualname = parts
 
-    if not reason:
+    if reason in {None, ""}:
         print("error: --reason is required for --attest-intrinsic", file=sys.stderr)
         return 1
-    if not attestor:
+    if attestor in {None, ""}:
         print("error: --attestor is required for --attest-intrinsic", file=sys.stderr)
         return 1
 

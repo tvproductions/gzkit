@@ -85,12 +85,12 @@ def plan_audit_cmd(obpi_id: str, as_json: bool) -> None:
 
     # 1. Resolve OBPI -> ADR
     adr_id = _derive_adr_id(obpi_id)
-    if not adr_id:
+    if adr_id is None:
         gaps.append(f"Cannot derive ADR ID from {obpi_id}")
 
     # 2. Find ADR package directory
-    adr_dir = _find_adr_dir(project_root, adr_id) if adr_id else None
-    if adr_id and not adr_dir:
+    adr_dir = _find_adr_dir(project_root, adr_id) if adr_id is not None else None
+    if adr_id is not None and not adr_dir:
         gaps.append(f"ADR directory not found for {adr_id}")
 
     # 3. Find OBPI brief
@@ -114,7 +114,7 @@ def plan_audit_cmd(obpi_id: str, as_json: bool) -> None:
 
     # 7. Sibling-ADR scope-collision scan (GHI #152 — advisory, not gap-producing).
     collisions: list[dict[str, str | list[str]]] = []
-    if brief_path and adr_id and target_allowed:
+    if brief_path and adr_id is not None and target_allowed is not None:
         collisions = _scan_sibling_adr_collisions(
             project_root=project_root,
             target_adr_id=adr_id,
@@ -148,7 +148,7 @@ def _emit_result(
     }
     if gaps:
         receipt["gaps"] = gaps
-    if collisions:
+    if collisions not in (None, []):
         receipt["scope_collisions"] = collisions
 
     receipt_path = pipeline_receipt_path(plans_dir, obpi_id)
@@ -164,7 +164,7 @@ def _emit_result(
             console.print(f"[red]FAIL:[/red] {obpi_id} -- {len(gaps)} gap(s) found:")
             for gap in gaps:
                 console.print(f"  - {gap}")
-        if collisions:
+        if collisions not in (None, []):
             console.print(
                 f"[yellow]DRIFTED -- scope-collision:[/yellow] "
                 f"{len(collisions)} sibling-ADR overlap(s) detected (advisory):"
@@ -339,7 +339,7 @@ def _sibling_obpi_collisions(
         if sibling_obpi == target_obpi_id:
             continue
         sibling_allowed = _extract_allowed_paths(brief)
-        if not sibling_allowed:
+        if sibling_allowed is None:
             continue
         specific_contested = _contested_paths_between(target_allowed, sibling_allowed)
         if specific_contested:

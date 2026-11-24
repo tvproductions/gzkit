@@ -229,7 +229,7 @@ def _enforce_security_review_gate(
         return
 
     if not _security_canonical_slot_filled():
-        if accept_security_floor:
+        if accept_security_floor not in {None, ""}:
             console.print(
                 "[yellow]⚠ Security-scan canonical slot unfilled; "
                 f"--accept-security-floor override applied (GHI #462). Reason: "
@@ -304,7 +304,7 @@ def _read_adr_kind(adr_file: Path) -> str:
         return "feature"
     content = adr_file.read_text(encoding="utf-8")
     raw = parse_frontmatter_value(content, "kind")
-    if not raw:
+    if raw in {None, ""}:
         return "feature"
     return raw.strip().lower()
 
@@ -328,7 +328,9 @@ def _build_meta_receipt_evidence(
     """
     run_id = f"arb-meta-receipt-bind-{secrets.token_hex(16)}"
     resolved_ids = [
-        entry.run_id for entry in result.entries if entry.status == "resolved" and entry.run_id
+        entry.run_id
+        for entry in result.entries
+        if entry.status == "resolved" and entry.run_id not in {None, ""}
     ]
     payload: dict[str, Any] = {
         "run_id": run_id,
@@ -706,7 +708,7 @@ def _enforce_req_coverage_gate(
     fail_closed = parent_lane.lower() == "heavy" or parent_kind.lower() == "foundation"
 
     # OBPI-0.0.25-02: process --accept-uncovered waivers before checking remaining gaps
-    if accept_uncovered:
+    if accept_uncovered not in (None, []):
         gaps = _apply_uncovered_waivers(
             gaps=gaps,
             accept_uncovered=accept_uncovered,
@@ -854,7 +856,7 @@ def _enforce_reconcile_receipt_gate(
     )
 
     # Apply escape hatch (overrides all three failure modes below)
-    if accept_stale_reconciliation and accept_stale_reconciliation_reason:
+    if accept_stale_reconciliation and accept_stale_reconciliation_reason not in {None, ""}:
         ledger.append(
             brief_reconcile_drift_overridden_event(
                 brief_id=obpi_id,
@@ -965,7 +967,7 @@ def _resolve_and_validate(
         )
 
     parent_adr = cast("str | None", obpi_info.get("parent"))
-    if not parent_adr:
+    if parent_adr in {None, ""}:
         _fail(
             "OBPI is missing parent ADR in ledger.",
             exit_code=1,
@@ -991,7 +993,9 @@ def _resolve_and_validate(
     declared_sensitivity = parse_frontmatter_value(original_content, "sensitivity")
     detected_sensitivity = detect_brief_security_floor(original_content, project_root)
     effective_sensitivity = declared_sensitivity or detected_sensitivity
-    brief_frontmatter = {"sensitivity": effective_sensitivity} if effective_sensitivity else None
+    brief_frontmatter = (
+        {"sensitivity": effective_sensitivity} if effective_sensitivity not in {None, ""} else None
+    )
     requires_human = _requires_human_obpi_attestation(
         resolved_parent, parent_lane, brief_frontmatter
     )
@@ -1024,7 +1028,7 @@ def _resolve_evidence(
     effective_summary = implementation_summary or _read_existing_summary(original_content)
     effective_proof = key_proof or _read_existing_key_proof(original_content)
 
-    if not effective_summary or not effective_summary.strip():
+    if effective_summary is None or not effective_summary.strip():
         _fail(
             "Implementation summary is required. Provide --implementation-summary "
             "or ensure the brief has a substantive ### Implementation Summary section.",
@@ -1033,7 +1037,7 @@ def _resolve_evidence(
             obpi_id=obpi_id,
         )
     assert effective_summary is not None  # narrowing: _fail raises SystemExit
-    if not effective_proof or not effective_proof.strip():
+    if effective_proof is None or not effective_proof.strip():
         _fail(
             "Key proof is required. Provide --key-proof "
             "or ensure the brief has a substantive ### Key Proof section.",
@@ -1220,7 +1224,7 @@ def obpi_complete_cmd(
     # walkthrough is skipped, and the receipt records sensitivity:absent.
     # The override is already recorded in console output by _enforce_security_review_gate.
     security_floor_override_event: LedgerEvent | None = None
-    if accept_security_floor and effective_sensitivity == "security":
+    if accept_security_floor not in {None, ""} and effective_sensitivity == "security":
         # ADR-0.0.72-04: BUILD the override witness now (surfaces are computed
         # from the pre-downgrade brief); it is emitted AFTER the atomic
         # completion transaction commits — best-effort and structurally OUTSIDE
@@ -1266,8 +1270,8 @@ def obpi_complete_cmd(
     )
 
     # OBPI-0.0.25-02: validate --accept-uncovered pairing before the gate
-    if accept_uncovered and not dry_run:
-        if not accept_uncovered_reason:
+    if accept_uncovered not in (None, []) and not dry_run:
+        if accept_uncovered_reason in (None, []):
             _fail(
                 "--accept-uncovered requires --accept-uncovered-reason "
                 "(one reason per waived REQ).",

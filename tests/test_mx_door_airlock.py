@@ -45,7 +45,11 @@ def _mk_brief(root: Path, scope: str, *, names: str | None = None) -> None:
     d = root / "docs" / "design" / "adr" / "pre-release" / scope
     d.mkdir(parents=True, exist_ok=True)
     body = f"# {scope}\n\n## Allowed Paths\n\n- `src/gzkit/commands/mx_cmd.py`\n\n"
-    body += f"This entry accounts for {names}.\n" if names else "Names no reach dependent.\n"
+    body += (
+        f"This entry accounts for {names}.\n"
+        if names not in {None, ""}
+        else "Names no reach dependent.\n"
+    )
     (d / f"{scope}.md").write_text(body, encoding="utf-8")
 
 

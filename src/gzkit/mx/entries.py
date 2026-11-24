@@ -209,7 +209,7 @@ def _landed_lines(landed: Sequence[LandingCommit], commits_unread: str | None) -
         git could not be read, the one line naming why (ruling 193).
 
     """
-    if commits_unread:
+    if commits_unread not in {None, ""}:
         return [f"commits could not be read: {commits_unread}"]
     return [f"{commit.commit_sha[:12]} {commit.subject}" for commit in landed] or ["not landed"]
 
@@ -266,7 +266,7 @@ def _refuse_unstamped(dispatch_id: str, stamped_id: str | None) -> NoReturn:
     The next step is one that can succeed: naming the dispatch the call is stamped
     with, or booking from the named dispatch's own subagent, never the same call.
     """
-    if stamped_id:
+    if stamped_id not in {None, ""}:
         stamp = f"stamped with {stamped_id}"
         step = (
             f"If {stamped_id} did the work, name it: `uv run gz wp entry book --dispatch "
@@ -326,11 +326,12 @@ def _performer(ledger: Ledger, dispatch_id: str) -> tuple[DispatchRecord, str]:
         )
     order = dispatch.order
     if dispatch.role not in PERFORMERS or order is None:
+        has_order = order not in {None, ""}
         _refuse(
             f"Dispatch {dispatch_id} is a {dispatch.role} dispatch"
-            f"{'' if order else ' on no order'}; an entry is booked by a dispatch that performs "
-            "maintenance on an order, Implementer, SingleDriver or Restoration (RP-12 ruling "
-            "175). Book it from the dispatch that did the work."
+            f"{'' if has_order else ' on no order'}; an entry is booked by a dispatch that "
+            "performs maintenance on an order, Implementer, SingleDriver or Restoration "
+            "(RP-12 ruling 175). Book it from the dispatch that did the work."
         )
     order_now = order_state(ledger, order)
     if order_now != "commenced":

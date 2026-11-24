@@ -275,7 +275,7 @@ def _build_import_map(source: str) -> Mapping[str, str]:
     tree = ast.parse(source)
     import_map: dict[str, str] = {}
     for node in ast.walk(tree):
-        if isinstance(node, ast.ImportFrom) and node.module:
+        if isinstance(node, ast.ImportFrom) and node.module is not None:
             for alias in node.names:
                 func_name = alias.asname or alias.name
                 import_map[func_name] = node.module
@@ -310,7 +310,7 @@ def _extract_local_docstrings(source: str) -> Mapping[str, str]:
     tree = ast.parse(source)
     result: dict[str, str] = {}
     for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef) and ast.get_docstring(node):
+        if isinstance(node, ast.FunctionDef) and ast.get_docstring(node) not in {None, ""}:
             result[node.name] = ast.get_docstring(node) or ""
     return MappingProxyType(result)
 
@@ -433,9 +433,9 @@ def check_surfaces(
             surfaces.append(SurfaceResult(surface=surface_name, passed=passed, detail=detail))
 
         # 5. Docstring
-        if cmd.handler_name:
+        if cmd.handler_name not in {None, ""}:
             doc = _resolve_handler_docstring(cmd.handler_name, main_source)
-            if doc and doc.strip():
+            if doc is not None and doc.strip():
                 surfaces.append(
                     SurfaceResult(
                         surface="docstring",

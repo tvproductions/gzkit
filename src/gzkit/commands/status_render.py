@@ -74,7 +74,7 @@ def _qc_readiness(
             blockers.append("BDD")
         if gates.get("5") != "pass":
             blockers.append("Human attestation")
-    if observed_post_validation_failures:
+    if observed_post_validation_failures is not None and len(observed_post_validation_failures) > 0:
         gate_list = ",".join(str(g) for g in observed_post_validation_failures)
         blockers.append(f"Observed post-validation gate fail: {gate_list}")
     readiness = "ready" if not blockers else "pending"
@@ -370,7 +370,7 @@ def _render_adr_report(result: dict[str, Any]) -> None:
     # --- ADR Overview ---
     adr_full = cast("str", result["adr"])
     full_semver = adr_semver(adr_full)
-    adr_short = compose_adr_id(full_semver) if full_semver else adr_full
+    adr_short = compose_adr_id(full_semver) if full_semver is not None else adr_full
 
     overview = Table(title="ADR Overview", box=box.ROUNDED, padding=(0, 1))
     overview.add_column("ADR", no_wrap=True)

@@ -44,7 +44,7 @@ def obpi_adversary_workspace_cmd(
     root = get_project_root()
     target = (
         Path(destination)
-        if destination
+        if destination not in {None, ""}
         else Path(tempfile.mkdtemp(prefix=f"gz-adversary-{obpi_id}-"))
     )
 

@@ -135,7 +135,7 @@ def prefer_lsp_script() -> str:
                 Returns:
                     The symbol without any def/class prefix, or None when it is not one.
                 """
-                if not pattern:
+                if pattern in {None, ""}:
                     return None
                 keyword, _, name = strip_dressing(pattern).rpartition(" ")
                 if keyword not in {"", "def", "class"}:
@@ -180,7 +180,7 @@ def prefer_lsp_script() -> str:
                 """
                 filters = [str(tool_input[k]) for k in ("glob", "type") if tool_input.get(k)]
                 path = tool_input.get("path")
-                if path and file_filter(str(path)):
+                if path and file_filter(str(path)) is not None:
                     filters.append(str(path))
                 return tool_input.get("pattern"), filters
 
@@ -282,7 +282,7 @@ def prefer_lsp_script() -> str:
                 """
                 regexps, filters, positionals = classify_args(args)
                 pattern = regexps[0] if regexps else (positionals.pop(0) if positionals else None)
-                filters.extend(f for p in positionals if (f := file_filter(p)))
+                filters.extend(f for p in positionals if (f := file_filter(p)) is not None)
                 return pattern, filters
 
 

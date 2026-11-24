@@ -193,7 +193,7 @@ def _version_in_flight(current_version: str | None, tag: str | None) -> bool:
         does not parse.
 
     """
-    if not current_version or not tag:
+    if current_version in {None, ""} or tag in {None, ""}:
         return False
     try:
         tagged = _parse_semver_tuple(tag.removeprefix("v"))
@@ -562,7 +562,7 @@ def _parse_ts(value: str | None) -> datetime | None:
         unparseable.
 
     """
-    if not value:
+    if value in {None, ""}:
         return None
     try:
         parsed = datetime.fromisoformat(value)
@@ -641,19 +641,20 @@ _STATUS_STYLE: dict[str, str] = {
 def _render_dry_run_rich(result: DiscoveryResult) -> None:
     """Render discovery result as human-readable Rich output."""
     console.print("[bold]Patch Release Discovery (dry run)[/bold]")
-    if result.tag:
+    if result.tag not in {None, ""}:
         console.print(f"  Latest tag: {result.tag} ({result.tag_date or 'unknown date'})")
     else:
         console.print("  Latest tag: [dim]none (all closed GHIs are candidates)[/dim]")
-    if result.current_version and result.proposed_version == result.current_version:
+    has_current = result.current_version not in {None, ""}
+    if has_current and result.proposed_version == result.current_version:
         console.print(
             f"  Version: {result.current_version} (already bumped, no tag yet; released as is)"
         )
-    elif result.current_version and result.proposed_version:
+    elif has_current and result.proposed_version not in {None, ""}:
         console.print(
             f"  Version: {result.current_version} -> {result.proposed_version} (proposed)"
         )
-    elif result.current_version:
+    elif has_current:
         console.print(f"  Version: {result.current_version} (cannot compute increment)")
     else:
         console.print("  Version: [dim]unknown (pyproject.toml unreadable)[/dim]")
@@ -664,7 +665,7 @@ def _render_dry_run_rich(result: DiscoveryResult) -> None:
     for q in result.qualifications:
         styled = _STATUS_STYLE.get(q.status, q.status)
         line = f"  #{q.ghi.number:<6} {escape(q.ghi.title):<40} {styled}"
-        if q.warning:
+        if q.warning not in {None, ""}:
             line += f"  [yellow]![/yellow] {escape(q.warning)}"
         console.print(line)
 
@@ -798,7 +799,7 @@ def _author_release_notes(
         lines.append("")
         lines.extend(changed)
         lines.append("")
-    if foundation_closeouts:
+    if foundation_closeouts not in (None, []):
         lines.append("### Foundation")
         lines.append("")
         for fc in foundation_closeouts:
@@ -977,7 +978,9 @@ def _propose_version(current_version: str | None, tag: str | None) -> tuple[str 
     """Return the version this run releases and whether it is already bumped."""
     if _version_in_flight(current_version, tag):
         return current_version, True
-    return (compute_patch_increment(current_version) if current_version else None), False
+    return (
+        compute_patch_increment(current_version) if current_version not in {None, ""} else None
+    ), False
 
 
 def _apply_version(

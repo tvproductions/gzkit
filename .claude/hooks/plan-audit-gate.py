@@ -66,7 +66,7 @@ def find_plans_dir(cwd: str) -> Path | None:
 def _claude_home() -> Path:
     """Return Claude home, honoring GZKIT_CLAUDE_HOME for test isolation."""
     override = os.environ.get("GZKIT_CLAUDE_HOME")
-    return Path(override) if override else Path.home()
+    return Path(override) if override not in {None, ""} else Path.home()
 
 
 def plan_search_dirs(cwd: str) -> list[Path]:
@@ -254,7 +254,7 @@ def resolve_executable(name: str) -> str:
 def _resolve_plan_audit_cmd() -> list[str]:
     """Return argv for the plan-audit invocation, honoring the env override."""
     override = os.environ.get(PLAN_AUDIT_CMD_ENV)
-    if override and override.strip():
+    if override is not None and override.strip():
         return shlex.split(override)
     return list(DEFAULT_PLAN_AUDIT_CMD)
 
@@ -332,7 +332,7 @@ def main() -> None:
         sys.exit(0)
 
     prior_art_warning = check_prior_art_awareness(plan_file)
-    if prior_art_warning:
+    if prior_art_warning is not None:
         print(prior_art_warning, file=sys.stderr)
 
     obpi_ids = extract_obpi_ids(plan_file)

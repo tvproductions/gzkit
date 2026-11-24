@@ -249,7 +249,7 @@ def render_step_5_execute(
         "Command to demonstrate now:",
         f"  `{current.command}`",
     ]
-    if current.claim:
+    if current.claim not in {None, ""}:
         lines += ["", f"Claim under demonstration:  {current.claim}"]
     if current.expected_exit != 0:
         # Without this the operator reads a refusal demo as a broken command and
@@ -443,10 +443,10 @@ def render_step_11_complete(state: CeremonyState) -> str:
     ]
     for record in state.step_history:
         name = step_names.get(record.step, f"Step {record.step}")
-        marker = "  " if record.acknowledged_at else ">>"
+        marker = "  " if record.acknowledged_at not in {None, ""} else ">>"
         lines.append(f"  {marker} Step {record.step:2d}: {name}")
 
-    if state.attestation:
+    if state.attestation not in {None, ""}:
         lines.append(f"\n  Attestation: {state.attestation}")
 
     lines.append("")

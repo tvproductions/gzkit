@@ -42,7 +42,7 @@ def _validate_required_frontmatter_fields(frontmatter: dict[str, str], rel_file:
     """Validate required identity/lifecycle fields."""
     errors: list[str] = []
     for field in SKILL_REQUIRED_FRONTMATTER_FIELDS:
-        if frontmatter.get(field):
+        if frontmatter.get(field) not in {None, ""}:
             continue
         errors.append(f"{rel_file}: missing frontmatter field '{field}'.")
     return errors
@@ -142,7 +142,7 @@ def _append_transition_issues(
         return
 
     missing_transition_fields = [
-        field for field in SKILL_TRANSITION_FIELDS if not frontmatter.get(field)
+        field for field in SKILL_TRANSITION_FIELDS if frontmatter.get(field) in {None, ""}
     ]
     if missing_transition_fields:
         errors.append(
@@ -198,7 +198,7 @@ def _append_deprecation_field_issues(
                 )
 
     for field in SKILL_DEPRECATION_REQUIRED_BY_STATE.get(lifecycle_state, ()):
-        if frontmatter.get(field):
+        if frontmatter.get(field) not in {None, ""}:
             continue
         errors.append(
             f"{rel_file}: missing frontmatter field '{field}' for "
@@ -222,7 +222,7 @@ def _validate_known_metadata_values(frontmatter: dict[str, str], rel_file: str) 
     skill_version = frontmatter.get("metadata.skill-version")
     if skill_version == "":
         errors.append(f"{rel_file}: metadata.skill-version cannot be empty when present.")
-    elif skill_version and not SKILL_VERSION_RE.match(skill_version):
+    elif skill_version is not None and not SKILL_VERSION_RE.match(skill_version):
         errors.append(
             f"{rel_file}: invalid metadata.skill-version '{skill_version}' (expected X.Y.Z)."
         )
@@ -232,7 +232,7 @@ def _validate_known_metadata_values(frontmatter: dict[str, str], rel_file: str) 
         errors.append(
             f"{rel_file}: metadata.govzero-framework-version cannot be empty when present."
         )
-    elif framework_version and not SKILL_FRAMEWORK_VERSION_RE.match(framework_version):
+    elif framework_version is not None and not SKILL_FRAMEWORK_VERSION_RE.match(framework_version):
         errors.append(
             f"{rel_file}: invalid metadata.govzero-framework-version '{framework_version}' "
             "(expected vN or vN.N.N)."
@@ -243,7 +243,7 @@ def _validate_known_metadata_values(frontmatter: dict[str, str], rel_file: str) 
         errors.append(f"{rel_file}: metadata.govzero-author cannot be empty when present.")
 
     govzero_layer = frontmatter.get("metadata.govzero_layer")
-    if govzero_layer and govzero_layer not in SKILL_GOVZERO_LAYERS:
+    if govzero_layer not in {None, ""} and govzero_layer not in SKILL_GOVZERO_LAYERS:
         allowed = ", ".join(sorted(SKILL_GOVZERO_LAYERS))
         errors.append(
             f"{rel_file}: invalid metadata.govzero_layer '{govzero_layer}' (allowed: {allowed})."

@@ -869,7 +869,11 @@ def task_fanout_cmd(req_id: str, *, detail: bool = False, as_json: bool = False)
             matches = [r for r in registry if r.task_id == tid]
             if matches:
                 for rec in matches:
-                    if rec.source_file and rec.source_line:
+                    if (
+                        rec.source_file not in {None, ""}
+                        and rec.source_line is not None
+                        and rec.source_line != 0
+                    ):
                         console.print(f"  └─ {rec.source_file}:{rec.source_line}")
                     else:
                         console.print("  └─ (no @advances decorators)")

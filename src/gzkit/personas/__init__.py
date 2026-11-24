@@ -201,7 +201,7 @@ def compose_persona_frame(fm: PersonaFrontmatter, body: str = "") -> str:
     trait_lines: list[str] = []
     for trait in fm.traits:
         desc = trait_descs.get(trait.lower())
-        if desc:
+        if desc not in {None, ""}:
             trait_lines.append(f"You are {trait}: {desc}")
         else:
             trait_lines.append(f"You are {trait}.")
@@ -212,7 +212,7 @@ def compose_persona_frame(fm: PersonaFrontmatter, body: str = "") -> str:
         anti_lines: list[str] = []
         for at in fm.anti_traits:
             desc = anti_descs.get(at.lower())
-            if desc:
+            if desc not in {None, ""}:
                 anti_lines.append(f"- {at}: {desc}")
             else:
                 anti_lines.append(f"- {at}")
@@ -258,7 +258,7 @@ def render_persona_codex(fm: PersonaFrontmatter, body: str = "") -> str:
     trait_lines: list[str] = []
     for trait in fm.traits:
         desc = trait_descs.get(trait.lower())
-        if desc:
+        if desc not in {None, ""}:
             trait_lines.append(f"- {trait}: {desc}")
         else:
             trait_lines.append(f"- {trait}")
@@ -268,7 +268,7 @@ def render_persona_codex(fm: PersonaFrontmatter, body: str = "") -> str:
         anti_lines: list[str] = []
         for at in fm.anti_traits:
             desc = anti_descs.get(at.lower())
-            if desc:
+            if desc not in {None, ""}:
                 anti_lines.append(f"- {at}: {desc}")
             else:
                 anti_lines.append(f"- {at}")

@@ -46,16 +46,16 @@ def obpi_dispatch_cmd(
         return 1
 
     if single_driver:
-        if not reason:
+        if reason in {None, ""}:
             print("--single-driver requires --reason.")  # noqa: T201
             return 1
         declare_single_driver(project_root, obpi_id, reason=reason)
-    elif role:
+    elif role not in {None, ""}:
         if role not in MANDATED_STAGE2_ROLES:
             allowed = ", ".join(MANDATED_STAGE2_ROLES)
             print(f"Unknown role {role!r}. Mandated Stage-2 roles: {allowed}.")  # noqa: T201
             return 1
-        if not model:
+        if model in {None, ""}:
             print("--role requires --model (the dispatch model tier).")  # noqa: T201
             return 1
         record_dispatch(project_root, obpi_id, role=role, model=model, task_id=task_id)

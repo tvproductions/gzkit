@@ -282,7 +282,7 @@ def prepend_persona_to_prompt(persona_text: str | None, prompt: str) -> str:
         separator and the prompt.
 
     """
-    if not persona_text:
+    if persona_text in {None, ""}:
         return prompt
     return f"{persona_text}\n\n---\n\n{prompt}"
 
@@ -380,7 +380,7 @@ def aggregate_dispatch_results(
     # Aggregate review findings by severity from result payloads
     severity_counts: dict[str, int] = {}
     for r in records:
-        if r.result and "findings" in r.result:
+        if r.result is not None and len(r.result) > 0 and "findings" in r.result:
             for finding in r.result["findings"]:
                 sev = str(finding.get("severity", "info")).lower()
                 severity_counts[sev] = severity_counts.get(sev, 0) + 1
@@ -716,7 +716,7 @@ def _transit_changed_files(ledger: Ledger, obpi_id: str, project_root: Path) -> 
     info = ledger.get_artifact_graph().get(ledger.canonicalize_id(obpi_id), {})
     evidence = info.get("latest_completion_evidence") or {}
     sealed = normalize_scope_audit(evidence.get("scope_audit"))
-    if sealed and sealed["changed_files"]:
+    if sealed is not None and sealed["changed_files"]:
         return sealed["changed_files"]
     return collect_changed_files(project_root)
 

@@ -201,7 +201,7 @@ def _validate_required_skill_fields(
 ) -> None:
     """Validate required identity/lifecycle fields."""
     for field in SKILL_REQUIRED_FIELDS:
-        if frontmatter.get(field):
+        if frontmatter.get(field) not in {None, ""}:
             continue
         _append_audit_issue(
             issues,
@@ -369,7 +369,7 @@ def _validate_transition_fields(
         return
 
     missing_transition_fields = [
-        field for field in SKILL_TRANSITION_FIELDS if not frontmatter.get(field)
+        field for field in SKILL_TRANSITION_FIELDS if frontmatter.get(field) in {None, ""}
     ]
     if missing_transition_fields:
         _append_audit_issue(
@@ -459,7 +459,7 @@ def _validate_deprecation_field_contract(
 
     required_fields = SKILL_DEPRECATION_REQUIRED_BY_STATE.get(lifecycle_state, ())
     for field in required_fields:
-        if frontmatter.get(field):
+        if frontmatter.get(field) not in {None, ""}:
             continue
         _append_audit_issue(
             issues,
@@ -538,7 +538,7 @@ def _validate_known_metadata_fields(
             skill_file,
             "metadata.govzero-framework-version cannot be empty when present.",
         )
-    elif framework_version and not SKILL_FRAMEWORK_VERSION_RE.match(framework_version):
+    elif framework_version is not None and not SKILL_FRAMEWORK_VERSION_RE.match(framework_version):
         _append_audit_issue(
             issues,
             project_root,
@@ -561,7 +561,7 @@ def _validate_known_metadata_fields(
         )
 
     govzero_layer = frontmatter.get("metadata.govzero_layer")
-    if govzero_layer and govzero_layer not in SKILL_GOVZERO_LAYERS:
+    if govzero_layer not in {None, ""} and govzero_layer not in SKILL_GOVZERO_LAYERS:
         allowed = ", ".join(sorted(SKILL_GOVZERO_LAYERS))
         _append_audit_issue(
             issues,

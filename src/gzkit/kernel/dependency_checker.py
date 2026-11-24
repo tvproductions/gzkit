@@ -298,7 +298,7 @@ def _resolve_from(module: _Module, node: ast.ImportFrom) -> str:
     if not module.is_package:
         anchor = anchor[:-1]
     anchor = anchor[: len(anchor) - (node.level - 1)]
-    return ".".join([*anchor, node.module] if node.module else anchor)
+    return ".".join([*anchor, node.module] if node.module not in {None, ""} else anchor)
 
 
 def _import_findings(
@@ -350,7 +350,7 @@ def _aliases(module: _Module) -> Iterator[tuple[str, str]]:
 
 def _import_binding(alias: ast.alias) -> tuple[str, str]:
     """``import a.b`` binds ``a``; ``import a.b as x`` binds ``x`` to ``a.b``."""
-    if alias.asname:
+    if alias.asname not in {None, ""}:
         return alias.asname, alias.name
     top = alias.name.split(".")[0]
     return top, top
@@ -391,7 +391,7 @@ def _base_findings(
 ) -> Iterator[Finding]:
     if region is Region.KERNEL:
         return
-    where = region.value if region else "no region"
+    where = region.value if region is not None else "no region"
     for cls, bases in _qualified_bases(module):
         for name in sorted(_kernel_bases(package_map, bases, classes)):
             allowed = BASE_REGIONS.get(name)
@@ -490,7 +490,7 @@ def check(package_map: PackageMap, project_root: Path) -> list[Finding]:
     findings: set[Finding] = set()
     for module in modules:
         part = package_map.part_of(module.name)
-        region = package_map.parts[part] if part else None
+        region = package_map.parts[part] if part not in {None, ""} else None
         findings.update(_base_findings(package_map, module, region, classes))
         if region is None:
             if not (module.is_package and package_map.is_container(module.name)):

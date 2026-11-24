@@ -238,7 +238,7 @@ def _book_transit(
         "decision": decision.value,
         "unaccounted": [edge.target for edge in seam_map.unaccounted],
     }
-    if extra:
+    if extra is not None:
         payload.update(extra)
     ledger.append(LedgerEvent(event="airlock_in", id=target, extra=payload))
 

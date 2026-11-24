@@ -265,7 +265,7 @@ def _imported(tree: ast.Module) -> Iterator[str]:
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             yield from (alias.name for alias in node.names)
-        elif isinstance(node, ast.ImportFrom) and node.module and not node.level:
+        elif isinstance(node, ast.ImportFrom) and node.module is not None and not node.level:
             yield node.module
             yield from (f"{node.module}.{alias.name}" for alias in node.names)
 
@@ -298,7 +298,7 @@ def _bindings(tree: ast.Module) -> dict[str, str]:
             for alias in node.names:
                 name, target = _import_binding(alias)
                 bound[name] = target
-        elif isinstance(node, ast.ImportFrom) and node.module and not node.level:
+        elif isinstance(node, ast.ImportFrom) and node.module is not None and not node.level:
             bound.update({a.asname or a.name: f"{node.module}.{a.name}" for a in node.names})
     return bound
 
@@ -310,7 +310,7 @@ def _import_binding(alias: ast.alias) -> tuple[str, str]:
         ``(z, x.y)`` with an alias, else ``(x, x)``.
 
     """
-    if alias.asname:
+    if alias.asname is not None:
         return alias.asname, alias.name
     head = alias.name.split(".", 1)[0]
     return head, head
@@ -327,7 +327,7 @@ def _dotted(expr: ast.expr, bound: dict[str, str]) -> str | None:
         return bound.get(expr.id)
     if isinstance(expr, ast.Attribute):
         base = _dotted(expr.value, bound)
-        return f"{base}.{expr.attr}" if base else None
+        return f"{base}.{expr.attr}" if base not in {None, ""} else None
     return None
 
 

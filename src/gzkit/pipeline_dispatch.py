@@ -53,7 +53,7 @@ def _persona_frame(project_root: Path, role: str) -> list[str]:
     if stem is None:
         return []
     body = load_persona(project_root, stem)
-    if not body:
+    if body in {None, ""}:
         return []
     return ["### Persona", "", body.strip(), ""]
 

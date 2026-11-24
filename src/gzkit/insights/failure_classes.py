@@ -111,7 +111,7 @@ class RecurrenceChain(BaseModel):
 
 def extract_class_statement(body: str | None) -> str | None:
     """Return the normalized ``## Class of failure`` prose, or None when absent."""
-    if not body:
+    if body in {None, ""}:
         return None
     found = _SECTION.search(body)
     if found is None:

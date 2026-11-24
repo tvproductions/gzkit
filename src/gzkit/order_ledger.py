@@ -305,7 +305,7 @@ def _check_entry(
             f"{entry.req} is {where}; order {order.id} freezes only the repair REQs held "
             f"on its package {order.work_package} (RP-12 rulings 2 and 45)."
         )
-    if holder := holders.get(entry.req):
+    if (holder := holders.get(entry.req)) not in {None, ""}:
         _refuse(
             f"{entry.req} is in the frozen baseline of live order {holder}; a repair REQ "
             "sits in one live order's baseline at a time, until that order is stopped or "
@@ -329,7 +329,7 @@ def _check_frozen(catalog: Catalog, ledger: Ledger, order: Order, move: OrderMov
     delivered = set(package_held_reqs(ledger, order.work_package))
     successors: dict[str, list[str]] = {}
     for req in catalog.reqs:
-        if req.supersedes:
+        if req.supersedes not in {None, ""}:
             successors.setdefault(req.supersedes, []).append(req.id)
     for entry in move.baseline:
         _check_entry(held, holders, order, entry)
@@ -348,7 +348,7 @@ def _check_frozen(catalog: Catalog, ledger: Ledger, order: Order, move: OrderMov
 
 def _check_not_superseded(successors: dict[str, list[str]], req: str) -> None:
     """Refuse freezing a superseded REQ, naming every REQ to freeze instead (85, 87)."""
-    if not (later := successors.get(req)):
+    if (later := successors.get(req)) is None:
         return
     heads = _chain_heads(successors, req)
     instead = (
@@ -382,7 +382,7 @@ def _chain_heads(successors: dict[str, list[str]], req: str) -> list[str]:
         if current in seen:
             continue
         seen.add(current)
-        if later := successors.get(current):
+        if (later := successors.get(current)) is not None:
             pending.extend(later)
         else:
             heads.append(current)
@@ -424,7 +424,7 @@ def _check_decision_fields(move: OrderMove) -> None:
     if own is not None and not (getattr(move, own) or "").strip():
         _refuse(f"A {move.decision} carries {own.replace('_', '-')} (RP-12 ruling 73).")
     # Another decision's field is refused whenever it is given, blank or not.
-    given = {f for f in _DECISION_FIELD.values() if f and getattr(move, f) is not None}
+    given = {f for f in _DECISION_FIELD.values() if f is not None and getattr(move, f) is not None}
     if others := sorted(given - {own}):
         flags = ", ".join(f"--{f.replace('_', '-')}" for f in others)
         _refuse(f"A {move.decision} does not carry {flags} (RP-12 ruling 73).")
@@ -651,7 +651,7 @@ def carry_standing(ledger: Ledger, order_id: str) -> CarryStanding:
             for tag in hung
             if len(lines.get(tag, ())) == 1
         ),
-        uncarried=tuple(tag for tag in hung if not lines.get(tag)),
+        uncarried=tuple(tag for tag in hung if lines.get(tag) is None),
         doubled=tuple((tag, tuple(lines[tag])) for tag in hung if len(lines.get(tag, ())) > 1),
     )
 
@@ -711,7 +711,7 @@ def _check_accepted(ledger: Ledger, order: Order, move: OrderMove) -> None:
             f"Order {order.id}'s acceptance books whether it read ready, `acceptance_ready`, "
             "which its Gate 5 reads (RP-12 rulings 84 and 86)."
         )
-    if refusal := hung_tag_refusal(ledger, order):
+    if (refusal := hung_tag_refusal(ledger, order)) is not None:
         _refuse(refusal)
     if not move.acceptance_ready and not order_took_stopping_exit(ledger, order.id):
         _refuse(
@@ -813,7 +813,7 @@ def record_order_transition(
     if not move.evidence.strip():
         _refuse("A transition names what justifies it; evidence is empty.")
     current = order_state(ledger, order.id)
-    if refusal := order_move_refusal(ledger, order, move.to_state):
+    if (refusal := order_move_refusal(ledger, order, move.to_state)) is not None:
         _refuse(refusal)
     _check_move(catalog, ledger, order, move)
     event = OrderTransitionedEvent.model_validate(
@@ -831,7 +831,7 @@ def record_order_transition(
             ),
             # The attestor is an identity, stripped as the package writer strips it; the
             # operator's words are booked verbatim (AGENTS.md § Attestation).
-            "attestor": move.attestor.strip() if move.attestor else None,
+            "attestor": move.attestor.strip() if move.attestor not in {None, ""} else None,
         }
     )
     ledger.append(ledger_row(event))

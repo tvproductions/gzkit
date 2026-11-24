@@ -217,7 +217,7 @@ def _consume_ceremony_attestation(
         return None
     if state.current_step < int(CeremonyStep.ATTESTATION):
         return None
-    if not state.attestation:
+    if state.attestation in {None, ""}:
         return None
     attest_status, reason = _classify_attestation_verdict(state.attestation)
     return attest_status, reason, state.attestation
@@ -347,7 +347,7 @@ def _render_closeout_dry_run(
             f"  Version sync: would bump {current_ver} -> {adr_ver} "
             f"(pyproject.toml, __init__.py, README.md)"
         )
-    if defense_brief:
+    if defense_brief not in {None, ""}:
         console.print("\n  [bold]Defense Brief[/bold] (preview)")
         for line in defense_brief.splitlines():
             console.print(f"  {escape(line)}", markup=False)
@@ -588,7 +588,7 @@ def _complete_closeout_pipeline(
     machine = LifecycleStateMachine(ledger)
     for from_state, step_to in lifecycle_steps:
         machine.transition(adr_id, "ADR", from_state, step_to)
-    if catch_up_evidence and not as_json:
+    if catch_up_evidence not in {None, ""} and not as_json:
         console.print(
             f"  Recorded Accepted late: work started under {catch_up_evidence} before the "
             "work-start writer existed (GHI #1014)."

@@ -458,7 +458,7 @@ def _book_exit(
         "drift": [edge.target for edge in drift.drift],
         "routing": [directive.door.value for directive in routing],
     }
-    if extra:
+    if extra is not None:
         payload.update(extra)
     ledger.append(LedgerEvent(event="airlock_out", id=target, extra=payload))
 

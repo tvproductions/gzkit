@@ -212,7 +212,7 @@ def _module_file(name: str) -> str | None:
     except ImportError, ValueError:  # a prefix that is a class or function is not a module
         spec = None
     origin = None if spec is None else spec.origin
-    return origin if origin and origin.endswith(".py") else None
+    return origin if origin is not None and origin.endswith(".py") else None
 
 
 def _test_module_source(parts: list[str]) -> tuple[ast.AST, list[str]] | None:
@@ -220,7 +220,7 @@ def _test_module_source(parts: list[str]) -> tuple[ast.AST, list[str]] | None:
     candidates = (
         (_module_file(".".join(parts[:split])), split) for split in range(len(parts) - 1, 0, -1)
     )
-    found = next(((origin, split) for origin, split in candidates if origin), None)
+    found = next(((origin, split) for origin, split in candidates if origin is not None), None)
     if found is None:
         return None
     origin, split = found

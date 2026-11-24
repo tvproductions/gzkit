@@ -377,7 +377,7 @@ class TestHookHonoursIntrinsicAttestation(unittest.TestCase):
             target = Path(tmp) / "subject.py"
             target.write_text(source, encoding="utf-8")
             ledger = Path(tmp) / "ledger.jsonl"
-            if ledger_event_qualname:
+            if ledger_event_qualname not in {None, ""}:
                 Ledger(ledger).append(
                     intrinsic_complexity_attestation_event(
                         file_path=str(target),

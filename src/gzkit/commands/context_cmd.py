@@ -66,7 +66,7 @@ def _render_covering_tests(adr_stem: str, project_root: Path) -> str:
         if not req_id.startswith(covers_prefix):
             continue
         evidence = record.evidence_path
-        if not evidence:
+        if evidence in {None, ""}:
             continue
         rel = Path(evidence)
         with contextlib.suppress(ValueError):

@@ -461,7 +461,7 @@ def fetch(limit: int, label: str | None) -> list[Issue]:
         "--json",
         ISSUE_JSON_FIELDS,
     ]
-    if label:
+    if label not in {None, ""}:
         cmd += ["--label", label]
     raw = subprocess.run(  # noqa: S603 — gh issue list, a fixed argv; executable resolved
         [resolve_executable(cmd[0]), *cmd[1:]],
@@ -661,7 +661,7 @@ def rationale(
     body = issue.body or ""
     parts: list[str] = []
     stale = _stale_blocker_note(issue, blocker_resolver)
-    if stale:
+    if stale is not None:
         # First, not appended: a precondition that no longer holds changes
         # whether the rest of the rationale is worth reading at all.
         parts.append(stale)
@@ -989,11 +989,11 @@ def _detect_width() -> int:
 
     """
     env_explicit = os.environ.get("GHI_TRIAGE_WIDTH")
-    if env_explicit and env_explicit.isdigit():
+    if env_explicit is not None and env_explicit.isdigit():
         return int(env_explicit)
 
     env_cols = os.environ.get("COLUMNS")
-    if env_cols and env_cols.isdigit():
+    if env_cols is not None and env_cols.isdigit():
         return int(env_cols)
 
     if sys.stdout.isatty():

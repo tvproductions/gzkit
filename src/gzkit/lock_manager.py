@@ -134,10 +134,11 @@ def resolve_agent(agent_override: str | None = None) -> str:
     """
     if agent_override is not None:
         return agent_override
-    if os.environ.get("CLAUDECODE") or os.environ.get("CLAUDE_CODE"):
+    claudecode = os.environ.get("CLAUDECODE")
+    if claudecode not in {None, ""} or os.environ.get("CLAUDE_CODE") not in {None, ""}:
         sid = os.environ.get("CLAUDE_CODE_SESSION_ID") or os.environ.get("CLAUDE_SESSION_ID")
-        return f"claude-code-{sid[:8]}" if sid else "claude-code"
-    if os.environ.get("CODEX_SANDBOX"):
+        return f"claude-code-{sid[:8]}" if sid not in {None, ""} else "claude-code"
+    if os.environ.get("CODEX_SANDBOX") not in {None, ""}:
         return "codex"
     return f"unknown-{os.getpid()}"
 

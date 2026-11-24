@@ -45,7 +45,7 @@ def _write(
         lines.extend(f"  - {ref}" for ref in continues_from)
     lines.append("---")
     body = "\n".join(lines) + "\n\n## Immediate Next Steps\n\n1. Resume.\n"
-    if settled:
+    if settled is not None and len(settled) > 0:
         body += "\n## Settled Rulings\n\n" + "\n".join(f"- {s}" for s in settled) + "\n"
     path = directory / name
     path.write_text(body, encoding="utf-8", newline="\n")

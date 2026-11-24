@@ -334,7 +334,7 @@ def render_dispatch_channel(
         "produced receipted independent input.\nThis OBPI did NOT receive the "
         "two-stage independent review."
     )
-    if declaration:
+    if declaration is not None and len(declaration) > 0:
         return header + (
             "DISPATCH MODE: SINGLE-DRIVER DECLARED — knowingly run without the "
             f"mandated dispatch.\nReason: {declaration.get('reason', '(none given)')}\n"

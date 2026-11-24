@@ -202,7 +202,7 @@ def _supersession_cycles(catalog: Catalog) -> list[str]:
         One sentence per cycle, naming its REQs, empty when no chain cycles.
 
     """
-    earlier = {req.id: req.supersedes for req in catalog.reqs if req.supersedes}
+    earlier = {req.id: req.supersedes for req in catalog.reqs if req.supersedes is not None}
     cycles: set[tuple[str, ...]] = set()
     for start in earlier:
         path: list[str] = []
@@ -228,8 +228,8 @@ def _kind_breaches(package: WorkPackage, outcomes: frozenset[str]) -> list[str]:
 
     """
     if package.kind == "delivery":
-        breaches = [] if package.outcome else ["names no outcome"]
-        if package.outcome and package.outcome not in outcomes:
+        breaches = [] if package.outcome is not None else ["names no outcome"]
+        if package.outcome is not None and package.outcome not in outcomes:
             breaches.append(f"names outcome {package.outcome}, which the catalog does not hold")
         if package.issues or package.lane:
             breaches.append("holds an issue or a lane, which a delivery package derives")
@@ -237,7 +237,7 @@ def _kind_breaches(package: WorkPackage, outcomes: frozenset[str]) -> list[str]:
     breaches = [] if package.issues else ["names no issue"]
     if package.lane is None:
         breaches.append("stores no lane")
-    if package.outcome:
+    if package.outcome is not None:
         breaches.append("names an outcome, which a repair package has in place of none")
     return breaches
 

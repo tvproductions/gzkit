@@ -155,7 +155,7 @@ def scopes_reached_by_check(
                 seen.add(callee)
                 nxt.append(callee)
         frontier = nxt
-    if saw_bare and scopes:
+    if saw_bare and scopes is not None and len(scopes) > 0:
         reached |= {stem for stem, tier in scopes.items() if tier == "default"}
     return reached
 

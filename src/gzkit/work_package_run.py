@@ -906,7 +906,11 @@ def record_work_package_block(
     _check_blockable(catalog, ledger, package, order, paused_find=paused_find)
     if not request.reason.strip() or not request.next_action.strip():
         _refuse("A block names its reason and the decision the operator owes.")
-    baseline = order_baseline(ledger, order) if order else frozen_baseline(ledger, package.id)
+    baseline = (
+        order_baseline(ledger, order)
+        if order not in {None, ""}
+        else frozen_baseline(ledger, package.id)
+    )
     subjects = list(starmap(_req_subject, sorted(baseline.items())))
     counted = count_fix_cycles(_dispatch_rows(ledger))
     cycles = {subject: counted.get(subject, 0) for subject in subjects}
@@ -1078,9 +1082,10 @@ def record_work_package_unblock(
     if order is not None:
         _package_order(catalog, package, order)
     if not _held_by_block(ledger, package.id, order):
-        why = "RP-12 ruling 59" if order else "RP-14 specification ruling 13"
+        named = order not in {None, ""}
+        why = "RP-12 ruling 59" if named else "RP-14 specification ruling 13"
         _refuse(
-            f"{f'Order {order}' if order else f'Work package {package.id}'} is not blocked; an "
+            f"{f'Order {order}' if named else f'Work package {package.id}'} is not blocked; an "
             f"unblock records the operator's ruling on an open block ({why}). Read the run's "
             "position with `uv run gz wp runs`."
         )

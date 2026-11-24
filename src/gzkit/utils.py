@@ -98,7 +98,7 @@ def capture_validation_anchor_with_warnings(
     warnings: list[str] = []
 
     head_commit = resolve_git_head_commit(project_root)
-    if not head_commit:
+    if head_commit in {None, ""}:
         warnings.append("Could not resolve HEAD commit for receipt anchor.")
 
     tag_value: str | None = None
@@ -109,7 +109,7 @@ def capture_validation_anchor_with_warnings(
         warnings.append(err_tag)
 
     semver_value: str | None = None
-    if adr_id:
+    if adr_id not in {None, ""}:
         semver_match = re.search(r"\d+\.\d+\.\d+", adr_id)
         if semver_match:
             semver_value = semver_match.group(0)

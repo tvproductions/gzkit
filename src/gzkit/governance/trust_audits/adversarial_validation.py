@@ -191,7 +191,7 @@ def _audit_ledger_coherence(
         if entry is None or entry[1] != "heavy":
             continue
         events = verdicts.get(obpi_id)
-        if not events:
+        if events is None or len(events) == 0:
             errors.append(
                 ValidationError(
                     type=_ERR_TYPE,

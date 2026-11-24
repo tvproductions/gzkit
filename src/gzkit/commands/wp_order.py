@@ -284,9 +284,12 @@ def wp_order_transition_cmd(
     _booked_lost(catalog, ledger)
     order = _order(catalog, str(fields["order"]))
     package = _package(catalog, order.work_package)
-    if refusal := order_move_refusal(ledger, order, to_state):
+    if (refusal := order_move_refusal(ledger, order, to_state)) not in {None, ""}:
         _refuse_move(to_state, refusal)
-    if to_state == "frozen" and (refusal := freeze_refusal(root, package, ledger)):
+    if to_state == "frozen" and (refusal := freeze_refusal(root, package, ledger)) not in {
+        None,
+        "",
+    }:
         _refuse_move(to_state, f"{refusal} An order's freeze seals it (RP-12 ruling 56).")
     entries = [_baseline_entry(to_state, entry) for entry in baseline or ()]
     move = OrderMove.model_validate({**fields, **({"baseline": entries} if entries else {})})
@@ -307,7 +310,7 @@ def _emit_move(event: OrderTransitionedEvent, crossed: str | None, *, as_json: b
         # Ruling 171: acceptance names each carry; its Gate 5 then takes a pause alone.
         for carry in event.carried:
             fmt.emit(f"  carried: {carry.tag_id} on {carry.discrepancy_id} (Gate 5: pause alone)")
-    if crossed and not as_json:
+    if crossed not in {None, ""} and not as_json:
         fmt.emit(f"  {crossed}")
 
 
@@ -373,15 +376,15 @@ def wp_order_accept_cmd(*, order_id: str, evidence: str, as_json: bool) -> None:
     _booked_lost(catalog, ledger)
     order = _order(catalog, order_id)
     package = _package(catalog, order.work_package)
-    if refusal := order_move_refusal(ledger, order, "accepted"):
+    if (refusal := order_move_refusal(ledger, order, "accepted")) not in {None, ""}:
         _refuse_move("accepted", refusal)
     refusal = round_bound_refusal(root, order.id)
     blockers = [
         *acceptance_blockers(root, order.id, dispatch_scope=dispatch_validator_scope),
-        *([refusal] if refusal else []),
+        *([refusal] if refusal not in {None, ""} else []),
     ]
     # Ruling 88: the footprint is read on every order, beside any other blocker.
-    if outside := footprint_refusal(root, package, ledger):
+    if (outside := footprint_refusal(root, package, ledger)) not in {None, ""}:
         blockers.append(outside)
     # Ruling 84: a stopped order is excused its blockers, so none is named as refusing it,
     # but whether it read ready is booked.
@@ -392,8 +395,10 @@ def wp_order_accept_cmd(*, order_id: str, evidence: str, as_json: bool) -> None:
         # Refusal 6 and rulings 142, 171 and 186: a hung tag neither cleared nor carried by
         # one open due-by line holds every order, a stopped one included; a tag or line row
         # the leaf readers cannot read is refused with its void (rulings 141 and 184).
-        if (hung := hung_tag_refusal(ledger, order)) or refusing:
-            raise PolicyBreachError("\n".join([*refusing, *([hung] if hung else [])]))
+        if (hung := hung_tag_refusal(ledger, order)) not in {None, ""} or refusing:
+            raise PolicyBreachError(
+                "\n".join([*refusing, *([hung] if hung not in {None, ""} else [])])
+            )
         event = record_order_transition(catalog, ledger, move)
     except (OrderLedgerError, TagOutError, DiscrepancyError) as exc:
         _refuse_move("accepted", str(exc))
@@ -432,7 +437,7 @@ def wp_order_close_cmd(
     ledger = Ledger(root / config.paths.ledger)
     _booked_lost(catalog, ledger)
     order = _order(catalog, str(fields["order"]))
-    if refusal := order_move_refusal(ledger, order, "closed"):
+    if (refusal := order_move_refusal(ledger, order, "closed")) not in {None, ""}:
         _refuse_move("closed", refusal)
     move = OrderMove.model_validate({**fields, "to_state": "closed"})
     try:

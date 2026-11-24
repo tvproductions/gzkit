@@ -164,7 +164,7 @@ def _gather_matching_rules(
 
 
 def _infer_anchor_surface_paths(anchor: AnchorRef, project_root: Path) -> tuple[str, ...]:
-    if anchor.kind == "obpi" and anchor.source_path:
+    if anchor.kind == "obpi" and anchor.source_path not in {None, ""}:
         brief_path = Path(anchor.source_path)
         try:
             content = brief_path.read_text(encoding="utf-8")

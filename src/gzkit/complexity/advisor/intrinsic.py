@@ -81,7 +81,7 @@ def decorator_attestation(node: ast.AST) -> Attestation | None:
             continue
         kwargs = {kw.arg: kw.value for kw in decorator.keywords}
         reason, attestor = _literal(kwargs.get("reason")), _literal(kwargs.get("attestor"))
-        if reason and attestor:
+        if reason is not None and attestor is not None:
             return reason, attestor, date.today().isoformat()
     return None
 

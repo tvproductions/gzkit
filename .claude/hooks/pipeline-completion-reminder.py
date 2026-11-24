@@ -56,7 +56,7 @@ def main() -> None:
         sys.exit(0)
 
     marker = find_active_pipeline_marker(plans_dir)
-    if not marker:
+    if marker is None or len(marker) == 0:
         sys.exit(0)
 
     obpi_id = marker.get("obpi_id", "")
@@ -71,7 +71,7 @@ def main() -> None:
         marker,
         brief_status=extract_brief_status(brief_path),
     )
-    if not message:
+    if message in {None, ""}:
         sys.exit(0)
 
     print(message, file=sys.stderr)

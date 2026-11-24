@@ -136,7 +136,7 @@ def _ghi_triage_chat_silence_script() -> str:
 
             def main() -> int:
                 payload = _load_input()
-                if not payload:
+                if payload is None or len(payload) == 0:
                     return 0
                 if payload.get("tool_name") != "Bash":
                     return 0

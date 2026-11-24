@@ -773,7 +773,10 @@ def _read_statement(
     # A group that ended by backgrounding a verifier reports the launch, so ANY
     # later statement replaces a status no read can recover (`(false &); echo "$?"`
     # prints 0).
-    launched = next((reading.backgrounded for reading in readings if reading.backgrounded), None)
+    launched = next(
+        (reading.backgrounded for reading in readings if reading.backgrounded not in {None, ""}),
+        None,
+    )
     if launched is not None and any(rest):
         return _ListReading(
             masked=(launched, "background"), pipefail=pipefail_active, errexit=errexit_active

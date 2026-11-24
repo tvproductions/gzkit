@@ -328,7 +328,8 @@ def _resolve_demote_source(
             f"{sorted(_DEMOTABLE_KINDS)} kinds are demotable."
         )
         raise GzCliError(msg)
-    if not metadata.get("semver"):
+    semver = metadata.get("semver")
+    if semver in {None, ""}:
         msg = f"ADR {resolved_id} is missing semver in frontmatter; cannot demote."
         raise GzCliError(msg)
     return adr_file, resolved_id, metadata, content
@@ -405,9 +406,9 @@ def _build_demote_plan(
     }
     if collision_keep_pool:
         extras["collision_resolution"] = "keep-pool"
-    if operator:
+    if operator not in {None, ""}:
         extras["operator"] = operator
-    if note:
+    if note not in {None, ""}:
         extras["note"] = note
     return {
         "source_file": source_file,

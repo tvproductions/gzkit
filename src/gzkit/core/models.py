@@ -660,8 +660,11 @@ def _translate_pydantic_errors(
                 }
             )
         elif err_type == "literal_error":
-            allowed = _literal_values(model_cls, field) if field else None
-            value = frontmatter.get(field, "") if field else ""
+            allowed, value = (
+                (_literal_values(model_cls, field), frontmatter.get(field, ""))
+                if field not in {None, ""}
+                else (None, "")
+            )
             results.append(
                 {
                     "type": "frontmatter",

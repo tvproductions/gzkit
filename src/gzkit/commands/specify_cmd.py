@@ -430,7 +430,7 @@ def _build_item_requirements(
 def _extract_denied_paths(adr_content: str) -> str:
     """Extract Non-Goals from ADR as denied path seeds."""
     section = extract_markdown_section(adr_content, "Non-Goals")
-    if not section:
+    if section in {None, ""}:
         return "- Paths not listed in Allowed Paths\n- New dependencies\n- CI files, lockfiles"
 
     lines: list[str] = []
@@ -858,7 +858,9 @@ def _print_specify_dry_run(
     """Render dry-run output for `gz specify`."""
     console.print("[yellow]Dry run:[/yellow] no files will be written.")
     console.print(f"  Would create OBPI: {obpi_file}")
-    lane_source = "CLI override" if lane else "WBS table" if wbs_rows else "default"
+    lane_source = (
+        "CLI override" if lane not in {None, ""} else "WBS table" if wbs_rows else "default"
+    )
     console.print(f"  Lane: {resolved_lane} (source: {lane_source})")
     console.print(f"  Objective: {objective}")
     if author:
@@ -900,7 +902,9 @@ def _print_specify_success(
 ) -> None:
     """Render success output for `gz specify`."""
     console.print(f"Created OBPI: {obpi_file}")
-    lane_source = "CLI override" if lane else "WBS table" if wbs_rows else "default"
+    lane_source = (
+        "CLI override" if lane not in {None, ""} else "WBS table" if wbs_rows else "default"
+    )
     console.print(f"  Lane: {resolved_lane} (source: {lane_source})")
     console.print(f"  Objective: {objective}")
     placeholders = _detect_placeholder_remnants(content)

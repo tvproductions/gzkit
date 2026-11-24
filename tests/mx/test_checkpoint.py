@@ -141,7 +141,7 @@ class TestValidateCmdWiring(unittest.TestCase):
             if isinstance(node, ast.ImportFrom):
                 # Matches both `from gzkit.mx import checkpoint` (names) and
                 # `from gzkit.mx.checkpoint import ...` (module).
-                if node.module and "checkpoint" in node.module:
+                if node.module is not None and "checkpoint" in node.module:
                     imports_checkpoint = True
                     break
                 if any("checkpoint" in alias.name for alias in node.names):

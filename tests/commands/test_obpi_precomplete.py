@@ -815,7 +815,11 @@ class TestPrecompleteTaskEnvelopeCoherence(unittest.TestCase):
         brief_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-0.0.64-fixture" / "obpis"
         brief_dir.mkdir(parents=True, exist_ok=True)
         path = brief_dir / "OBPI-0.0.64-04-fixture.md"
-        atomic_line = f"req_atomic:\n  - {req_atomic[0]}\n" if req_atomic else ""
+        atomic_line = (
+            f"req_atomic:\n  - {req_atomic[0]}\n"
+            if req_atomic is not None and len(req_atomic) > 0
+            else ""
+        )
         path.write_text(
             f"---\nid: OBPI-0.0.64-04\nparent: ADR-0.0.64-fixture\nstatus: pending\n"
             f"lane: Heavy\n{atomic_line}---\n\n# Fixture\n",

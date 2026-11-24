@@ -33,7 +33,7 @@ def _claude_home() -> Path:
 
     """
     override = os.environ.get("GZKIT_CLAUDE_HOME")
-    if override:
+    if override not in {None, ""}:
         return Path(override)
     return Path.home()
 
@@ -86,7 +86,7 @@ def _obpi_short_form(obpi_id: str) -> str:
 def pipeline_command(obpi_id: str, start_from: str | None = None) -> str:
     """Return the canonical runtime command for the target OBPI."""
     command = f"uv run gz obpi pipeline {obpi_id}"
-    if start_from:
+    if start_from not in {None, ""}:
         return f"{command} --from={start_from}"
     return command
 
@@ -970,7 +970,7 @@ def pipeline_completion_reminder_message(
         lines.append(f"  - {required_human_action}")
         lines.append("")
 
-    if next_command:
+    if next_command not in {None, ""}:
         lines.append("Next canonical command:")
         lines.append(f"  {next_command}")
     else:

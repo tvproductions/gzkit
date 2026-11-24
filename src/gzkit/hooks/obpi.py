@@ -85,7 +85,7 @@ def section_body(content: str, heading: str) -> str | None:
 def extract_allowed_paths(content: str) -> list[str]:
     """Extract normalized allowlist patterns from an OBPI brief."""
     section = section_body(content, "Allowed Paths")
-    if not section:
+    if section is None:
         return []
 
     patterns: list[str] = []
@@ -395,7 +395,7 @@ class ObpiValidator:
 
         # 1. Resolve Lane Inheritance
         parent_id = parse_frontmatter_value(content, "parent")
-        if not parent_id:
+        if parent_id in {None, ""}:
             errors.append("Missing 'parent' ADR in frontmatter.")
             return errors
 
@@ -408,7 +408,9 @@ class ObpiValidator:
         # ADR-0.0.71 (its deliverables are already committed; the live tree
         # carries only post-repudiation governance churn).
         obpi_id = parse_frontmatter_value(content, "id")
-        obpi_info = graph.get(self.ledger.canonicalize_id(obpi_id), {}) if obpi_id else {}
+        obpi_info = (
+            graph.get(self.ledger.canonicalize_id(obpi_id), {}) if obpi_id not in {None, ""} else {}
+        )
         use_sealed = _should_use_sealed_scope(obpi_info)
 
         allowlist = extract_allowed_paths(content)
@@ -418,7 +420,9 @@ class ObpiValidator:
             if use_sealed:
                 completion_evidence = obpi_info.get("latest_completion_evidence") or {}
                 scope_audit = normalize_scope_audit(completion_evidence.get("scope_audit"))
-                changed_files = scope_audit.get("changed_files", []) if scope_audit else []
+                changed_files = (
+                    scope_audit.get("changed_files", []) if scope_audit is not None else []
+                )
             else:
                 changed_files = collect_changed_files(self.project_root)
             own_paths = brief_record_paths(self.project_root, brief_path) if brief_path else []
@@ -667,7 +671,7 @@ class ObpiValidator:
         if start == -1:
             return ""
         remainder = body[start + len(start_label) :]
-        if end_label:
+        if end_label not in {None, ""}:
             end = remainder.find(end_label)
             if end != -1:
                 return remainder[:end]

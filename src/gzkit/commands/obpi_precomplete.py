@@ -321,7 +321,7 @@ def _check_stage2_dispatch(project_root: Path, obpi_id: str) -> CheckResult:
     declaration = single_driver_declaration(project_root, obpi_id)
     rendered = render_dispatch_channel(channel, declaration=declaration)
 
-    if not is_single_driver(channel) or declaration:
+    if not is_single_driver(channel) or declaration not in (None, {}):
         return CheckResult(name="stage2_dispatch", ok=True, message=rendered)
     return CheckResult(
         name="stage2_dispatch",
@@ -893,7 +893,7 @@ def _render_human_report(obpi_id: str, checks: list[CheckResult]) -> None:
     for check in checks:
         marker = "[green]✓[/green]" if check.ok else "[red]✗[/red]"
         console.print(f"  {marker} {check.name}: {escape(check.message)}")
-        if not check.ok and check.remediation:
+        if not check.ok and check.remediation not in {None, ""}:
             console.print(f"      [dim]→ {check.remediation}[/dim]")
     failed = [c for c in checks if not c.ok]
     console.print()

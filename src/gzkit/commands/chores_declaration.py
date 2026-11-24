@@ -124,7 +124,7 @@ class ChoreStaleness(BaseModel):
         if self.signal == "elapsed-time" and self.period_days is None:
             msg = "periodDays is required when signal is elapsed-time"
             raise ValueError(msg)
-        if self.signal == "content-delta" and not self.surfaces:
+        if self.signal == "content-delta" and (self.surfaces is None or len(self.surfaces) == 0):
             msg = "surfaces is required when signal is content-delta (GHI #936)"
             raise ValueError(msg)
         if self.signal != "content-delta" and self.surfaces is not None:

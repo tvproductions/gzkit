@@ -263,7 +263,7 @@ def _attestation_gate_snapshot(
 def _canonical_attestation_term(attest_status: str, reason: str | None = None) -> str:
     """Render canonical attestation term from stable CLI status token."""
     base = Ledger.canonical_attestation_term(attest_status) or attest_status
-    if attest_status in {"partial", "dropped"} and reason:
+    if attest_status in {"partial", "dropped"} and reason not in {None, ""}:
         return f"{base}: {reason}"
     return base
 
@@ -354,12 +354,12 @@ def resolve_adr_ledger_id(
     """
     graph = ledger.get_artifact_graph()
     info = graph.get(adr_id)
-    if info and info.get("type") == "adr":
+    if info is not None and info.get("type") == "adr":
         return adr_id
     stem_id = adr_file.stem
     if stem_id != adr_id:
         stem_info = graph.get(stem_id)
-        if stem_info and stem_info.get("type") == "adr":
+        if stem_info is not None and stem_info.get("type") == "adr":
             return stem_id
     return adr_id
 
@@ -476,7 +476,7 @@ def resolve_obpi(
             canonical_obpi = candidates[0]
             info = graph.get(canonical_obpi)
 
-    if info and info.get("type") != "obpi":
+    if info is not None and len(info) > 0 and info.get("type") != "obpi":
         msg = f"OBPI not found in ledger: {canonical_obpi}"
         raise GzCliError(msg)
 
@@ -492,7 +492,7 @@ def resolve_obpi(
         # symmetrically so the comparison succeeds.
         if file_canonical != canonical_obpi:
             expanded_file = _prefix_match_obpi(graph, file_canonical)
-            if expanded_file:
+            if expanded_file not in {None, ""}:
                 file_canonical = expanded_file
         if file_canonical == canonical_obpi:
             matches.append(obpi_file)
@@ -502,7 +502,7 @@ def resolve_obpi(
         msg = f"Multiple OBPI files found for {canonical_obpi}: {rels}"
         raise GzCliError(msg)
 
-    if info and info.get("type") == "obpi":
+    if info is not None and info.get("type") == "obpi":
         return canonical_obpi, matches[0] if matches else None
     if matches:
         return canonical_obpi, matches[0]
@@ -748,7 +748,7 @@ def compute_defense_brief(
     closing_args: dict[str, str] = {}
     for obpi_id, brief_path in sorted(obpi_files.items()):
         arg = extract_closing_argument(brief_path.read_text(encoding="utf-8"))
-        if arg:
+        if arg not in {None, ""}:
             closing_args[obpi_id] = arg
     reviews = gather_reviewer_assessments(adr_package_dir)
     return render_defense_brief_section(closing_args, proof_result, reviews)

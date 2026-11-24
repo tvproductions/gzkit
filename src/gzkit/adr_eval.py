@@ -370,6 +370,25 @@ def _render_dispatch_section(dispatch: list[PersonaDispatchRecord]) -> list[str]
     return lines
 
 
+def _render_red_team_section(red_team_results: list[RedTeamChallengeResult] | None) -> list[str]:
+    """Render the red-team challenge table; nothing when no challenge was run."""
+    if red_team_results is None or len(red_team_results) == 0:
+        return []
+    lines = [
+        "",
+        "--- Red-Team Challenges ---",
+        "",
+        "| # | Challenge | Result | Notes |",
+        "|---|-----------|--------|-------|",
+    ]
+    for rt in red_team_results:
+        status = "Pass" if rt.passed else "FAIL"
+        lines.append(f"| {rt.challenge_number} | {rt.challenge_name} | {status} | {rt.notes} |")
+    failures = sum(1 for r in red_team_results if not r.passed)
+    lines.append(f"\nRED-TEAM THRESHOLD: {failures} failures (<=2=GO, 3-4=CONDITIONAL, >=5=NO GO)")
+    return lines
+
+
 def render_scorecard_markdown(result: AdrEvalResult) -> str:
     """Render an AdrEvalResult as EVALUATION_SCORECARD.md content."""
     lines = [
@@ -423,23 +442,7 @@ def render_scorecard_markdown(result: AdrEvalResult) -> str:
         ]
     )
 
-    if result.red_team_results:
-        lines.extend(
-            [
-                "",
-                "--- Red-Team Challenges ---",
-                "",
-                "| # | Challenge | Result | Notes |",
-                "|---|-----------|--------|-------|",
-            ]
-        )
-        for rt in result.red_team_results:
-            status = "Pass" if rt.passed else "FAIL"
-            lines.append(f"| {rt.challenge_number} | {rt.challenge_name} | {status} | {rt.notes} |")
-        failures = sum(1 for r in result.red_team_results if not r.passed)
-        lines.append(
-            f"\nRED-TEAM THRESHOLD: {failures} failures (<=2=GO, 3-4=CONDITIONAL, >=5=NO GO)"
-        )
+    lines.extend(_render_red_team_section(result.red_team_results))
 
     lines.extend(
         [

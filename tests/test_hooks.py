@@ -105,7 +105,7 @@ def _run_hook_inprocess(
     old_stdin = sys.stdin
     old_cwd = os.getcwd() if chdir_to else None
     old_env: dict[str, str | None] = {}
-    if env_overrides:
+    if env_overrides is not None and len(env_overrides) > 0:
         for key, value in env_overrides.items():
             old_env[key] = os.environ.get(key)
             os.environ[key] = value

@@ -1039,7 +1039,11 @@ class TestValidateLedger(unittest.TestCase):
             f.flush()
             errors = validate_ledger(Path(f.name))
             self.assertTrue(
-                any("req_proof_inputs" in error.field for error in errors if error.field)
+                any(
+                    "req_proof_inputs" in error.field
+                    for error in errors
+                    if error.field not in {None, ""}
+                )
             )
 
     def test_invalid_obpi_req_proof_optional_fields_rejected(self) -> None:

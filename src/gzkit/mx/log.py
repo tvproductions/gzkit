@@ -179,7 +179,11 @@ def _git_commits_since(root: Path, since_ts: str, until_ts: str | None) -> list[
         One fix entry per commit in the window, newest first.
 
     """
-    selection = ["--since", since_ts, *(["--until", until_ts] if until_ts else [])]
+    selection = [
+        "--since",
+        since_ts,
+        *(["--until", until_ts] if until_ts not in {None, ""} else []),
+    ]
     fixes: list[FixEntry] = []
     for sha, subject, body in git_log(root, selection, ("%s", "%B")):
         named = parse_artifacts(body)
@@ -257,7 +261,7 @@ def assemble_window(root: Path, session_id: str) -> MxLog:
         ts = str(ev.get("ts", ""))
         if opened_at and ts < opened_at:
             continue
-        if closed_at and ts > closed_at:
+        if closed_at not in {None, ""} and ts > closed_at:
             continue
         kind = ev.get("event")
         if isinstance(kind, str):
@@ -437,6 +441,6 @@ def assemble_and_render(root: Path, session_id: str) -> str:
 
     """
     window = assemble_window(root, session_id)
-    if window.commits_unread:
+    if window.commits_unread not in {None, ""}:
         raise CommitsUnreadableError(window.commits_unread)
     return render(window)

@@ -35,7 +35,7 @@ def receipts_root(
 
     """
     override = os.environ.get(_ENV_OVERRIDE)
-    if override:
+    if override not in {None, ""}:
         root = Path(override)
     else:
         cfg = config if config is not None else GzkitConfig.load()

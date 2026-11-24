@@ -107,7 +107,7 @@ def record_outcome_transition(
             "from_state": current,
             "to_state": to_state,
             "evidence": evidence.strip(),
-            "attestor": attestor.strip() if attestor else None,
+            "attestor": attestor.strip() if attestor not in {None, ""} else None,
         }
     )
     ledger.append(ledger_row(event))

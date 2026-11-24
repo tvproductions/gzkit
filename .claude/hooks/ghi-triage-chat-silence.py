@@ -110,7 +110,7 @@ def find_violation_pairs(text: str) -> list[tuple[str, str]]:
 
 def main() -> int:
     payload = _load_input()
-    if not payload:
+    if payload is None or len(payload) == 0:
         return 0
     if payload.get("tool_name") != "Bash":
         return 0

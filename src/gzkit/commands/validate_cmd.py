@@ -90,7 +90,7 @@ def _delivery_arm_enabled() -> bool:
         True unless the ``CI`` environment variable is set.
 
     """
-    return not os.environ.get("CI")
+    return os.environ.get("CI") in {None, ""}
 
 
 def _ta() -> ModuleType:
@@ -893,7 +893,9 @@ def _run_unscoped_rules_scope(project_root: Path, *, as_json: bool, allowlist_on
     for v in result.violations:
         if v.allowlisted:
             continue
-        detected = f" (detected: {v.detected_value!r})" if v.detected_value else ""
+        detected = (
+            f" (detected: {v.detected_value!r})" if v.detected_value not in {None, ""} else ""
+        )
         console.print(f"   [red]→[/red] \\[{escape(v.reason)}] {v.file}{detected}")
     console.print(
         "\nRecovery: narrow `paths:` to a concrete glob, fold the content into "
@@ -1024,7 +1026,9 @@ def _unscoped_rules_runner(project_root: Path) -> list[ValidationError]:
     for v in result.violations:
         if v.allowlisted:
             continue
-        detected = f" (detected: {v.detected_value!r})" if v.detected_value else ""
+        detected = (
+            f" (detected: {v.detected_value!r})" if v.detected_value not in {None, ""} else ""
+        )
         errors.append(
             ValidationError(
                 type="unscoped-rules",
@@ -1038,6 +1042,11 @@ def _unscoped_rules_runner(project_root: Path) -> list[ValidationError]:
             )
         )
     return errors
+
+
+def _requested_scopes(scopes: dict[str, bool]) -> set[str]:
+    """Return the scopes whose flag is set."""
+    return {scope for scope, wanted in scopes.items() if wanted}
 
 
 def _run_scope_checks(
@@ -1069,11 +1078,13 @@ def _run_scope_checks(
     default_runners = _default_scope_runners(project_root, frontmatter_adr)
     explicit_runners = _explicit_scope_runners(project_root)
 
+    requested_default = _requested_scopes(default_scopes)
+    requested_explicit = _requested_scopes(explicit_scopes)
     for scope, runner in default_runners.items():
-        if (run_all and scope in default_scopes) or default_scopes.get(scope):
+        if (run_all and scope in default_scopes) or scope in requested_default:
             _route(scope, runner())
     for scope, runner in explicit_runners.items():
-        if explicit_scopes.get(scope):
+        if scope in requested_explicit:
             _route(scope, runner())
     return errors
 
@@ -1257,8 +1268,10 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
     opt_in_scopes = [e.stem for e in VALIDATOR_REGISTRY if e.tier == "explicit"]
 
     run_all = not any(checks.get(s, False) for s in run_all_scopes + opt_in_scopes)
-    scopes = [s for s in run_all_scopes if run_all or checks.get(s)]
-    scopes += [s for s in opt_in_scopes if checks.get(s)]
+    scopes = [
+        s for s in run_all_scopes if run_all or ((flag := checks.get(s)) is not None and flag)
+    ]
+    scopes += [s for s in opt_in_scopes if (flag := checks.get(s)) is not None and flag]
     return scopes
 
 
@@ -1359,7 +1372,7 @@ def _print_validation_result(
     for error in errors:
         console.print(f"   [red]→[/red] \\[{error.type}] {escape(error.artifact)}")
         console.print(f"    {escape(error.message)}")
-        if error.field:
+        if error.field not in {None, ""}:
             console.print(f"    Field: {escape(error.field)}")
         console.print()
 
@@ -1580,7 +1593,7 @@ def _dispatch_early_return_scopes(
     if check_sensitivity:
         _run_sensitivity_scope(project_root, as_json=as_json, explain=sensitivity_explain)
         return True
-    if sensitivity_explain:
+    if sensitivity_explain not in {None, ""}:
         # `--explain` without `--sensitivity` is the explain-only fast-path.
         _run_sensitivity_scope(project_root, as_json=as_json, explain=sensitivity_explain)
         return True
@@ -1766,7 +1779,7 @@ def validate(
         )
 
     # --explain implies --frontmatter and scope (must precede _other_scopes_active).
-    if frontmatter_explain:
+    if frontmatter_explain not in {None, ""}:
         check_frontmatter = True
         frontmatter_adr = frontmatter_explain
 
@@ -1928,7 +1941,7 @@ def validate(
     scopes = _resolve_scopes(checks)
     frontmatter_only = scopes == ["frontmatter"]
 
-    if frontmatter_explain:
+    if frontmatter_explain not in {None, ""}:
         _render_frontmatter_explain(errors, frontmatter_explain)
         if any(e.type == "frontmatter" for e in errors):
             raise SystemExit(3)

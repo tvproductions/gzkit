@@ -30,7 +30,7 @@ from gzkit.rules import NESTED_SURFACE_NAMES
 
 def _gzkit_project_root() -> Path:
     env = os.environ.get("GZKIT_PROJECT_ROOT")
-    if env:
+    if env not in {None, ""}:
         return Path(env).resolve()
     # features/steps/distribution_invariant_steps.py -> parents[2] is gzkit root
     return Path(__file__).resolve().parents[2]

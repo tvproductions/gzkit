@@ -182,7 +182,7 @@ def _pipeline_verification_commands(
         behave_cmd = _pipeline_behave_command(behave_tags)
         if behave_cmd is not None:
             commands.append(behave_cmd)
-    if obpi_id:
+    if obpi_id not in {None, ""}:
         commands.append(f"uv run gz obpi precomplete {obpi_id}")
 
     deduped: list[str] = []
@@ -233,7 +233,7 @@ def _print_pipeline_header(
     console.print("  Stages: " + " -> ".join(stage_labels))
     console.print(f"  Marker: {per_obpi_marker.relative_to(project_root).as_posix()}")
     console.print(f"  Legacy Marker: {legacy_marker.relative_to(project_root).as_posix()}")
-    if receipt and receipt.get("plan_file"):
+    if receipt is not None and receipt.get("plan_file"):
         console.print(f"  Plan File: {receipt['plan_file']}")
     for warning in warnings:
         console.print(f"  Warning: {escape(warning)}")
@@ -378,7 +378,7 @@ def _run_pipeline_ceremony_stage(
         console.print("Record the independent review before requesting human attestation.")
         return
 
-    if verification_results:
+    if verification_results not in (None, []):
         console.print("")
         console.print("Verification evidence:")
         for command, passed, detail in verification_results:
@@ -407,7 +407,7 @@ def _run_pipeline_ceremony_stage(
 
     effective_attestor = attestor or "agent:pipeline-autoclose"
     effective_evidence = evidence_json
-    if not effective_evidence:
+    if effective_evidence in {None, ""}:
         objective = extract_markdown_section(obpi_content, "Objective") or obpi_id
         passed_commands = [cmd for cmd, passed, _ in (verification_results or []) if passed]
         key_proof = "All verification checks passed: " + ", ".join(passed_commands)

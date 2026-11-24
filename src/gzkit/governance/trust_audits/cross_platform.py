@@ -464,7 +464,7 @@ def _subprocess_func_name(node: ast.Call) -> str | None:
 
 
 def _call_kwargs(node: ast.Call) -> dict[str, ast.expr]:
-    return {kw.arg: kw.value for kw in node.keywords if kw.arg}
+    return {kw.arg: kw.value for kw in node.keywords if kw.arg is not None}
 
 
 def _is_truthy_constant(value: ast.expr) -> bool:

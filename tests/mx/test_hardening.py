@@ -328,7 +328,9 @@ class TestDebtAgesPerContract(unittest.TestCase):
 
         cycle = _BASE + timedelta(hours=20)
         second = (
-            _opened_under("s2", cycle, second_contract) if second_contract else _opened("s2", cycle)
+            _opened_under("s2", cycle, second_contract)
+            if second_contract not in {None, ""}
+            else _opened("s2", cycle)
         )
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

@@ -176,7 +176,7 @@ def _pipeline_gate_script() -> str:
 
             def _refuse_if(refusal: str | None) -> None:
                 \"\"\"Exit 2 with a fence's refusal on stderr, when there is one.\"\"\"
-                if refusal:
+                if refusal not in {None, ""}:
                     sys.stderr.write(refusal + "\\n")
                     sys.exit(2)
 
@@ -324,7 +324,7 @@ def _pipeline_gate_script() -> str:
                     brief_path = find_obpi_brief(docs_root, obpi_id)
                     if brief_path is not None:
                         brief_status = extract_brief_status(brief_path)
-                        if brief_status and brief_status.lower() == "completed":
+                        if brief_status is not None and brief_status.lower() == "completed":
                             continue
 
                         # Scope enforcement to the OBPI's allowed paths.

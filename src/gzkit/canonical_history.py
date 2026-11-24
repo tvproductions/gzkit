@@ -81,11 +81,13 @@ def delivered_variants(shipped: dict[str, bytes]) -> dict[str, set[bytes]]:
         body.
 
     """
-    bodies = {slug: shipped[key] for key in shipped if (slug := skill_body_slug(key))}
+    bodies = {
+        slug: shipped[key] for key in shipped if (slug := skill_body_slug(key)) not in {None, ""}
+    }
     delivered = delivered_skill_slugs(bodies)
     return {
         key: {payload, delivered_skill_body(payload, delivered)}
-        if skill_body_slug(key)
+        if skill_body_slug(key) not in {None, ""}
         else {payload}
         for key, payload in shipped.items()
     }
@@ -103,7 +105,7 @@ def record_canonical_history(pkg_root: Path, project_root: Path, updated: list[s
     """Append the hash of every form ``pkg_root`` delivers; record the write in ``updated``."""
     history_path = pkg_root / HISTORY_FILE
     raw = effective_bytes(history_path)
-    recorded = json.loads(raw).get("files", {}) if raw else {}
+    recorded = json.loads(raw).get("files", {}) if raw is not None and len(raw) > 0 else {}
     files = {key: set(hashes) for key, hashes in recorded.items()}
     for key, forms in delivered_variants(_shipped_files(pkg_root)).items():
         files.setdefault(key, set()).update(content_hash(form) for form in forms)

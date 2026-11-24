@@ -171,7 +171,7 @@ def _initialize_ceremony(
     """Initialize or resume a ceremony."""
     existing = load_ceremony_state(project_root, adr_id)
 
-    if existing and existing.completed_at and not restart:
+    if existing and existing.completed_at not in {None, ""} and not restart:
         # Offer restart vs resume
         console.print(
             f"Ceremony for {adr_id} completed at {existing.completed_at} "
@@ -181,7 +181,7 @@ def _initialize_ceremony(
         )
         return
 
-    if existing and not existing.completed_at and not restart:
+    if existing and existing.completed_at in {None, ""} and not restart:
         # Resume from current step
         output = _present_step(
             existing, project_root, adr_file, lane, manifest, obpi_files=obpi_files
@@ -412,12 +412,12 @@ def _commit_advance(
         "updated_at": now,
         "completed_at": completed_at,
     }
-    if extra_update:
+    if extra_update is not None:
         update.update(extra_update)
     new_state = state.model_copy(update=update)
     save_ceremony_state(project_root, new_state)
     output = _present_step(new_state, project_root, adr_file, lane, manifest, obpi_files=obpi_files)
-    if completed_at:
+    if completed_at is not None:
         _cleanup_hook_files(project_root, state.adr_id)
     _output(as_json, new_state, output)
 
@@ -448,7 +448,7 @@ def _advance_ceremony(
     state = load_ceremony_state(project_root, adr_id)
     if state is None:
         raise CeremonyNotInProgressError(adr_id, " Run --ceremony first.")
-    if state.completed_at:
+    if state.completed_at not in {None, ""}:
         raise CeremonyAlreadyCompletedError(adr_id)
 
     now = _now_iso()
@@ -548,7 +548,7 @@ def _pause_ceremony(
     state = load_ceremony_state(project_root, adr_id)
     if state is None:
         raise CeremonyNotInProgressError(adr_id)
-    if state.completed_at:
+    if state.completed_at not in {None, ""}:
         raise CeremonyAlreadyCompletedError(adr_id)
 
     now = _now_iso()
@@ -580,14 +580,15 @@ def _show_status(project_root: Path, adr_id: str, as_json: bool) -> None:
         print(state.model_dump_json(indent=2))
     else:
         step_name = CeremonyStep(state.current_step).name
-        status = "COMPLETED" if state.completed_at else "IN PROGRESS"
-        if state.paused_at:
+        completed = state.completed_at not in {None, ""}
+        status = "COMPLETED" if completed else "IN PROGRESS"
+        if state.paused_at not in {None, ""}:
             status = "PAUSED"
         console.print(
             f"Ceremony {adr_id}: Step {state.current_step} ({step_name}) "
             f"- {status} (attempt {state.attempt})"
         )
-        if state.attestation:
+        if state.attestation not in {None, ""}:
             console.print(f"  Attestation: {state.attestation}")
 
 
@@ -622,7 +623,7 @@ def ceremony_cmd(
         _pause_ceremony(project_root, adr_id, as_json)
         return
 
-    if ceremony_attest:
+    if ceremony_attest not in {None, ""}:
         _record_attestation(
             project_root,
             adr_id,

@@ -138,5 +138,5 @@ def record_processed(
         chore_decommission_processed_event(rel, disposition, obpi_id=obpi, task_id=task)
     )
     booked = {"file_path": rel, "disposition": disposition}
-    booked.update({"obpi_id": obpi} if obpi else {"task_id": task or ""})
+    booked.update({"obpi_id": obpi} if obpi is not None else {"task_id": task or ""})
     return booked

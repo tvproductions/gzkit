@@ -100,7 +100,7 @@ def _plan_git_sync(
         blockers.append("Merge commit at HEAD. Linearize history before git-sync.")
 
     status_lines, status_error = _git_status_lines(project_root)
-    if status_error:
+    if status_error is not None:
         blockers.append(status_error)
     dirty = bool(status_lines)
 
@@ -441,9 +441,9 @@ def _build_sync_commit_message(
     )
 
     sections: list[str] = [subject]
-    if anchors:
+    if anchors is not None and len(anchors) > 0:
         sections.append(_format_anchors_section(anchors))
-    if ledger_events:
+    if ledger_events is not None and len(ledger_events) > 0:
         sections.append(_format_ledger_events_section(ledger_events))
     sections.append(_SYNC_COMMIT_TRAILERS)
     return "\n\n".join(sections)

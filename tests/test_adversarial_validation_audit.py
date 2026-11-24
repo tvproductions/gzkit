@@ -66,7 +66,7 @@ class _Project:
             "verdict": verdict,
             "adversary": "codex/gpt-5.4",
         }
-        if resolution:
+        if resolution not in {None, ""}:
             event["resolution"] = resolution
         self.events.append(event)
 

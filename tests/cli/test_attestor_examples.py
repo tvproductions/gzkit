@@ -43,10 +43,10 @@ def _help_texts() -> Iterator[tuple[str, str]]:
     """Every epilog, description and option help string the CLI prints."""
     for prog, parser in _parsers(_get_parser()):
         for text in (parser.epilog, parser.description):
-            if text:
+            if text not in {None, ""}:
                 yield prog, text
         for action in parser._actions:
-            if action.help:
+            if action.help not in {None, ""}:
                 yield prog, str(action.help)
 
 

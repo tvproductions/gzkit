@@ -176,7 +176,7 @@ def _check_line(request: DiscrepancyRecord) -> None:
 
 def _refuse_unstamped(dispatch_id: str, stamped_id: str | None) -> NoReturn:
     """Refuse a performer's line whose call is not stamped as the dispatch it names."""
-    if stamped_id:
+    if stamped_id not in {None, ""}:
         stamp = f"stamped with {stamped_id}"
         step = (
             f"If {stamped_id} found it, name it: `uv run gz wp discrepancy record --dispatch "
@@ -237,9 +237,10 @@ def _performer_order(ledger: Ledger, request: DiscrepancyRecord, stamped_id: str
             "found it."
         )
     if dispatch.role not in PERFORMERS or dispatch.order is None:
+        has_order = dispatch.order not in {None, ""}
         _refuse(
             f"Dispatch {stamped_id} is a {dispatch.role} dispatch"
-            f"{'' if dispatch.order else ' on no order'}; a find in the work is recorded by a "
+            f"{'' if has_order else ' on no order'}; a find in the work is recorded by a "
             "dispatch that performs maintenance on an order, Implementer, SingleDriver or "
             "Restoration (RP-12 rulings 172 and 175)."
         )
@@ -327,7 +328,7 @@ def record_discrepancy(
     """
     _check_session(mx_session_id, "record")
     _check_line(request)
-    if stamped_id:
+    if stamped_id not in {None, ""}:
         order_id = _performer_order(ledger, request, stamped_id)
     else:
         order_id = _coordinator_order(request)
@@ -451,7 +452,7 @@ def _check_cause(
             )
         labels = _recurs(request.recurs, witnesses)
         required = True
-    if required and not (request.root_cause and request.corrective_action):
+    if required and (request.root_cause is None or request.corrective_action is None):
         why = "blocks return to service" if grade == BLOCKS else "recurs"
         _refuse(
             f"--root-cause and --corrective-action are required: the line {why}, and such a "
@@ -560,7 +561,7 @@ def record_discrepancy_clear(
         The event booked.
 
     """
-    if stamped_id:
+    if stamped_id not in {None, ""}:
         _refuse(
             f"This call is stamped with {stamped_id}, and a discrepancy is cleared by the "
             "coordinator's unstamped call alone (RP-12 rulings 114 and 172). Report the "

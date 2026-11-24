@@ -69,7 +69,9 @@ def evaluate_authorship(
     if effective_email is not None and effective_email.endswith(required_suffix):
         return []
 
-    observed = "no git identity resolves" if not effective_email else "does not end with it"
+    observed = (
+        "no git identity resolves" if effective_email in {None, ""} else "does not end with it"
+    )
     return [
         ValidationError(
             type=_AUDIT_TYPE,
@@ -135,7 +137,7 @@ def audit_authorship(project_root: Path) -> list[ValidationError]:
     """
     config = GzkitConfig.load(project_root / ".gzkit.json")
     required = config.authorship.required_email_suffix
-    if not required:
+    if required in {None, ""}:
         return []
     return [
         error

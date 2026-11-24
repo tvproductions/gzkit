@@ -257,7 +257,7 @@ def _normalize_rule(text: str) -> str:
 
 def _find_scorecard(file_path: str | None) -> Path | None:
     """Locate docs/governance/advisory-rules-audit.md walking up from file_path."""
-    if not file_path:
+    if file_path in {None, ""}:
         return None
     here = Path(file_path).resolve().parent
     for root in (here, *here.parents):

@@ -698,7 +698,7 @@ def run_behave(project_root: Path, tags: list[str] | None = None) -> QualityResu
         QualityResult from the behave run.
 
     """
-    if tags:
+    if tags is not None and len(tags) > 0:
         tag_arg = ",".join(tags)
         return run_command(f"uv run -m behave --tags={tag_arg}", cwd=project_root)
 
@@ -2961,7 +2961,7 @@ def _check_docstring_proof(allowed_paths: list[str], project_root: Path) -> bool
             if node.name.startswith("_"):
                 continue
             docstring = ast.get_docstring(node)
-            if docstring and len(docstring.strip()) > 10:
+            if docstring not in {None, ""} and len(docstring.strip()) > 10:
                 return True
     return False
 

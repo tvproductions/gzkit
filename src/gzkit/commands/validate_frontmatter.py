@@ -156,7 +156,7 @@ def _check_one_artifact(
     fm_status = fm.get("status", "")
     if fm_status:
         ledger_status = derive_status()
-        if ledger_status and not _status_matches(fm_status, ledger_status):
+        if ledger_status not in {None, ""} and not _status_matches(fm_status, ledger_status):
             expected = frontmatter_status_for_ledger(
                 ledger_status,
                 str(info.get("type", "")),
@@ -174,7 +174,7 @@ def _filter_artifact_files(
     canonicalize: Callable[[str], str],
 ) -> list[tuple[Path, str]]:
     """Pair each file with its resolved ledger id, filtered to ``adr_scope`` if set."""
-    scoped = canonicalize(adr_scope) if adr_scope else None
+    scoped = canonicalize(adr_scope) if adr_scope not in {None, ""} else None
     results: list[tuple[Path, str]] = []
     for artifact_file in files:
         ledger_id = _resolve_ledger_id_from_path(artifact_file, artifact_type, graph, canonicalize)

@@ -73,8 +73,12 @@ def complexity_distill_cmd(
         print(f"error: invalid --today value: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc
 
-    out_dir = Path(output_dir) if output_dir else DEFAULT_OUTPUT_DIR
-    base_dir = Path(baseline_dir) if baseline_dir else out_dir / "baselines" / today.isoformat()
+    out_dir = Path(output_dir) if output_dir not in {None, ""} else DEFAULT_OUTPUT_DIR
+    base_dir = (
+        Path(baseline_dir)
+        if baseline_dir not in {None, ""}
+        else out_dir / "baselines" / today.isoformat()
+    )
 
     try:
         baseline_artifact_path, baseline = _resolve_baseline(
@@ -137,7 +141,7 @@ def _resolve_baseline(
         baseline_path = Path(baseline_json_arg)
         payload = json.loads(baseline_path.read_text(encoding="utf-8"))
         return baseline_path, BaselineArtifact.model_validate(payload)
-    corpus_path = Path(corpus_arg) if corpus_arg else DEFAULT_CORPUS_PATH
+    corpus_path = Path(corpus_arg) if corpus_arg not in {None, ""} else DEFAULT_CORPUS_PATH
     corpus = safe_load_corpus(corpus_path)
     artifact = measure_corpus(corpus, baseline_output_dir)
     return baseline_output_dir / "baseline.json", artifact

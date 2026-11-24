@@ -170,7 +170,7 @@ def _build_adversarial_event(
         adversary is missing.
 
     """
-    if not verdict or not adversary:
+    if verdict in {None, ""} or adversary in {None, ""}:
         return None
     now = datetime.now(UTC)
     payload: dict[str, Any] = {
@@ -188,6 +188,6 @@ def _build_adversarial_event(
         ("adversary_tier", tier),
         ("adversary_receipt", receipt),
     ):
-        if value:
+        if value not in {None, "", 0}:
             payload[key] = value
     return LedgerEvent.model_validate(payload)

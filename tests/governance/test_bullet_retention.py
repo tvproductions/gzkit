@@ -1382,7 +1382,7 @@ class TestUnownedBulletResolvesFromScorecard(_OwnershipFixtureMixin, unittest.Te
         self.assertEqual(
             sorted(f"{b.section_id} #{b.row_number}" for b in population), sorted(pinned)
         )
-        self.assertEqual([b for b in population if not b.source], [])
+        self.assertEqual([b for b in population if b.source in {None, ""}], [])
 
 
 class TestOwnedDisagreementIsReported(_OwnershipFixtureMixin, unittest.TestCase):

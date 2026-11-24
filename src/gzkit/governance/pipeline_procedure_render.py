@@ -163,7 +163,7 @@ def _rationale_ids(inventory: ControlInventory) -> dict[int, list[str]]:
         non.explains
         for block in inventory.blocks
         for non in block.non_control
-        if non.class_ == "rationale" and non.explains
+        if non.class_ == "rationale" and non.explains not in {None, ""}
     }
     out: dict[int, list[str]] = {}
     for control_id, index in holder.items():
@@ -406,7 +406,7 @@ def render_record(inventory: ControlInventory) -> str:
     quotes: dict[str, list[str]] = {}
     for block in inventory.blocks:
         for non in block.non_control:
-            if non.class_ == "rationale" and non.explains:
+            if non.class_ == "rationale" and non.explains not in {None, ""}:
                 quotes.setdefault(non.explains, []).append(non.quote)
     parts = [
         "# OBPI pipeline control rationale",

@@ -99,7 +99,7 @@ def _check_closed_set_lock(
 ) -> list[ValidationError]:
     entries = _iter_entries(collection)
     count = _count_entries(collection)
-    if count and not entries:
+    if count is not None and count != 0 and not entries:
         return [
             _err(
                 artifact,

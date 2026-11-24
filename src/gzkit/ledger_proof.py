@@ -56,7 +56,11 @@ def _fallback_req_proof_inputs(
                 "status": "present",
             }
         )
-    if human_attestation and human_attestation.get("valid"):
+    if (
+        human_attestation is not None
+        and len(human_attestation) > 0
+        and human_attestation.get("valid")
+    ):
         attestor = human_attestation.get("attestor", "human")
         attestation_date = human_attestation.get("date", "unknown-date")
         normalized.append(

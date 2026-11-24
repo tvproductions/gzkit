@@ -348,7 +348,7 @@ def chores_plan(slug: str) -> None:
     console.print(f"  Log: {log_path.relative_to(project_root).as_posix()}")
     console.print("  Acceptance Criteria:")
     for idx, c in enumerate(chore.criteria, start=1):
-        desc = f" -- {c.description}" if c.description else ""
+        desc = f" -- {c.description}" if c.description not in {None, ""} else ""
         if c.criterion_type == "exitCodeEquals":
             console.print(
                 f"    {idx}. \\[{c.criterion_type}] `{escape(c.command)}` "
@@ -628,7 +628,7 @@ def chores_audit(*, all_chores: bool, slug: str | None) -> None:
     if all_chores:
         chores = sorted(registry.values(), key=lambda item: item.slug)
     else:
-        if not slug:
+        if slug in {None, ""}:
             msg = "BLOCKERS:\n- Provide --all or --slug <slug>."
             raise GzCliError(msg)
         chore = registry.get(slug)

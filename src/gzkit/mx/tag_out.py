@@ -378,7 +378,7 @@ def _refuse_unstamped_hang(tag_id: str, dispatch_id: str, stamped_id: str | None
     The next step is one that can succeed: naming the dispatch the call is stamped
     with, or running the hang from the named dispatch's subagent, never the same call.
     """
-    if stamped_id:
+    if stamped_id not in {None, ""}:
         stamp = f"stamped with {stamped_id}"
         step = (
             f"If {stamped_id} is the {REPAIR} dispatch meant, name it: `uv run gz wp tag hang "
@@ -736,7 +736,11 @@ def record_tag_clear(
             "the gz-mx skill (`uv run gz mx enter`), then clear the tag."
         )
     if stamped_id != dispatch_id:
-        stamp = f"stamped with {stamped_id}" if stamped_id else "not stamped with a dispatch id"
+        stamp = (
+            f"stamped with {stamped_id}"
+            if stamped_id not in {None, ""}
+            else "not stamped with a dispatch id"
+        )
         _refuse(
             f"This call is {stamp}, and a clear is the stamped call of the {RESTORATION} "
             f"dispatch it names, {dispatch_id} (RP-12 rulings 6 and 133). Run the clear from "

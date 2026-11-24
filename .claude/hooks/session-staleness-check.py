@@ -99,7 +99,7 @@ def main():
 
     warnings = []
 
-    if marker:
+    if marker is not None and len(marker) > 0:
         obpi_id = marker.get("obpi_id", "")
         if obpi_id and _brief_is_completed(cwd_path, obpi_id):
             warnings.append(
@@ -108,7 +108,7 @@ def main():
                 f"Clean up: delete {marker_path.relative_to(cwd_path).as_posix()}"
             )
 
-    if receipt:
+    if receipt is not None and len(receipt) > 0:
         obpi_id = receipt.get("obpi_id", "")
         if obpi_id and _brief_is_completed(cwd_path, obpi_id):
             warnings.append(

@@ -33,7 +33,7 @@ def _make_adr_package(
     adr_dir.mkdir(parents=True)
     content = f"# ADR-{semver}-fake\n\n## Intent\n\nTest fixture only.\n"
     if with_boundary_invariants:
-        anchor = f" (OBPI-{anchor_obpi})" if anchor_obpi else ""
+        anchor = f" (OBPI-{anchor_obpi})" if anchor_obpi not in {None, ""} else ""
         content += f"\n## Boundary Invariants\n\n1. Test structural invariant.{anchor}\n"
     (adr_dir / f"ADR-{semver}-fake.md").write_text(content, encoding="utf-8")
 

@@ -200,7 +200,7 @@ def _closeout_form_path(adr_file: Path) -> Path:
 
 def _closeout_form_attestation_text(attest_status: str, reason: str | None) -> str:
     """Render the recorded attestation text from CLI inputs."""
-    if reason:
+    if reason not in {None, ""}:
         return f"{attest_status}: {reason}"
     return attest_status
 
@@ -321,7 +321,7 @@ def _render_adr_closeout_form(
             f"{'Completed' if row.get('completed') else 'Pending'} |"
         )
 
-    if defense_brief:
+    if defense_brief not in {None, ""}:
         lines.extend(["", defense_brief])
 
     lines.extend(["", "## Human Attestation", ""])

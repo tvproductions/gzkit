@@ -1024,7 +1024,7 @@ class TestCoversCLIOutput(unittest.TestCase):
             "--test-dir",
             str(self.test_dir),
         ]
-        if extra_args:
+        if extra_args is not None and len(extra_args) > 0:
             args.extend(extra_args)
         out = io.StringIO()
         with redirect_stdout(out), redirect_stderr(out):

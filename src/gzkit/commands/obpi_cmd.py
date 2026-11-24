@@ -506,7 +506,7 @@ def obpi_emit_receipt_cmd(
         raise GzCliError(msg)
 
     evidence: dict[str, Any] | None = None
-    if evidence_json:
+    if evidence_json not in {None, ""}:
         try:
             parsed = json.loads(evidence_json)
         except json.JSONDecodeError as exc:
@@ -780,7 +780,7 @@ def obpi_pipeline_cmd(
         raise GzCliError(msg)
 
     parent_adr = cast("str | None", info.get("parent"))
-    if not parent_adr:
+    if parent_adr in {None, ""}:
         msg = f"OBPI is missing a parent ADR link in the ledger: {obpi_id}"
         raise GzCliError(msg)
     if _is_pool_adr_id(parent_adr):
@@ -916,14 +916,14 @@ def obpi_pipeline_cmd(
         return
 
     if start_from == "sync":
-        if not attestor:
+        if attestor in {None, ""}:
             msg = (
                 "--attestor is required for --from=sync. "
                 "Use --attestor <name> for attested OBPIs "
                 "or --attestor agent:<name> for agent-closed OBPIs."
             )
             raise GzCliError(msg)
-        if not evidence_json:
+        if evidence_json in {None, ""}:
             msg = (
                 "--evidence-json is required for --from=sync. "
                 "Must include value_narrative and key_proof fields."
@@ -954,7 +954,7 @@ def _validate_brief_structure(project_root: Path, brief_path: Path) -> list[str]
 
     schema_errors = validate_document(brief_path, "obpi")
     return [
-        f"[{e.type}] {e.message}" + (f" (field: {e.field})" if e.field else "")
+        f"[{e.type}] {e.message}" + (f" (field: {e.field})" if e.field not in {None, ""} else "")
         for e in schema_errors
     ]
 
@@ -991,11 +991,11 @@ def obpi_validate_cmd(obpi_path: str | None, adr_id: str | None, authored: bool)
     project_root = get_project_root()
     validator = ObpiValidator(project_root)
 
-    if adr_id and not obpi_path:
+    if adr_id not in {None, ""} and obpi_path in {None, ""}:
         _obpi_validate_batch(project_root, config, validator, adr_id, authored=authored)
         return
 
-    if not obpi_path:
+    if obpi_path in {None, ""}:
         console.print("[red]Error:[/red] Provide an OBPI path or --adr flag.")
         raise SystemExit(1)
 

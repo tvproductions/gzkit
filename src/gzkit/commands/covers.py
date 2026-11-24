@@ -44,7 +44,7 @@ def _filter_report(report: CoverageReport, target: str) -> CoverageReport:
         target_semver = adr_semver(target_upper)
         filtered = (
             [e for e in report.entries if e.req_id.startswith(req_prefix(target_semver))]
-            if target_semver
+            if target_semver is not None
             else []
         )
     else:
@@ -191,24 +191,26 @@ def covers_cmd(
     parity fail-close gate for this run and emits a ``bypass_used`` ledger
     event.  ``bypass_reason`` is required when bypassing.
     """
-    if bypass_req_kind_discipline_once and not bypass_reason:
+    if bypass_req_kind_discipline_once and bypass_reason in {None, ""}:
         console.print("[red]--bypass-req-kind-discipline-once requires --bypass-reason[/red]")
         sys.exit(1)
 
     project_root = get_project_root()
-    briefs_dir = Path(adr_dir) if adr_dir else project_root / "docs" / "design" / "adr"
-    tests_dir = Path(test_dir) if test_dir else project_root / "tests"
-    feat_dir = Path(features_dir) if features_dir else project_root / "features"
+    briefs_dir = (
+        Path(adr_dir) if adr_dir not in {None, ""} else project_root / "docs" / "design" / "adr"
+    )
+    tests_dir = Path(test_dir) if test_dir not in {None, ""} else project_root / "tests"
+    feat_dir = Path(features_dir) if features_dir not in {None, ""} else project_root / "features"
 
     discovered = scan_briefs(briefs_dir)
     linkage_records = scan_test_tree(tests_dir) + scan_feature_tree(feat_dir)
     report = compute_coverage(discovered, linkage_records, include_doc=include_doc)
 
-    if target:
+    if target not in {None, ""}:
         report = _filter_report(report, target)
 
     # Three-channel enrichment for OBPI-scoped targets
-    if target and target.upper().startswith("OBPI-"):
+    if target not in {None, ""} and target.upper().startswith("OBPI-"):
         from pydantic import ValidationError
 
         from gzkit.req_kind import (
@@ -229,7 +231,7 @@ def covers_cmd(
             msg = f"data/*_grandfather*.json: invalid grandfathering cache ({exc})"
             raise GzCliError(msg) from exc
 
-    if bypass_req_kind_discipline_once and bypass_reason:
+    if bypass_req_kind_discipline_once and bypass_reason not in {None, ""}:
         _emit_bypass_ledger_event(project_root, bypass_reason)
 
     if as_json:

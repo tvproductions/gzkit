@@ -87,7 +87,7 @@ def main() -> None:
         added = added_lines(f)
         prod = set()
         for n in ast.walk(tree):
-            if isinstance(n, ast.ImportFrom) and n.module and "gzkit" in n.module:
+            if isinstance(n, ast.ImportFrom) and n.module is not None and "gzkit" in n.module:
                 for a in n.names:
                     prod.add(a.asname or a.name)
         owner = {}

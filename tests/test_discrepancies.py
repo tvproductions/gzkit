@@ -311,7 +311,7 @@ class _DiscrepancyCase(unittest.TestCase):
                 "grade": "blocks-return-to-service",
                 "source": "left-broken",
                 "description": "The stamp hook is left off.",
-                "order": None if stamped else _ORDER,
+                "order": None if stamped not in {None, ""} else _ORDER,
                 **fields,
             }
         )

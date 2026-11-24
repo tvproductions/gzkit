@@ -133,7 +133,7 @@ def wp_entry_show_cmd(*, as_json: bool) -> None:
                     **view.entry.model_dump(mode="json"),
                     "gate5": view.gate5.model_dump(mode="json") if view.gate5 else None,
                     "landed": None
-                    if commits_unread
+                    if commits_unread not in {None, ""}
                     else [c.model_dump(mode="json") for c in landed[view.entry.entry_id]],
                 }
                 for view in views

@@ -68,7 +68,7 @@ def _pipeline_completion_reminder_script() -> str:
                     sys.exit(0)
 
                 marker = find_active_pipeline_marker(plans_dir)
-                if not marker:
+                if marker is None or len(marker) == 0:
                     sys.exit(0)
 
                 obpi_id = marker.get("obpi_id", "")
@@ -83,7 +83,7 @@ def _pipeline_completion_reminder_script() -> str:
                     marker,
                     brief_status=extract_brief_status(brief_path),
                 )
-                if not message:
+                if message in {None, ""}:
                     sys.exit(0)
 
                 print(message, file=sys.stderr)
@@ -203,7 +203,7 @@ def _session_staleness_check_script() -> str:
 
                 warnings = []
 
-                if marker:
+                if marker is not None and len(marker) > 0:
                     obpi_id = marker.get("obpi_id", "")
                     if obpi_id and _brief_is_completed(cwd_path, obpi_id):
                         warnings.append(
@@ -212,7 +212,7 @@ def _session_staleness_check_script() -> str:
                             f"Clean up: delete {marker_path.relative_to(cwd_path).as_posix()}"
                         )
 
-                if receipt:
+                if receipt is not None and len(receipt) > 0:
                     obpi_id = receipt.get("obpi_id", "")
                     if obpi_id and _brief_is_completed(cwd_path, obpi_id):
                         warnings.append(
@@ -312,7 +312,7 @@ def _plan_audit_gate_script() -> str:
             def _claude_home() -> Path:
                 \"\"\"Return Claude home, honoring GZKIT_CLAUDE_HOME for test isolation.\"\"\"
                 override = os.environ.get("GZKIT_CLAUDE_HOME")
-                return Path(override) if override else Path.home()
+                return Path(override) if override not in {None, ""} else Path.home()
 
 
             def plan_search_dirs(cwd: str) -> list[Path]:
@@ -461,7 +461,7 @@ def _plan_audit_gate_script() -> str:
             def _resolve_plan_audit_cmd() -> list[str]:
                 \"\"\"Return argv for the plan-audit invocation, honoring the env override.\"\"\"
                 override = os.environ.get(PLAN_AUDIT_CMD_ENV)
-                if override and override.strip():
+                if override is not None and override.strip():
                     return shlex.split(override)
                 return list(DEFAULT_PLAN_AUDIT_CMD)
 
@@ -539,7 +539,7 @@ def _plan_audit_gate_script() -> str:
                     sys.exit(0)
 
                 prior_art_warning = check_prior_art_awareness(plan_file)
-                if prior_art_warning:
+                if prior_art_warning is not None:
                     print(prior_art_warning, file=sys.stderr)
 
                 obpi_ids = extract_obpi_ids(plan_file)

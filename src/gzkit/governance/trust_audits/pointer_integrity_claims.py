@@ -52,7 +52,7 @@ _DEST_BODY = "# Dest\n\n## Section one\n\ntext\n\n## Section two\n\ntext\n"
 
 
 def _comment(source: str, anchor: str | None = _FIRST) -> str:
-    return f"<!-- lifted-from: {source}{'#' + anchor if anchor else ''} -->"
+    return f"<!-- lifted-from: {source}{'#' + anchor if anchor not in {None, ''} else ''} -->"
 
 
 #: shape -> (the destination's comments, whether CLAUDE.md also points at the second

@@ -174,8 +174,10 @@ def drift_cmd(
     code changes. Reports findings in human, JSON, or plain mode.
     """
     project_root = get_project_root()
-    briefs_dir = Path(adr_dir) if adr_dir else project_root / "docs" / "design" / "adr"
-    tests_dir = Path(test_dir) if test_dir else project_root / "tests"
+    briefs_dir = (
+        Path(adr_dir) if adr_dir not in {None, ""} else project_root / "docs" / "design" / "adr"
+    )
+    tests_dir = Path(test_dir) if test_dir not in {None, ""} else project_root / "tests"
 
     discovered = scan_briefs(briefs_dir)
     reqs = [d.entity for d in discovered]

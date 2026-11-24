@@ -252,7 +252,7 @@ def _sanitize_exchange_text(text: str | None, *, limit: int = 600) -> str:
         `limit`; an empty string when the text is None or empty.
 
     """
-    if not text:
+    if text in {None, ""}:
         return ""
     collapsed = re.sub(r"<!--.*?-->", " ", text, flags=re.DOTALL)
     collapsed = " ".join(collapsed.split())
@@ -410,10 +410,10 @@ def write_completion_exchange(
     # absent rather than synthesizing `ADR-0.0.0`, an id naming no real artifact
     # (GHI #709).
     adr_id = obpi_adr_id(obpi_id)
-    parent_phrase = f" under {adr_id}" if adr_id else ""
+    parent_phrase = f" under {adr_id}" if adr_id is not None else ""
     next_step = (
         f"1. Continue the parent {adr_id} checklist, or open the next OBPI.\n\n"
-        if adr_id
+        if adr_id is not None
         else "1. Open the next OBPI, or continue the parent ADR checklist.\n\n"
     )
 
@@ -574,7 +574,7 @@ def find_exchange_for_release(
         if fm.get("obpi_id") != obpi_id:
             continue
         ts = str(fm.get("timestamp", ""))
-        if after_timestamp and ts <= after_timestamp:
+        if after_timestamp not in {None, ""} and ts <= after_timestamp:
             continue
         if not is_exchange_register_entry(fm):
             continue

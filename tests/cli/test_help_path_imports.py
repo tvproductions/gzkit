@@ -105,7 +105,7 @@ def _resolve_import_from(node: ast.ImportFrom, module: str) -> set[str]:
     """Resolve ``from X import a, b`` to candidate ``gzkit.*`` module names."""
     if node.level:  # relative import — resolve against the importing package
         base_parts = module.split(".")[: -node.level] if node.level else module.split(".")
-        base = ".".join([*base_parts, node.module] if node.module else base_parts)
+        base = ".".join([*base_parts, node.module] if node.module is not None else base_parts)
     else:
         base = node.module or ""
     if not base.startswith("gzkit"):

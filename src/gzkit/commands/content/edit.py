@@ -49,7 +49,7 @@ def content_edit_cmd(*, file: str, as_type: str, vendor: str) -> None:
         sys.exit(1)
 
     editor = os.environ.get("VISUAL") or os.environ.get("EDITOR")
-    if not editor:
+    if editor in {None, ""}:
         print(
             "Error: neither $VISUAL nor $EDITOR is set. "
             "Set one to your preferred editor (e.g. EDITOR=vim).",

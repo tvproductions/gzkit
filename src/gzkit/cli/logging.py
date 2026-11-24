@@ -112,9 +112,9 @@ class _JsonFormatter(logging.Formatter):
         }
         if self._callsite:
             payload.update({key: getattr(record, key) for key in _CALLSITE})
-        if record.exc_info:
+        if record.exc_info is not None and record.exc_info:
             payload["exception"] = self.formatException(record.exc_info)
-        if record.stack_info:
+        if record.stack_info not in {None, ""}:
             payload["stack"] = self.formatStack(record.stack_info)
         return json.dumps(payload, default=str, ensure_ascii=False)
 
@@ -139,9 +139,9 @@ class _ConsoleFormatter(logging.Formatter):
         line = " ".join(
             part for part in (_timestamp(record), level, record.getMessage(), pairs) if part
         )
-        if record.exc_info:
+        if record.exc_info is not None and record.exc_info:
             line += "\n" + self.formatException(record.exc_info)
-        if record.stack_info:
+        if record.stack_info not in {None, ""}:
             line += "\n" + self.formatStack(record.stack_info)
         return line
 

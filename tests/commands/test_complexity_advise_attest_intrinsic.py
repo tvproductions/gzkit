@@ -139,7 +139,7 @@ def _write_complex_function(
     """Write a Python source file containing a function with cc above the block band."""
     header = (
         ["from gzkit.complexity.advisor.intrinsic import intrinsic_complexity", "", "", decorator]
-        if decorator
+        if decorator not in {None, ""}
         else []
     )
     body = "\n".join(

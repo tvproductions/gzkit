@@ -559,7 +559,7 @@ def scan_file(path: Path, source: str) -> Iterator[Candidate]:
 
         if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
             chain = _detect_isinstance_chain(node)
-            if chain:
+            if chain is not None:
                 yield Candidate(
                     file=path,
                     line=node.lineno,

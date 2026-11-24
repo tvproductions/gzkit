@@ -170,7 +170,7 @@ status: {status}
 ## Key Proof
 {proof}
 """
-        if attestation:
+        if attestation not in {None, ""}:
             content += f"\n## Human Attestation\n{attestation}\n"
 
         path.write_text(content, encoding="utf-8")

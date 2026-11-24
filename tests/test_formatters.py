@@ -390,7 +390,7 @@ class TestImportBoundary(unittest.TestCase):
         src = Path(__file__).resolve().parent.parent / "src" / "gzkit" / "cli" / "formatters.py"
         tree = ast.parse(src.read_text(encoding="utf-8"))
         for node in ast.walk(tree):
-            if isinstance(node, ast.ImportFrom) and node.module:
+            if isinstance(node, ast.ImportFrom) and node.module is not None:
                 self.assertFalse(
                     node.module.startswith("gzkit.core"),
                     f"Forbidden import: {node.module}",

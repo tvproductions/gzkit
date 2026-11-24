@@ -163,9 +163,9 @@ def _iter_corrections(path: Path) -> list[str]:
         if entry_type != "user" or not _is_operator_entry(entry):
             continue
         text = _user_text(entry)
-        if not text or text.lstrip().startswith("<"):
+        if text in {None, ""} or text.lstrip().startswith("<"):
             continue
-        if assistant_seen and _matched_marker(text):
+        if assistant_seen and _matched_marker(text) is not None:
             corrections.append(text)
         assistant_seen = False
     return corrections

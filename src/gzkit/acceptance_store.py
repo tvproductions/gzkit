@@ -535,7 +535,7 @@ def refutation_counts(root: Path, work_package: str) -> dict[str, int]:
     counts: dict[str, int] = {}
     for review in _replay_history(root, work_package).reviews:
         for obligation_id in {item.obligation_id for item in review.findings}:
-            if obligation_id:
+            if obligation_id not in {None, ""}:
                 counts[obligation_id] = counts.get(obligation_id, 0) + 1
     return counts
 
@@ -590,7 +590,7 @@ def record_human_review(
     """
     if is_run_id(obpi_id):
         refusal = round_bound_refusal(root, obpi_id)
-        if refusal:
+        if refusal not in {None, ""}:
             raise ValueError(refusal)
     history = load_history(root, obpi_id)
     current = {proof.obligation_id: proof for proof in history.proofs}

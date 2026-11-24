@@ -757,7 +757,7 @@ def preflight_demotions(
     problems: list[str] = []
     for row in partition.demote:
         on_collision, refusal = _collision_disposition(pool_dir, row)
-        if refusal:
+        if refusal is not None:
             problems.append(refusal)
             continue
         try:

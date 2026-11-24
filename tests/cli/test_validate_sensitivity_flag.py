@@ -194,7 +194,7 @@ class TestSensitivityAll(unittest.TestCase):
         with mock.patch.object(validate_audits, "run_audits_pass", fake_pass):
             validate_audits.run_audits_umbrella(as_json=False)
 
-        sensitivity = [p for p in passes if p.get("check_sensitivity")]
+        sensitivity = [p for p in passes if p.get("check_sensitivity") is True]
         self.assertEqual(
             len(sensitivity),
             1,
@@ -215,7 +215,7 @@ class TestSensitivityAll(unittest.TestCase):
         from gzkit.commands import validate_audits
 
         def fake_pass(scopes: dict[str, bool], *, as_json: bool) -> int:
-            return 3 if scopes.get("check_unscoped_rules") else 0
+            return 3 if scopes.get("check_unscoped_rules") is True else 0
 
         with (
             mock.patch.object(validate_audits, "run_audits_pass", fake_pass),

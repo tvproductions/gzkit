@@ -256,13 +256,13 @@ def wp_transition_cmd(
     root, catalog, ledger = _context()
     held = _held(catalog, str(fields["work_package"]))
     current = work_package_state(ledger, held.id)
-    if refusal := lifecycle_refusal(held, current, str(fields["to_state"])):
+    if (refusal := lifecycle_refusal(held, current, str(fields["to_state"]))) not in {None, ""}:
         raise PolicyBreachError(refusal)
-    if refusal := block_refusal(ledger, held.id):
+    if (refusal := block_refusal(ledger, held.id)) not in {None, ""}:
         raise PolicyBreachError(refusal)
     if fields.get("to_state") == "frozen" and current == "initiated":
         refusal = freeze_refusal(root, held, ledger)
-        if refusal:
+        if refusal not in {None, ""}:
             raise PolicyBreachError(refusal)
     if fields.get("to_state") == "accepted":
         _refuse_unready(root, ledger, str(fields["work_package"]))
@@ -290,7 +290,7 @@ def _emit_transition(
         fmt.emit(event)
         return
     fmt.emit(f"{event.id}: {event.from_state or 'nothing'} -> {event.to_state}")
-    if crossed:
+    if crossed not in {None, ""}:
         fmt.emit(f"  {crossed}")
     if event.to_state == "closed" and held.kind == "repair":
         # Ruling 78: the repair close shows its orders' Gate 5 and what holds.
@@ -312,7 +312,7 @@ def _refuse_outside_footprint(root: Path, ledger: Ledger, package: WorkPackage) 
     if took_stopping_exit(ledger, package.id):
         return
     refusal = footprint_refusal(root, package, ledger)
-    if refusal:
+    if refusal not in {None, ""}:
         raise PolicyBreachError(refusal)
 
 
@@ -331,7 +331,7 @@ def _refuse_unready(root: Path, ledger: Ledger, work_package: str) -> None:
     refusal = round_bound_refusal(root, work_package)
     blockers = [
         *acceptance_blockers(root, work_package, dispatch_scope=dispatch_validator_scope),
-        *([refusal] if refusal else []),
+        *([refusal] if refusal not in {None, ""} else []),
     ]
     if blockers:
         raise PolicyBreachError("\n".join(blockers))
@@ -439,7 +439,7 @@ def wp_change_cmd(
     if new_item is not None:
         staged = _with_item(catalog, held, str(fields["rung"]), new_item)
     added: tuple[str, ...] = ()
-    if modules or dropped:
+    if (modules is not None and len(modules) > 0) or (dropped is not None and len(dropped) > 0):
         move = _FootprintMove(
             rung=str(fields["rung"]), added=tuple(modules or ()), dropped=tuple(dropped or ())
         )
@@ -600,7 +600,7 @@ def wp_runs_cmd(*, as_json: bool) -> None:
     if not runs:
         fmt.emit("No work package is in flight.")
     for run in runs:
-        on = f"order {run.order} of " if run.order else ""
+        on = f"order {run.order} of " if run.order not in {None, ""} else ""
         fmt.emit(f"{on}{run.work_package} ({run.kind}), state: {run.state}")
         for line in _position_lines(run):
             fmt.emit(f"  {line}")
@@ -706,7 +706,7 @@ def wp_dispatch_cmd(*, fields: dict[str, object], as_json: bool) -> None:
             *([str(fields["order"])] if fields.get("order") else []),
         ]
         for run in runs:
-            if refusal := round_bound_refusal(root, run):
+            if (refusal := round_bound_refusal(root, run)) not in {None, ""}:
                 raise PolicyBreachError(refusal)
         request = DispatchRequest.model_validate({**fields, "root": intended.as_posix()})
         event = record_work_package_dispatch(catalog, ledger, request)
@@ -716,7 +716,7 @@ def wp_dispatch_cmd(*, fields: dict[str, object], as_json: bool) -> None:
     if as_json:
         fmt.emit(event)
         return
-    on = f"order {event.order} of " if event.order else ""
+    on = f"order {event.order} of " if event.order not in {None, ""} else ""
     # A craftsman's dispatch is subject to its order itself (RP-12 ruling 130): name it once.
     subject = "" if event.subject == event.order else f"{event.subject} of "
     fmt.emit(
@@ -803,7 +803,7 @@ def wp_block_cmd(
     if as_json:
         fmt.emit(event)
         return
-    held = f"order {order} of {work_package}" if order else work_package
+    held = f"order {order} of {work_package}" if order not in {None, ""} else work_package
     fmt.emit(f"Blocked {held} on the operator: {event.next_operator_action}")
     cycles = ", ".join(f"{subject}: {n}" for subject, n in event.fix_cycles.items())
     fmt.emit(f"  fix cycles (bound {event.bound}): {cycles or 'none'}")
@@ -833,8 +833,13 @@ def wp_unblock_cmd(*, fields: dict[str, object], as_json: bool) -> None:
     fmt = OutputFormatter(OutputFormatter.mode_from_flags(json_flag=as_json))
     order = event.order
     if as_json:
-        blocked = is_order_blocked(ledger, order) if order else is_blocked(ledger, work_package)
+        blocked = (
+            is_order_blocked(ledger, order)
+            if order not in {None, ""}
+            else is_blocked(ledger, work_package)
+        )
         fmt.emit({"event": event.model_dump(mode="json"), "blocked": blocked})
         return
-    named = f" by exit {event.exit_taken}" if event.exit_taken else ""
-    fmt.emit(f"Unblocked {f'order {order} of ' if order else ''}{work_package}{named}.")
+    named = f" by exit {event.exit_taken}" if event.exit_taken not in {None, ""} else ""
+    order_of = f"order {order} of " if order not in {None, ""} else ""
+    fmt.emit(f"Unblocked {order_of}{work_package}{named}.")

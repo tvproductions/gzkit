@@ -246,7 +246,7 @@ def lint(paths: list[str] | None = None, *, fix: bool = False, ratchet: bool = F
         return
 
     console.print("Running linters...")
-    if paths:
+    if paths not in (None, []):
         result = run_ruff_against_baseline(project_root, paths, fix=fix)
     elif fix:
         result = run_ruff_against_baseline(project_root, fix=True)
@@ -464,7 +464,7 @@ def test(bdd: bool = False, obpi: str | None = None) -> None:
     """
     project_root = get_project_root()
 
-    if obpi:
+    if obpi not in {None, ""}:
         _run_obpi_scoped_unit(project_root, obpi)
         if bdd:
             _run_obpi_scoped_behave(project_root, obpi)
@@ -1290,7 +1290,7 @@ def _demoted_names(results: list[tuple[str, QualityResult]]) -> list[str]:
         Each step name whose result carries a ``demoted_guard``.
 
     """
-    return [name for name, result in results if result.demoted_guard]
+    return [name for name, result in results if result.demoted_guard not in {None, ""}]
 
 
 def _demoted_suffix(demoted: list[str]) -> str:
@@ -1437,7 +1437,7 @@ def _run_changed_tests(project_root: pathlib.Path) -> QualityResult:
     from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS  # noqa: PLC0415
     from gzkit.quality import run_command  # noqa: PLC0415
 
-    if os.environ.get(_IN_CHANGED_TESTS_ENV):
+    if os.environ.get(_IN_CHANGED_TESTS_ENV) not in {None, ""}:
         # A selected test that itself runs the gate would start this run again,
         # selecting the same test, without end. The outer run already covers it.
         return QualityResult(
@@ -1534,7 +1534,9 @@ def check(
             "success": all(r.success for _, r in results),
             "scope": scope,
             "checks": {name: r.success for name, r in results},
-            "demoted": {name: r.demoted_guard for name, r in results if r.demoted_guard},
+            "demoted": {
+                name: r.demoted_guard for name, r in results if r.demoted_guard not in {None, ""}
+            },
             "drift": drift.to_dict(),
         }
         # Only a scope that drops nothing the per-change gate runs may mint the
@@ -1625,7 +1627,7 @@ def _render_demoted_steps(results: list[tuple[str, QualityResult]]) -> None:
     """
     from gzkit.mx.checkpoint import demote_notice  # noqa: PLC0415 — lazy: avoids circular risk
 
-    demoted = [(name, result) for name, result in results if result.demoted_guard]
+    demoted = [(name, result) for name, result in results if result.demoted_guard not in {None, ""}]
     if not demoted:
         return
     console.print("\n[yellow]⚠ Demoted by the open MX hangar (does not affect exit code):[/yellow]")

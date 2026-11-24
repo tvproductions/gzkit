@@ -195,7 +195,11 @@ def _version_rules(root: Path, project: _Project) -> Iterator[Violation]:
         yield Violation(
             rule="version-home-missing", file=".python-version", subject=".python-version"
         )
-    if project.floor and project.pin and _version(project.pin) < _version(project.floor):
+    if (
+        project.floor is not None
+        and project.pin is not None
+        and _version(project.pin) < _version(project.floor)
+    ):
         yield Violation(rule="version-below-floor", file=".python-version", subject=project.pin)
     tools = project.pyproject.get("tool", {})
     if "target-version" in tools.get("ruff", {}):
@@ -259,7 +263,7 @@ def _deferred_annotations_rules(root: Path, project: _Project) -> Iterator[Viola
         The violation, when the floor is 3.14 or above and no Ruff config bans the import.
 
     """
-    if not project.floor or _version(project.floor) < (3, 14):
+    if project.floor is None or _version(project.floor) < (3, 14):
         return
     banned = _ruff_lint_config(root, project).get("flake8-tidy-imports", {}).get("banned-api", {})
     if "__future__.annotations" not in banned:
@@ -283,7 +287,7 @@ def _registered_version_rules(root: Path, project: _Project) -> Iterator[Violati
         yield Violation(rule="version-restated", file=key[0], subject=key[1])
     elif (
         classifiers
-        and project.floor
+        and project.floor is not None
         and min(classifiers, key=_version) != ".".join(project.floor.split(".")[:2])
     ):
         yield Violation(
@@ -294,7 +298,7 @@ def _registered_version_rules(root: Path, project: _Project) -> Iterator[Violati
     key = (".readthedocs.yaml", "build.tools.python")
     if rtd_match and key not in registered:
         yield Violation(rule="version-restated", file=key[0], subject=key[1])
-    elif rtd_match and project.pin and not project.pin.startswith(rtd_match.group("v")):
+    elif rtd_match and project.pin is not None and not project.pin.startswith(rtd_match.group("v")):
         yield Violation(
             rule="version-disagrees", file=key[0], subject=key[1], detail=rtd_match.group(0)
         )
@@ -482,11 +486,11 @@ def _provenance_rules(root: Path, project: _Project) -> Iterator[Violation]:
     yield from _argv_provenance(root, tools, _records(project))
     for path in sorted((root / "src").glob("**/chores/**/acceptance.json")):
         for command in _strings(json.loads(_read(path) or "null")):
-            if subject := _uvx_locked_tool(command.split(), tools):
+            if (subject := _uvx_locked_tool(command.split(), tools)) is not None:
                 yield Violation(rule="tool-outside-lock", file=_rel(root, path), subject=subject)
     for line in _read(root / ".pre-commit-config.yaml").splitlines():
         parts = line.split("entry:", 1)[-1].split() if "entry:" in line else []
-        if subject := _uvx_locked_tool(parts, tools):
+        if (subject := _uvx_locked_tool(parts, tools)) is not None:
             yield Violation(
                 rule="tool-outside-lock", file=".pre-commit-config.yaml", subject=subject
             )
@@ -517,7 +521,7 @@ def _argv_provenance(
             if not isinstance(node, ast.List | ast.Tuple) or id(node) in skipped:
                 continue
             words = _leading_words(node.elts)
-            if subject := _uvx_locked_tool(words, tools):
+            if (subject := _uvx_locked_tool(words, tools)) is not None:
                 yield Violation(rule="tool-outside-lock", file=rel, subject=subject)
             elif len(words) > 1 and _norm(words[0]) in tools and _norm(words[1]) not in tools:
                 yield Violation(rule="tool-outside-lock", file=rel, subject=_norm(words[0]))

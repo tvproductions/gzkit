@@ -16,7 +16,7 @@ def skill_new(name: str, description: str | None) -> None:
     project_root = get_project_root()
 
     kwargs = {}
-    if description:
+    if description not in {None, ""}:
         kwargs["skill_description"] = description
 
     try:

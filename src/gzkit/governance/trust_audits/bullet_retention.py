@@ -822,7 +822,7 @@ def _unreadable_row_error(
     section: str | None, line_number: int, text: str, problem: str
 ) -> ValidationError:
     """Build the fail-closed error for a rule-table row the audit cannot read."""
-    where = f"section {section}" if section else "outside any `###` section"
+    where = f"section {section}" if section not in {None, ""} else "outside any `###` section"
     return _error(
         f"Bullet-retention mapping violation: scorecard line {line_number} ({where}) is a "
         f"rule-table row the audit cannot read: it {problem}.\n"

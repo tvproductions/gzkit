@@ -219,13 +219,13 @@ def _calls_production_via_helper(
         reached, or no helper does.
 
     """
-    if not helpers or depth >= _HELPER_RESOLUTION_MAX_DEPTH:
+    if helpers is None or len(helpers) == 0 or depth >= _HELPER_RESOLUTION_MAX_DEPTH:
         return False
     for child in _walk_body(node):
         if not isinstance(child, ast.Call):
             continue
         name = _called_local_name(child.func)
-        target = helpers.get(name) if name else None
+        target = helpers.get(name) if name is not None else None
         if (
             target is not None
             and target is not node

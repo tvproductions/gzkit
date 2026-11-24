@@ -285,7 +285,7 @@ def _render(
     # freshness and the divergence caveat, ahead of the budgeted tail.
     if (chain_line := _chain_line(result)) is not None:
         lines.append(chain_line)
-    if findings:
+    if findings is not None and len(findings) > 0:
         lines += ["", _render_count_warning(findings), ""]
     lines += [
         "- It ADVISES, never authorizes: get the operator's ruling first and book it "

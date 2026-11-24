@@ -109,7 +109,7 @@ def classify_repair(repair: str | None) -> RepairScope:
         structural verb, otherwise ``RepairScope.LIGHT``.
 
     """
-    if not repair or not repair.strip():
+    if repair is None or not repair.strip():
         return RepairScope.NONE
     if _intent_tokens(repair) & _BEYOND_CEILING_VERBS:
         return RepairScope.BEYOND
@@ -150,7 +150,11 @@ def _resolve_declare(
     # ``extract_allowed_paths`` yields it verbatim. Only the free-text INTENT is sanitized
     # (it is descriptive, never an identity), so an injected ``\n- `evil.py` `` cannot
     # forge a declared body (Codex Step-4b, GHI #678).
-    raw_intent = repair.strip() if repair and repair.strip() else "reconnaissance for comprehension"
+    raw_intent = (
+        repair.strip()
+        if repair is not None and repair.strip()
+        else "reconnaissance for comprehension"
+    )
     safe_intent = _sanitize_for_brief(raw_intent)
     tmp_root = Path(tempfile.mkdtemp(prefix="gzkit-permitted-entry-"))
     brief = tmp_root / "declare.md"

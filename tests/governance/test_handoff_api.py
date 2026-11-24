@@ -1134,7 +1134,7 @@ class TestAdrlessChainCarriesRulings(unittest.TestCase):
     ) -> Path:
         sections = dict(self._SECTIONS)
         sections["Decisions Made"] = decisions
-        if settled:
+        if settled is not None and len(settled) > 0:
             # Same seating the CLI's --settled performs (commands/handoff.py).
             sections[SETTLED_SECTION] = "\n".join(f"- {entry}" for entry in settled)
         return create_handoff(

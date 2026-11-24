@@ -26,7 +26,7 @@ def _write_brief(
 ) -> Path:
     target = root / "docs" / "design" / "adr" / adr_dir / "obpis" / brief_name
     target.parent.mkdir(parents=True, exist_ok=True)
-    paired_line = f"paired_with: {paired_with}\n" if paired_with else ""
+    paired_line = f"paired_with: {paired_with}\n" if paired_with not in {None, ""} else ""
     body = (
         f"---\n"
         f"id: {obpi_id}\n"

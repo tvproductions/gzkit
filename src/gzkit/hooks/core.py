@@ -102,7 +102,7 @@ def _section_body(content: str, heading: str) -> str | None:
 
 def _implementation_summary_value(content: str) -> str | None:
     section = _section_body(content, "Implementation Summary")
-    if not section:
+    if section is None:
         return None
     bullet_matches = re.findall(r"^- [^:\n]+:[ \t]*(.+)$", section, flags=re.MULTILINE)
     for value in bullet_matches:
@@ -119,7 +119,7 @@ def _implementation_summary_value(content: str) -> str | None:
 
 def _extract_human_attestation(content: str) -> dict[str, str] | None:
     body = _section_body(content, "Human Attestation")
-    if not body:
+    if body is None:
         return None
     attestor_match = re.search(r"^- Attestor:\s*(.+)$", body, flags=re.MULTILINE)
     attestation_match = re.search(r"^- Attestation:\s*(.+)$", body, flags=re.MULTILINE)
@@ -183,7 +183,8 @@ def enrich_completed_receipt_evidence(
     evidence["recorder_source"] = recorder_source
 
     warnings = list(extra_warnings or [])
-    if normalized_git_sync_state.get("dirty"):
+    dirty = normalized_git_sync_state.get("dirty")
+    if dirty is not None and dirty:
         warnings.append("Working tree was dirty when the completion receipt was captured.")
     blockers = normalized_git_sync_state.get("blockers", [])
     if isinstance(blockers, list):
@@ -225,7 +226,7 @@ def _record_obpi_completion_if_ready(
 
     # Resolve lane for attestation term
     parent_lane = config.mode
-    if parent_adr:
+    if parent_adr not in {None, ""}:
         graph = ledger.get_artifact_graph()
         parent_info = graph.get(ledger.canonicalize_id(parent_adr), {})
         parent_lane = resolve_adr_lane(parent_info, config.mode)
@@ -235,7 +236,7 @@ def _record_obpi_completion_if_ready(
 
     # Block attested_completed if the brief's Human Attestation section is
     # missing or malformed (GHI-126).
-    if requires_human_attestation and not human_attestation:
+    if requires_human_attestation and human_attestation is None:
         print(  # noqa: T201
             f"Warning: Skipping completion receipt for {obpi_id} — "
             f"Human Attestation section is missing or malformed "
@@ -257,13 +258,13 @@ def _record_obpi_completion_if_ready(
         "attestation_requirement": "required" if requires_human_attestation else "optional",
         "parent_lane": parent_lane,
     }
-    if parent_adr:
+    if parent_adr not in {None, ""}:
         evidence["parent_adr"] = parent_adr
-    if value_narrative:
+    if value_narrative is not None:
         evidence["value_narrative"] = value_narrative
-    if key_proof:
+    if key_proof is not None:
         evidence["key_proof"] = key_proof
-    if human_attestation:
+    if human_attestation is not None:
         evidence["human_attestation"] = True
         evidence["attestation_text"] = human_attestation["attestation_text"]
         evidence["attestation_date"] = human_attestation["attestation_date"]
@@ -275,7 +276,7 @@ def _record_obpi_completion_if_ready(
             "attestor": human_attestation["attestor"] if human_attestation else None,
             "date": human_attestation["attestation_date"] if human_attestation else None,
         }
-        if human_attestation
+        if human_attestation is not None
         else None,
     )
     enriched_evidence, anchor = enrich_completed_receipt_evidence(

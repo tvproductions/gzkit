@@ -225,7 +225,7 @@ def cross_airlock(
     """
     if state == "commenced":
         decision = enter_package(package, ledger).decision
-        return f"airlock in: {decision.value if decision else 'none'}"
+        return f"airlock in: {decision.value if decision is not None else 'none'}"
     if state == "accepted":
         verdict = exit_package(project_root, package, ledger).drift_diff.verdict
         return f"airlock out: {verdict.value}"

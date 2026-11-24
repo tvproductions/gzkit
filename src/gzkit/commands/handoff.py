@@ -98,7 +98,9 @@ def _render_step_references(step: NextStep) -> None:
     if not step.references:
         return
     rendered = " · ".join(
-        f"{ref.kind.value} {ref.repo + '#' if ref.repo else ''}{ref.identifier}: {ref.state.value}"
+        f"{ref.kind.value} "
+        f"{ref.repo + '#' if ref.repo not in {None, ''} else ''}"
+        f"{ref.identifier}: {ref.state.value}"
         for ref in step.references
     )
     console.print(f"       refs: {rendered}")
@@ -271,7 +273,7 @@ def handoff_rulings_cmd(
     root = base_path if base_path is not None else get_project_root()
     corpus = read_rulings(root)
     entries = corpus
-    if search:
+    if search not in {None, ""}:
         needle = search.casefold()
         entries = [entry for entry in entries if needle in entry.casefold()]
     if limit is not None and limit > 0:
@@ -402,7 +404,7 @@ def handoff_create_cmd(
     }
     # Seat late-arriving rulings. `create_handoff` UNIONS these with whatever the
     # predecessor carried, so passing --settled never drops booked history.
-    if settled:
+    if settled is not None and len(settled) > 0:
         sections[SETTLED_SECTION] = "\n".join(f"- {entry}" for entry in settled)
     _warn_on_silent_chain_root(adr=adr, continues_from=continues_from, base_path=base_path)
     try:

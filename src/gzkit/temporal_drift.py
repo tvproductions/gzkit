@@ -323,7 +323,7 @@ def detect_drift(adr_id: str, *, project_root: Path | None = None) -> DriftResul
     full_anchor, is_ancestor_result = _resolve_anchor(root, anchor_short, head_commit)
 
     count: int | None = None
-    if is_ancestor_result:
+    if is_ancestor_result is True:
         count = _count_commits_between(root, full_anchor, head_commit)
 
     return classify_drift(adr_id, full_anchor, head_commit, is_ancestor_result, count)
@@ -363,7 +363,7 @@ def detect_obpi_drift(
     for oid, anchor_short in anchored.items():
         full_anchor, is_ancestor_result = _resolve_anchor(root, anchor_short, head_commit)
         count: int | None = None
-        if is_ancestor_result:
+        if is_ancestor_result is True:
             count = _count_commits_between(root, full_anchor, head_commit)
         drift = classify_drift(adr_id, full_anchor, head_commit, is_ancestor_result, count)
         results.append(

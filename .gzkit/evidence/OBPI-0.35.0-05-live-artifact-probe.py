@@ -50,7 +50,7 @@ def _scan(text: bytes, *, fence_aware: bool) -> tuple[list[int], int]:
             tok = opener.group(1)[0]
             fence = None if fence == tok else (fence or tok)
         elif re.match(r"^#{1,2} ", raw):
-            if fence_aware and fence:
+            if fence_aware and fence is not None:
                 fenced_hits += 1
             else:
                 offsets.append(off)

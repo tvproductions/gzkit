@@ -1184,11 +1184,11 @@ def _render_scope(adr_id: str | None, obpi_id: str | None) -> str:
         ``ADR (OBPI)``, whichever id is present, or ``this session's work`` when neither is.
 
     """
-    if adr_id and obpi_id:
+    if adr_id not in {None, ""} and obpi_id not in {None, ""}:
         return f"{adr_id} ({obpi_id})"
-    if adr_id:
+    if adr_id not in {None, ""}:
         return adr_id
-    if obpi_id:
+    if obpi_id not in {None, ""}:
         return obpi_id
     return "this session's work"
 

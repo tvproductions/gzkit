@@ -236,7 +236,11 @@ def _why(fence: FencedPackage) -> str:
     if fence.reason == "unreadable":
         return "the ledger or `.gzkit.json` cannot be read, so no work package's state can be shown"
     if fence.reason == "frozen":
-        held = "its sealed footprint" if fence.footprint else "the whole tree, its seal empty"
+        held = (
+            "its sealed footprint"
+            if fence.footprint is not None and len(fence.footprint) > 0
+            else "the whole tree, its seal empty"
+        )
         return (
             f"order {fence.order} of work package {fence.work_package} is frozen and not "
             f"commenced, and it holds {held}: work before commencement lands on a surface "

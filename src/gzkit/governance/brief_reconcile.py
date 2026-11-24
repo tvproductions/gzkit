@@ -471,7 +471,11 @@ def _extract_gzkit_imports(test_source: str) -> list[str]:
         return []
     modules: list[str] = []
     for node in ast.walk(tree):
-        if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith("gzkit"):
+        if (
+            isinstance(node, ast.ImportFrom)
+            and node.module is not None
+            and node.module.startswith("gzkit")
+        ):
             if node.module not in modules:
                 modules.append(node.module)
         elif isinstance(node, ast.Import):
@@ -571,7 +575,7 @@ def _covers_index(tests_root: Path) -> tuple[tuple[str, str], ...]:
     return tuple(
         (record.target.identifier, record.evidence_path)
         for record in scan_test_tree(tests_root)
-        if record.evidence_path
+        if record.evidence_path not in {None, ""}
     )
 
 

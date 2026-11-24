@@ -326,11 +326,11 @@ def _obpi_completion_validator_script() -> str:
 
                 # 3. Extract identifiers
                 obpi_id = extract_obpi_id(rel_str)
-                if not obpi_id:
+                if obpi_id is None:
                     sys.exit(0)
 
                 adr_id = extract_adr_id(obpi_id)
-                if not adr_id:
+                if adr_id is None:
                     sys.exit(0)
 
                 # 4. Find parent ADR directory and file

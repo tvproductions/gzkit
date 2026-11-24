@@ -193,7 +193,7 @@ def _sig_c_comparison_coverage(project_root: Path) -> tuple[int, int]:
         _bucket_channel_by_lineage(_commit_trailer_channel_map(project_root)),
     )
     obpi_ids = {_obpi_lineage_id(o) for o in set(brief_fms.keys()) | ledger_obpis}
-    compared = sum(1 for o in obpi_ids if sum(1 for m in maps if m.get(o)) >= 2)
+    compared = sum(1 for o in obpi_ids if sum(1 for m in maps if o in m and len(m[o]) > 0) >= 2)
     return compared, len(obpi_ids)
 
 
@@ -322,6 +322,13 @@ def _is_req_attributed_uncovered_accept_event(
     return any(task.startswith(task_prefix) for task in active_tasks)
 
 
+def _end_task_everywhere(task_id: str | None, active_tasks_by_obpi: dict[str, set[str]]) -> None:
+    """Discard an ended TASK from every OBPI's active set; a missing or falsy id ends none."""
+    if task_id is not None and task_id:
+        for active in active_tasks_by_obpi.values():
+            active.discard(task_id)
+
+
 def _sig_a_is_not_labor_event(
     ev: dict[str, Any],
     ev_type: str,
@@ -342,7 +349,8 @@ def _sig_a_is_not_labor_event(
         be checked.
 
     """
-    if ev_type == "task_started" and task_id and obpi_id:
+    # ``task_id`` is read raw from ledger JSON, so the test keeps plain truthiness.
+    if ev_type == "task_started" and task_id is not None and task_id and obpi_id:
         active_tasks_by_obpi.setdefault(obpi_id, set()).add(task_id)
         return True
     if ev_type in ("task_completed", "task_blocked", "task_escalated"):
@@ -353,9 +361,7 @@ def _sig_a_is_not_labor_event(
         # the event's own obpi_id orphans the divergent start in the other
         # bucket, marking the TASK perpetually active. ``task_id`` is globally
         # unique to one OBPI, so clearing it from every bucket is safe.
-        if task_id:
-            for active in active_tasks_by_obpi.values():
-                active.discard(task_id)
+        _end_task_everywhere(task_id, active_tasks_by_obpi)
         return True
 
     # Closeout ``meta-receipt-bind`` is a Gate-5 ceremony receipt-binding
@@ -429,7 +435,11 @@ def _sig_a_is_grandfathered_demotion(
     ev: dict[str, object], ev_type: str, task_id: str | None
 ) -> bool:
     """Return True for a pre-cutover ``pool_demotion`` rename from the unrepaired producer."""
-    if ev_type != "artifact_renamed" or task_id or ev.get("reason") != "pool_demotion":
+    if (
+        ev_type != "artifact_renamed"
+        or (task_id is not None and task_id)
+        or ev.get("reason") != "pool_demotion"
+    ):
         return False
     raw_ts = ev.get("ts")
     if not isinstance(raw_ts, str):
@@ -745,7 +755,11 @@ def _frontmatter_channel_for_obpi(project_root: Path, obpi_id: str) -> set[str]:
     if fm is None:
         bare = extract_bare_obpi_id(obpi_id)
         fm = next(
-            (v for k, v in brief_fms.items() if bare and extract_bare_obpi_id(k) == bare),
+            (
+                v
+                for k, v in brief_fms.items()
+                if bare not in {None, ""} and extract_bare_obpi_id(k) == bare
+            ),
             None,
         )
     fm_tasks = (fm or {}).get("tasks") or []
@@ -837,7 +851,7 @@ def _advances_channel_map() -> dict[str, set[str]]:
 
         for rec in get_task_registry():
             obpi_id = _obpi_id_for_task(rec.task_id)
-            if obpi_id:
+            if obpi_id not in {None, ""}:
                 out.setdefault(obpi_id, set()).add(rec.task_id)
     except Exception:  # noqa: BLE001  -- defensive; registry walk is best-effort
         return {}
@@ -900,7 +914,7 @@ def _commit_trailer_channel_map(project_root: Path) -> dict[str, set[str]]:
         for tid in parse_task_trailers(chunk):
             tid_str = str(tid)
             obpi_id = _obpi_id_for_task(tid_str)
-            if obpi_id:
+            if obpi_id not in {None, ""}:
                 out.setdefault(obpi_id, set()).add(tid_str)
     return out
 

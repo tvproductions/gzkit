@@ -21,7 +21,7 @@ def roles_cmd(*, pipeline: str | None = None, as_json: bool = False) -> None:
     """List pipeline agent roles or show dispatch history for an OBPI."""
     project_root = get_project_root()
 
-    if pipeline:
+    if pipeline not in {None, ""}:
         _show_pipeline_dispatch(project_root, pipeline, as_json=as_json)
         return
 
@@ -94,7 +94,7 @@ def _show_pipeline_dispatch(project_root: object, obpi_id: str, *, as_json: bool
         }
     else:
         summary = load_dispatch_summary(plans_dir, obpi_id)
-        if summary:
+        if summary not in (None, {}):
             records_data = {"source": "summary", **summary}
 
     if records_data is None:

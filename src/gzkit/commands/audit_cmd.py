@@ -60,7 +60,7 @@ def _run_audit_verifications(
 
 def _format_attestation_content(attestation: dict[str, Any] | None) -> str:
     """Format attestation data as markdown content for the audit template."""
-    if attestation:
+    if attestation is not None and len(attestation) > 0:
         return "\n".join(
             [
                 f"- Attestor: {attestation['by']}",
@@ -210,7 +210,7 @@ def _write_audit_artifacts(
             "status": attestation_data["status"],
             "timestamp": attestation_data["ts"],
         }
-        if attestation_data
+        if attestation_data is not None and len(attestation_data) > 0
         else {},
         "gate_results": gate_results,
         "evidence_links": evidence_links,
@@ -236,7 +236,7 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
     _reject_pool_adr_for_lifecycle(adr_id, "audited")
     graph = ledger.get_artifact_graph()
     adr_info = graph.get(adr_id)
-    if not adr_info or adr_info.get("type") != "adr":
+    if adr_info is None or adr_info.get("type") != "adr":
         msg = f"ADR not found in ledger: {adr_id}"
         raise GzCliError(msg)
     if not adr_info.get("attested"):
@@ -388,7 +388,7 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         console.print(f"Audit plan: {plan_file.relative_to(project_root).as_posix()}")
         console.print(f"Audit report: {audit_file.relative_to(project_root).as_posix()}")
         console.print(f"Validation receipt: emitted (by {auditor})")
-        if status_transition:
+        if status_transition is not None:
             console.print("ADR status: Completed -> Validated")
         else:
             console.print("[yellow]ADR status: NOT transitioned (failures detected)[/yellow]")

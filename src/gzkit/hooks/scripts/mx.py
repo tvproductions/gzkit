@@ -86,7 +86,7 @@ def _mx_awareness_script() -> str:
                     The nearest directory holding ``.gzkit``, or None.
 
                 \"\"\"
-                start = Path(cwd).resolve() if cwd else Path.cwd()
+                start = Path(cwd).resolve() if cwd not in {None, ""} else Path.cwd()
                 for candidate in (start, *start.parents):
                     if (candidate / ".gzkit").is_dir():
                         return candidate
@@ -167,7 +167,7 @@ def _mx_awareness_script() -> str:
                 try:
                     from gzkit.mx.awareness import _find_project_root, get_banner
 
-                    root = _find_project_root(Path(cwd).resolve() if cwd else None)
+                    root = _find_project_root(Path(cwd).resolve() if cwd not in {None, ""} else None)
                     banner = get_banner(root)
                 except Exception:
                     banner = _banner_stdlib(cwd)

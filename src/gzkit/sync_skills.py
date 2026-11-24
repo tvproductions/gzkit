@@ -338,7 +338,12 @@ def sync_skill_mirror(
             continue
 
         relative_path = source_file.relative_to(source_root)
-        if exclude_dirs and relative_path.parts and relative_path.parts[0] in exclude_dirs:
+        if (
+            exclude_dirs is not None
+            and len(exclude_dirs) > 0
+            and relative_path.parts
+            and relative_path.parts[0] in exclude_dirs
+        ):
             continue
         if source_file.name in forbidden_names:
             continue

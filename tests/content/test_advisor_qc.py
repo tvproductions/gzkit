@@ -142,7 +142,7 @@ class TestRecordVerdictDeterministic(unittest.TestCase):
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 imported.update(alias.name.split(".")[0] for alias in node.names)
-            elif isinstance(node, ast.ImportFrom) and node.module:
+            elif isinstance(node, ast.ImportFrom) and node.module is not None:
                 imported.add(node.module.split(".")[0])
         forbidden = {"urllib", "http", "requests", "httpx", "socket", "anthropic", "openai"}
         self.assertEqual(

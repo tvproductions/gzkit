@@ -255,7 +255,7 @@ def _campaign_adr_refs(topmost: str | None, limit: int = CAMPAIGN_ADR_REF_LIMIT)
         None or empty.
 
     """
-    if not topmost:
+    if topmost in {None, ""}:
         return []
     ordered: dict[str, None] = {}
     for ref in _ADR_REF_RE.findall(topmost):
@@ -491,7 +491,7 @@ def collect_handoff(repo_root: Path, now: datetime) -> dict[str, str] | None:
         "freshness": classify_freshness(now, ts),
     }
     first_action = extract_first_next_step(text)
-    if first_action:
+    if first_action not in {None, ""}:
         result["first_action"] = first_action
     return result
 
@@ -721,12 +721,12 @@ def collect_handoff_account(repo_root: Path, now: datetime) -> dict[str, object]
     unprocessed = sum(1 for ts, _ in bookmarks if ts > anchor_ts)
     dirty = _tree_is_dirty(repo_root)
 
-    commits = git_side["commits"] if git_side else []
-    commits_total = git_side["total"] if git_side else 0
+    commits = git_side["commits"] if git_side is not None else []
+    commits_total = git_side["total"] if git_side is not None else 0
     return {
         "anchor": rel,
         "anchor_age": classify_freshness(now, anchor_ts),
-        "landed": git_side["landed"] if git_side else None,
+        "landed": git_side["landed"] if git_side is not None else None,
         "git_unavailable": git_side is None,
         "commits": commits,
         "commits_total": commits_total,

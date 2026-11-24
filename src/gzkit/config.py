@@ -318,7 +318,7 @@ def load_config(
     # Layer 2: load from config file
     file_config = GzkitConfig.load(path)
 
-    if not cli_overrides:
+    if cli_overrides is None or len(cli_overrides) == 0:
         return file_config
 
     # Layer 3: apply CLI overrides

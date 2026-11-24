@@ -264,7 +264,7 @@ def _resolve_contract(root: Path, mode: str, contract: str | None) -> str:
 
     """
     if mode == "mx":
-        if contract:
+        if contract not in {None, ""}:
             console.print(
                 "[red]ERROR:[/red] --contract belongs to --level drydock; the hangar carries no "
                 "contract."

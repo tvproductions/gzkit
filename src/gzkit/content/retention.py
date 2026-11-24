@@ -793,7 +793,7 @@ def _check_condition_dropped(
     if condition.disposition != "dropped":
         return []
     violations: list[RetentionViolation] = []
-    if not condition.reason or not condition.reason.strip():
+    if condition.reason is None or not condition.reason.strip():
         violations.append(
             RetentionViolation(
                 kind="dropped-without-reason",

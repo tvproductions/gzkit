@@ -145,7 +145,7 @@ def wp_discrepancy_record_cmd(
             not parse; nothing is booked.
 
     """
-    if called_by_subagent and not stamped_dispatch_id:
+    if called_by_subagent and stamped_dispatch_id in {None, ""}:
         msg = (
             "This call is a subagent's and is stamped with no dispatch id. A line is "
             "recorded by the coordinator's unstamped call or by a dispatched performer "
@@ -235,8 +235,12 @@ def _cleared_line(line: Discrepancy) -> str:
         return "open"
     cited = [
         cite
-        for cite in (clear.entry_id, clear.tag_id, f"#{clear.ghi}" if clear.ghi else None)
-        if cite
+        for cite in (
+            clear.entry_id,
+            clear.tag_id,
+            f"#{clear.ghi}" if clear.ghi is not None and clear.ghi != 0 else None,
+        )
+        if cite not in {None, ""}
     ]
     return f"{clear.ts} on {', '.join(cited)}"
 
@@ -267,7 +271,7 @@ def _line_block(line: Discrepancy, *, every: bool) -> str:
     return "\n".join(
         (
             f"{record.discrepancy_id} on {record.order} ({record.work_package}){state}",
-            *(f"  {label + ':':<13}{value}" for label, value in fields if value),
+            *(f"  {label + ':':<13}{value}" for label, value in fields if value not in {None, ""}),
         )
     )
 

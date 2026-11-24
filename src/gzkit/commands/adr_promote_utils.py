@@ -162,13 +162,13 @@ def _parse_top_level_markdown_bullets(section_content: str) -> list[str]:
     in_subsection = False
     for raw_line in section_content.splitlines():
         if raw_line.startswith("### "):
-            if current:
+            if current is not None:
                 bullets.append(re.sub(r"\s+", " ", " ".join(current)).strip())
                 current = None
             in_subsection = True
             continue
         if raw_line.startswith("## "):
-            if current:
+            if current is not None:
                 bullets.append(re.sub(r"\s+", " ", " ".join(current)).strip())
                 current = None
             in_subsection = False
@@ -177,7 +177,7 @@ def _parse_top_level_markdown_bullets(section_content: str) -> list[str]:
             continue
         bullet_match = re.match(r"^(?P<indent>\s*)-\s+(?P<body>.+)$", raw_line.rstrip())
         if bullet_match and not bullet_match.group("indent"):
-            if current:
+            if current is not None:
                 bullets.append(re.sub(r"\s+", " ", " ".join(current)).strip())
             current = [bullet_match.group("body").strip()]
             continue
@@ -190,7 +190,7 @@ def _parse_top_level_markdown_bullets(section_content: str) -> list[str]:
             continue
         current.append(stripped)
 
-    if current:
+    if current is not None:
         bullets.append(re.sub(r"\s+", " ", " ".join(current)).strip())
     return bullets
 
@@ -335,7 +335,7 @@ def _promoted_checklist_from_pool(
 
     table_rows = _parse_decomposition_table(pool_content)
     scope_items: list[str]
-    if table_rows:
+    if table_rows is not None:
         scope_items = [f"**{slug}** — {description}" for slug, description in table_rows]
     else:
         target_scope = extract_markdown_section(pool_content, "Target Scope") or ""
@@ -523,7 +523,7 @@ def _resolve_pool_adr_source(
 
     pool_content = pool_file.read_text(encoding="utf-8")
     existing_promoted_to = parse_frontmatter_value(pool_content, "promoted_to")
-    if existing_promoted_to:
+    if existing_promoted_to not in {None, ""}:
         msg = f"Pool ADR already records promotion target '{existing_promoted_to}': {pool_adr_id}"
         raise GzCliError(msg)
     return pool_file, pool_adr_id, pool_metadata, pool_content

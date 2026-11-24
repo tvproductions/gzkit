@@ -8,7 +8,7 @@ one was supplied.
 
 def _fp(file_path: str | None) -> str:
     """Format file_path prefix for error messages."""
-    return f"{file_path}: " if file_path else ""
+    return f"{file_path}: " if file_path not in {None, ""} else ""
 
 
 class UnexpectedH1PrefixError(ValueError):

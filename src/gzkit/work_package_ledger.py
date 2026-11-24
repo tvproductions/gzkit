@@ -443,9 +443,9 @@ def record_work_package_transition(
     if not move.evidence.strip():
         _refuse("A transition names what justifies it; evidence is empty.")
     current = work_package_state(ledger, move.work_package)
-    if refusal := lifecycle_refusal(package, current, move.to_state):
+    if (refusal := lifecycle_refusal(package, current, move.to_state)) is not None:
         _refuse(refusal)
-    if refusal := block_refusal(ledger, package.id):
+    if (refusal := block_refusal(ledger, package.id)) is not None:
         _refuse(refusal)
     _check_move(catalog, ledger, package, move)
     fields = move.model_dump(exclude_unset=True)
@@ -457,7 +457,7 @@ def record_work_package_transition(
             "from_state": current,
             "evidence": move.evidence.strip(),
             "modules": package.modules if move.to_state == "frozen" else (),
-            "attestor": move.attestor.strip() if move.attestor else None,
+            "attestor": (move.attestor.strip() if move.attestor not in {None, ""} else None),
             "lane": work_package_lane(catalog, package.id) if move.to_state == "closed" else None,
             "order_decisions": (
                 {
@@ -504,7 +504,7 @@ def lifecycle_refusal(package: WorkPackage, current: str | None, to_state: str) 
 
     """
     states = LIFECYCLES[package.kind]
-    following = states[states.index(current) + 1 :] if current else states
+    following = states[states.index(current) + 1 :] if current not in {None, ""} else states
     expected = following[0] if following else None
     if to_state == expected:
         return None

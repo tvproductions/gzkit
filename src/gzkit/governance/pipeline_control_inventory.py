@@ -268,7 +268,11 @@ def check_rationale_record(inventory: ControlInventory, record_text: str) -> lis
             if non.class_ != "rationale":
                 continue
             home = next(
-                (body for key, body in sections.items() if non.explains and non.explains in key),
+                (
+                    body
+                    for key, body in sections.items()
+                    if non.explains not in {None, ""} and non.explains in key
+                ),
                 None,
             )
             if home is None or non.quote not in home:

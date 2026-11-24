@@ -429,9 +429,9 @@ def artifact_edited_event(
 
     """
     extra: dict[str, Any] = {"path": path}
-    if session:
+    if session not in {None, ""}:
         extra["session"] = session
-    if commit:
+    if commit not in {None, ""}:
         extra["commit"] = commit
     return LedgerEvent(
         event="artifact_edited",
@@ -449,9 +449,9 @@ def attested_event(
 ) -> LedgerEvent:
     """Create an attestation event; ``task_id`` attributes it to a TASK (GHI #950)."""
     extra: dict[str, Any] = {"status": status, "by": by}
-    if reason:
+    if reason not in {None, ""}:
         extra["reason"] = reason
-    if task_id:
+    if task_id not in {None, ""}:
         extra["task_id"] = task_id
     return LedgerEvent(
         event="attested",
@@ -477,9 +477,9 @@ def gate_checked_event(
         "command": command,
         "returncode": returncode,
     }
-    if evidence:
+    if evidence not in {None, ""}:
         extra["evidence"] = evidence
-    if task_id:
+    if task_id not in {None, ""}:
         extra["task_id"] = task_id
     return LedgerEvent(
         event="gate_checked",
@@ -538,7 +538,7 @@ def audit_receipt_emitted_event(
         extra["evidence"] = evidence
     if anchor is not None:
         extra["anchor"] = anchor.model_dump(exclude_none=True)
-    if task_id:
+    if task_id not in {None, ""}:
         extra["task_id"] = task_id
     return LedgerEvent(
         event="audit_receipt_emitted",
@@ -590,9 +590,9 @@ def artifact_renamed_event(
 
     """
     extra: dict[str, Any] = {"new_id": new_id}
-    if reason:
+    if reason not in {None, ""}:
         extra["reason"] = reason
-    if task_id:
+    if task_id not in {None, ""}:
         extra["task_id"] = task_id
     return LedgerEvent(
         event="artifact_renamed",
@@ -720,7 +720,7 @@ def obpi_completion_uncovered_accept_event(
         "rationale": rationale,
         "acceptance_type": acceptance_type,
     }
-    if task_id:
+    if task_id not in {None, ""}:
         extra["task_id"] = task_id
     return LedgerEvent(
         event="obpi_completion_uncovered_accept",
@@ -1092,7 +1092,7 @@ def composition_rendered_event(
             "target": target,
             "byte_count": byte_count,
             "render_ts": timestamp,
-            **({"task_id": task_id} if task_id else {}),
+            **({"task_id": task_id} if task_id not in {None, ""} else {}),
         },
     )
 
@@ -1496,7 +1496,7 @@ def intrinsic_complexity_attestation_event(
             "metric": metric,
             "crossing_band": crossing_band,
             "crossing_value": crossing_value,
-            **({"task_id": task_id} if task_id else {}),
+            **({"task_id": task_id} if task_id not in {None, ""} else {}),
         },
     )
 
@@ -1533,9 +1533,9 @@ def red_receipt_emitted_event(
         "base_commit": base_commit,
         "base_provenance": base_provenance,
     }
-    if obpi_id:
+    if obpi_id not in {None, ""}:
         extra["obpi_id"] = obpi_id
-    if test_names:
+    if test_names is not None and len(test_names) > 0:
         extra["test_names"] = list(test_names)
     return LedgerEvent(
         event="red_receipt_emitted",
@@ -1762,7 +1762,7 @@ def guard_canary_reviewed_event(
         "attestor": attestor,
         "operator_text": operator_text,
     }
-    if ruling_source:
+    if ruling_source not in {None, ""}:
         extra["ruling_source"] = ruling_source
     return LedgerEvent(event="guard_canary_reviewed", id=claim_id, extra=extra)
 
