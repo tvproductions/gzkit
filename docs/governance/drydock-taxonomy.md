@@ -514,7 +514,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T20 | **Ruled W43: a supplement is a new package record naming its parent; the rest settled by canon.** The change ladder: four rungs or six; the supplement's record; whether a change order may change a contract row; the numbering of `CO-n` | canon four, code six |
 | T21 | **Ruled W44: alarm and tripwire keep RP-10's senses; the census role set is the MEL role field, its colliding names renamed interlock and annunciator.** Control roles: the senses of tripwire and alarm (and dispatcher), which MEL entries are keyed on | the census's reading, unruled |
 | T22 | **Ruled W45: a position is obligation, authority and responsibility, a persona is disposition; the crosswalk binds them and the dispatch record names both; one reviewer position with spec and quality sub-roles; the craftsman is a position, repair and restoration its sub-positions.** Positions, personas and dispatch roles: the mapping of each persona file to a position, the reviewer's name, the craftsman against `Implementer` | unmapped |
-| T23 | The construction side's one name (construction, catalog, delivery), and whether the maintenance visit is a third kind of package | three names; the store holds two kinds |
+| T23 | **Ruled W46: the side is construction and its package the work package, store kind `delivery` renamed `work`, `catalog` kept as the REQ specialization; the maintenance visit settled by W41, not a third kind.** The construction side's one name (construction, catalog, delivery), and whether the maintenance visit is a third kind of package | three names; the store holds two kinds |
 | T24 | Lane's home: the ADR, the outcome's `user_facing`, or the package | three homes |
 | T25 | Who opens and closes the hangar (rulings 447 and 448 against the skill and the doctrine), and the floor's one list | contradicted |
 | T26 | The handback: before or after the exit, and the subagent's "handback" renamed | contradicted |
@@ -1075,6 +1075,22 @@ put after it.
   this ruling. The crosswalk, the dispatch record's persona field, the persona files' wording and
   the reviewer spelling are owed on T10's route. The SingleDriver arm stays with GHI #1353. T22 is
   ruled.
+- **W46 (2026-11-24, T23, the construction side's name and the maintenance visit).** The visit part
+  is settled by W41: a packaged group of chores is a visit, *"a phase of a check at its level"*,
+  so the constitution's *"a scheduled work package of the operator's own design"*
+  (`command-doctrine.md:167-168`) is corrected on T10's route and the store keeps two kinds. The
+  name stood three ways: *construction* with *work package* at the story level (the level table,
+  `requirements-model.md` § 12, canon), `delivery` (the package `kind`, `catalog.py:204`; rulings
+  80 and 81, *"delivery package"*) and `catalog` (the REQ specialization, `catalog.py:123`). W29
+  requires the `kind` field to agree with the `WP-` prefix. Three options were put:
+  - A: the side is construction and its story package the work package; the store kind
+    `delivery` is renamed `work` to agree with the prefix, and rulings 80 and 81's *delivery
+    package* reads work package; `catalog` stays as the REQ specialization, naming the record
+    that holds the REQ, not the side. Recommended.
+  - B: the side is delivery, the kind kept, the level table's column renamed.
+  - C: as A, with the REQ specialization also renamed `construction`.
+
+  Operator: *"A: Construction / work"*. The `kind` rename is owed on T10's route. T23 is ruled.
 
 ## 10. The gathering, closed
 
