@@ -512,7 +512,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T18 | **Ruled W41: the letters are the check levels; a visit is named by its subject.** Letters A to E (maintenance visits) against A to D (check levels) | both live |
 | T19 | **Ruled W42: the catalog absorbs the amendment; `AMD-` retires unbuilt.** The amendment (`AMD-`, ruled 2026-09-27) against the change ladder and the superseding REQ | never reconciled; `AMD-` was planned for an amendment ADR numbered `ADR-0.40.0` "as the queue stands" (`design-amendment.md:741`), never authored; the ledger's `ADR-0.40.0` is an unrelated ADR of 2026-03-28 |
 | T20 | **Ruled W43: a supplement is a new package record naming its parent; the rest settled by canon.** The change ladder: four rungs or six; the supplement's record; whether a change order may change a contract row; the numbering of `CO-n` | canon four, code six |
-| T21 | Control roles: the senses of tripwire and alarm (and dispatcher), which MEL entries are keyed on | the census's reading, unruled |
+| T21 | **Ruled W44: alarm and tripwire keep RP-10's senses; the census role set is the MEL role field, its colliding names renamed interlock and annunciator.** Control roles: the senses of tripwire and alarm (and dispatcher), which MEL entries are keyed on | the census's reading, unruled |
 | T22 | Positions, personas and dispatch roles: the mapping of each persona file to a position, the reviewer's name, the craftsman against `Implementer` | unmapped |
 | T23 | The construction side's one name (construction, catalog, delivery), and whether the maintenance visit is a third kind of package | three names; the store holds two kinds |
 | T24 | Lane's home: the ADR, the outcome's `user_facing`, or the package | three homes |
@@ -1018,6 +1018,23 @@ put after it.
   - C: a section within the boundary, a new record on a reopening.
 
   Operator: *"A (why is this important? are we being too pendantic?)"*. T20 is ruled.
+- **W44 (2026-11-24, T21, control roles).** The census
+  (`docs/rnd/contractor-kit/sources/census-code-controls.md:66-71`) classes each control as gate,
+  safeguard, tripwire, alarm or monitor, an auditor's reading no operator ruled on. Two of its
+  names mean the opposite of RP-10, which is in force: the census tripwire is *"any other blocking
+  check"* where RP-10's tripwire *"does not stop the work … it records"*, and the census alarm
+  *"only announces or warns"* where RP-10's *"An alarm stops the work"*, the sense the doctrine's
+  alarm test and `gzkit.mx.alarms` follow. RP-13 rulings 5 and 8 make the role label a ruled field
+  of every MEL entry, so the clash carries weight (§ 5.3). Three options were put:
+  - A: alarm and tripwire keep RP-10's senses. The census role set stays the MEL role field with
+    its two colliding names renamed, interlock for the census tripwire and annunciator for the
+    census alarm, so a MEL entry carries a role and an out-of-service behaviour; the census's
+    other roles stand. The code and doctrine already follow RP-10 and do not change. Recommended.
+  - B: the census senses win; RP-10, the alarm test and `gzkit.mx.alarms` are reworded or renamed.
+  - C: drop the census role set; MEL entries are keyed on something else, and the census stays an
+    auditor's working note.
+
+  Operator: *"A: RP-10 senses (Recommended)"*. T21 is ruled.
 
 ## 10. The gathering, closed
 
