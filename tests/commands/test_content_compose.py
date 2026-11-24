@@ -78,7 +78,7 @@ class _GeneratedFixtureBuilder(_GenerateCandidateFixtureMixin):
 _OWNED_CORPUS_TEXT = "Owned body from the corpus."
 
 
-def _seed_generated_fixture(root: Path, *, manifest: dict | None = None) -> None:
+def _seed_generated_fixture(root: Path, *, manifest: dict[str, Any] | None = None) -> None:
     """Seed corpus + manifest + ownership declaration + prior rendition.
 
     Mirrors ``generate_candidate``'s own unit-test fixture

@@ -29,6 +29,8 @@ from gzkit.mx.marker import SESSION_LOCK_KEY
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from gzkit.ledger import LedgerEvent
+
 
 def covers[T](target: str) -> Callable[[T], T]:
     """Identity decorator linking test to ADR/OBPI target for traceability."""
@@ -56,9 +58,9 @@ class _CapturingLedger:
     """
 
     def __init__(self) -> None:
-        self.events: list = []
+        self.events: list[LedgerEvent] = []
 
-    def append(self, event: object) -> None:
+    def append(self, event: LedgerEvent) -> None:
         self.events.append(event)
 
 

@@ -21,6 +21,8 @@ from gzkit.cli.parser_wp_tag import _register_wp_tag
 if TYPE_CHECKING:
     import argparse
 
+    from gzkit.cli.parser import StableArgumentParser
+
 _WITHDRAW_EXAMPLE = (
     "gz wp withdraw-legacy OBPI-0.35.0-11-corpus-shape-witness "
     '--reason "carried to REQ-7" --attestor g0'
@@ -28,7 +30,7 @@ _WITHDRAW_EXAMPLE = (
 _RUNGS = ("pen_and_ink", "change_order", "attachment", "supplement", "alteration", "departure")
 
 
-def register_wp_parsers(commands: argparse._SubParsersAction) -> None:
+def register_wp_parsers(commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register ``gz wp`` and its subcommands."""
     p_wp = commands.add_parser(
         "wp",
@@ -55,7 +57,9 @@ def register_wp_parsers(commands: argparse._SubParsersAction) -> None:
     _register_wp_withdraw_legacy(wp_commands)
 
 
-def _register_wp_withdraw_legacy(wp_commands: argparse._SubParsersAction) -> None:
+def _register_wp_withdraw_legacy(
+    wp_commands: argparse._SubParsersAction[StableArgumentParser],
+) -> None:
     """Register ``gz wp withdraw-legacy``, the successor to ``gz obpi withdraw``."""
     p_withdraw = wp_commands.add_parser(
         "withdraw-legacy",
@@ -122,7 +126,7 @@ def _dispatch_or_void(parser: argparse.ArgumentParser, a: argparse.Namespace) ->
     )
 
 
-def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
+def _register_wp_run(wp_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register ``gz wp dispatch``, ``block`` and ``unblock`` (RO-14 tranche 1)."""
     p_dispatch = wp_commands.add_parser(
         "dispatch",
@@ -252,7 +256,7 @@ def _register_wp_run(wp_commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_wp_record(wp_commands: argparse._SubParsersAction) -> None:
+def _register_wp_record(wp_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register ``gz wp new``, ``attach``, ``resolve``, ``evidence`` and ``show``."""
     p_new = wp_commands.add_parser(
         "new",
@@ -397,7 +401,9 @@ def _register_wp_record(wp_commands: argparse._SubParsersAction) -> None:
     p_runs.set_defaults(func=lambda a: _lazy("wp_runs_cmd")(as_json=a.as_json))
 
 
-def _register_wp_acceptance(wp_commands: argparse._SubParsersAction) -> None:
+def _register_wp_acceptance(
+    wp_commands: argparse._SubParsersAction[StableArgumentParser],
+) -> None:
     p_acceptance = wp_commands.add_parser(
         "acceptance",
         help="Execute proof, record independent reviews and derive readiness",
@@ -421,7 +427,9 @@ def _register_wp_acceptance(wp_commands: argparse._SubParsersAction) -> None:
     p_acceptance.set_defaults(func=acceptance_handler)
 
 
-def _register_wp_lifecycle(wp_commands: argparse._SubParsersAction) -> None:
+def _register_wp_lifecycle(
+    wp_commands: argparse._SubParsersAction[StableArgumentParser],
+) -> None:
     """Register ``gz wp initiate``, ``freeze``, ``commence`` and ``accept``."""
     p_initiate = wp_commands.add_parser(
         "initiate",
@@ -524,7 +532,9 @@ def _register_wp_lifecycle(wp_commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_wp_close_change(wp_commands: argparse._SubParsersAction) -> None:
+def _register_wp_close_change(
+    wp_commands: argparse._SubParsersAction[StableArgumentParser],
+) -> None:
     """Register ``gz wp close`` and ``change``."""
     p_close = wp_commands.add_parser(
         "close",

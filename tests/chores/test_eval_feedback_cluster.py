@@ -16,6 +16,7 @@ import warnings
 from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 from gzkit.chores import eval_feedback_cluster_run
@@ -37,7 +38,7 @@ from gzkit.traceability import covers
 # ---------------------------------------------------------------------------
 
 
-def _write_ledger(path: Path, events: list[dict]) -> None:
+def _write_ledger(path: Path, events: list[dict[str, Any]]) -> None:
     """Write events as JSONL to path."""
     with path.open("w", encoding="utf-8") as fh:
         for event in events:
@@ -52,7 +53,7 @@ def _write_justify(dir_path: Path, anchor_id: str, content: str) -> None:
     filepath.write_text(content, encoding="utf-8")
 
 
-def _make_eval_event(artifact_id: str, dimensions: dict[str, float]) -> dict:
+def _make_eval_event(artifact_id: str, dimensions: dict[str, float]) -> dict[str, Any]:
     """Build a minimal adr-evaluation event dict."""
     return {
         "schema": "1.0",

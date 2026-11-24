@@ -23,6 +23,7 @@ import tempfile
 import unittest
 from io import StringIO
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 from pydantic import ValidationError
@@ -234,7 +235,7 @@ class _EmissionFixture(unittest.TestCase):
         self,
         brief_text: str,
         accept_security_floor: str | None,
-        registry: list[dict] | None,
+        registry: list[dict[str, Any]] | None,
         *,
         transaction_raises: bool = False,
     ) -> MagicMock:

@@ -357,7 +357,7 @@ _POST_SNAPSHOT_OTHER_SCOPES_EXCLUDED: frozenset[str] = frozenset(
 class TestValidatorRegistryParity(unittest.TestCase):
     """The collapsed registry reproduces the pre-collapse dispatch exactly."""
 
-    def _registry(self) -> tuple:
+    def _registry(self) -> tuple[validate_cmd._ScopeEntry, ...]:
         return validate_cmd.VALIDATOR_REGISTRY
 
     def test_default_tier_order_preserved(self) -> None:

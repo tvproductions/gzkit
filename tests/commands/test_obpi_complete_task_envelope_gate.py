@@ -13,6 +13,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -31,7 +32,7 @@ _BASE_FM = {
 }
 
 
-def _seed(root: Path, frontmatter: dict) -> Path:
+def _seed(root: Path, frontmatter: dict[str, Any]) -> Path:
     """Write a minimal brief + a single seq=01 ledger task_started for the OBPI."""
     gzkit_dir = root / ".gzkit"
     gzkit_dir.mkdir(parents=True, exist_ok=True)
@@ -59,7 +60,7 @@ def _seed(root: Path, frontmatter: dict) -> Path:
     return brief_path
 
 
-def _no_none(fm: dict) -> dict:
+def _no_none(fm: dict[str, Any]) -> dict[str, Any]:
     return {k: v for k, v in fm.items() if v is not None}
 
 

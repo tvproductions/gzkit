@@ -4,6 +4,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.pipeline_runtime import (
     ModelRoutingConfig,
@@ -293,7 +294,7 @@ def _make_completed_record(
     status: str,
     *,
     model: str = "sonnet",
-    result: dict | None = None,
+    result: dict[str, Any] | None = None,
 ) -> SubagentDispatchRecord:
     """Create a completed dispatch record for test purposes."""
     record = create_subagent_dispatch_record(task_id, role, model)

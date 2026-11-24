@@ -20,7 +20,7 @@ import threading
 import unittest
 from itertools import starmap
 from pathlib import Path
-from typing import override
+from typing import Any, override
 from unittest.mock import patch
 
 import gzkit.commands.content.unown as unown_module
@@ -152,7 +152,7 @@ def _seed_overgrown_alpha(*, corpus_texts: tuple[str, ...] = _ALPHA_COVERAGE) ->
     return floor
 
 
-def _ledger_events() -> list[dict]:
+def _ledger_events() -> list[dict[str, Any]]:
     if not _LEDGER_PATH.exists():
         return []
     return [
@@ -160,7 +160,7 @@ def _ledger_events() -> list[dict]:
     ]
 
 
-def _ownership_events() -> list[dict]:
+def _ownership_events() -> list[dict[str, Any]]:
     return [
         e
         for e in _ledger_events()
@@ -210,7 +210,7 @@ def _unown(
     )
 
 
-def _declaration() -> dict:
+def _declaration() -> dict[str, Any]:
     return json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
 
 
@@ -813,7 +813,7 @@ class TestContentOwnReplayJournalValidation(unittest.TestCase):
     def _forge(self, *, section: str, new_floor: int) -> None:
         """Write an owning journal that is self-consistent except for the field under test."""
         on_disk = json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
-        record: dict = {
+        record: dict[str, Any] = {
             "transition": "own",
             "surface": "Doc.md",
             "section": section,

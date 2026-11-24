@@ -16,6 +16,7 @@ from contextlib import redirect_stderr
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 
 from gzkit.advisory import ADVISORY_MARKER
@@ -23,11 +24,14 @@ from gzkit.governance.trust_audits.mx_hardening import audit_mx_hardening
 from gzkit.mx import marker
 from gzkit.mx.marker import Marker
 
+if TYPE_CHECKING:
+    from gzkit.core.validation_rules import ValidationError
+
 _REPO = Path(__file__).resolve().parents[2]
 _NOW = datetime(2026, 1, 3, 0, 0, 0, tzinfo=UTC)
 
 
-def _opened(session_id: str, ts: datetime) -> dict:
+def _opened(session_id: str, ts: datetime) -> dict[str, Any]:
     return {
         "schema": "gzkit.ledger.v1",
         "event": "mx_session_opened",
@@ -39,7 +43,7 @@ def _opened(session_id: str, ts: datetime) -> dict:
     }
 
 
-def _root(tmp: str, events: list[dict], held: Marker | None = None) -> Path:
+def _root(tmp: str, events: list[dict[str, Any]], held: Marker | None = None) -> Path:
     root = Path(tmp)
     (root / ".gzkit").mkdir(parents=True, exist_ok=True)
     (root / ".gzkit" / "ledger.jsonl").write_text(
@@ -50,7 +54,7 @@ def _root(tmp: str, events: list[dict], held: Marker | None = None) -> Path:
     return root
 
 
-def _run(root: Path) -> tuple[list, list[str]]:
+def _run(root: Path) -> tuple[list[ValidationError], list[str]]:
     stderr = io.StringIO()
     with redirect_stderr(stderr):
         errors = audit_mx_hardening(root, now=_NOW)

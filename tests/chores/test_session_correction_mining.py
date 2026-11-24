@@ -17,6 +17,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 from gzkit.insights.correction_mining import (
@@ -34,7 +35,7 @@ from gzkit.insights.correction_mining import (
 from gzkit.traceability import covers
 
 
-def _entry(kind: str, text: str) -> dict:
+def _entry(kind: str, text: str) -> dict[str, Any]:
     if kind == "assistant":
         return {
             "type": "assistant",
@@ -45,7 +46,7 @@ def _entry(kind: str, text: str) -> dict:
 
 def _write_session(directory: Path, name: str, user_texts: list[str]) -> None:
     """Write a transcript where each user text follows an assistant turn."""
-    lines: list[dict] = []
+    lines: list[dict[str, Any]] = []
     for text in user_texts:
         lines.append(_entry("assistant", "I made some changes."))
         lines.append(_entry("user", text))
@@ -259,7 +260,7 @@ class TestRunTelemetry(unittest.TestCase):
     `.gzkit/chores/session-correction-mining/proofs/`.
     """
 
-    def _run(self, texts_per_session: list[list[str]], threshold: int = 3) -> dict:
+    def _run(self, texts_per_session: list[list[str]], threshold: int = 3) -> dict[str, Any]:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             for n, texts in enumerate(texts_per_session):
@@ -367,7 +368,9 @@ class TestRunTelemetry(unittest.TestCase):
         and differs between two invocations by design.
         """
 
-        def identity(proposals: list[dict]) -> list[tuple]:
+        def identity(
+            proposals: list[dict[str, Any]],
+        ) -> list[tuple[str, str, int, tuple[str, ...]]]:
             return [
                 (p["proposal_id"], p["cluster_key"], p["recurrence_count"], tuple(p["session_ids"]))
                 for p in proposals

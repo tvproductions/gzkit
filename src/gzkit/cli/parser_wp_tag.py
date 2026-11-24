@@ -17,6 +17,8 @@ from gzkit.cli.parser_handler_manifest import _lazy
 if TYPE_CHECKING:
     import argparse
 
+    from gzkit.cli.parser import StableArgumentParser
+
 _ISSUE_EXAMPLES = [
     (
         "gz wp tag issue ORD-01-import --slug stamp-hook --class Danger"
@@ -80,7 +82,7 @@ _SHOW_EXIT_CODES = """Exit codes
 """
 
 
-def _register_wp_tag(wp_commands: argparse._SubParsersAction) -> None:
+def _register_wp_tag(wp_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register ``gz wp tag`` and its five leaves, ``issue`` to ``clear``."""
     p_tag = wp_commands.add_parser(
         "tag",

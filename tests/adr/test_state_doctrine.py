@@ -119,7 +119,7 @@ class TestStateRepairIdempotency(unittest.TestCase):
         )
         return brief
 
-    def _make_graph(self, completed: bool = True) -> dict:
+    def _make_graph(self, completed: bool = True) -> dict[str, dict[str, Any]]:
         return {
             "OBPI-0.1.0-01": {
                 "type": "obpi",
@@ -265,7 +265,7 @@ class TestStateRepairIdempotency(unittest.TestCase):
 class TestStateWithdrawnFilter(unittest.TestCase):
     """GHI #221: withdrawn OBPIs are hidden from gz state --json by default."""
 
-    def _graph_with_withdrawn(self) -> dict:
+    def _graph_with_withdrawn(self) -> dict[str, dict[str, Any]]:
         return {
             "ADR-0.0.16": {
                 "type": "adr",
@@ -291,7 +291,7 @@ class TestStateWithdrawnFilter(unittest.TestCase):
             },
         }
 
-    def _invoke(self, include_withdrawn: bool) -> dict:
+    def _invoke(self, include_withdrawn: bool) -> dict[str, Any]:
         with (
             tempfile.TemporaryDirectory() as tmp,
             patch("gzkit.commands.state.ensure_initialized") as mock_init,

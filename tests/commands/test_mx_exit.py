@@ -17,7 +17,7 @@ import unittest
 from contextlib import AbstractContextManager, chdir
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 from rich.console import Console
@@ -53,7 +53,7 @@ def _mk_root_with_session(tmp: str) -> Path:
     return root
 
 
-def _read_ledger_events(root: Path, event_type: str) -> list[dict]:
+def _read_ledger_events(root: Path, event_type: str) -> list[dict[str, Any]]:
     ledger_path = root / ".gzkit" / "ledger.jsonl"
     if not ledger_path.exists():
         return []

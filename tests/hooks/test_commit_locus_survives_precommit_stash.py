@@ -23,7 +23,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 
 from gzkit.hooks.commit_ledger import (
     RECORDER_HOOK_MARKER,
@@ -154,11 +154,11 @@ class _Repo:
         self.git("commit", "-qm", "brief edit")
         return self.git("rev-parse", "HEAD").strip()
 
-    def rows(self) -> list[dict]:
+    def rows(self) -> list[dict[str, Any]]:
         text = (self.root / _LEDGER).read_text(encoding="utf-8")
         return [json.loads(line) for line in text.splitlines() if line.strip()]
 
-    def commit_locus_rows(self, sha: str) -> list[dict]:
+    def commit_locus_rows(self, sha: str) -> list[dict[str, Any]]:
         return [
             r
             for r in self.rows()

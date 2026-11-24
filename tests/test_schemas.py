@@ -8,7 +8,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from typing import ClassVar, Literal, get_args, get_origin, override
+from typing import Any, ClassVar, Literal, get_args, get_origin, override
 
 from pydantic import BaseModel, ValidationError
 
@@ -1064,7 +1064,7 @@ class TestSchemaLoading(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
-def _load_gzkit_schema(name: str) -> dict:
+def _load_gzkit_schema(name: str) -> dict[str, Any]:
     """Load a JSON schema from .gzkit/schemas/ (Layer 1 canonical schemas)."""
     import json
     from pathlib import Path

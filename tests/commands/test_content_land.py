@@ -17,7 +17,7 @@ import hashlib
 import json
 import unittest
 from pathlib import Path
-from typing import override
+from typing import TYPE_CHECKING, Any, override
 from unittest import mock
 
 from gzkit.cli.main import main
@@ -36,6 +36,9 @@ from gzkit.content.retention import Condition, RemovedBlock, RetentionMap
 from gzkit.governance.events import emit_section_ownership_genesis
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner
+
+if TYPE_CHECKING:
+    from tests.commands.common import CliResult
 
 LAND_SURFACE = "LandSurface.md"
 LAND_OWNER = "LandType"
@@ -178,7 +181,7 @@ def snapshot_tree(root: Path) -> dict[str, str]:
     }
 
 
-def _land_args(*extra: str, attestor: str = "g0", text: str = "corpus delta attested") -> list:
+def _land_args(*extra: str, attestor: str = "g0", text: str = "corpus delta attested") -> list[str]:
     return [
         "content",
         "land",
@@ -222,7 +225,9 @@ class TestLandAttestationFailClosed(unittest.TestCase):
     def setUp(self) -> None:
         self._runner = CliRunner()
 
-    def _assert_refused_writing_nothing(self, args: list, *, project: dict | None = None) -> str:
+    def _assert_refused_writing_nothing(
+        self, args: list[str], *, project: dict[str, Any] | None = None
+    ) -> str:
         with self._runner.isolated_filesystem():
             root = Path(".")
             build_land_project(root, **(project or {}))
@@ -289,7 +294,9 @@ class TestLandRetentionGateRefusesWholeLanding(unittest.TestCase):
     def setUp(self) -> None:
         self._runner = CliRunner()
 
-    def _run(self, *extra: str, text: str = "corpus delta attested", maps: tuple = ()) -> tuple:
+    def _run(
+        self, *extra: str, text: str = "corpus delta attested", maps: tuple[str, ...] = ()
+    ) -> tuple[CliResult, dict[str, str], dict[str, str]]:
         with self._runner.isolated_filesystem():
             root = Path(".")
             build_land_project(root, prior_text=LAND_PRIOR_WITH_DOOMED)
@@ -342,7 +349,7 @@ class TestLandDryRunWritesNothing(unittest.TestCase):
             )
 
 
-def landed_events(root: Path) -> list[dict]:
+def landed_events(root: Path) -> list[dict[str, Any]]:
     """Return every ``rendition_landed`` row in *root*'s ledger, in order."""
     ledger = root / ".gzkit" / "ledger.jsonl"
     rows = [json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines() if line]
@@ -540,7 +547,7 @@ class TestLandResume(unittest.TestCase):
     def setUp(self) -> None:
         self._runner = CliRunner()
 
-    def _sidecar_record(self, root: Path) -> set[tuple]:
+    def _sidecar_record(self, root: Path) -> set[tuple[str | None, str, str]]:
         return {
             (s.landing_id, s.attestor, s.attestation_text)
             for s in (

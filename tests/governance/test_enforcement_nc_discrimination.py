@@ -17,6 +17,10 @@ import tempfile
 import unittest
 from collections.abc import Callable, Generator
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from gzkit.enforcement import EnforcementClaimRecord
 
 
 class TestCommandFailsDiscriminatesExitCode(unittest.TestCase):
@@ -352,7 +356,7 @@ class TestCompositeClaimsAreDecomposed(unittest.TestCase):
     }
 
     @staticmethod
-    def _registry() -> dict:
+    def _registry() -> dict[str, EnforcementClaimRecord]:
         from gzkit.enforcement import (
             _ensure_production_claims_registered,
             get_enforcement_registry,
@@ -468,7 +472,7 @@ class TestRemainingClaimsBite(unittest.TestCase):
     CLAIMS = ("behave", "preflight", "parity-check", "readiness-audit")
 
     @staticmethod
-    def _registry() -> dict:
+    def _registry() -> dict[str, EnforcementClaimRecord]:
         from gzkit.enforcement import (
             _ensure_production_claims_registered,
             get_enforcement_registry,
@@ -560,7 +564,8 @@ class TestFixturesAreInvariantUnderHostNewlines(unittest.TestCase):
 
     def test_rendition_lineage_pins_its_drift_reason(self) -> None:
         record = TestRemainingClaimsBite._registry()["rendition-lineage"]
-        self.assertIsNotNone(record.expect, "an unpinned control accepts any refusal")
+        if record.expect is None:
+            self.fail("an unpinned control accepts any refusal")
         self.assertIn("committed bytes differ", record.expect)
 
     def test_each_claim_passes_under_windows_text_mode(self) -> None:

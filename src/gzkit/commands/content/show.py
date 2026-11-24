@@ -2,6 +2,7 @@
 
 import sys
 from pathlib import Path
+from typing import Any
 
 from pydantic import ValidationError
 
@@ -47,7 +48,7 @@ def _parse_or_exit(text: str, as_type: str, file_path: Path):
         sys.exit(1)
 
 
-def _render_tty(as_type: str, file_path: Path, data: dict) -> None:
+def _render_tty(as_type: str, file_path: Path, data: dict[str, Any]) -> None:
     """Render the Rich-panel prose summary on a TTY."""
     from gzkit.content.tui.panels import render_content_panel  # noqa: PLC0415
 
@@ -61,7 +62,7 @@ def _render_tty(as_type: str, file_path: Path, data: dict) -> None:
     render_content_panel(title=f"{as_type}: {title}", body="\n".join(lines))
 
 
-def _render_plain(as_type: str, file_path: Path, data: dict) -> None:
+def _render_plain(as_type: str, file_path: Path, data: dict[str, Any]) -> None:
     """Render the grep-friendly plain-text prose summary."""
     print(f"Type: {as_type}")
     if "title" in data:

@@ -10,6 +10,7 @@ import contextlib
 import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -227,7 +228,7 @@ def _count_surface_lines(project_root: Path) -> int:
     return total
 
 
-def _load_floor(floor_path: Path) -> dict | None:
+def _load_floor(floor_path: Path) -> dict[str, Any] | None:
     """Load and return the floor snapshot dict, or None on parse error."""
     try:
         return json.loads(floor_path.read_text(encoding="utf-8"))
@@ -235,7 +236,7 @@ def _load_floor(floor_path: Path) -> dict | None:
         return None
 
 
-def _load_waivers(waivers_path: Path) -> list[dict]:
+def _load_waivers(waivers_path: Path) -> list[dict[str, Any]]:
     """Load waivers list from JSON file."""
     if not waivers_path.exists():
         return []
@@ -246,7 +247,7 @@ def _load_waivers(waivers_path: Path) -> list[dict]:
         return []
 
 
-def _has_active_waiver(waivers: list[dict], delta: int) -> bool:
+def _has_active_waiver(waivers: list[dict[str, Any]], delta: int) -> bool:
     """Return True if any non-expired waiver covers the given delta."""
     today = datetime.now(tz=UTC).date()
     for waiver in waivers:
@@ -261,7 +262,7 @@ def _has_active_waiver(waivers: list[dict], delta: int) -> bool:
     return False
 
 
-def _newest_recalibration(project_root: Path) -> tuple[datetime, dict] | None:
+def _newest_recalibration(project_root: Path) -> tuple[datetime, dict[str, Any]] | None:
     """Return the most recent recalibration event and its parsed timestamp, or None.
 
     One ledger scan serving both consumers — :func:`_check_floor_drift` (which
@@ -281,7 +282,7 @@ def _newest_recalibration(project_root: Path) -> tuple[datetime, dict] | None:
     if not ledger_path.exists():
         return None
 
-    newest: tuple[datetime, dict] | None = None
+    newest: tuple[datetime, dict[str, Any]] | None = None
     try:
         for line in ledger_path.read_text(encoding="utf-8").strip().splitlines():
             if not line.strip():
@@ -365,7 +366,7 @@ def _check_band_coherence(project_root: Path) -> list[ValidationError]:
     return [_make_error(msg)]
 
 
-def _check_floor_drift(floor: dict, project_root: Path) -> list[ValidationError]:
+def _check_floor_drift(floor: dict[str, Any], project_root: Path) -> list[ValidationError]:
     """Check if the floor timestamp predates the most recent recalibration event by >24h."""
     newest = _newest_recalibration(project_root)
     if newest is None:

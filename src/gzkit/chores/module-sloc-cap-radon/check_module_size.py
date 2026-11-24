@@ -60,6 +60,7 @@ Exit codes: 0 clean, 1 usage/IO error, 3 policy breach.
 import contextlib
 import json
 import sys
+from typing import Any
 
 from gzkit.commands.common import get_project_root
 from gzkit.complexity.lizard_adapter import file_nloc
@@ -95,7 +96,7 @@ class MissingBlockBandError(SystemExit):
         super().__init__(f"no block band for {metric} in {thresholds}")
 
 
-def _block_row() -> dict:
+def _block_row() -> dict[str, Any]:
     """Return the canonical ``lizard_file_nloc`` block band row."""
     table = json.loads(_THRESHOLDS.read_text(encoding="utf-8"))
     for band in table["bands"]:

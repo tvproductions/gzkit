@@ -11,7 +11,7 @@ module's namespace. Shares ``_find_obpi_briefs`` with the briefs validator modul
 import re
 import subprocess
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from gzkit.commands.validate_briefs import _find_obpi_briefs
 from gzkit.core.models import (
@@ -323,7 +323,7 @@ def _is_req_attributed_uncovered_accept_event(
 
 
 def _sig_a_is_not_labor_event(
-    ev: dict,
+    ev: dict[str, Any],
     ev_type: str,
     obpi_id: str,
     task_id: str | None,

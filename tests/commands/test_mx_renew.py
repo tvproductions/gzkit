@@ -13,6 +13,7 @@ import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Any
 from unittest.mock import patch
 
 from gzkit import lock_manager
@@ -34,7 +35,7 @@ def _open_session(tmp: str) -> Path:
     return root
 
 
-def _events(root: Path, event_type: str) -> list[dict]:
+def _events(root: Path, event_type: str) -> list[dict[str, Any]]:
     lines = (root / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8").splitlines()
     rows = [json.loads(line) for line in lines if line.strip()]
     return [row for row in rows if row.get("event") == event_type]

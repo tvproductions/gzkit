@@ -13,7 +13,7 @@ import pathlib
 import re
 import types
 from collections.abc import Callable, Iterable
-from typing import TypeVar, override
+from typing import Any, TypeVar, override
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -369,7 +369,7 @@ def in_progress_task_ids(ledger_path: pathlib.Path) -> list[str]:
     except OSError:
         return []
 
-    rows: list[dict] = []
+    rows: list[dict[str, Any]] = []
     for line in raw.splitlines():
         if not line.strip():
             continue

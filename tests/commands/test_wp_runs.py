@@ -9,7 +9,7 @@ already book (the specification's ruling 18), so there is no second row to lose.
 import json
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 from unittest import mock
 
 from gzkit.cli import main
@@ -112,7 +112,7 @@ class _RunsCase(unittest.TestCase):
     def _dispatch(self, package: str, req: str, role: str = "Implementer") -> None:
         self._wp("dispatch", package, "--role", role, "--model", "m", "--req", req)
 
-    def _runs(self) -> list[dict]:
+    def _runs(self) -> list[dict[str, Any]]:
         result = self.runner.invoke(main, ["wp", "runs", "--json"])
         self.assertEqual(result.exit_code, 0, msg=result.output)
         return json.loads(result.output)
@@ -212,7 +212,7 @@ class TestRunsReadTheLedger(_RunsCase):
 
 
 class TestShowCarriesThePosition(_RunsCase):
-    def _show(self, package: str) -> dict:
+    def _show(self, package: str) -> dict[str, Any]:
         result = self.runner.invoke(main, ["wp", "show", package, "--json"])
         self.assertEqual(result.exit_code, 0, msg=result.output)
         return json.loads(result.output)

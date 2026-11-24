@@ -28,6 +28,7 @@ import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[not-callable]
@@ -362,7 +363,7 @@ def family_signal(issue: Issue) -> list[str]:
     return sorted({m.group(0).lower() for p in _FAMILY_SIGNALS for m in p.finditer(haystack)})
 
 
-def stale_annotations(issue: Issue, resolver=None) -> list[dict]:
+def stale_annotations(issue: Issue, resolver=None) -> list[dict[str, str]]:
     """Return the issue's transcribed sibling-state annotations that have decayed.
 
     `resolver` is a parameter, never a named technology (hexagonal § Operative
@@ -384,7 +385,7 @@ def stale_annotations(issue: Issue, resolver=None) -> list[dict]:
     """
     if resolver is None:
         return []
-    found: list[dict] = []
+    found: list[dict[str, str]] = []
     for match in _ANNOTATION_RE.finditer(issue.body or ""):
         number = int(match.group(1))
         if resolver(number) == "settled":
@@ -1119,7 +1120,7 @@ def render_json(
 
     """
     precedent_ok = precedent >= 3
-    records: list[dict] = []
+    records: list[dict[str, Any]] = []
     for issue in issues:
         r = route(issue, precedent_ok, duplicates)
         u = urgency(issue, r)

@@ -29,6 +29,7 @@ import sys
 from collections.abc import Callable, Sequence
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -108,7 +109,7 @@ POST_COMPACTION_NOTE = (
 SKILL_SELECTION_NOTE = "When no skill clearly matches, or two look alike, consult `gz-how` first."
 
 
-def collect_campaign(repo_root: Path) -> dict | None:
+def collect_campaign(repo_root: Path) -> dict[str, Any] | None:
     """Read the ACTIVE campaign plan named by the registry and extract its state.
 
     ``data/active_campaign.json`` is the authority (operator ruling 2026-08-16 —
@@ -179,7 +180,7 @@ def collect_campaign(repo_root: Path) -> dict | None:
     return None
 
 
-def collect_live_adr_counts(adr_ids: list[str]) -> list[dict]:
+def collect_live_adr_counts(adr_ids: list[str]) -> list[dict[str, Any]]:
     """Resolve each ADR's OBPI count from the governed read, never from prose.
 
     The campaign plan hand-carries counts like ``ADR-0.34.0`` *2/5* in text that
@@ -206,7 +207,7 @@ def collect_live_adr_counts(adr_ids: list[str]) -> list[dict]:
         ADRs whose lookup failed in any way are omitted.
 
     """
-    resolved: list[dict] = []
+    resolved: list[dict[str, Any]] = []
     for adr_id in adr_ids:
         try:
             proc = subprocess.run(  # noqa: S603 — uv argv this script builds
@@ -928,7 +929,7 @@ def _run_gh_json(args: list[str], timeout: int = 30) -> object | None:
         return None
 
 
-def collect_session_handoff_ghis() -> list[dict]:
+def collect_session_handoff_ghis() -> list[dict[str, Any]]:
     payload = _run_gh_json(
         [
             "gh",
@@ -1006,7 +1007,7 @@ def _git_run(args: list[str], timeout: int) -> subprocess.CompletedProcess[str] 
         return None
 
 
-def collect_remote_state() -> dict | None:
+def collect_remote_state() -> dict[str, Any] | None:
     """Surface git-remote-divergence so SessionStart agents see stale clones.
 
     Reports `branch`, `ahead`, `behind`, and `is_behind`. The measurement itself
@@ -1041,7 +1042,7 @@ def collect_remote_state() -> dict | None:
     }
 
 
-def collect_obpi_locks(repo_root: Path) -> list[dict]:
+def collect_obpi_locks(repo_root: Path) -> list[dict[str, Any]]:
     """Book past-TTL OBPI locks, warn on past-50%-TTL ones, return every held one.
 
     Mirrors ``gz obpi lock list`` (token-block-discipline.md § Sub-Invariant
@@ -1099,7 +1100,7 @@ def collect_obpi_locks(repo_root: Path) -> list[dict]:
         return []
 
 
-def collect_adr_pipeline(repo_root: Path) -> list[dict]:
+def collect_adr_pipeline(repo_root: Path) -> list[dict[str, Any]]:
     """Return one entry per OBPI whose pipeline marker says a run is in flight (GHI #1168).
 
     Reads the active markers under the plans directory: every per-OBPI marker,
@@ -1135,7 +1136,7 @@ def collect_adr_pipeline(repo_root: Path) -> list[dict]:
         plans_dir = pipeline_plans_dir(repo_root)
         marker_paths = sorted(plans_dir.glob(".pipeline-active-*.json"))
         marker_paths.append(plans_dir / PIPELINE_LEGACY_MARKER)
-        runs: dict[str, dict] = {}
+        runs: dict[str, dict[str, Any]] = {}
         for marker_path in marker_paths:
             marker = load_pipeline_json(marker_path)
             if not isinstance(marker, dict):
@@ -1155,7 +1156,7 @@ def collect_adr_pipeline(repo_root: Path) -> list[dict]:
         return []
 
 
-def collect_chore_staleness() -> dict | None:
+def collect_chore_staleness() -> dict[str, Any] | None:
     """Read every chore's staleness band from the governed verb (GHI #936).
 
     A chore's currency gate was readable only by running the chore it gates, so
@@ -1264,7 +1265,7 @@ def _render_unreviewed_canaries(lines: list[str], payload: object) -> None:
     lines.append("")
 
 
-def collect_mx_hangar(repo_root: Path, now: datetime) -> dict | None:
+def collect_mx_hangar(repo_root: Path, now: datetime) -> dict[str, Any] | None:
     """Book any hangar lease that has expired, then return what the hardening guards found.
 
     The hangar's lease is the session lock's TTL. At expiry the operator ruled
@@ -1391,7 +1392,7 @@ def _render_adr_pipeline(lines: list[str], payload: object) -> None:
     lines.append("")
 
 
-def collect_state(repo_root: Path, now: datetime) -> dict:
+def collect_state(repo_root: Path, now: datetime) -> dict[str, Any]:
     """Aggregate authoritative state. Best-effort; never raises."""
     campaign = collect_campaign(repo_root)
     if isinstance(campaign, dict):
@@ -1479,7 +1480,7 @@ def _render_campaign(campaign: object) -> list[str]:
     return lines
 
 
-def render(state: dict, now: datetime) -> str:
+def render(state: dict[str, Any], now: datetime) -> str:
     lines: list[str] = [
         f"# gzkit session orientation — generated {now.isoformat(timespec='seconds')}",
         "",

@@ -12,7 +12,7 @@ import subprocess
 import time
 from collections.abc import Callable, Sequence
 from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from rich.markup import escape
 
@@ -31,6 +31,9 @@ from gzkit.quality import (
     run_tests,
     run_typecheck,
 )
+
+if TYPE_CHECKING:
+    from gzkit.validate import ValidationError
 
 CheckStepRunner = Callable[[pathlib.Path], Any]
 
@@ -1216,7 +1219,7 @@ def _record_pass(project_root: pathlib.Path, scope: str) -> None:
     record_verified(project_root, staged_fingerprint(project_root), scope=scope)
 
 
-def _unfingerprinted_findings(project_root: pathlib.Path) -> list:
+def _unfingerprinted_findings(project_root: pathlib.Path) -> list[ValidationError]:
     """Return findings from gate steps whose input the tree fingerprint does not hash.
 
     The trailer checks read the commits a push publishes, and the task-envelope

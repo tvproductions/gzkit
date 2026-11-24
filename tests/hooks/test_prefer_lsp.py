@@ -14,7 +14,7 @@ import tempfile
 import types
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 from unittest import mock
 
 from gzkit.hooks.scripts.lsp import prefer_lsp_script
@@ -40,8 +40,8 @@ class _HookCase(unittest.TestCase):
         self.addCleanup(patcher.stop)
 
     def decide(
-        self, tool_input: dict, tool_name: str = "Bash", session_id: str = "s1"
-    ) -> dict | None:
+        self, tool_input: dict[str, Any], tool_name: str = "Bash", session_id: str = "s1"
+    ) -> dict[str, Any] | None:
         """Run the hook once.
 
         Returns:

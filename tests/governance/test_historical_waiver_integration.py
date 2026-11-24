@@ -12,6 +12,7 @@ import logging
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.governance.trust_audits.receipt_shape import audit_receipt_shape
 from gzkit.ledger_events import obpi_receipt_emitted_event
@@ -40,7 +41,7 @@ Stub ADR for cutoff testing.
     )
 
 
-def _write_ledger(root: Path, events: list[dict]) -> None:
+def _write_ledger(root: Path, events: list[dict[str, Any]]) -> None:
     """Write events to .gzkit/ledger.jsonl."""
     ledger_dir = root / ".gzkit"
     ledger_dir.mkdir(parents=True, exist_ok=True)
@@ -49,7 +50,7 @@ def _write_ledger(root: Path, events: list[dict]) -> None:
     ledger_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def _write_waiver_file(root: Path, waivers: list[dict]) -> None:
+def _write_waiver_file(root: Path, waivers: list[dict[str, Any]]) -> None:
     """Write waivers to data/historical_self_close_waivers.json."""
     data_dir = root / "data"
     data_dir.mkdir(parents=True, exist_ok=True)

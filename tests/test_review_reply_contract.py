@@ -12,7 +12,7 @@ import json
 import re
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 
 from gzkit.acceptance import ReviewResponse
 from gzkit.acceptance_store import acceptance_status, load_history, record_review
@@ -61,7 +61,7 @@ def _prompts() -> dict[str, str]:
     }
 
 
-def _envelope(**changes: object) -> dict:
+def _envelope(**changes: object) -> dict[str, Any]:
     envelope = {
         "schema": "gzkit.acceptance.review.v1",
         "stage": "spec",
@@ -161,7 +161,7 @@ class TestVerificationGapsAreNonGoverning(unittest.TestCase):
         self.addCleanup(self.fixture.doCleanups)
         self.proof = self.fixture.synthetic_proof()
 
-    def _receipt_with_gaps(self, stage: str) -> dict:
+    def _receipt_with_gaps(self, stage: str) -> dict[str, Any]:
         receipt = self.fixture.receipt(self.proof, stage)
         payload = json.loads(receipt["stdout_tail"].removeprefix("```json\n").removesuffix("\n```"))
         payload["verification_gaps"] = ["No shell tool; could not execute the selector."]

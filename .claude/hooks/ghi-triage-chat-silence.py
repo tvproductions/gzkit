@@ -39,6 +39,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from typing import Any
 
 SEVERITY_RE = re.compile(r"\b(blocking|degrading|latent)\b", re.IGNORECASE)
 GHI_RE = re.compile(r"#(\d+)\b")
@@ -48,7 +49,7 @@ MIN_DISTINCT_PAIRS = 2
 TRIAGE_INVOCATION_RE = re.compile(r"triage\.py(?:\\\n|[^\n])*--format\s+rank", re.DOTALL)
 
 
-def _load_input() -> dict | None:
+def _load_input() -> dict[str, Any] | None:
     try:
         return json.load(sys.stdin)
     except json.JSONDecodeError, OSError, ValueError:

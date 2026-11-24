@@ -30,9 +30,10 @@ this family got one (``gzkit.hooks.guards``).
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 
-def _read_json(path: Path) -> dict | None:
+def _read_json(path: Path) -> dict[str, Any] | None:
     """Read a JSON file, returning None on any error."""
     if not path.exists():
         return None

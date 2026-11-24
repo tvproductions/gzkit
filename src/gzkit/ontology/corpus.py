@@ -9,7 +9,7 @@ stale replay (parent ADR Boundary Invariant #1).
 
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import get_args
+from typing import Any, get_args
 
 from pydantic import BaseModel, ConfigDict
 
@@ -350,7 +350,7 @@ class CorpusProjection:
     def __init__(
         self,
         graph: OntologyGraph,
-        source_graph: dict[str, dict],
+        source_graph: dict[str, dict[str, Any]],
         fidelity: RebuildFidelity,
     ) -> None:
         """Bind the typed corpus view to its source graph and fidelity self-report."""
@@ -365,7 +365,7 @@ def _default_ledger() -> Ledger:
     return Ledger(Path.cwd() / config.paths.ledger)
 
 
-def _typed_node(node_id: str, info: dict) -> OntologyNode | None:
+def _typed_node(node_id: str, info: dict[str, Any]) -> OntologyNode | None:
     """Type one ``get_artifact_graph`` node; None if its type is unmapped."""
     object_type = _NODE_TYPE_MAP.get(str(info.get("type")))
     if object_type is None:
@@ -374,7 +374,9 @@ def _typed_node(node_id: str, info: dict) -> OntologyNode | None:
     return OntologyNode(node_id=node_id, object_type=object_type, ownership=ownership, plane=plane)
 
 
-def _relation_edges(node_id: str, info: dict, source_graph: dict[str, dict]) -> list[OntologyEdge]:
+def _relation_edges(
+    node_id: str, info: dict[str, Any], source_graph: dict[str, dict[str, Any]]
+) -> list[OntologyEdge]:
     """Lift a node's lineage + attestation metadata into typed edges.
 
     Parent/child edges are built from ``get_artifact_graph``'s authoritative

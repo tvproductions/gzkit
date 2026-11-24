@@ -35,6 +35,7 @@ import math
 import sys
 from collections import Counter
 from datetime import UTC, date, datetime
+from typing import Any
 
 from gzkit.commands.common import get_project_root
 from gzkit.registries import RegistryError, load_registry, registry_path
@@ -73,7 +74,7 @@ class DebtTargetFieldTypeError(ValueError):
         super().__init__(f"debt target {key} must be a non-negative integer, got {value!r}")
 
 
-def validate_target(target: dict) -> dict:
+def validate_target(target: dict[str, Any]) -> dict[str, Any]:
     """Return *target* when well-formed; raise ``ValueError`` naming the defect."""
     missing = [key for key in _REQUIRED if key not in target]
     if missing:
@@ -86,7 +87,7 @@ def validate_target(target: dict) -> dict:
     return target
 
 
-def ceiling_on(target: dict, today: date) -> int:
+def ceiling_on(target: dict[str, Any], today: date) -> int:
     """Return the scheduled ceiling on *today*: falls monthly, never below zero."""
     elapsed_days = max(0, (today - date.fromisoformat(target["start_date"])).days)
     declined = math.floor(target["decline_per_month"] * elapsed_days / _DAYS_PER_MONTH)
@@ -113,7 +114,7 @@ def schedule_date(now: datetime | None = None) -> date:
     return (now if now is not None else datetime.now(UTC)).astimezone(UTC).date()
 
 
-def is_breach(debt: int, target: dict, today: date) -> bool:
+def is_breach(debt: int, target: dict[str, Any], today: date) -> bool:
     """Report whether outstanding *debt* sits above the scheduled ceiling."""
     return debt > ceiling_on(target, today)
 

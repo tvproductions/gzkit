@@ -11,6 +11,7 @@ import tempfile
 import unittest
 from datetime import date
 from pathlib import Path
+from typing import Any
 
 from pydantic import ValidationError as PydanticValidationError
 
@@ -224,7 +225,7 @@ def _write_rule(rules_dir: Path, name: str, frontmatter_body: str) -> Path:
     return path
 
 
-def _make_project_root(root: Path, manifest: dict | None) -> Path:
+def _make_project_root(root: Path, manifest: dict[str, Any] | None) -> Path:
     """Helper: scaffold .gzkit/rules/ and optional manifest."""
     rules = root / ".gzkit" / "rules"
     rules.mkdir(parents=True)

@@ -24,7 +24,7 @@ import tempfile
 import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import override
+from typing import Any, override
 from unittest import mock
 
 from gzkit.guard_canary import load_canaries
@@ -392,7 +392,7 @@ class TestCollectRemoteState(unittest.TestCase):
         self.assertTrue(state["is_behind"])
 
     def test_no_fetch_env_var_skips_fetch_subprocess(self):
-        called: list[tuple] = []
+        called: list[tuple[str, ...]] = []
 
         def record_run(args, **_kwargs):
             args = argv_by_tool_name(args)
@@ -705,7 +705,7 @@ class TestHandoffSelectionUnderBehindClone(unittest.TestCase):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 6, 10, 12, 0, 0, tzinfo=UTC)
 
-    def _state(self, behind: int) -> dict:
+    def _state(self, behind: int) -> dict[str, Any]:
         return {
             "remote_state": {
                 "branch": "main",
@@ -1096,7 +1096,7 @@ class TestCollectPipelineRuns(unittest.TestCase):
         text = payload if isinstance(payload, str) else json.dumps(payload)
         (plans / name).write_text(text, encoding="utf-8")
 
-    def _marker(self, obpi_id: str, stage: str = "implement") -> dict:
+    def _marker(self, obpi_id: str, stage: str = "implement") -> dict[str, Any]:
         return {
             "obpi_id": obpi_id,
             "parent_adr": "ADR-0.3.0-example",
@@ -1273,7 +1273,7 @@ class TestLiveAdrCountsOverrideCampaignProse(unittest.TestCase):
             }
         )
 
-    def _campaign_state(self, topmost: str, live: list[dict]) -> dict:
+    def _campaign_state(self, topmost: str, live: list[dict[str, Any]]) -> dict[str, Any]:
         return {
             "campaign": {
                 "path": "docs/governance/build-to-1.0-campaign-2026-07-18.md",
@@ -1388,7 +1388,7 @@ class TestChoreStalenessAnnouncement(unittest.TestCase):
         self.now = datetime(2026, 9, 14, 12, 0, 0, tzinfo=UTC)
 
     @staticmethod
-    def _payload(bands: dict[str, str]) -> dict:
+    def _payload(bands: dict[str, str]) -> dict[str, Any]:
         order = ("overdue", "due", "unmeasured", "paused", "current")
         return {
             "chores": [{"slug": slug, "band": band} for slug, band in bands.items()],
@@ -2057,7 +2057,7 @@ class TestSessionStartIsOneChannelUnderBudget(unittest.TestCase):
     #: prose growing back pushes the whole past the budget.
     STEP_FILLER = 720
 
-    def _heavy_state(self, *, current: bool = False) -> dict:
+    def _heavy_state(self, *, current: bool = False) -> dict[str, Any]:
         """A state as large as the measured 2026-10-17 boot, section for section."""
         steps = [
             "Cheaper session: RO-1, in this order, one commit per act: " + "x" * self.STEP_FILLER,

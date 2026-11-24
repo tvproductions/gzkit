@@ -50,7 +50,9 @@ class TestVersionInFlight(unittest.TestCase):
 class TestExecuteOnAVersionInFlight(unittest.TestCase):
     """The execute path writes the manifest and the ledger record and leaves the version alone."""
 
-    def _run(self, root: Path, *, current: str, tag: str) -> tuple[dict, unittest.mock.MagicMock]:
+    def _run(
+        self, root: Path, *, current: str, tag: str
+    ) -> tuple[dict[str, Any], unittest.mock.MagicMock]:
         config = unittest.mock.MagicMock()
         config.paths.ledger = ".gzkit/ledger.jsonl"
         ledger = unittest.mock.MagicMock()
@@ -181,7 +183,9 @@ class TestFullCeremonyOnAVersionInFlight(unittest.TestCase):
         self.assertEqual(notes.count("## v0.35.0"), 1)
 
 
-def _run_cmd(root: Path, *, current: str, tag: str, out: StringIO, **kwargs: Any) -> dict:
+def _run_cmd(
+    root: Path, *, current: str, tag: str, out: StringIO, **kwargs: Any
+) -> dict[str, unittest.mock.MagicMock]:
     """Run the command over mocked git and gh; return the mocks the caller asserts on."""
     config = unittest.mock.MagicMock()
     config.paths.ledger = ".gzkit/ledger.jsonl"

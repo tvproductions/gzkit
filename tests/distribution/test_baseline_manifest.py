@@ -11,7 +11,7 @@ surface.
 import json
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _MANIFEST_PATH = _PROJECT_ROOT / "data" / "distribution_baseline_manifest.json"
@@ -20,7 +20,7 @@ _GZKIT_SRC = _PROJECT_ROOT / "src" / "gzkit"
 _REQUIRED_SURFACES = ("skills", "rules", "personas", "templates")
 
 
-def _load_manifest() -> dict:
+def _load_manifest() -> dict[str, Any]:
     with _MANIFEST_PATH.open(encoding="utf-8") as f:
         return json.load(f)
 

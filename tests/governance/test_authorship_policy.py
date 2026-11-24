@@ -20,7 +20,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 from gzkit.config import GzkitConfig
@@ -90,7 +90,7 @@ class DeclaredPolicyReachesTheAudit(unittest.TestCase):
     declared policy was silently discarded and the audit could never fire.
     """
 
-    def _project(self, root: Path, config: dict) -> None:
+    def _project(self, root: Path, config: dict[str, Any]) -> None:
         (root / ".gzkit.json").write_text(json.dumps(config), encoding="utf-8")
 
     def test_declared_suffix_survives_config_load(self) -> None:

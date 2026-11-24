@@ -26,11 +26,15 @@ different repairs.
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import TYPE_CHECKING
 
 from gzkit.validate_pkg.document import (
     is_canonical_adr_intent_path,
     validate_document,
 )
+
+if TYPE_CHECKING:
+    from gzkit.core.validation_rules import ValidationError
 
 _ADR_ID = "ADR-0.9.9-sample-work"
 _BODY = f"# {_ADR_ID}: Sample\n\n## Intent\n\nSample intent.\n"
@@ -54,7 +58,7 @@ def _package(tmp: Path) -> Path:
     return pkg
 
 
-def _frontmatter_findings(errors: list) -> list[str]:
+def _frontmatter_findings(errors: list[ValidationError]) -> list[str]:
     return [e.message for e in errors if e.type == "frontmatter"]
 
 

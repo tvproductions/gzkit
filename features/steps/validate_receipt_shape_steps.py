@@ -39,7 +39,7 @@ Without this ADR, attestation surface varies by lane/kind.
 """
 
 
-def _write_minimal_project(root: Path, ledger_events: list[dict]) -> None:
+def _write_minimal_project(root: Path, ledger_events: list[dict[str, object]]) -> None:
     adr_path = root / _ADR_REL
     adr_path.parent.mkdir(parents=True, exist_ok=True)
     adr_path.write_text(_ADR_CONTENT, encoding="utf-8")
@@ -70,7 +70,7 @@ def _receipt_event(
     attestor: str,
     attestation_requirement: str,
     obpi_completion: str,
-) -> dict:
+) -> dict[str, object]:
     return {
         "schema": "gzkit.ledger.v1",
         "event": "obpi_receipt_emitted",

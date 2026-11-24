@@ -15,7 +15,7 @@ import shlex
 import unittest
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import override
+from typing import TYPE_CHECKING, Any, override
 from unittest import mock
 
 from gzkit.cli.main import main
@@ -28,6 +28,9 @@ from gzkit.content.rendition_store import (
 )
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner
+
+if TYPE_CHECKING:
+    from gzkit.content.models import CorpusEntry
 
 _SURFACE = """# Test Agent Contract
 
@@ -50,7 +53,7 @@ def _seed_surface(name: str = "AGENTS.md") -> Path:
     return path
 
 
-def _ledger_events() -> list[dict]:
+def _ledger_events() -> list[dict[str, Any]]:
     """Return the parsed ledger events from the cwd project, or [] when none."""
     ledger_path = Path(".gzkit") / "ledger.jsonl"
     if not ledger_path.exists():
@@ -373,7 +376,7 @@ class TestContentRememberDriftWarning(unittest.TestCase):
         Paired fixtures share one sink; only the stale rendition differs.
         """
 
-        def run(*, stale: bool) -> tuple[object, list]:
+        def run(*, stale: bool) -> tuple[object, list[CorpusEntry]]:
             with self._runner.isolated_filesystem():
                 _seed_surface()
                 if stale:

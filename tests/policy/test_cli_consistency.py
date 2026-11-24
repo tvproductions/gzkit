@@ -10,7 +10,7 @@ import argparse
 import subprocess
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 
 from gzkit.cli.main import _build_parser
 
@@ -49,7 +49,9 @@ class TestCLIConsistency(unittest.TestCase):
         cls.audit_data = cls._audit_parser(cls.parser, [])
 
     @classmethod
-    def _audit_parser(cls, parser: argparse.ArgumentParser, path: list[str]) -> list[dict]:
+    def _audit_parser(
+        cls, parser: argparse.ArgumentParser, path: list[str]
+    ) -> list[dict[str, Any]]:
         """Recursively audit parser structure.
 
         Walks the argparse tree and returns a flat list of records — one per
@@ -61,13 +63,13 @@ class TestCLIConsistency(unittest.TestCase):
             subparsers before their parent.
 
         """
-        records: list[dict] = []
+        records: list[dict[str, Any]] = []
         cmd_path = " ".join(path) if path else "ROOT"
 
         # Extract arguments at this level, excluding:
         # - help/version actions (auto-generated, not user-authored)
         # - _SubParsersAction instances (subcommand selectors, not arguments)
-        args: list[dict] = []
+        args: list[dict[str, Any]] = []
         for action in parser._actions:
             if action.dest in HELP_EXEMPT_DESTS:
                 continue
@@ -80,7 +82,7 @@ class TestCLIConsistency(unittest.TestCase):
             }
             args.append(arg_info)
 
-        record: dict = {
+        record: dict[str, Any] = {
             "path": cmd_path,
             "prog": parser.prog,
             "description": parser.description,

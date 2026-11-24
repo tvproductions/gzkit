@@ -9,7 +9,7 @@ script and must remain importable when the wider gzkit package is broken.
 
 import json
 from pathlib import Path
-from typing import override
+from typing import Any, override
 
 MX_BANNER = (
     "MX MODE ACTIVE — most guards advisory; gate5_invariants and the PRIME DIRECTIVE still bind"
@@ -71,7 +71,7 @@ def _is_marker_active(project_root: Path) -> bool:
     return project_root.joinpath(*_MARKER_RELPATH).is_file()
 
 
-def _read_marker(project_root: Path) -> dict | None:
+def _read_marker(project_root: Path) -> dict[str, Any] | None:
     """Parse the marker with stdlib ``json``.
 
     Returns:

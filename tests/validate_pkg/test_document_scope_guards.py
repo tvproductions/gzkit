@@ -24,12 +24,16 @@ the guard has quietly become a blanket exemption for post-Accepted ADRs.
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import TYPE_CHECKING
 
 from gzkit.validate_pkg.document import (
     is_adr_shape_grandfathered,
     is_pool_adr_path,
     validate_document,
 )
+
+if TYPE_CHECKING:
+    from gzkit.core.validation_rules import ValidationError
 
 # An ADR body missing every header the adr schema requires beyond Intent.
 _SPARSE_BODY = "# {adr_id}: Sample\n\n## Intent\n\nSample intent.\n"
@@ -66,11 +70,11 @@ def _write_adr(
     return path
 
 
-def _missing_section_errors(errors: list) -> list[str]:
+def _missing_section_errors(errors: list[ValidationError]) -> list[str]:
     return [e.message for e in errors if e.message.startswith("Missing required section")]
 
 
-def _missing_field_errors(errors: list) -> list[str]:
+def _missing_field_errors(errors: list[ValidationError]) -> list[str]:
     return [e.message for e in errors if e.message.startswith("Missing required frontmatter field")]
 
 

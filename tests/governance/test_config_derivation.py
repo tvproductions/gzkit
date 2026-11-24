@@ -15,7 +15,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 
 from gzkit.governance.trust_audits.config_derivation import (
     audit_derivation,
@@ -47,7 +47,7 @@ class DerivationIsRecordedOrGrandfathered(unittest.TestCase):
             encoding="utf-8",
         )
 
-    def _registry(self, name: str, payload: dict) -> None:
+    def _registry(self, name: str, payload: dict[str, Any]) -> None:
         (self.root / "data" / name).write_text(json.dumps(payload), encoding="utf-8")
 
     def test_registry_citing_an_authority_passes(self) -> None:

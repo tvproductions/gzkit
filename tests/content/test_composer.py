@@ -8,7 +8,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 from unittest.mock import patch
 
 from gzkit.content.composer import _byte_evidence, compose, generate_candidate
@@ -480,7 +480,7 @@ class _GenerateCandidateFixtureMixin(unittest.TestCase):
         self.addCleanup(self._tempdir.cleanup)
         self._root = Path(self._tempdir.name)
 
-    def _write_manifest(self, manifest: dict | None = None) -> None:
+    def _write_manifest(self, manifest: dict[str, Any] | None = None) -> None:
         (self._root / "data").mkdir(exist_ok=True)
         (self._root / "data" / "vendor-manifest.json").write_text(
             json.dumps(manifest or _GEN_MANIFEST), encoding="utf-8"
@@ -528,7 +528,7 @@ class _GenerateCandidateFixtureMixin(unittest.TestCase):
         *,
         surface: str = _GEN_SURFACE,
         consumer: str = _GEN_CONSUMER,
-        manifest: dict | None = None,
+        manifest: dict[str, Any] | None = None,
         prior_text: str = _GEN_PRIOR_TEXT,
         sections: dict[str, str] | None = None,
     ) -> None:

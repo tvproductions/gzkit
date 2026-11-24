@@ -13,6 +13,7 @@ import unittest
 from contextlib import redirect_stderr
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
 from unittest.mock import patch
 
 from rich.console import Console
@@ -30,9 +31,9 @@ def _vault(state: VaultState) -> VaultStatus:
 
 def _run(
     *,
-    errors: list | None = None,
-    graph: dict | None = None,
-    pending: list | None = None,
+    errors: list[SimpleNamespace] | None = None,
+    graph: dict[str, dict[str, Any]] | None = None,
+    pending: list[str] | None = None,
     vault: VaultState = VaultState.CURRENT,
 ) -> tuple[int, str]:
     """Run `tidy` over stubbed sections; return (exit code, rendered output)."""
@@ -99,7 +100,7 @@ class TestTidyNonBreaches(unittest.TestCase):
 class TestFixVerdictIsPostRepair(unittest.TestCase):
     """`--fix` is judged on the tree it leaves: a repaired finding no longer gates."""
 
-    def _fix(self, after: list) -> int:
+    def _fix(self, after: list[SimpleNamespace]) -> int:
         calls = iter([[SimpleNamespace(type="surface", message="out of sync")], after])
         ledger = SimpleNamespace(get_artifact_graph=dict, get_pending_attestations=list)
         with (

@@ -10,6 +10,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.governance.trust_audits.orphaned_implementation import (
     audit_orphaned_implementation,
@@ -56,7 +57,7 @@ def _write_brief(
     return brief
 
 
-def _write_ledger(root: Path, events: list[dict]) -> Path:
+def _write_ledger(root: Path, events: list[dict[str, Any]]) -> Path:
     ledger = root / ".gzkit" / "ledger.jsonl"
     ledger.parent.mkdir(parents=True, exist_ok=True)
     ledger.write_text(
@@ -66,7 +67,7 @@ def _write_ledger(root: Path, events: list[dict]) -> Path:
     return ledger
 
 
-def _claim(obpi_id: str, ts: str) -> dict:
+def _claim(obpi_id: str, ts: str) -> dict[str, Any]:
     return {
         "schema": "gzkit.ledger.v1",
         "event": "obpi_lock_claimed",
@@ -76,7 +77,7 @@ def _claim(obpi_id: str, ts: str) -> dict:
     }
 
 
-def _release(obpi_id: str, ts: str, force: bool) -> dict:
+def _release(obpi_id: str, ts: str, force: bool) -> dict[str, Any]:
     return {
         "schema": "gzkit.ledger.v1",
         "event": "obpi_lock_released",
@@ -87,7 +88,7 @@ def _release(obpi_id: str, ts: str, force: bool) -> dict:
     }
 
 
-def _edited(path: str, ts: str) -> dict:
+def _edited(path: str, ts: str) -> dict[str, Any]:
     return {
         "schema": "gzkit.ledger.v1",
         "event": "artifact_edited",
@@ -97,7 +98,7 @@ def _edited(path: str, ts: str) -> dict:
     }
 
 
-def _completion(obpi_id: str, ts: str) -> dict:
+def _completion(obpi_id: str, ts: str) -> dict[str, Any]:
     return {
         "schema": "gzkit.ledger.v1",
         "event": "obpi_completion_uncovered_accept",

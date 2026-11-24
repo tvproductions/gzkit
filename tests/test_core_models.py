@@ -1,6 +1,7 @@
 """Tests for core domain models (extracted from models/frontmatter.py)."""
 
 import unittest
+from typing import Any
 
 from pydantic import ValidationError
 
@@ -42,7 +43,7 @@ class TestAdrIdPatternRequiresSlugOrPool(unittest.TestCase):
     a Gate 1 blocker at the schema layer.
     """
 
-    def _adr_payload(self, adr_id: str) -> dict:
+    def _adr_payload(self, adr_id: str) -> dict[str, Any]:
         return {
             "id": adr_id,
             "status": "Draft",

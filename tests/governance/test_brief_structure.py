@@ -13,6 +13,7 @@ import re
 import unittest
 import warnings
 from pathlib import Path
+from typing import Any
 
 import jsonschema
 from pydantic import ValidationError
@@ -217,7 +218,7 @@ class TestTasksSchemaEnforcement(unittest.TestCase):
 class TestBriefStructureJsonSchema(unittest.TestCase):
     """REQ-0.0.37-04-02: JSON Schema mirror."""
 
-    def _schema(self) -> dict:
+    def _schema(self) -> dict[str, Any]:
         return json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
 
     @covers("REQ-0.0.37-04-02")

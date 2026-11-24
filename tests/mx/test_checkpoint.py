@@ -15,12 +15,16 @@ import os
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import TYPE_CHECKING
 from unittest import mock
 
 from gzkit.mx import checkpoint, disposition, hardening, levels, marker
 from gzkit.mx.marker import Marker
 from gzkit.traceability import covers
 from tests.mx.held import open_marker
+
+if TYPE_CHECKING:
+    from gzkit.core.validation_rules import ValidationError
 
 
 def _mk_root(tmp: str) -> Path:
@@ -281,7 +285,7 @@ class TestValidateAnnouncesDemotion(unittest.TestCase):
     validations passed" over a real violation under safe mode (drydock RO-3, 2026-10-21).
     """
 
-    def _run(self, root: Path, tier: str = "explicit") -> tuple[list, str]:
+    def _run(self, root: Path, tier: str = "explicit") -> tuple[list[ValidationError], str]:
         import contextlib
         import io
         from unittest.mock import patch

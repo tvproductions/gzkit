@@ -10,7 +10,7 @@ import tempfile
 import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 from gzkit.exchange_records import (
@@ -45,6 +45,9 @@ from gzkit.handoff_validation import (
     validate_handoff_document,
 )
 from gzkit.traceability import covers
+
+if TYPE_CHECKING:
+    from gzkit.handoff_api import Decision
 
 _SEVEN_SECTIONS = {
     "Current State Summary": "Work paused after landing the API skeleton.",
@@ -706,7 +709,7 @@ class TestDecisionAttribution(unittest.TestCase):
     promoted to an operator ruling, and never silently demoted to an agent choice.
     """
 
-    def _decisions(self, body: str) -> list:
+    def _decisions(self, body: str) -> list[Decision]:
         content = (
             "---\nmode: CREATE\nadr_id: ADR-0.0.65\nbranch: main\n"
             "timestamp: 2026-07-18T10:00:00Z\nagent: test-agent\n---\n\n"

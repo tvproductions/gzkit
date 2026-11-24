@@ -63,6 +63,7 @@ def _ghi_triage_chat_silence_script() -> str:
             import re
             import sys
             from pathlib import Path
+            from typing import Any
 
             SEVERITY_RE = re.compile(r"\\b(blocking|degrading|latent)\\b", re.IGNORECASE)
             GHI_RE = re.compile(r"#(\\d+)\\b")
@@ -74,7 +75,7 @@ def _ghi_triage_chat_silence_script() -> str:
             )
 
 
-            def _load_input() -> dict | None:
+            def _load_input() -> dict[str, Any] | None:
                 try:
                     return json.load(sys.stdin)
                 except (json.JSONDecodeError, OSError, ValueError):

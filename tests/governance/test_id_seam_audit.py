@@ -12,6 +12,7 @@ import tempfile
 import textwrap
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.core.id_resolver import IdentityContext
 from gzkit.governance.trust_audits.id_seam import (
@@ -316,7 +317,7 @@ class TestTheBaselineIsExact(unittest.TestCase):
 class TestDispatch(unittest.TestCase):
     """The flag reaches the scope, and gz check runs it as its own bound step."""
 
-    def _invoke(self, rows: list[dict]):
+    def _invoke(self, rows: list[dict[str, Any]]):
         from gzkit.cli import main
         from tests.commands.common import CliRunner, _quick_init
 

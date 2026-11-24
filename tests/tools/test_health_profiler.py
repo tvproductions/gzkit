@@ -33,7 +33,7 @@ import time
 import unittest
 from collections import defaultdict
 from pathlib import Path
-from typing import override
+from typing import Any, override
 
 TEST_MAX_SECONDS = 3.0
 # Canonical project-scoped chores root (ADR-0.0.21 Decision #9). The legacy
@@ -140,7 +140,7 @@ def _is_exempt_e2e(test_id: str) -> bool:
     return any(entry in test_id for entry in KNOWN_E2E_TESTS)
 
 
-def _run_profiled() -> dict:
+def _run_profiled() -> dict[str, Any]:
     """Run both passes and return a health report dict."""
     wall_elapsed, parallel_rc = _measure_parallel_wallclock()
     result, raw_output = _run_serial_instrumented()
@@ -148,7 +148,7 @@ def _run_profiled() -> dict:
     noise_lines = _classify_noise(raw_output)
 
     # Per-module aggregates from the serial (isolated) timings
-    by_module: dict[str, dict] = defaultdict(lambda: {"count": 0, "total": 0.0})
+    by_module: dict[str, dict[str, float]] = defaultdict(lambda: {"count": 0, "total": 0.0})
     for elapsed, name in result.timings:
         mod = name.split("(")[1].rstrip(")").rsplit(".", 1)[0] if "(" in name else "unknown"
         by_module[mod]["count"] += 1

@@ -16,9 +16,14 @@ import pathlib
 import tempfile
 import textwrap
 import unittest
+from typing import TYPE_CHECKING, Any
 
 from gzkit.tautological_tests import audit_drift, scan_test_tree
 from gzkit.traceability import covers
+
+if TYPE_CHECKING:
+    from gzkit.core.validation_rules import ValidationError
+    from gzkit.models.tautological_tests import TautologicalTestOperation
 
 
 class TestTautologicalTestModels(unittest.TestCase):
@@ -424,7 +429,7 @@ class TestDispositionEngine(unittest.TestCase):
 class TestDriftGate(unittest.TestCase):
     """REQ-0.0.59-04-03 and REQ-0.0.59-04-04: drift gate exit codes."""
 
-    def _write_baseline(self, data_dir: pathlib.Path, operations: list) -> None:
+    def _write_baseline(self, data_dir: pathlib.Path, operations: list[dict[str, Any]]) -> None:
         baseline = {
             "operations": operations,
             "generated_at": "2026-01-01T00:00:00+00:00",
@@ -558,7 +563,7 @@ class TestDriftGate(unittest.TestCase):
 
         self.assertEqual(errors, [])
 
-    def _audit_one_test(self, body: str, baselined: dict) -> list:
+    def _audit_one_test(self, body: str, baselined: dict[str, Any]) -> list[ValidationError]:
         with tempfile.TemporaryDirectory() as tmp_str:
             tmp = pathlib.Path(tmp_str)
             data_dir = tmp / "data"
@@ -710,7 +715,7 @@ class TestGhi632ScannerCorrectnessAndDrift(unittest.TestCase):
     """GHI #632: exemptions stay narrow (real tautologies still flag) and
     audit_drift matches by stable identity, not count/position."""
 
-    def _scan(self, filename: str, content: str) -> list:
+    def _scan(self, filename: str, content: str) -> list[TautologicalTestOperation]:
         from gzkit.tautological_tests import scan_test_tree
 
         with tempfile.TemporaryDirectory() as tmp_str:
@@ -949,7 +954,7 @@ class TestDecoratorsAreNotBehavior(unittest.TestCase):
     the only thing standing between the fix and a silent revert.
     """
 
-    def _scan(self, body: str) -> list:
+    def _scan(self, body: str) -> list[TautologicalTestOperation]:
         from gzkit.tautological_tests import scan_test_tree
 
         with tempfile.TemporaryDirectory() as tmp_str:

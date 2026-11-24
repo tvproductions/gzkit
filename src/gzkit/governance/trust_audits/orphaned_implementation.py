@@ -27,6 +27,7 @@ import re
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from gzkit.core.validation_rules import parse_frontmatter
 from gzkit.governance.brief_path_validity import (
@@ -79,8 +80,8 @@ def _path_covered_by_allowed(event_path: str, allowed: list[str]) -> bool:
     return False
 
 
-def _load_ledger_events(ledger: Path) -> list[dict]:
-    events: list[dict] = []
+def _load_ledger_events(ledger: Path) -> list[dict[str, Any]]:
+    events: list[dict[str, Any]] = []
     for raw in ledger.read_text(encoding="utf-8").splitlines():
         stripped = raw.strip()
         if not stripped:
@@ -106,10 +107,10 @@ def _brief_id_and_status(brief_path: Path) -> tuple[str | None, str | None]:
 
 
 def _partition_events(
-    events: list[dict],
-) -> tuple[dict[str, list[dict]], list[tuple[datetime, str]]]:
+    events: list[dict[str, Any]],
+) -> tuple[dict[str, list[dict[str, Any]]], list[tuple[datetime, str]]]:
     """Group lifecycle events by OBPI id; collect (ts, path) for artifact_edited."""
-    obpi_lifecycle: dict[str, list[dict]] = defaultdict(list)
+    obpi_lifecycle: dict[str, list[dict[str, Any]]] = defaultdict(list)
     artifact_events: list[tuple[datetime, str]] = []
     for ev in events:
         kind = ev.get("event")
@@ -128,7 +129,7 @@ def _partition_events(
     return obpi_lifecycle, artifact_events
 
 
-def _latest_claim_ts(history: list[dict]) -> datetime | None:
+def _latest_claim_ts(history: list[dict[str, Any]]) -> datetime | None:
     latest: datetime | None = None
     for ev in history:
         if ev.get("event") != _LOCK_CLAIMED:
@@ -139,7 +140,7 @@ def _latest_claim_ts(history: list[dict]) -> datetime | None:
     return latest
 
 
-def _completion_after(history: list[dict], anchor: datetime) -> bool:
+def _completion_after(history: list[dict[str, Any]], anchor: datetime) -> bool:
     for ev in history:
         kind = ev.get("event")
         if not isinstance(kind, str) or not kind.startswith(_COMPLETION_PREFIX):
@@ -150,7 +151,7 @@ def _completion_after(history: list[dict], anchor: datetime) -> bool:
     return False
 
 
-def _latest_force_release_ts(history: list[dict], after: datetime) -> datetime | None:
+def _latest_force_release_ts(history: list[dict[str, Any]], after: datetime) -> datetime | None:
     latest: datetime | None = None
     for ev in history:
         if ev.get("event") != _LOCK_RELEASED or not ev.get("force"):

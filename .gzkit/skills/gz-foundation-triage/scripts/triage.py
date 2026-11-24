@@ -250,7 +250,9 @@ def gather_records(project_root: Path) -> list[dict[str, object]]:
     return records
 
 
-def _validate_rank_input(payload: dict[str, object], known_ids: set[str]) -> dict[str, list]:
+def _validate_rank_input(
+    payload: dict[str, object], known_ids: set[str]
+) -> dict[str, list[dict[str, str]]]:
     """Reject any agent-supplied prose fields; enforce structural schema."""
     rankings_raw = payload.get("rankings", [])
     if not isinstance(rankings_raw, list):
@@ -290,7 +292,9 @@ def _validate_rank_input(payload: dict[str, object], known_ids: set[str]) -> dic
     return {"rankings": rankings, "reclassify_foundation": reclassify}
 
 
-def render_rank(records: list[dict[str, object]], rank_input: dict[str, list]) -> str:
+def render_rank(
+    records: list[dict[str, object]], rank_input: dict[str, list[dict[str, str]]]
+) -> str:
     """Render the deterministic markdown deliverable."""
     title_by_id = {str(record["id"]): str(record["title"]) for record in records}
     lines: list[str] = ["# Foundation Triage — Recommended Order", ""]

@@ -9,9 +9,12 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from typing import override
+from typing import TYPE_CHECKING, Any, override
 
 from gzkit.governance.trust_audits.red_parity import CUTOVER, audit_red_parity
+
+if TYPE_CHECKING:
+    from gzkit.validate import ValidationError
 
 _BEFORE = (CUTOVER - dt.timedelta(hours=8)).isoformat()
 _AFTER = (CUTOVER + dt.timedelta(hours=8)).isoformat()
@@ -37,7 +40,7 @@ class _Project(unittest.TestCase):
         (self.root / ".gzkit").mkdir(parents=True)
         self.brief_dir = self.root / "docs" / "design" / "adr" / "foundation" / "ADR-x" / "obpis"
         self.brief_dir.mkdir(parents=True)
-        self.events: list[dict] = []
+        self.events: list[dict[str, Any]] = []
 
     def brief(self, content: str) -> None:
         (self.brief_dir / f"{self.OBPI}.md").write_text(content, encoding="utf-8")
@@ -72,7 +75,7 @@ class _Project(unittest.TestCase):
             event["base_provenance"] = base_provenance
         self.events.append(event)
 
-    def audit(self) -> list:
+    def audit(self) -> list[ValidationError]:
         (self.root / ".gzkit" / "ledger.jsonl").write_text(
             "".join(json.dumps(e) + "\n" for e in self.events), encoding="utf-8"
         )

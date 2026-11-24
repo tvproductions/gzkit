@@ -18,12 +18,16 @@ pulling heavy handler dependencies.
 """
 
 import argparse
+from typing import TYPE_CHECKING
 
 from gzkit.cli.helpers import (
     add_json_flag,
     build_epilog,
 )
 from gzkit.cli.parser_handler_manifest import _lazy
+
+if TYPE_CHECKING:
+    from gzkit.cli.parser import StableArgumentParser
 
 
 def _joined(values: list[str] | None) -> str | None:
@@ -107,7 +111,7 @@ def _add_handoff_decide_arguments(p: argparse.ArgumentParser) -> None:
     add_json_flag(p)
 
 
-def register_handoff_parsers(commands: argparse._SubParsersAction) -> None:
+def register_handoff_parsers(commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register the ``gz handoff`` sub-command group (ADR-0.0.65 OBPI-03)."""
     p_handoff = commands.add_parser(
         "handoff",

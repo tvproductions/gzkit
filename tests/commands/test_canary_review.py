@@ -9,6 +9,7 @@ the event it writes, and the refusals that must write nothing.
 import json
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit import guard_canary as gc
 from gzkit.cli import main
@@ -38,7 +39,7 @@ def _seed(binding: str | None = None) -> str:
     return current
 
 
-def _reviews() -> list[dict]:
+def _reviews() -> list[dict[str, Any]]:
     rows = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8").splitlines()
     return [r for r in map(json.loads, rows) if r["event"] == "guard_canary_reviewed"]
 

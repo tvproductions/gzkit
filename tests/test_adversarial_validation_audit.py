@@ -14,12 +14,15 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from typing import override
+from typing import TYPE_CHECKING, Any, override
 
 from gzkit.governance.trust_audits.adversarial_validation import (
     CUTOVER,
     audit_adversarial_validation,
 )
+
+if TYPE_CHECKING:
+    from gzkit.validate import ValidationError
 
 _BEFORE = (CUTOVER - dt.timedelta(hours=8)).isoformat()
 _AFTER = (CUTOVER + dt.timedelta(hours=8)).isoformat()
@@ -43,7 +46,7 @@ class _Project:
         (root / "data").mkdir(parents=True, exist_ok=True)
         self.brief_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-x" / "obpis"
         self.brief_dir.mkdir(parents=True, exist_ok=True)
-        self.events: list[dict] = []
+        self.events: list[dict[str, Any]] = []
         self.grandfather(*[])
 
     def brief(self, obpi_id: str, content: str) -> Path:
@@ -77,7 +80,7 @@ class _Project:
             "".join(json.dumps(e) + "\n" for e in self.events), encoding="utf-8"
         )
 
-    def audit(self) -> list:
+    def audit(self) -> list[ValidationError]:
         self.flush()
         return audit_adversarial_validation(self.root)
 

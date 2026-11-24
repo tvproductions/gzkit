@@ -6,6 +6,7 @@ import tempfile
 import textwrap
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.complexity.authoring.protocol import (
     read_message,
@@ -35,14 +36,14 @@ _ADVISE_BAND_SOURCE = textwrap.dedent(
 )
 
 
-def _make_framed(method: str, params: dict | None = None, req_id: int = 1) -> bytes:
+def _make_framed(method: str, params: dict[str, Any] | None = None, req_id: int = 1) -> bytes:
     """Return a Content-Length-framed JSON-RPC request message."""
     body = json.dumps({"id": req_id, "method": method, "params": params or {}}).encode()
     header = f"Content-Length: {len(body)}\r\n\r\n".encode()
     return header + body
 
 
-def _run_with_messages(messages: list[bytes]) -> list[dict]:
+def _run_with_messages(messages: list[bytes]) -> list[dict[str, Any]]:
     """Run protocol server against a sequence of messages; return parsed responses."""
     combined = b"".join(messages)
     stdin = io.BytesIO(combined)

@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from gz_mutation_witness import Mutation
 from pydantic import BaseModel, ConfigDict, Field
@@ -167,7 +167,7 @@ def _execute(
     req_ids: list[str] | None = None,
     attestor: str | None = None,
     ruling: str | None = None,
-) -> tuple[dict, bool]:
+) -> tuple[dict[str, Any], bool]:
     """Keep executable producers separate from status presentation.
 
     A review import marks a boundary of the run, so ``review`` and
@@ -205,7 +205,9 @@ def _execute(
     return _status_report(root, obpi_id, stage, req_ids)
 
 
-def _execute_proof(root: Path, obpi_id: str, specification: str | None) -> tuple[dict, bool]:
+def _execute_proof(
+    root: Path, obpi_id: str, specification: str | None
+) -> tuple[dict[str, Any], bool]:
     """Execute a proof request and persist its observed result."""
     if not specification:
         raise ProveRequiresSpecError
@@ -250,7 +252,7 @@ def _record_review_round(root: Path, launch_id: str | None) -> None:
 
 def _execute_review(
     root: Path, obpi_id: str, receipt: str | None, launch_id: str | None
-) -> tuple[dict, bool]:
+) -> tuple[dict[str, Any], bool]:
     """Resolve the named transport receipt and retain its independent judgment.
 
     The review is stored under ``obpi_id`` as typed; an adversarial review's
@@ -279,7 +281,7 @@ def _execute_review(
 
 def _execute_human_review(
     root: Path, obpi_id: str, attestor: str | None, ruling: str | None, launch_id: str | None
-) -> tuple[dict, bool]:
+) -> tuple[dict[str, Any], bool]:
     """Record an explicitly supplied operator ruling against current proof.
 
     The ruling is stored under ``obpi_id`` as typed; its boundary is recorded
@@ -303,7 +305,7 @@ def _execute_human_review(
 
 def _status_report(
     root: Path, obpi_id: str, stage: Literal["stage2", "stage4"], req_ids: list[str] | None
-) -> tuple[dict, bool]:
+) -> tuple[dict[str, Any], bool]:
     """Assemble the current contract and retained evidence alongside readiness."""
     context = build_review_context(
         root,

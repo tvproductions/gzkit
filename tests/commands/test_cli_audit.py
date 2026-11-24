@@ -4,7 +4,7 @@ import json
 import textwrap
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 from unittest.mock import patch
 
 from gzkit.cli.main import main
@@ -14,7 +14,7 @@ from tests.commands.common import CliRunner
 class TestCliAuditCrossCoverage(unittest.TestCase):
     """Verify cross-coverage data appears in cli audit output."""
 
-    _json_data: dict
+    _json_data: dict[str, Any]
     _human_output: str
 
     @override

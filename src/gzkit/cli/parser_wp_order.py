@@ -16,6 +16,8 @@ from gzkit.cli.parser_handler_manifest import _lazy
 if TYPE_CHECKING:
     import argparse
 
+    from gzkit.cli.parser import StableArgumentParser
+
 
 #: Commencement's refusals, every one booking nothing (RP-12 rulings 59, 108, 117, 144).
 _COMMENCE_EXIT_CODES = """Exit codes
@@ -28,7 +30,7 @@ _COMMENCE_EXIT_CODES = """Exit codes
 """
 
 
-def _register_wp_order(wp_commands: argparse._SubParsersAction) -> None:
+def _register_wp_order(wp_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register ``gz wp order`` and its leaves, ``new`` through ``close`` and ``show``."""
     p_order = wp_commands.add_parser(
         "order",

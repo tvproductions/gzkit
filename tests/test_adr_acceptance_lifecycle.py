@@ -14,6 +14,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
 from unittest.mock import patch
 
 from gzkit.cli import main
@@ -93,7 +94,7 @@ class TestCloseoutTransitions(unittest.TestCase):
 class TestCurrentAdrStateAndSemantics(unittest.TestCase):
     """The ledger's latest transition is the state; frontmatter is the fallback."""
 
-    def _graph_info(self, transitions: list[tuple[str, str, str]]) -> dict:
+    def _graph_info(self, transitions: list[tuple[str, str, str]]) -> dict[str, Any]:
         with tempfile.TemporaryDirectory() as tmp:
             ledger = Ledger(Path(tmp) / "ledger.jsonl")
             ledger.append(adr_created_event(_ADR, "", "lite"))

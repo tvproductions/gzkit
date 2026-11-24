@@ -29,6 +29,9 @@ from gzkit.core.validation_rules import ValidationError
 if TYPE_CHECKING:
     from collections.abc import Generator, Sequence
 
+    from gzkit.enforcement import EnforcementClaimRecord
+    from gzkit.governance.trust_audits.theater_signature_scan import TheaterSignatureFinding
+
 
 def _command_fails(command: str, root: Path, *, expected_exit: int) -> int:
     """Exit-style signal: 1 only if the command exits with ``expected_exit`` in ``root``.
@@ -1531,7 +1534,7 @@ def _ep_gate_callers(root: Path) -> list[ValidationError]:
     return audit_gate_callers(root, gz_check_uncalled_scopes=[])
 
 
-def _ep_enforcement_floor(records: list) -> int:
+def _ep_enforcement_floor(records: list[EnforcementClaimRecord]) -> int:
     """NC entrypoint for enforcement-floor: meta-validator must detect FACADE claims.
 
     Returns facade_count + test_bug_count (non-zero = caught the FACADE = PASS for NC).
@@ -1547,7 +1550,7 @@ def _ep_enforcement_floor(records: list) -> int:
     return result.facade_count + result.test_bug_count
 
 
-def _ep_theater_signature_scan(root: Path) -> list:
+def _ep_theater_signature_scan(root: Path) -> list[TheaterSignatureFinding]:
     """NC entrypoint for theater-signature-scan: the analyzer must catch the planted facade.
 
     Runs the production static analyzer against the planted ``src/gzkit/planted.py``

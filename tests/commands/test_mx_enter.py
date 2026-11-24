@@ -14,6 +14,7 @@ import os
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Any
 from unittest.mock import patch
 
 from gzkit import lock_manager
@@ -30,7 +31,7 @@ def _mk_root(tmp: str) -> Path:
     return root
 
 
-def _read_ledger_events(root: Path, event_type: str) -> list[dict]:
+def _read_ledger_events(root: Path, event_type: str) -> list[dict[str, Any]]:
     ledger_path = root / ".gzkit" / "ledger.jsonl"
     if not ledger_path.exists():
         return []

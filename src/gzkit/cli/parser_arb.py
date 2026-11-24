@@ -10,10 +10,13 @@ See `AGENTS.md` § Attestation for the binding rule contract
 
 import argparse
 import shlex
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
 from gzkit.cli.helpers import add_json_flag, build_epilog
+
+if TYPE_CHECKING:
+    from gzkit.cli.parser import StableArgumentParser
 
 # The help examples READ the canonical argv (GHI #856): a re-spelled example
 # under the ``unittest`` label teaches an invocation ``gz arb validate`` rejects.
@@ -52,7 +55,7 @@ def _arb(name: str) -> Any:
     return getattr(import_module("gzkit.commands.arb"), name)
 
 
-def register_arb_parsers(commands: argparse._SubParsersAction) -> None:
+def register_arb_parsers(commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register the ``gz arb`` sub-command group."""
     p_arb = commands.add_parser(
         "arb",
@@ -88,7 +91,7 @@ def register_arb_parsers(commands: argparse._SubParsersAction) -> None:
     _register_archive(arb_commands)
 
 
-def _register_ruff(arb_commands: argparse._SubParsersAction) -> None:
+def _register_ruff(arb_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     p = arb_commands.add_parser(
         "ruff",
         help="Run ruff via ARB and emit a lint receipt",
@@ -112,7 +115,7 @@ def _register_ruff(arb_commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_red(arb_commands: argparse._SubParsersAction) -> None:
+def _register_red(arb_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     p = arb_commands.add_parser(
         "red",
         help="Witness a test failing without the code it covers (by REQ or by commit)",
@@ -159,7 +162,7 @@ def _register_red(arb_commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_step(arb_commands: argparse._SubParsersAction) -> None:
+def _register_step(arb_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     p = arb_commands.add_parser(
         "step",
         help="Wrap an arbitrary command and emit a step receipt",
@@ -204,7 +207,7 @@ def _register_step(arb_commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_ty(arb_commands: argparse._SubParsersAction) -> None:
+def _register_ty(arb_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     p = arb_commands.add_parser(
         "ty",
         help="Run the locked ty (`uv run ty`) via ARB and emit a step receipt",
@@ -222,7 +225,7 @@ def _register_ty(arb_commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_typecheck(arb_commands: argparse._SubParsersAction) -> None:
+def _register_typecheck(arb_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     p = arb_commands.add_parser(
         "typecheck",
         help="Run the canonical `gz typecheck` command via ARB and emit a step receipt",
@@ -239,7 +242,7 @@ def _register_typecheck(arb_commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_coverage(arb_commands: argparse._SubParsersAction) -> None:
+def _register_coverage(arb_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     p = arb_commands.add_parser(
         "coverage",
         help="Run `coverage` via ARB and emit a step receipt",
@@ -261,7 +264,7 @@ def _register_coverage(arb_commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_validate(arb_commands: argparse._SubParsersAction) -> None:
+def _register_validate(arb_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     p = arb_commands.add_parser(
         "validate",
         help="Validate recent ARB receipts against their JSON schemas",
@@ -281,7 +284,7 @@ def _register_validate(arb_commands: argparse._SubParsersAction) -> None:
     p.set_defaults(func=lambda a: _arb("arb_validate_cmd")(limit=a.limit, as_json=a.as_json))
 
 
-def _register_advise(arb_commands: argparse._SubParsersAction) -> None:
+def _register_advise(arb_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     p = arb_commands.add_parser(
         "advise",
         help="Summarize recent ARB receipts into actionable recommendations",
@@ -301,7 +304,7 @@ def _register_advise(arb_commands: argparse._SubParsersAction) -> None:
     p.set_defaults(func=lambda a: _arb("arb_advise_cmd")(limit=a.limit, as_json=a.as_json))
 
 
-def _register_patterns(arb_commands: argparse._SubParsersAction) -> None:
+def _register_patterns(arb_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     p = arb_commands.add_parser(
         "patterns",
         help="Extract recurring anti-patterns from ARB receipts",
@@ -334,7 +337,7 @@ def _register_patterns(arb_commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_archive(arb_commands: argparse._SubParsersAction) -> None:
+def _register_archive(arb_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     p = arb_commands.add_parser(
         "archive",
         help="Relocate aged, uncited ARB receipts into artifacts/receipts/archive/",

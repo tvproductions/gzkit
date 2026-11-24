@@ -45,6 +45,7 @@ import argparse
 import sys
 import warnings
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -68,7 +69,7 @@ REQUIRED_FIELDS = ("allowlist", "reqs", "verification")
 ERA0_SEAL_STATUS = "archived"
 
 
-def split_frontmatter(text: str) -> tuple[str, dict, str]:
+def split_frontmatter(text: str) -> tuple[str, dict[str, Any], str]:
     """Return (raw frontmatter block, parsed mapping, body)."""
     if not text.startswith("---\n"):
         return "", {}, text
@@ -98,7 +99,7 @@ def verification_commands(body: str) -> list[str]:
     ]
 
 
-def synthesize(body: str) -> dict[str, list]:
+def synthesize(body: str) -> dict[str, list[str]]:
     """Lift the three required fields out of the brief body."""
     return {
         "allowlist": _extract_section_paths(body, _ALLOWED_HEADING_RE),
@@ -107,7 +108,7 @@ def synthesize(body: str) -> dict[str, list]:
     }
 
 
-def render_added_fields(fields: dict[str, list]) -> str:
+def render_added_fields(fields: dict[str, list[str]]) -> str:
     """Render the new keys as a YAML block, escaping via safe_dump."""
     return yaml.safe_dump(fields, sort_keys=False, allow_unicode=True, width=10_000)
 

@@ -17,6 +17,7 @@ import datetime
 import json
 import logging
 from pathlib import Path
+from typing import Any
 
 from pydantic import ValidationError as PydanticValidationError
 
@@ -213,7 +214,7 @@ def _check_agent_attestor(receipt_id: str, attestor: str) -> ValidationError | N
     return None
 
 
-def _check_post_cutoff_event(event: dict) -> list[ValidationError]:
+def _check_post_cutoff_event(event: dict[str, Any]) -> list[ValidationError]:
     """Return ValidationErrors for a post-cutoff receipt with deprecated shapes."""
     receipt_id = event.get("id", "")
     attestor = event.get("attestor", "")
@@ -239,7 +240,7 @@ def _check_post_cutoff_event(event: dict) -> list[ValidationError]:
 
 
 def _process_receipt_event(
-    event: dict,
+    event: dict[str, Any],
     cutoff_date: datetime.date,
     waiver_ids: set[str] | None,
 ) -> list[ValidationError]:

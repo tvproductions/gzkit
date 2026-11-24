@@ -13,7 +13,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 
 from gzkit.governance.trust_audits.advisor_proof_binding import (
     validate_advisor_proof_binding,
@@ -21,7 +21,7 @@ from gzkit.governance.trust_audits.advisor_proof_binding import (
 from gzkit.traceability import covers
 
 
-def _well_formed_diagnosis(diag_id: str = "diag-001") -> dict:
+def _well_formed_diagnosis(diag_id: str = "diag-001") -> dict[str, Any]:
     """Return a schema-conforming diagnosis dict with non-empty proof."""
     return {
         "id": diag_id,
@@ -46,14 +46,14 @@ def _well_formed_diagnosis(diag_id: str = "diag-001") -> dict:
     }
 
 
-def _empty_proof_diagnosis(diag_id: str = "diag-empty") -> dict:
+def _empty_proof_diagnosis(diag_id: str = "diag-empty") -> dict[str, Any]:
     """Return a diagnosis dict whose proof is empty (the rule violation)."""
     diag = _well_formed_diagnosis(diag_id)
     diag["proof"] = []
     return diag
 
 
-def _write_fixture(project_root: Path, name: str, payload: dict) -> Path:
+def _write_fixture(project_root: Path, name: str, payload: dict[str, Any]) -> Path:
     fixtures_dir = project_root / "tests" / "fixtures" / "advisor"
     fixtures_dir.mkdir(parents=True, exist_ok=True)
     fixture_path = fixtures_dir / name
@@ -61,7 +61,7 @@ def _write_fixture(project_root: Path, name: str, payload: dict) -> Path:
     return fixture_path
 
 
-def _write_ledger(project_root: Path, events: list[dict]) -> Path:
+def _write_ledger(project_root: Path, events: list[dict[str, Any]]) -> Path:
     ledger_path = project_root / ".gzkit" / "ledger.jsonl"
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
     with ledger_path.open("w", encoding="utf-8") as f:
@@ -73,7 +73,7 @@ def _write_ledger(project_root: Path, events: list[dict]) -> Path:
 def _write_schema(project_root: Path, *, proof_min_items: int | None = 1) -> Path:
     schema_path = project_root / "src" / "gzkit" / "schemas" / "advisor_diagnosis.json"
     schema_path.parent.mkdir(parents=True, exist_ok=True)
-    proof_node: dict = {"type": "array", "items": {"type": "object"}}
+    proof_node: dict[str, Any] = {"type": "array", "items": {"type": "object"}}
     if proof_min_items is not None:
         proof_node["minItems"] = proof_min_items
     schema = {

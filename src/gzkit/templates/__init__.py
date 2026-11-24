@@ -191,7 +191,7 @@ def render_surface_template(name: str, **kwargs: Any) -> str:
     return load_template(name).format_map(SafeDict({**_RENDER_DEFAULTS, **kwargs}))
 
 
-class SafeDict(dict):
+class SafeDict(dict[str, object]):
     """Dictionary that returns a missing key as its own literal ``{token}``.
 
     Deliberately lenient, and scoped to the surface-render path

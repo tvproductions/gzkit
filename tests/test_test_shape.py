@@ -12,10 +12,13 @@ trunk. `test_command_always_exits_zero` is what stops a later change from making
 import tempfile
 import unittest
 from pathlib import Path
-from typing import override
+from typing import TYPE_CHECKING, override
 from unittest import mock
 
 from gzkit.test_shape import scan_output_assertions
+
+if TYPE_CHECKING:
+    from gzkit.test_shape import OutputAssertion
 
 
 class _TreeFixture(unittest.TestCase):
@@ -29,7 +32,7 @@ class _TreeFixture(unittest.TestCase):
     def write(self, name: str, body: str) -> None:
         (self.root / "tests" / name).write_text(body, encoding="utf-8")
 
-    def scan(self) -> list:
+    def scan(self) -> list[OutputAssertion]:
         return scan_output_assertions(self.root / "tests", self.root)
 
 

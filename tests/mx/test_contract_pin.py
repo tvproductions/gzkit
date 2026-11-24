@@ -14,6 +14,7 @@ import subprocess
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Any
 from unittest import mock
 
 from gzkit.events import MxContractAmendedEvent, MxSessionOpenedEvent, parse_typed_event
@@ -36,7 +37,7 @@ def _root(tmp: str, text: str = _TEXT) -> Path:
     return root
 
 
-def _events(root: Path, event_type: str) -> list[dict]:
+def _events(root: Path, event_type: str) -> list[dict[str, Any]]:
     ledger = root / ".gzkit" / "ledger.jsonl"
     if not ledger.exists():
         return []

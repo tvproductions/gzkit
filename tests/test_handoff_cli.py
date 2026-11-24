@@ -800,8 +800,8 @@ class TestHandoffCreateMode(_HandoffCliCase, SilencedConsoleTestCase):
     alongside the override so widening the enum cannot silently re-point it.
     """
 
-    def _write(self, **overrides: object) -> dict:
-        kwargs: dict = {
+    def _write(self, **overrides: object) -> dict[str, Any]:
+        kwargs: dict[str, Any] = {
             "adr": "ADR-0.0.65",
             "slug": "bookmark",
             "agent": "g0",

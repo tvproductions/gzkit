@@ -147,7 +147,7 @@ def _apply_amendments(brief_path, result: ReconcileResult, attestor: str) -> Non
     brief_path.write_text(_amended_text(brief_path, result, attestor), encoding="utf-8")
 
 
-def _planned_amendments(brief_path, result: ReconcileResult, attestor: str) -> dict:
+def _planned_amendments(brief_path, result: ReconcileResult, attestor: str) -> dict[str, list[str]]:
     """Describe what ``--apply`` would write, line for line, without writing it."""
     allowlist_adds, defects = _compute_amendments(result, attestor)
     before = brief_path.read_text(encoding="utf-8").splitlines()
@@ -175,7 +175,7 @@ def _delta_counts(result: ReconcileResult) -> dict[str, int]:
 
 
 def _render_report(
-    result: ReconcileResult, *, do_write: bool, dry_run: bool, planned: dict | None
+    result: ReconcileResult, *, do_write: bool, dry_run: bool, planned: dict[str, list[str]] | None
 ) -> None:
     counts = _delta_counts(result)
     if result.terminal:

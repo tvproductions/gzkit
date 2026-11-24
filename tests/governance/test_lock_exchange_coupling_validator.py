@@ -11,7 +11,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from gzkit.governance.trust_audits.lock_exchange_coupling import (
     validate_lock_exchange_coupling,
@@ -54,7 +54,7 @@ _OBPI_ID = "OBPI-0.0.41-04-test"
 _AGENT = "test-agent"
 
 
-def _write_ledger(project_root: Path, events: list[dict]) -> Path:
+def _write_ledger(project_root: Path, events: list[dict[str, Any]]) -> Path:
     ledger_path = project_root / ".gzkit" / "ledger.jsonl"
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
     with ledger_path.open("w", encoding="utf-8") as f:
@@ -63,7 +63,7 @@ def _write_ledger(project_root: Path, events: list[dict]) -> Path:
     return ledger_path
 
 
-def _cutover_event() -> dict:
+def _cutover_event() -> dict[str, Any]:
     return {
         "schema": _SCHEMA,
         "event": "obpi_receipt_emitted",
@@ -72,7 +72,9 @@ def _cutover_event() -> dict:
     }
 
 
-def _claim_event(obpi_id: str = _OBPI_ID, agent: str = _AGENT, ts: str = _TS_CLAIM) -> dict:
+def _claim_event(
+    obpi_id: str = _OBPI_ID, agent: str = _AGENT, ts: str = _TS_CLAIM
+) -> dict[str, Any]:
     return {
         "schema": _SCHEMA,
         "event": "obpi_lock_claimed",
@@ -90,8 +92,8 @@ def _release_event(
     agent: str = _AGENT,
     ts: str = _TS_RELEASE,
     handoff_path: str | None = ".gzkit/handoffs/test-handoff.md",
-) -> dict:
-    ev: dict = {
+) -> dict[str, Any]:
+    ev: dict[str, Any] = {
         "schema": _SCHEMA,
         "event": "obpi_lock_released",
         "id": obpi_id,
@@ -118,7 +120,7 @@ def _write_handoff(
     path = project_root / relative_path
     path.parent.mkdir(parents=True, exist_ok=True)
 
-    fm: dict = {
+    fm: dict[str, Any] = {
         "mode": mode,
         "adr_id": "ADR-0.0.41",
         "obpi_id": _OBPI_ID,

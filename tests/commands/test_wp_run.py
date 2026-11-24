@@ -9,7 +9,7 @@ import json
 import os
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 from unittest.mock import patch
 
 from gzkit.cli import main
@@ -44,7 +44,7 @@ def _refuse_marker_writes(path: Path, *args: object, **kwargs: object) -> int:
     return _REAL_WRITE_TEXT(path, *args, **kwargs)  # ty: ignore[invalid-argument-type]
 
 
-def _rows(kind: str) -> list[dict]:
+def _rows(kind: str) -> list[dict[str, Any]]:
     text = (Path.cwd() / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8")
     rows = [json.loads(line) for line in text.splitlines() if line.strip()]
     return [row for row in rows if row.get("event") == kind]

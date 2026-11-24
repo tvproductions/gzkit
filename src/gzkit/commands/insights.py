@@ -12,9 +12,12 @@ import argparse
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal, get_args
+from typing import TYPE_CHECKING, Literal, get_args
 
 from gzkit.insights.model import InsightType
+
+if TYPE_CHECKING:
+    from gzkit.cli.parser import StableArgumentParser
 
 # ``get_project_root``, the append writer, and pydantic's ``ValidationError`` are
 # needed only by ``remember`` and are imported there instead. ``main.py`` imports
@@ -31,7 +34,9 @@ def _build_epilog(examples: list[str]) -> str:
     return build_epilog(examples)
 
 
-def register_insights_parsers(commands: argparse._SubParsersAction) -> None:
+def register_insights_parsers(
+    commands: argparse._SubParsersAction[StableArgumentParser],
+) -> None:
     """Register the ``gz insights`` sub-command group."""
     p_insights = commands.add_parser(
         "insights",
@@ -59,7 +64,9 @@ def register_insights_parsers(commands: argparse._SubParsersAction) -> None:
     _register_recurrence(insights_commands)
 
 
-def _register_recurrence(insights_commands: argparse._SubParsersAction) -> None:
+def _register_recurrence(
+    insights_commands: argparse._SubParsersAction[StableArgumentParser],
+) -> None:
     p = insights_commands.add_parser(
         "recurrence",
         help="Check whether cited records qualify a failure to become a rule",
@@ -86,7 +93,9 @@ def _register_recurrence(insights_commands: argparse._SubParsersAction) -> None:
     p.set_defaults(func=lambda a: recurrence(cites=a.cites, as_json=a.as_json))
 
 
-def _register_remember(insights_commands: argparse._SubParsersAction) -> None:
+def _register_remember(
+    insights_commands: argparse._SubParsersAction[StableArgumentParser],
+) -> None:
     p = insights_commands.add_parser(
         "remember",
         help="Append one schema-valid record to the insights store",

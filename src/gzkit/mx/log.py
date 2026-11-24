@@ -29,6 +29,7 @@ record's views call.
 import json
 import re
 from pathlib import Path
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -146,7 +147,7 @@ class LedgerUnreadableError(RuntimeError):
     """The ledger could not be read, so the exit takes no signature (RP-12 ruling 204)."""
 
 
-def _read_ledger_lines(root: Path) -> list[dict]:
+def _read_ledger_lines(root: Path) -> list[dict[str, Any]]:
     ledger_path = root.joinpath(*_LEDGER_RELPATH)
     try:
         text = ledger_path.read_text(encoding="utf-8")
@@ -154,7 +155,7 @@ def _read_ledger_lines(root: Path) -> list[dict]:
         cause = exc.strerror or type(exc).__name__
         msg = f"{'/'.join(_LEDGER_RELPATH)} could not be read ({cause})"
         raise LedgerUnreadableError(msg) from exc
-    out: list[dict] = []
+    out: list[dict[str, Any]] = []
     for line in text.splitlines():
         line = line.strip()
         if not line:

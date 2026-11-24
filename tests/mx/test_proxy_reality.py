@@ -14,11 +14,12 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Any
 
 from gzkit.traceability import covers
 
 
-def _write_ledger(root: Path, events: list[dict]) -> None:
+def _write_ledger(root: Path, events: list[dict[str, Any]]) -> None:
     gzkit_dir = root / ".gzkit"
     gzkit_dir.mkdir(parents=True, exist_ok=True)
     (gzkit_dir / "ledger.jsonl").write_text(
@@ -197,7 +198,7 @@ class TestLiveNegativeControl(unittest.TestCase):
         from gzkit.enforcement import EnforcementClaimRecord, _run_single_claim
         from gzkit.mx.proxy_reality import _build_proxy_reality_violation, _ep_proxy_reality
 
-        planted_events: list[dict] = []
+        planted_events: list[dict[str, Any]] = []
 
         def inspect_fixture(root: Path) -> int:
             ledger_path = root / ".gzkit" / "ledger.jsonl"

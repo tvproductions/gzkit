@@ -9,6 +9,7 @@ routing is fail-closed under ``gz validate --vendor-manifest``.
 
 import json
 from pathlib import Path
+from typing import Any
 
 from jsonschema import Draft202012Validator
 
@@ -91,7 +92,7 @@ def _missing_setpoint_error(artifact: str) -> ValidationError:
 
 
 def _root_contract_errors(
-    manifest_data: dict, artifact: str, *, project_root: Path
+    manifest_data: dict[str, Any], artifact: str, *, project_root: Path
 ) -> list[ValidationError]:
     """Fence the root contract against per-vendor routing, and witness the second copy.
 

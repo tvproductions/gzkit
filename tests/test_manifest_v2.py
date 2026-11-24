@@ -8,7 +8,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from gzkit.config import GzkitConfig
 from gzkit.sync_surfaces import generate_manifest
@@ -30,7 +30,7 @@ def covers[T](target: str) -> Callable[[T], T]:
 class TestManifestV2Schema(unittest.TestCase):
     """Verify manifest v2 schema generation and validation."""
 
-    def _generate(self) -> dict:
+    def _generate(self) -> dict[str, Any]:
         with tempfile.TemporaryDirectory() as tmpdir:
             return generate_manifest(Path(tmpdir), GzkitConfig())
 
@@ -111,7 +111,7 @@ class TestManifestV2Schema(unittest.TestCase):
 class TestManifestV2Personas(unittest.TestCase):
     """Verify manifest v2 includes personas control surface (OBPI-0.0.13-03)."""
 
-    def _generate(self) -> dict:
+    def _generate(self) -> dict[str, Any]:
         with tempfile.TemporaryDirectory() as tmpdir:
             return generate_manifest(Path(tmpdir), GzkitConfig())
 
@@ -236,7 +236,7 @@ class TestManifestVendorsBlock(unittest.TestCase):
     projection of enablement and must carry it.
     """
 
-    def _generate(self, config: GzkitConfig) -> dict:
+    def _generate(self, config: GzkitConfig) -> dict[str, Any]:
         with tempfile.TemporaryDirectory() as tmpdir:
             return generate_manifest(Path(tmpdir), config)
 

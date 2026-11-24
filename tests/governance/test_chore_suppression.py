@@ -17,8 +17,12 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gzkit.governance.trust_audits import audit_chore_suppression
+
+if TYPE_CHECKING:
+    from gzkit.core.validation_rules import ValidationError
 
 _WORKFLOW = "## Workflow\n\n### 1. Scan — observe\n\n"
 
@@ -40,7 +44,7 @@ def _tree(root: Path, *, workflow: str = "", commands: tuple[str, ...] = ()) -> 
     )
 
 
-def _audit(*, workflow: str = "", commands: tuple[str, ...] = ()) -> list:
+def _audit(*, workflow: str = "", commands: tuple[str, ...] = ()) -> list[ValidationError]:
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
         _tree(root, workflow=workflow, commands=commands)

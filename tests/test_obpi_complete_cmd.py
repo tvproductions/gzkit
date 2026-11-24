@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from io import StringIO
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock, patch
 
 from rich.console import Console
@@ -207,7 +207,7 @@ class TestResolveEvidenceKeyProof(unittest.TestCase):
     _SUMMARY = "src/gzkit/commands/obpi_complete.py changed"
     _BRIEF_PROOF = "gz obpi complete OBPI-0.0.14-01 --attestor g0 exits 0"
 
-    def _refusal(self, key_proof: str | None) -> tuple[int | str | None, dict]:
+    def _refusal(self, key_proof: str | None) -> tuple[int | str | None, dict[str, Any]]:
         out = StringIO()
         with patch("sys.stdout", out), self.assertRaises(SystemExit) as raised:
             _resolve_evidence(_MINIMAL_BRIEF, self._SUMMARY, key_proof, "OBPI-0.0.14-01", True)

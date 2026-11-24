@@ -9,6 +9,7 @@ itself. so, we may beed scaffolding settings and adopter settings".
 import json
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.cli.main import main
 from tests.commands.common import (
@@ -29,7 +30,7 @@ def tearDownModule() -> None:
     stop_init_subprocess_patches()
 
 
-def _authorship() -> dict:
+def _authorship() -> dict[str, Any]:
     return json.loads(_CONFIG.read_text(encoding="utf-8")).get("authorship", {})
 
 

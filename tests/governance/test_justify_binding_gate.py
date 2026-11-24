@@ -17,6 +17,7 @@ import tempfile
 import unittest
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest import mock
 
 from gzkit.commands import validate_cmd
@@ -35,6 +36,9 @@ from gzkit.ledger_events import (
 from gzkit.lifecycle import LifecycleStateMachine
 from gzkit.traceability import covers
 
+if TYPE_CHECKING:
+    from gzkit.core.validation_rules import ValidationError
+
 _EVALUATED_AT = "2026-01-01T00:00:00+00:00"
 _AFTER_EVALUATION = datetime(2026, 1, 2, tzinfo=UTC)
 
@@ -51,8 +55,8 @@ def _write_thresholds(root: Path, *, low_score: float = 3.0) -> None:
 def _write_ledger_event(
     root: Path,
     artifact_id: str,
-    dimensions: dict,
-    red_team_challenges_fired: list | None = None,
+    dimensions: dict[str, float],
+    red_team_challenges_fired: list[str] | None = None,
 ) -> None:
     ledger_path = root / ".gzkit" / "ledger.jsonl"
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
@@ -258,7 +262,7 @@ class TestSubjectIdentity(unittest.TestCase):
     semver, with slugs equal or one of them absent. String prefixes never bind.
     """
 
-    def _result(self, artifact_id: str, anchor: AnchorRef) -> list:
+    def _result(self, artifact_id: str, anchor: AnchorRef) -> list[ValidationError]:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             _triggered_project(root, artifact_id)
@@ -375,7 +379,7 @@ class TestReasoningAnswersThisEvaluation(unittest.TestCase):
     stands in when ``timestamp`` is absent.
     """
 
-    def _result(self, event_times: dict, generated_at: datetime) -> list:
+    def _result(self, event_times: dict[str, str], generated_at: datetime) -> list[ValidationError]:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             _write_thresholds(root)

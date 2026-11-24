@@ -17,7 +17,7 @@ import unittest
 from datetime import UTC, datetime, timedelta
 from io import StringIO
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 
 from rich.console import Console
@@ -59,7 +59,7 @@ class _CapturingLedger:
     """
 
     def __init__(self) -> None:
-        self.events: list = []
+        self.events: list[Any] = []
 
     def append(self, event: object) -> None:
         self.events.append(event)

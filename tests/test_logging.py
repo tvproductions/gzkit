@@ -11,7 +11,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 from unittest.mock import patch
 
 from gzkit.cli.logging import (
@@ -278,7 +278,7 @@ class TestRecordDetail(unittest.TestCase):
         raised: bool = False,
         stack_info: bool = False,
         extra: dict[str, object] | None = None,
-    ) -> tuple[str, dict]:
+    ) -> tuple[str, dict[str, Any]]:
         """Log one record at ERROR.
 
         Returns:

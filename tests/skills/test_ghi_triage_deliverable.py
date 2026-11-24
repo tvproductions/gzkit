@@ -132,7 +132,7 @@ class TestRankInputStructuralSchema(unittest.TestCase):
     def setUp(self) -> None:
         self.known = {324, 323}
 
-    def _payload(self, **overrides: object) -> dict:
+    def _payload(self, **overrides: object) -> dict[str, list[dict[str, object]]]:
         entry: dict[str, object] = {"number": 324, "severity": "blocking"}
         entry.update(overrides)
         return {"rankings": [entry]}
@@ -202,7 +202,7 @@ class TestReadinessGrouping(unittest.TestCase):
         self.index = {i.number: i for i in self.issues}
         self.routes = dict.fromkeys(self.index, "direct-fix")
 
-    def _render(self, rankings: list[dict]) -> str:
+    def _render(self, rankings: list[dict[str, object]]) -> str:
         items = _TRIAGE.parse_rank_input({"rankings": rankings}, set(self.index))
         return _TRIAGE.render_rank(items, self.index, self.routes, 5, len(self.issues))
 

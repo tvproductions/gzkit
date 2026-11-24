@@ -14,6 +14,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gzkit.ledger import (
     attested_event,
@@ -23,6 +24,9 @@ from gzkit.ledger import (
 )
 from gzkit.ledger_events import composition_rendered_event, intrinsic_complexity_attestation_event
 from gzkit.tasks import in_scope_task_id
+
+if TYPE_CHECKING:
+    from gzkit.ledger import LedgerEvent
 
 _SRC = Path(__file__).resolve().parents[1] / "src" / "gzkit"
 _CONSTRUCTORS = {
@@ -98,7 +102,7 @@ class TestInScopeTaskId(unittest.TestCase):
 class TestConstructorsCarryTaskId(unittest.TestCase):
     """Each constructor writes task_id when given and omits it when not."""
 
-    def _pairs(self, task_id: str | None) -> list:
+    def _pairs(self, task_id: str | None) -> list[LedgerEvent]:
         return [
             attested_event("ADR-0.1.0", "completed", "g0", task_id=task_id),
             gate_checked_event("ADR-0.1.0", 2, "pass", "gz test", 0, task_id=task_id),

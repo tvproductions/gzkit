@@ -9,6 +9,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 from pydantic import ValidationError
 
@@ -209,7 +210,7 @@ class TestGitHelpersRealRepo(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
-def _make_ledger(root: Path, events: list[dict]) -> None:
+def _make_ledger(root: Path, events: list[dict[str, Any]]) -> None:
     """Write a JSONL ledger at <root>/.gzkit/ledger.jsonl from a list of dicts."""
     ledger_dir = root / ".gzkit"
     ledger_dir.mkdir(parents=True, exist_ok=True)

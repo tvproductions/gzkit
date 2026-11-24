@@ -21,6 +21,7 @@ import unittest
 from datetime import UTC, datetime, timedelta
 from io import StringIO
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 from rich.console import Console
@@ -282,7 +283,7 @@ class _ObpiCompleteIntegrationFixture(unittest.TestCase):
         receipts_root: Path,
         rule_file_body: str | None,
         canonical_slot: list[str],
-        security_registry: list[dict] | None = None,
+        security_registry: list[dict[str, Any]] | None = None,
         *,
         accept_security_floor: str | None = None,
     ) -> tuple[type[BaseException] | None, int | None, list[str]]:
@@ -496,7 +497,7 @@ class TestSecurityReceiptStaleFailsClosed(_ObpiCompleteIntegrationFixture):
             self.assertIn(stale_path.name, joined)
 
 
-_AUTO_DETECT_REGISTRY: list[dict] = [
+_AUTO_DETECT_REGISTRY: list[dict[str, Any]] = [
     {
         "category": "auth_boundaries",
         "globs": ["src/gzkit/commands/obpi_complete.py"],

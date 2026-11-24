@@ -29,7 +29,7 @@ import tempfile
 from datetime import UTC, datetime
 from functools import lru_cache
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -486,7 +486,7 @@ def _collect_receipts(project_root: Path) -> list[ReceiptResult]:
     return results
 
 
-def _counts_from_covers_summary(data: dict) -> tuple[int, int]:
+def _counts_from_covers_summary(data: dict[str, Any]) -> tuple[int, int]:
     """Return (total_reqs, behavior_uncovered_count) from a ``gz covers --json`` payload.
 
     Uses ``behavior_uncovered_reqs``, NOT ``uncovered_reqs`` (GHI #683). SUPPORT and

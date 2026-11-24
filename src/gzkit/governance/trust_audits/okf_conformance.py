@@ -29,6 +29,7 @@ A clean bundle returns ``[]`` (exit 0).
 """
 
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -41,7 +42,7 @@ _RESERVED_FILES = frozenset({"index.md", "log.md"})
 _INDEX_FILE = "index.md"
 
 
-def _read_frontmatter(path: Path) -> tuple[dict | None, bool]:
+def _read_frontmatter(path: Path) -> tuple[dict[str, Any] | None, bool]:
     """Return ``(data, parse_ok)`` for a markdown file's YAML frontmatter.
 
     * ``parse_ok=False`` — a ``---``-delimited block is present but unparseable
@@ -71,7 +72,7 @@ def _read_frontmatter(path: Path) -> tuple[dict | None, bool]:
     return (data, True)
 
 
-def _has_nonempty_type(data: dict | None) -> bool:
+def _has_nonempty_type(data: dict[str, Any] | None) -> bool:
     return bool(data) and isinstance(data.get("type"), str) and data["type"].strip() != ""
 
 

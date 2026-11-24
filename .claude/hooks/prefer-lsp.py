@@ -22,6 +22,7 @@ import shlex
 import sys
 import tempfile
 from pathlib import Path
+from typing import Any
 
 IDENT_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 # Shorter names are too common in prose to route a search on.
@@ -151,7 +152,7 @@ def covers_python(filters: list[str]) -> bool:
     return not filters or any(names_py(f) for f in filters)
 
 
-def from_grep_tool(tool_input: dict) -> tuple[str | None, list[str]]:
+def from_grep_tool(tool_input: dict[str, Any]) -> tuple[str | None, list[str]]:
     """Read a Grep tool call.
 
     Returns:

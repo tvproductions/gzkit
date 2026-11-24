@@ -17,6 +17,7 @@ import inspect
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Any
 from unittest.mock import patch
 
 from gzkit.commands import mx_cmd
@@ -48,11 +49,11 @@ def _mk_brief(root: Path, scope: str, *, names: str | None = None) -> None:
     (d / f"{scope}.md").write_text(body, encoding="utf-8")
 
 
-def _events(root: Path, event_type: str) -> list[dict]:
+def _events(root: Path, event_type: str) -> list[dict[str, Any]]:
     p = root / ".gzkit" / "ledger.jsonl"
     if not p.exists():
         return []
-    out: list[dict] = []
+    out: list[dict[str, Any]] = []
     for line in p.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if not line:

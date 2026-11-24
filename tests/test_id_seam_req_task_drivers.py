@@ -11,6 +11,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.commands import task as task_cmd
 from gzkit.commands.adr_audit_covers_backfill import _parent_obpi_id
@@ -111,7 +112,7 @@ class TestReqReaders(unittest.TestCase):
     def test_uncovered_accept_attribution_needs_the_seam_req_id(self) -> None:
         active = {"OBPI-0.1.0-01-x": {"TASK-0.1.0-01-02-01"}}
 
-        def event(req_id: str) -> dict:
+        def event(req_id: str) -> dict[str, Any]:
             return {
                 "event": "obpi_completion_uncovered_accept",
                 "obpi_id": "OBPI-0.1.0-01-x",

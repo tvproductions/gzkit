@@ -14,7 +14,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 from unittest import mock
 
 from gzkit.arb.validator import validate_receipts
@@ -400,7 +400,7 @@ class TestStatementMutations(unittest.TestCase):
     def test_an_elif_mutant_removes_only_its_branch(self):
         mutants = self._mutants(5, 5)
         self.assertEqual(list(mutants), ["m.py:5-6"])
-        namespace: dict = {}
+        namespace: dict[str, Any] = {}
         exec(compile(mutants["m.py:5-6"], "m.py", "exec"), namespace)  # noqa: S102
         self.assertEqual((namespace["f"](5), namespace["f"](10)), (5, 9))
 
@@ -646,7 +646,7 @@ class TestCommitModeRecordsItsVerdict(unittest.TestCase):
         self._tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)
 
-    def _receipts(self, root: Path) -> list[dict]:
+    def _receipts(self, root: Path) -> list[dict[str, Any]]:
         return [
             json.loads(p.read_text(encoding="utf-8"))
             for p in sorted((root / "artifacts" / "receipts").glob("arb-red-commit-*.json"))

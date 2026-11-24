@@ -16,7 +16,7 @@ import io
 import tempfile
 import unittest
 from pathlib import Path
-from typing import override
+from typing import TYPE_CHECKING, override
 from unittest import mock
 
 from gzkit.commands.quality import _STEP_GUARD_META, _build_check_steps, _select_check_steps
@@ -33,11 +33,14 @@ from gzkit.governance.trust_audits.qc_binding import audit_qc_binding
 from gzkit.qc_binding import _STEP_CLASSIFICATION
 from gzkit.quality import run_supply_chain_audit
 
+if TYPE_CHECKING:
+    from gzkit.commands.quality import CheckStepRunner
+
 _STEP = "Supply chain audit"
 _REPO = Path(__file__).resolve().parents[1]
 
 
-def _names(steps: list) -> list[str]:
+def _names(steps: list[tuple[str, CheckStepRunner]]) -> list[str]:
     return [name for name, _ in steps]
 
 

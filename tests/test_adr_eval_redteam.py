@@ -4,6 +4,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.adr_eval_redteam import (
     CHALLENGE_NAMES,
@@ -46,7 +47,7 @@ class TestComposeRedTeamPrompt(unittest.TestCase):
 
 
 class TestParseRedTeamResult(unittest.TestCase):
-    def _make_output(self, challenges: list[dict]) -> str:
+    def _make_output(self, challenges: list[dict[str, Any]]) -> str:
         return f"Here are the results:\n```json\n{json.dumps({'challenges': challenges})}\n```"
 
     @covers("REQ-0.0.5-04-03")

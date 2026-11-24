@@ -14,14 +14,18 @@ test pins a legitimate-looking shape that must NOT be flagged.
 import tempfile
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gzkit.governance.trust_audits.theater_signature_scan import (
     scan_source_for_signatures,
     scan_validator_tree,
 )
 
+if TYPE_CHECKING:
+    from gzkit.models.theater_signatures import TheaterSignatureFinding
 
-def _scan(source: str) -> list:
+
+def _scan(source: str) -> list[TheaterSignatureFinding]:
     """Write source to a temp .py file and scan it; return findings."""
     with tempfile.TemporaryDirectory() as td:
         path = Path(td) / "probe.py"

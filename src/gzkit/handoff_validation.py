@@ -27,7 +27,7 @@ import re
 import subprocess
 from datetime import datetime
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
@@ -259,7 +259,7 @@ class HandoffFrontmatter(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-def parse_frontmatter(content: str) -> dict:
+def parse_frontmatter(content: str) -> dict[str, Any]:
     """Extract YAML frontmatter from Markdown content.
 
     Args:

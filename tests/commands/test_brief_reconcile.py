@@ -10,6 +10,7 @@ import difflib
 import json
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gzkit.cli import main
 from gzkit.config import GzkitConfig
@@ -17,6 +18,9 @@ from gzkit.governance.brief_structure import BRIEF_TERMINAL_STATUSES
 from gzkit.ledger import Ledger
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner, _quick_init
+
+if TYPE_CHECKING:
+    from gzkit.ledger import LedgerEvent
 
 
 def _write_brief(path: Path, body: str) -> None:
@@ -192,7 +196,7 @@ def _seed_repairable_project() -> None:
 class TestBriefReconcileCommand(unittest.TestCase):
     """gz obpi brief-drift CLI contract (OBPI-0.0.37-06)."""
 
-    def _events(self, name: str) -> list:
+    def _events(self, name: str) -> list[LedgerEvent]:
         return Ledger(Path(".gzkit/ledger.jsonl")).query(event_type=name)
 
     def _adrs_dir(self) -> Path:

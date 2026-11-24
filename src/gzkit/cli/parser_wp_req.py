@@ -16,6 +16,8 @@ from gzkit.cli.parser_handler_manifest import _lazy
 if TYPE_CHECKING:
     import argparse
 
+    from gzkit.cli.parser import StableArgumentParser
+
 _EXAMPLE = (
     "gz wp req new WP-01-stamp --statement 'The hook imports a public name.' "
     "--criterion 'the hook is generated|it imports a public name|the import ratchet test' "
@@ -23,7 +25,7 @@ _EXAMPLE = (
 )
 
 
-def _register_wp_req(wp_commands: argparse._SubParsersAction) -> None:
+def _register_wp_req(wp_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register ``gz wp req`` and its ``new`` subcommand."""
     p_req = wp_commands.add_parser(
         "req",

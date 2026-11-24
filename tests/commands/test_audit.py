@@ -17,7 +17,7 @@ _REAL_PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 # Module-level cache: one ``gz init`` shared across tests via copytree
 # (GHI #253).
-_TEMPLATE_CTX: tempfile.TemporaryDirectory | None = None
+_TEMPLATE_CTX: tempfile.TemporaryDirectory[str] | None = None
 _TEMPLATE_DIR: Path | None = None
 
 

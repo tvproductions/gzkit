@@ -359,7 +359,7 @@ def _timestamp_sort_key(raw: str) -> datetime:
         return datetime.min.replace(tzinfo=UTC)
 
 
-def _render_document(frontmatter: dict, sections: dict[str, str]) -> str:
+def _render_document(frontmatter: dict[str, object], sections: dict[str, str]) -> str:
     r"""Render frontmatter + the seven required sections into a Markdown doc.
 
     Missing sections render as an empty heading. The optional ``Settled Rulings``
@@ -1127,7 +1127,7 @@ def create_handoff(
         corpus = prospective_corpus([*composed_settled, *own_rulings], base_path=base_path)
         sections = {**sections, SETTLED_SECTION: _settled_pointer(len(corpus))}
     sections = _annotate_settled_citations(sections, reference_checker)
-    frontmatter: dict = {
+    frontmatter: dict[str, object] = {
         "mode": mode,
         "adr_id": adr_id,
         "branch": branch,

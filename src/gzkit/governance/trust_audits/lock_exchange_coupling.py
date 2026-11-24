@@ -24,9 +24,13 @@ matches `OBPI-0.0.41-02-*`; derived from ledger at init, never hardcoded.
 import re
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gzkit.core.validation_rules import ValidationError
 from gzkit.handoff_validation import CHECKPOINT_MODE
+
+if TYPE_CHECKING:
+    from gzkit.ledger import LedgerEvent
 
 # Use the latest of OBPI-02 (additive/warning) or OBPI-03 (fail-closed) as the
 # effective enforcement cutover. This grandfathers the warning-only transition
@@ -167,7 +171,7 @@ def _git_index_paths(project_root: Path) -> frozenset[str] | None:
     return frozenset(line.strip() for line in out.splitlines() if line.strip())
 
 
-def _find_cutover_ts(events: list) -> datetime | None:
+def _find_cutover_ts(events: list[LedgerEvent]) -> datetime | None:
     """Return the latest OBPI-02 or OBPI-03 completion receipt timestamp, or None."""
     cutover: datetime | None = None
     for ev in events:
@@ -181,7 +185,7 @@ def _find_cutover_ts(events: list) -> datetime | None:
     return cutover
 
 
-def _index_claims(events: list) -> dict[str, list[datetime]]:
+def _index_claims(events: list[LedgerEvent]) -> dict[str, list[datetime]]:
     """Build per-OBPI ascending-sorted claim timestamps for concluded-claim matching.
 
     Keyed by ``obpi_id`` only (not ``(obpi_id, agent)``): a release concludes the

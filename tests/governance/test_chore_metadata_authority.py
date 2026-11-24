@@ -15,6 +15,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.governance.trust_audits import audit_chore_metadata_authority
 
@@ -30,7 +31,7 @@ def _tree(
     chore_md: str,
     *,
     commands: tuple[str, ...] = ("uv run gz lint",),
-    entry: dict | None = None,
+    entry: dict[str, Any] | None = None,
 ) -> None:
     """Write one registered chore under the default ``.gzkit/chores`` surface."""
     chores = root / ".gzkit" / "chores"

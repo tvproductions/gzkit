@@ -14,6 +14,7 @@ import unittest
 from contextlib import redirect_stdout
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 from rich.console import Console
@@ -75,7 +76,7 @@ def _run(module: str, func, root: Path, **kwargs) -> tuple[str, int]:
     return out.getvalue(), code
 
 
-def _events(root: Path, event_type: str) -> list[dict]:
+def _events(root: Path, event_type: str) -> list[dict[str, Any]]:
     text = (root / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8")
     rows = [json.loads(line) for line in text.splitlines() if line.strip()]
     return [row for row in rows if row.get("event") == event_type]

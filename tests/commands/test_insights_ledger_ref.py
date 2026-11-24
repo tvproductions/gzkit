@@ -11,7 +11,7 @@ import hashlib
 import json
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 
 from gzkit.cli.main import main
 from gzkit.events import InsightRecordedEvent, parse_typed_event
@@ -27,7 +27,7 @@ def _insight_lines() -> list[str]:
     return [ln for ln in _STORE.read_text(encoding="utf-8").splitlines() if ln.strip()]
 
 
-def _recorded() -> list[dict]:
+def _recorded() -> list[dict[str, Any]]:
     if not _LEDGER.exists():
         return []
     rows = [json.loads(ln) for ln in _LEDGER.read_text(encoding="utf-8").splitlines() if ln]

@@ -25,6 +25,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 STAMP_ROOT_ENV = "GZKIT_DISPATCH_ROOT"
 STAMP_ID_ENV = "GZKIT_DISPATCH_ID"
@@ -37,7 +38,7 @@ POWERSHELL_DENIAL = (
 )
 
 
-def _no_root(payload: dict) -> dict | None:
+def _no_root(payload: dict[str, Any]) -> dict[str, Any] | None:
     """Stamp no root on a subagent Bash call mentioning gz; deny PowerShell.
 
     Returns:

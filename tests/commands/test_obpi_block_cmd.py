@@ -8,6 +8,7 @@ events, that both refuse an empty payload, and that `--dry-run` writes nothing.
 import json
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.cli import main
 from gzkit.ledger import Ledger, adr_created_event, obpi_created_event
@@ -23,7 +24,7 @@ def _seed() -> Ledger:
     return ledger
 
 
-def _events_of(kind: str) -> list[dict]:
+def _events_of(kind: str) -> list[dict[str, Any]]:
     text = (Path.cwd() / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8")
     rows = [json.loads(line) for line in text.splitlines() if line.strip()]
     return [r for r in rows if r.get("event") == kind]

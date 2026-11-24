@@ -20,6 +20,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from typing import Any
 
 
 def find_project_root() -> Path:
@@ -149,7 +150,7 @@ def get_execution_mode(adr_file: Path | None) -> str:
     return "normal"
 
 
-def resolve_would_be_content(abs_path: Path, tool_input: dict) -> str:
+def resolve_would_be_content(abs_path: Path, tool_input: dict[str, Any]) -> str:
     """Resolve the file content that would result from the edit/write."""
     content_field = tool_input.get("content")
     if content_field:

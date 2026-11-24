@@ -7,9 +7,10 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 
-def _write_lint_receipt(directory: Path, name: str, findings: list[dict]) -> None:
+def _write_lint_receipt(directory: Path, name: str, findings: list[dict[str, Any]]) -> None:
     payload = {
         "schema": "gzkit.arb.lint_receipt.v1",
         "tool": {"name": "ruff", "version": "0.5.0"},

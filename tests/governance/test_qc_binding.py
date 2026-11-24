@@ -4,6 +4,7 @@ Tests are derived from brief requirements, not from implementation.
 """
 
 import unittest
+from typing import Any
 
 from pydantic import ValidationError
 
@@ -13,7 +14,7 @@ from gzkit.traceability import covers
 class TestQCStepModelContract(unittest.TestCase):
     """REQ-0.0.73-01-01: QCStep is frozen, extra-forbid, and has all seven fields."""
 
-    def _make_valid_kwargs(self) -> dict:
+    def _make_valid_kwargs(self) -> dict[str, Any]:
         return {
             "id": "lint",
             "name": "Lint",

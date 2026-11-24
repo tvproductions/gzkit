@@ -10,11 +10,12 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Any
 
 from gzkit.traceability import covers
 
 
-def _write_manifest(root: Path, payload: dict) -> None:
+def _write_manifest(root: Path, payload: dict[str, Any]) -> None:
     """Write a vendor-manifest fixture under ``root/data``."""
     data_dir = root / "data"
     data_dir.mkdir(parents=True, exist_ok=True)

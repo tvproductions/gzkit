@@ -19,6 +19,7 @@ import re
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -44,7 +45,7 @@ def _build_fixture_slice(root: Path) -> list[tuple[str, Path]]:
     return slice_
 
 
-def _split_frontmatter(text: str) -> tuple[dict, str]:
+def _split_frontmatter(text: str) -> tuple[dict[str, Any], str]:
     """Parse a ``---``-delimited YAML frontmatter block + body from md text."""
     assert text.startswith("---\n"), "concept doc must open with a YAML frontmatter fence"
     _, fm_text, body = text.split("---\n", 2)

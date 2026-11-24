@@ -41,6 +41,7 @@ deliberately out of this verb's scope (it would overlap ``lock_manager``).
 import os
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -154,7 +155,7 @@ def _archived_handoffs(base_path: Path) -> list[Path]:
     return _markdown_handoffs(_canonical_dir(base_path) / _ARCHIVE_NAME)
 
 
-def _frontmatter(path: Path) -> dict | None:
+def _frontmatter(path: Path) -> dict[str, Any] | None:
     try:
         parsed = parse_frontmatter(path.read_text(encoding="utf-8"))
     except OSError, UnicodeDecodeError, HandoffValidationError:

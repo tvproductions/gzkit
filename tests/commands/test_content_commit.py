@@ -11,7 +11,7 @@ missing REQ-22-01 substance — ``save_rendition`` previously had no governed ca
 import json
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 
 from gzkit.cli.main import main
 from gzkit.content.corpus_store import append_entry, load_corpus
@@ -1078,7 +1078,7 @@ class TestContentCommitRetentionGate(unittest.TestCase):
         """
         prior = "# AGENTS.md\n\nDeprecated note about legacy policy text.\n"
 
-        def _map(extracted_by: str, mapped_by: str) -> dict:
+        def _map(extracted_by: str, mapped_by: str) -> dict[str, Any]:
             return {
                 "surface": "AGENTS.md",
                 "consumer": "codex",
@@ -1208,7 +1208,7 @@ class TestContentCommitRetentionGate(unittest.TestCase):
         """
         prior = "# AGENTS.md\n\nDeprecated note about legacy policy text.\n"
 
-        def _map(surface: str, consumer: str) -> dict:
+        def _map(surface: str, consumer: str) -> dict[str, Any]:
             return {
                 "surface": surface,
                 "consumer": consumer,
@@ -1389,7 +1389,7 @@ class TestContentCommitRetentionGateGHI1090Replay(unittest.TestCase):
         _stage_candidate("# AGENTS.md\n\n" + _CANDIDATE_BULLET_1090 + "\n")
 
     @staticmethod
-    def _all_kept_map() -> dict:
+    def _all_kept_map() -> dict[str, Any]:
         return {
             "surface": "AGENTS.md",
             "consumer": "codex",

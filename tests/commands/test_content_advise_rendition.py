@@ -10,7 +10,7 @@ explanation) — never on the verdict value itself (ADR-0.0.39).
 import json
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 
 from gzkit.cli.main import main
 from gzkit.traceability import covers
@@ -21,7 +21,7 @@ def _receipts() -> list[Path]:
     return sorted((Path(".") / "artifacts" / "receipts").glob("arb-step-judge-*.json"))
 
 
-def _ledger_events() -> list[dict]:
+def _ledger_events() -> list[dict[str, Any]]:
     ledger = Path(".") / ".gzkit" / "ledger.jsonl"
     if not ledger.exists():
         return []

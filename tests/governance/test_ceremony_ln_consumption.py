@@ -18,7 +18,7 @@ exercise is ``_gate_closeout_proof`` (the ADR-0.0.69 rename of the original
 import tempfile
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 from unittest.mock import MagicMock, patch
 
 import yaml
@@ -183,10 +183,12 @@ class TestGateScopedToCeremonyAdr(unittest.TestCase):
             encoding="utf-8",
         )
 
-    def _write_brief(self, adr_id: str, obpi_id: str, req: str, ln: list[dict] | None) -> None:
+    def _write_brief(
+        self, adr_id: str, obpi_id: str, req: str, ln: list[dict[str, Any]] | None
+    ) -> None:
         obpis = self.root / "docs" / "design" / "adr" / adr_id / "obpis"
         obpis.mkdir(parents=True, exist_ok=True)
-        fm: dict = {"id": obpi_id, "parent": adr_id, "lane": "Heavy", "status": "Draft"}
+        fm: dict[str, Any] = {"id": obpi_id, "parent": adr_id, "lane": "Heavy", "status": "Draft"}
         if ln is not None:
             fm["ln"] = ln
         body = f"# {obpi_id}\n\n## Acceptance Criteria\n\n- [ ] {req} [BEHAVIOR]: criterion {req}\n"

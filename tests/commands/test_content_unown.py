@@ -23,7 +23,7 @@ import tempfile
 import threading
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 from unittest.mock import patch
 
 import gzkit.commands.content.unown as unown_module
@@ -172,7 +172,7 @@ def _seed_declaration(*, alpha: str = "corpus-owned", floor: int | None = None) 
     )
 
 
-def _ledger_events() -> list[dict]:
+def _ledger_events() -> list[dict[str, Any]]:
     if not _LEDGER_PATH.exists():
         return []
     return [
@@ -891,7 +891,7 @@ class TestContentUnownReplayJournalValidation(unittest.TestCase):
         new_floor: int,
         parent_event_id: str | None,
         section: str = "alpha-section",
-    ) -> dict:
+    ) -> dict[str, Any]:
         return {
             "surface": "Doc.md",
             "section": section,
@@ -937,7 +937,7 @@ class TestContentUnownReplayJournalValidation(unittest.TestCase):
         )
         return successor.model_dump_json(indent=2) + "\n"
 
-    def _write_journal(self, record: dict) -> None:
+    def _write_journal(self, record: dict[str, Any]) -> None:
         self._JOURNAL_PATH.parent.mkdir(parents=True, exist_ok=True)
         self._JOURNAL_PATH.write_text(json.dumps(record), encoding="utf-8")
 
@@ -3035,7 +3035,7 @@ class TestContentUnownRound9(unittest.TestCase):
 
     _JOURNAL = _DECLARATION_PATH.parent / "Doc.md.json.journal"
 
-    def _coherent_identity_swap(self, alias: str) -> dict:
+    def _coherent_identity_swap(self, alias: str) -> dict[str, Any]:
         """A declaration declaring *alias* that `load_declaration` ACCEPTS.
 
         Minting the matching genesis row is what makes the swapped state
@@ -3055,7 +3055,7 @@ class TestContentUnownRound9(unittest.TestCase):
         return {**on_disk, "surface": alias, "floor_event_id": swapped_id}
 
     @contextlib.contextmanager
-    def _swap_declaration_inside_the_lock(self, replacement: dict):
+    def _swap_declaration_inside_the_lock(self, replacement: dict[str, Any]):
         """Replace the declaration AFTER the target is fixed, before it is consumed.
 
         `_read_surface_or_exit` is the first statement inside the critical
@@ -3077,7 +3077,7 @@ class TestContentUnownRound9(unittest.TestCase):
         _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
         return _SEED_FLOOR, measure_section_spans(_SURFACE_TEXT)["alpha-section"]
 
-    def _journal_record(self, prior_floor: int, span: int) -> dict:
+    def _journal_record(self, prior_floor: int, span: int) -> dict[str, Any]:
         """A journal naming the TARGET, self-consistent in every other field."""
         on_disk = json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
         record = {
@@ -3095,7 +3095,7 @@ class TestContentUnownRound9(unittest.TestCase):
         record["event_id"] = _mint_event_id(record, record["parent_event_id"])
         return record
 
-    def _derived_successor(self, predecessor_raw: dict, record: dict) -> str:
+    def _derived_successor(self, predecessor_raw: dict[str, Any], record: dict[str, Any]) -> str:
         """The successor a CORRECT replay derives from *predecessor_raw*.
 
         Built the way production builds it, so only the identity disagrees --
@@ -3130,7 +3130,12 @@ class TestContentUnownRound9(unittest.TestCase):
         self.assertTrue(self._JOURNAL.exists(), "fixture sanity: the journal is retained")
 
     def _assert_refused_without_transaction_writes(
-        self, result, before_events: int, expected_declaration: dict, phase: str, exit_code: int
+        self,
+        result,
+        before_events: int,
+        expected_declaration: dict[str, Any],
+        phase: str,
+        exit_code: int,
     ) -> None:
         """Refused deterministically, with no transaction write after the swap.
 
@@ -3215,7 +3220,7 @@ class TestWitnessSourceIsTheFixedDestination(unittest.TestCase):
     def setUp(self) -> None:
         self._runner = CliRunner()
 
-    def _target_and_record(self) -> tuple[unown_module._TransactionTarget, dict]:
+    def _target_and_record(self) -> tuple[unown_module._TransactionTarget, dict[str, Any]]:
         _seed_surface()
         _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
         target = unown_module._resolve_target_or_exit(Path("."), "Doc.md", "alpha-section")
@@ -3359,7 +3364,7 @@ class TestRecoveryProtocolStateB(unittest.TestCase):
         _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
         return measure_section_spans(_SURFACE_TEXT)["alpha-section"]
 
-    def _witnesses(self) -> list[dict]:
+    def _witnesses(self) -> list[dict[str, Any]]:
         return [e for e in _ledger_events() if e["event"] == "section_ownership_unowned"]
 
     @unittest.skipUnless(os.name == "posix", "directory fsync is POSIX-only")
@@ -3500,7 +3505,7 @@ class TestRecoveryProtocolStateE(unittest.TestCase):
         self.assertTrue(self._JOURNAL.exists())
         return span
 
-    def _witnesses(self) -> list[dict]:
+    def _witnesses(self) -> list[dict[str, Any]]:
         return [e for e in _ledger_events() if e["event"] == "section_ownership_unowned"]
 
     @covers("REQ-0.35.0-04-05")
@@ -3813,7 +3818,7 @@ class TestRecoveryProtocolStateA(unittest.TestCase):
     def setUp(self) -> None:
         self._runner = CliRunner()
 
-    def _witnesses(self) -> list[dict]:
+    def _witnesses(self) -> list[dict[str, Any]]:
         return [e for e in _ledger_events() if e["event"] == "section_ownership_unowned"]
 
     @contextlib.contextmanager
@@ -4412,7 +4417,7 @@ class TestRecoveryProtocolStateDPlusE(unittest.TestCase):
         self.assertEqual(first.exit_code, 2, msg=first.output)
         return first
 
-    def _witnesses(self) -> list[dict]:
+    def _witnesses(self) -> list[dict[str, Any]]:
         return [e for e in _ledger_events() if e["event"] == "section_ownership_unowned"]
 
     @covers("REQ-0.35.0-04-05")
@@ -4702,7 +4707,7 @@ class TestRecoveryCleanupIsItsOwnObligation(unittest.TestCase):
     def setUp(self) -> None:
         self._runner = CliRunner()
 
-    def _witnesses(self) -> list[dict]:
+    def _witnesses(self) -> list[dict[str, Any]]:
         return [e for e in _ledger_events() if e["event"] == "section_ownership_unowned"]
 
     def _reach_state_d(self):
@@ -5630,7 +5635,7 @@ class TestJournalAbsenceIsMadeDurableBeforeDependentsMove(unittest.TestCase):
     def setUp(self) -> None:
         self._runner = CliRunner()
 
-    def _witnesses(self) -> list[dict]:
+    def _witnesses(self) -> list[dict[str, Any]]:
         return [e for e in _ledger_events() if e["event"] == "section_ownership_unowned"]
 
     @unittest.skipUnless(os.name == "posix", "directory fsync is POSIX-only")
@@ -5734,7 +5739,7 @@ class TestOrphanResidueWarnsAndPermitsFreshWork(unittest.TestCase):
     def setUp(self) -> None:
         self._runner = CliRunner()
 
-    def _witnesses(self) -> list[dict]:
+    def _witnesses(self) -> list[dict[str, Any]]:
         return [e for e in _ledger_events() if e["event"] == "section_ownership_unowned"]
 
     def _seed_with_an_unremovable_orphan(self) -> None:
@@ -5995,7 +6000,7 @@ class TestUnavailableBarrierPreservesRecoveryMaterial(unittest.TestCase):
     def setUp(self) -> None:
         self._runner = CliRunner()
 
-    def _witnesses(self) -> list[dict]:
+    def _witnesses(self) -> list[dict[str, Any]]:
         return [e for e in _ledger_events() if e["event"] == "section_ownership_unowned"]
 
     @unittest.skipUnless(os.name == "posix", "directory fsync is POSIX-only")
@@ -6222,7 +6227,7 @@ class _RolledBackUnderAPendingJournal(unittest.TestCase):
     def setUp(self) -> None:
         self._runner = CliRunner()
 
-    def _witnesses(self) -> list[dict]:
+    def _witnesses(self) -> list[dict[str, Any]]:
         return [e for e in _ledger_events() if e["event"] == "section_ownership_unowned"]
 
     def _rolled_back_state(self) -> bytes:
@@ -6245,13 +6250,13 @@ class _RolledBackUnderAPendingJournal(unittest.TestCase):
         _DECLARATION_PATH.write_bytes(predecessor)
         return predecessor
 
-    def _journal_record(self) -> dict:
+    def _journal_record(self) -> dict[str, Any]:
         return json.loads(self._JOURNAL.read_text(encoding="utf-8"))
 
     def _write_journal(self, record: object) -> None:
         self._JOURNAL.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
 
-    def _remint(self, record: dict) -> dict:
+    def _remint(self, record: dict[str, Any]) -> dict[str, Any]:
         """Re-derive the id and the serialized successor after mutating a record.
 
         A record whose `event_id` no longer matches its content is refused by

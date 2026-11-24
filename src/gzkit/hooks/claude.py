@@ -8,6 +8,7 @@ import tempfile
 from collections.abc import Callable
 from contextlib import suppress
 from pathlib import Path
+from typing import Any
 
 from gzkit.config import GzkitConfig
 from gzkit.hooks.core import _ruff_format_dir
@@ -231,7 +232,9 @@ def gzkit_owned_phases() -> tuple[str, ...]:
     )
 
 
-def generate_claude_settings(config: GzkitConfig, project_root: Path | None = None) -> dict:
+def generate_claude_settings(
+    config: GzkitConfig, project_root: Path | None = None
+) -> dict[str, Any]:
     """Generate .claude/settings.json content.
 
     Args:
@@ -245,7 +248,7 @@ def generate_claude_settings(config: GzkitConfig, project_root: Path | None = No
 
     """
     hooks_dir = config.paths.claude_hooks
-    settings: dict = {
+    settings: dict[str, Any] = {
         "enabledPlugins": {"superpowers@claude-plugins-official": False},
         "hooks": {
             "PreToolUse": [
@@ -442,7 +445,7 @@ def generate_claude_settings(config: GzkitConfig, project_root: Path | None = No
     return settings
 
 
-def _is_gzkit_owned_hook(hook_entry: dict, hooks_dir: str) -> bool:
+def _is_gzkit_owned_hook(hook_entry: dict[str, Any], hooks_dir: str) -> bool:
     """Return True if a hook entry's command or args reference the gzkit hooks directory.
 
     An exec-form entry names the interpreter in ``command`` and the script in
@@ -458,17 +461,17 @@ def _is_gzkit_owned_hook(hook_entry: dict, hooks_dir: str) -> bool:
     return any(hooks_dir in str(part) for part in parts)
 
 
-def _is_gzkit_owned_group(group: dict, hooks_dir: str) -> bool:
+def _is_gzkit_owned_group(group: dict[str, Any], hooks_dir: str) -> bool:
     """Return True if all hooks in a matcher group are gzkit-owned."""
     hooks = group.get("hooks", [])
     return bool(hooks) and all(_is_gzkit_owned_hook(h, hooks_dir) for h in hooks)
 
 
 def _merge_hook_phase(
-    existing_groups: list[dict],
-    gzkit_groups: list[dict],
+    existing_groups: list[dict[str, Any]],
+    gzkit_groups: list[dict[str, Any]],
     hooks_dir: str,
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     """Merge a single hook phase (PreToolUse or PostToolUse).
 
     For each matcher that gzkit defines, the gzkit hooks replace all existing
@@ -494,7 +497,7 @@ def _merge_hook_phase(
     """
     gzkit_by_matcher = {g["matcher"]: g for g in gzkit_groups}
     seen_matchers: set[str] = set()
-    merged: list[dict] = []
+    merged: list[dict[str, Any]] = []
 
     for existing_group in existing_groups:
         matcher = existing_group.get("matcher", "")
@@ -534,9 +537,9 @@ def _merge_hook_phase(
 
 def merge_settings(
     settings_path: Path,
-    gzkit_settings: dict,
+    gzkit_settings: dict[str, Any],
     hooks_dir: str,
-) -> dict:
+) -> dict[str, Any]:
     """Merge gzkit-generated settings into existing settings.json.
 
     Preserves user-added hooks and top-level keys. Replaces gzkit-owned
@@ -546,7 +549,7 @@ def merge_settings(
         The merged settings; ``gzkit_settings`` itself when no existing settings could be read.
 
     """
-    existing: dict = {}
+    existing: dict[str, Any] = {}
     if settings_path.is_file():
         with suppress(json.JSONDecodeError):
             existing = json.loads(settings_path.read_text(encoding="utf-8"))
@@ -575,7 +578,7 @@ def merge_settings(
     existing_hooks = existing.get("hooks", {})
     gzkit_hooks = gzkit_settings.get("hooks", {})
     owned = gzkit_owned_phases()
-    merged_hooks: dict[str, list] = {}
+    merged_hooks: dict[str, list[dict[str, Any]]] = {}
 
     # Walk existing phases first to lock their order; gzkit-owned phases
     # get the merged content, user-only phases pass through unchanged.

@@ -1009,7 +1009,7 @@ POWERSHELL_DENIAL = (
 )
 
 
-def powershell_denial() -> dict:
+def powershell_denial() -> dict[str, Any]:
     """Compose the PreToolUse deny for a subagent's PowerShell ``gz`` call (ruling 39).
 
     Returns:
@@ -1025,7 +1025,7 @@ def powershell_denial() -> dict:
     }
 
 
-def stamp_hook_output(payload: Mapping[str, Any], project_root: Path) -> dict | None:
+def stamp_hook_output(payload: Mapping[str, Any], project_root: Path) -> dict[str, Any] | None:
     """Decide the PreToolUse output for one Bash call (rulings 34, 35, 38).
 
     Args:

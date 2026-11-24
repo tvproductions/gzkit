@@ -24,7 +24,7 @@ from tests.commands.common import _ignore_transient_git, _isolated_git_env
 
 
 class TestObpiValidator(unittest.TestCase):
-    _template_dir: tempfile.TemporaryDirectory
+    _template_dir: tempfile.TemporaryDirectory[str]
 
     @override
     @classmethod

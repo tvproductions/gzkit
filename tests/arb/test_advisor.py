@@ -7,12 +7,13 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 
 def _write_lint_receipt(
     directory: Path,
     name: str,
-    findings: list[dict],
+    findings: list[dict[str, Any]],
     exit_status: int = 1,
 ) -> None:
     payload = {

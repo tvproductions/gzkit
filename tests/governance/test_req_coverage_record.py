@@ -11,9 +11,13 @@ import json
 import unittest
 import unittest.mock
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gzkit.traceability import covers
 from tests.commands.common import SilencedConsoleTestCase
+
+if TYPE_CHECKING:
+    from gzkit.req_kind import ReqKind
 
 
 class TestReqEntityTaxonomyKind(unittest.TestCase):
@@ -145,7 +149,7 @@ class TestCoverageEntryExtendedFields(unittest.TestCase):
 class TestInferReqKind(unittest.TestCase):
     """REQ-0.0.59-03-02 (BEHAVIOR): One-shot inference heuristic for legacy REQs."""
 
-    def _infer(self, text: str) -> tuple:
+    def _infer(self, text: str) -> tuple[ReqKind, str]:
         from gzkit.req_kind import infer_req_kind
 
         return infer_req_kind(text)

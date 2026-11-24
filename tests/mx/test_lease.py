@@ -11,6 +11,7 @@ import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Any
 
 from gzkit import lock_manager
 from gzkit.events import MxSessionLeaseExpiredEvent, parse_typed_event
@@ -24,7 +25,7 @@ _BASE = datetime(2026, 1, 1, 0, 0, 0, tzinfo=UTC)
 _LEASE = timedelta(minutes=lock_manager.DEFAULT_LOCK_TTL_MINUTES)
 
 
-def _opened(session_id: str) -> dict:
+def _opened(session_id: str) -> dict[str, Any]:
     return {
         "schema": "gzkit.ledger.v1",
         "event": "mx_session_opened",
@@ -36,7 +37,7 @@ def _opened(session_id: str) -> dict:
     }
 
 
-def _closed(session_id: str) -> dict:
+def _closed(session_id: str) -> dict[str, Any]:
     return {
         "schema": "gzkit.ledger.v1",
         "event": "mx_session_closed",
@@ -47,7 +48,7 @@ def _closed(session_id: str) -> dict:
     }
 
 
-def _renewed(session_id: str, at: datetime) -> dict:
+def _renewed(session_id: str, at: datetime) -> dict[str, Any]:
     return {
         "schema": "gzkit.ledger.v1",
         "event": "mx_session_lease_renewed",
@@ -60,7 +61,7 @@ def _renewed(session_id: str, at: datetime) -> dict:
     }
 
 
-def _root_with(tmp: str, events: list[dict]) -> Path:
+def _root_with(tmp: str, events: list[dict[str, Any]]) -> Path:
     root = Path(tmp)
     (root / ".gzkit").mkdir(parents=True, exist_ok=True)
     (root / ".gzkit" / "ledger.jsonl").write_text(
@@ -69,7 +70,7 @@ def _root_with(tmp: str, events: list[dict]) -> Path:
     return root
 
 
-def _booked(root: Path) -> list[dict]:
+def _booked(root: Path) -> list[dict[str, Any]]:
     lines = (root / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8").splitlines()
     rows = [json.loads(line) for line in lines if line.strip()]
     return [row for row in rows if row.get("event") == "mx_session_lease_expired"]

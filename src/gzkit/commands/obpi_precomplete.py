@@ -18,7 +18,7 @@ The ``gz-obpi-pipeline`` skill wires this in as Stage 5 Step 0.
 import json
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, ConfigDict, Field
 from rich.markup import escape
@@ -494,7 +494,7 @@ def _lock_claimed_at(project_root: Path, obpi_id: str) -> datetime | None:
     return None
 
 
-def _receipt_step(payload: dict) -> str | None:
+def _receipt_step(payload: dict[str, Any]) -> str | None:
     """Return the step a receipt records: `lint` for a lint receipt, else `step.name`."""
     if str(payload.get("schema", "")).startswith("gzkit.arb.lint_receipt"):
         return "lint"
@@ -502,9 +502,9 @@ def _receipt_step(payload: dict) -> str | None:
     return step.get("name") if isinstance(step, dict) else None
 
 
-def _newest_receipts_since(receipts_dir: Path, claimed: datetime) -> dict[str, dict]:
+def _newest_receipts_since(receipts_dir: Path, claimed: datetime) -> dict[str, dict[str, Any]]:
     """Newest receipt per step whose run began at or after the lock claim."""
-    newest: dict[str, tuple[datetime, dict]] = {}
+    newest: dict[str, tuple[datetime, dict[str, Any]]] = {}
     for path in receipts_dir.glob("arb-*.json") if receipts_dir.is_dir() else []:
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))

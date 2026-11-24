@@ -10129,7 +10129,7 @@
     {
       "file": "tests/governance/test_audit_check_covers_backfill.py",
       "rule": "PGH003",
-      "count": 2
+      "count": 1
     },
     {
       "file": "tests/governance/test_audit_check_covers_backfill.py",

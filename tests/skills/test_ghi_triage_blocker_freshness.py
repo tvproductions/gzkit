@@ -46,7 +46,7 @@ def _load_triage_module():
 _TRIAGE = _load_triage_module()
 
 
-def _issue(number: int = 1, *, comments: list | None = None):
+def _issue(number: int = 1, *, comments: list[object] | None = None):
     return _TRIAGE.Issue(
         number=number,
         title="t",

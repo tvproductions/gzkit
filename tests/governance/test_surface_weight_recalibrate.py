@@ -25,6 +25,7 @@ import tempfile
 import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 from unittest import mock
 
 from gzkit.governance.trust_audits.surface_weight import (
@@ -85,11 +86,11 @@ def _append_recalibration(
         handle.write(json.dumps(event) + "\n")
 
 
-def _read_floor(root: Path) -> dict:
+def _read_floor(root: Path) -> dict[str, Any]:
     return json.loads((root / "data" / "surface_weight_floor.json").read_text(encoding="utf-8"))
 
 
-def _read_events(root: Path) -> list[dict]:
+def _read_events(root: Path) -> list[dict[str, Any]]:
     raw = (root / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8")
     return [json.loads(line) for line in raw.splitlines() if line.strip()]
 

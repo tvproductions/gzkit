@@ -9,13 +9,13 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 from unittest.mock import patch
 
 from jsonschema import Draft202012Validator
 
 
-def _load_schema() -> dict:
+def _load_schema() -> dict[str, Any]:
     schema_path = (
         Path(__file__).resolve().parents[2] / "data" / "schemas" / "arb_step_receipt.schema.json"
     )
@@ -47,7 +47,7 @@ class TestRunStepViaArb(unittest.TestCase):
             os.environ["GZKIT_ARB_RECEIPTS_ROOT"] = self._prior_env
         self._tempdir.cleanup()
 
-    def _run_with_fake_result(self, result: subprocess.CompletedProcess):
+    def _run_with_fake_result(self, result: subprocess.CompletedProcess[str]):
         from gzkit.arb.step_reporter import run_step_via_arb
 
         with patch("gzkit.arb.step_reporter.subprocess.run", return_value=result):

@@ -20,6 +20,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 from unittest import mock
 
 from gzkit import guard_canary as gc
@@ -401,14 +402,14 @@ class TestRunsCanBeNarrowed(unittest.TestCase):
 _OTHER_CLAIM = "tidy-breach-exits-three"
 
 
-def _ledger_rows(root: Path) -> list[dict]:
+def _ledger_rows(root: Path) -> list[dict[str, Any]]:
     path = root / ".gzkit" / "ledger.jsonl"
     if not path.is_file():
         return []
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
 
 
-def _review_row(claim_id: str, binding: str) -> dict:
+def _review_row(claim_id: str, binding: str) -> dict[str, Any]:
     return {
         "schema": "gzkit.ledger.v1",
         "event": "guard_canary_reviewed",
@@ -423,7 +424,7 @@ def _review_row(claim_id: str, binding: str) -> dict:
 class _ReviewProject(_Project):
     """A project whose ledger can carry review events alongside the canary registry."""
 
-    def __init__(self, canaries: list[Canary], rows: list[dict] | None = None) -> None:
+    def __init__(self, canaries: list[Canary], rows: list[dict[str, Any]] | None = None) -> None:
         super().__init__(canaries, [])
         ledger = self.root / ".gzkit" / "ledger.jsonl"
         ledger.parent.mkdir()

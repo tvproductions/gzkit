@@ -54,6 +54,7 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 MISSING_TOKEN = "MISSING"
 
@@ -392,7 +393,9 @@ def control_passed(verdict: str) -> bool:
     return verdict == ABSENT
 
 
-def build_report(results: list[Result], *, cap: int | None = None, control_ok: bool = True) -> dict:
+def build_report(
+    results: list[Result], *, cap: int | None = None, control_ok: bool = True
+) -> dict[str, Any]:
     """Assemble the deliverable: recall against byte position."""
     ordered = sorted(results, key=lambda r: r.section.offset)
     rows = [
@@ -407,7 +410,7 @@ def build_report(results: list[Result], *, cap: int | None = None, control_ok: b
         for r in ordered
     ]
 
-    def _rate(subset: list[dict]) -> float | None:
+    def _rate(subset: list[dict[str, Any]]) -> float | None:
         if not subset:
             return None
         return sum(1 for row in subset if row["recalled"]) / len(subset)
@@ -447,7 +450,7 @@ def run_codex(question: str, cwd: Path) -> str:
 RUNNERS = {"codex": run_codex}
 
 
-def _render(report: dict) -> str:
+def _render(report: dict[str, Any]) -> str:
     lines: list[str] = []
     if not report["valid"]:
         lines.append(

@@ -20,6 +20,7 @@ import json
 import sys
 import tempfile
 from pathlib import Path
+from typing import Any
 
 REGISTRY_REL = Path("data") / "waiver_ratchet_registry.json"
 
@@ -49,7 +50,7 @@ def classify(live: int, baseline: int) -> str:
     return STALLED
 
 
-def count_live(project_root: Path, surface: dict) -> int | None:
+def count_live(project_root: Path, surface: dict[str, Any]) -> int | None:
     """Count a surface's entries, as the gate does; None when unreadable."""
     path = project_root / str(surface.get("data_file", ""))
     try:
@@ -67,7 +68,7 @@ def count_live(project_root: Path, surface: dict) -> int | None:
     return None
 
 
-def measure(project_root: Path) -> list[dict]:
+def measure(project_root: Path) -> list[dict[str, Any]]:
     """One row per shrink-ratchet surface: file, live, baseline, state."""
     registry = json.loads((project_root / REGISTRY_REL).read_text(encoding="utf-8"))
     rows = []
@@ -92,7 +93,7 @@ def measure(project_root: Path) -> list[dict]:
     return rows
 
 
-def report(rows: list[dict]) -> str:
+def report(rows: list[dict[str, Any]]) -> str:
     """Render the rows and a summary as plain text."""
     lines = ["| Surface | Live | Baseline | State |", "|---|---|---|---|"]
     lines += [

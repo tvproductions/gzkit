@@ -10,7 +10,7 @@ the bare id also let a second agent claim the same brief under its slug.
 import tempfile
 import unittest
 from pathlib import Path
-from typing import override
+from typing import TYPE_CHECKING, override
 
 from gzkit.airlock.enter import airlock_enter
 from gzkit.airlock.exit import airlock_exit
@@ -22,6 +22,9 @@ from gzkit.governance.trust_audits.evaluation_justify_binding import (
 from gzkit.ledger import Ledger, slug_id_for
 from gzkit.ledger_events import adr_evaluation_event, artifact_renamed_event
 from tests.commands.common import CliRunner, _quick_init
+
+if TYPE_CHECKING:
+    from gzkit.core.validation_rules import ValidationError
 
 _OBPI_SLUG = "OBPI-0.1.0-01-thing"
 _OBPI_BARE = "OBPI-0.1.0-01"
@@ -161,7 +164,7 @@ class RenamedEvaluationReaderTests(unittest.TestCase):
 
     _REPO = Path(__file__).resolve().parents[2]
 
-    def _gate(self, evaluated_id: str, renames: bool) -> list:
+    def _gate(self, evaluated_id: str, renames: bool) -> list[ValidationError]:
         with tempfile.TemporaryDirectory() as tmp:
             ledger = Ledger(Path(tmp) / "ledger.jsonl")
             ledger.append(

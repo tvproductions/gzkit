@@ -15,6 +15,7 @@ import textwrap
 import unittest
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 from unittest import mock
 
 from gzkit.config import GzkitConfig
@@ -75,7 +76,7 @@ class _HookResult:
 
 def _run_hook_inprocess(
     script_path: Path,
-    payload: dict,
+    payload: dict[str, Any],
     *,
     chdir_to: Path | None = None,
     env_overrides: dict[str, str] | None = None,
@@ -2727,7 +2728,7 @@ class TestSessionStartAdvisementIsOneChannel(unittest.TestCase):
     """
 
     @staticmethod
-    def _session_start_commands(settings: dict) -> list[str]:
+    def _session_start_commands(settings: dict[str, Any]) -> list[str]:
         return [
             hook["command"]
             for group in settings.get("hooks", {}).get("SessionStart", [])
@@ -2866,7 +2867,7 @@ class TestInstructionRouterIsRetired(unittest.TestCase):
         self.assertTrue(operator_hook.exists())
 
 
-def _registered_hook_names(settings: dict) -> set[str]:
+def _registered_hook_names(settings: dict[str, Any]) -> set[str]:
     """Return the hook script names a settings payload registers.
 
     Returns:

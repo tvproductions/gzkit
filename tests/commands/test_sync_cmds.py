@@ -17,7 +17,7 @@ from tests.commands.common import (
 
 # Module-level cache: one ``gz init`` shared across tests via copytree
 # (GHI #253). Saves ~130ms per test that needs an init'd workspace.
-_TEMPLATE_CTX: tempfile.TemporaryDirectory | None = None
+_TEMPLATE_CTX: tempfile.TemporaryDirectory[str] | None = None
 _TEMPLATE_DIR: Path | None = None
 
 

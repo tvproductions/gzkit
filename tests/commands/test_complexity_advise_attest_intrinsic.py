@@ -17,7 +17,7 @@ import unittest
 from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import override
+from typing import Any, override
 from unittest.mock import patch
 
 from gzkit.commands.complexity_advise import complexity_advise_cmd
@@ -280,7 +280,7 @@ class TestComplexityAdviseAttestIntrinsic(unittest.TestCase):
         clear_registry()
         self._tmp.cleanup()
 
-    def _ledger_events(self) -> list[dict]:
+    def _ledger_events(self) -> list[dict[str, Any]]:
         if not self.ledger_path.exists():
             return []
         return [

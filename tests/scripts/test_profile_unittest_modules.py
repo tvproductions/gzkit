@@ -13,6 +13,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 _MODULE_PATH = Path(__file__).resolve().parents[2] / "scripts" / "profile_unittest_modules.py"
 _spec = importlib.util.spec_from_file_location("profile_unittest_modules", _MODULE_PATH)
@@ -75,7 +76,7 @@ def _fixture_cases() -> tuple[type[unittest.TestCase], type[unittest.TestCase]]:
 class TestProfileWritesAJoinableRecord(unittest.TestCase):
     """The record a CI run uploads: every module, every count, the verdict."""
 
-    def _profile(self, *cases: type[unittest.TestCase]) -> dict:
+    def _profile(self, *cases: type[unittest.TestCase]) -> dict[str, Any]:
         loader = unittest.TestLoader()
         suite = unittest.TestSuite(loader.loadTestsFromTestCase(c) for c in cases)
         with tempfile.TemporaryDirectory() as tmp:

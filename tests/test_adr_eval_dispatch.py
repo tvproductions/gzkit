@@ -22,6 +22,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.adr_eval import AdrEvalResult, EvalVerdict, render_scorecard_markdown
 from gzkit.adr_eval_dispatch import (
@@ -39,7 +40,7 @@ _ADR = "ADR-0.35.0-canon-entry-corpus-landing"
 _PERSONA = "spec-reviewer"
 
 
-def _ledger(root: Path, *events: dict) -> None:
+def _ledger(root: Path, *events: dict[str, Any]) -> None:
     gz = root / ".gzkit"
     gz.mkdir(parents=True, exist_ok=True)
     (gz / "ledger.jsonl").write_text(
@@ -47,7 +48,7 @@ def _ledger(root: Path, *events: dict) -> None:
     )
 
 
-def _dispatch_event(**overrides: object) -> dict:
+def _dispatch_event(**overrides: object) -> dict[str, Any]:
     event = {
         "event": "persona_dispatched",
         "adr_id": _ADR,

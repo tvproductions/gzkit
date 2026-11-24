@@ -12,7 +12,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 
 import gzkit.req_kind_support as support_channel
@@ -118,7 +118,7 @@ class TestResolveSupportProofPass(unittest.TestCase):
         self.assertEqual(enriched.entries[0].proof_status, "pass")
 
 
-def _make_ledger_with_events(project_root: Path, events: list[dict]) -> None:
+def _make_ledger_with_events(project_root: Path, events: list[dict[str, Any]]) -> None:
     """Write a ledger.jsonl with the given raw event dicts."""
     gzkit_dir = project_root / ".gzkit"
     gzkit_dir.mkdir(exist_ok=True)
@@ -127,7 +127,7 @@ def _make_ledger_with_events(project_root: Path, events: list[dict]) -> None:
             fh.write(json.dumps(ev) + "\n")
 
 
-def _ev(event: str, path: str | None) -> dict:
+def _ev(event: str, path: str | None) -> dict[str, Any]:
     """A minimal raw ledger event, optionally citing a path."""
     rec = {"schema": "1.0", "event": event, "id": path or "x", "ts": "t"}
     if path is not None:

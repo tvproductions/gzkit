@@ -12,7 +12,7 @@ import shlex
 import unicodedata
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 
 # `gzkit.ledger_events` is not importable before `gzkit.ledger` (production import
 # cycle, recorded 2026-10-03 via gz insights); this module must load when run alone.
@@ -117,7 +117,7 @@ def _section_present_in(filename: str, section: str) -> tuple[bool, bool]:
     return (True, section in path.read_text(encoding="utf-8"))
 
 
-def _ledger_events() -> list[dict]:
+def _ledger_events() -> list[dict[str, Any]]:
     ledger_path = Path(".gzkit") / "ledger.jsonl"
     if not ledger_path.exists():
         return []

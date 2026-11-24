@@ -14,7 +14,7 @@ import subprocess
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 
 from gzkit.commands.common import console
@@ -39,14 +39,14 @@ def _mk_root(tmp: str) -> Path:
     return root
 
 
-def _write_ledger(root: Path, events: list[dict]) -> None:
+def _write_ledger(root: Path, events: list[dict[str, Any]]) -> None:
     ledger_path = root / ".gzkit" / "ledger.jsonl"
     with ledger_path.open("w", encoding="utf-8") as fh:
         for ev in events:
             fh.write(json.dumps(ev) + "\n")
 
 
-def _read_ledger_events(root: Path, event_type: str) -> list[dict]:
+def _read_ledger_events(root: Path, event_type: str) -> list[dict[str, Any]]:
     ledger_path = root / ".gzkit" / "ledger.jsonl"
     if not ledger_path.exists():
         return []
@@ -64,7 +64,7 @@ def _read_ledger_events(root: Path, event_type: str) -> list[dict]:
     return out
 
 
-def _session_row(kind: str, ts: str, session_id: str) -> dict:
+def _session_row(kind: str, ts: str, session_id: str) -> dict[str, Any]:
     """A session's open or close row, as the typed ledger reader admits it."""
     return {
         "schema": "gzkit.ledger.v1",
@@ -740,7 +740,7 @@ class TestExitRefusesWhatItCannotRead(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # RP-12 O4's dock trial (ruling 27): the triage's test gaps and crash rows.
 # ---------------------------------------------------------------------------
-def _row(kind: str, ts: str, session_id: str = "s", **fields: str) -> dict:
+def _row(kind: str, ts: str, session_id: str = "s", **fields: str) -> dict[str, Any]:
     """A session-scoped ledger row, as the session's verbs book it."""
     return {**_session_row(kind, ts, session_id), **fields}
 

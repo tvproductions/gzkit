@@ -3998,7 +3998,7 @@ class TestPipelineSectionShowsWhereARunIs(unittest.TestCase):
         (self.root / ".gzkit").mkdir()
         self.ledger = Ledger(self.root / ".gzkit" / "ledger.jsonl")
 
-    def _launch(self, start_from: str | None) -> dict:
+    def _launch(self, start_from: str | None) -> dict[str, Any]:
         """Write both markers and append the launch, as the pipeline launcher does."""
         payload = pipeline_marker_payload(self.OBPI, self.ADR, "heavy", start_from, "pass")
         per_obpi, _legacy = write_pipeline_markers(self.plans, payload)
@@ -4014,7 +4014,9 @@ class TestPipelineSectionShowsWhereARunIs(unittest.TestCase):
         )
         return payload
 
-    def _advance(self, start_from: str | None, crossings: tuple) -> None:
+    def _advance(
+        self, start_from: str | None, crossings: tuple[tuple[str, str | None], ...]
+    ) -> None:
         launched = self._launch(start_from)
         self.assertNotIn("position", launched)
         for boundary, task in crossings:

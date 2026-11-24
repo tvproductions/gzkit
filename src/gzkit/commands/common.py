@@ -390,7 +390,7 @@ def resolve_target_adr(
 
 
 def _prefix_match_candidates(
-    graph: dict[str, dict],
+    graph: dict[str, dict[str, Any]],
     canonical_obpi: str,
     docs_root: Path | None = None,
 ) -> list[str]:
@@ -422,7 +422,7 @@ def _prefix_match_candidates(
 
 
 def _prefix_match_obpi(
-    graph: dict[str, dict],
+    graph: dict[str, dict[str, Any]],
     canonical_obpi: str,
     docs_root: Path | None = None,
 ) -> str | None:

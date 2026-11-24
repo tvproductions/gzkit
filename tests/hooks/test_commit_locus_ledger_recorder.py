@@ -28,6 +28,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.hooks.commit_ledger import record_committed_artifact_edits
 from tests.commands.common import _isolated_git_env
@@ -96,7 +97,7 @@ def _tool_locus_event(root: Path, rel: str, ts: str) -> None:
         handle.write(json.dumps(row, separators=(",", ":")) + "\n")
 
 
-def _rows(root: Path) -> list[dict]:
+def _rows(root: Path) -> list[dict[str, Any]]:
     text = (root / _LEDGER).read_text(encoding="utf-8")
     return [json.loads(line) for line in text.splitlines() if line.strip()]
 

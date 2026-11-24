@@ -13,7 +13,7 @@ nothing downstream would catch the substitution.
 import json
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 
 from gzkit.cli.main import main
 from gzkit.content.corpus_store import append_entry
@@ -38,7 +38,7 @@ def _entry(entry_id: str, *, retires: str | None = None, origin: str = "test") -
     )
 
 
-def _events() -> list[dict]:
+def _events() -> list[dict[str, Any]]:
     if not _LEDGER.exists():
         return []
     return [json.loads(line) for line in _LEDGER.read_text(encoding="utf-8").splitlines() if line]

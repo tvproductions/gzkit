@@ -15,7 +15,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 from unittest.mock import patch
 
 _HOOK_PATH = (
@@ -47,7 +47,7 @@ def _write_transcript(tmpdir: Path, assistant_text: str) -> Path:
     return transcript
 
 
-def _run_hook(tool_input: dict, transcript_path: Path) -> tuple[int, str]:
+def _run_hook(tool_input: dict[str, Any], transcript_path: Path) -> tuple[int, str]:
     payload = {
         "tool_name": "Bash",
         "tool_input": tool_input,

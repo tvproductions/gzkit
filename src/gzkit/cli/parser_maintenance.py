@@ -11,6 +11,7 @@ the resolved callable.
 """
 
 import argparse
+from typing import TYPE_CHECKING
 
 from gzkit.cli.helpers import (
     add_dry_run_flag,
@@ -24,8 +25,13 @@ from gzkit.cli.parser_wp import register_wp_parsers
 from gzkit.ledger_corrections import CAUSES, DISPOSITIONS
 from gzkit.skills import DEFAULT_MAX_REVIEW_AGE_DAYS
 
+if TYPE_CHECKING:
+    from gzkit.cli.parser import StableArgumentParser
 
-def register_maintenance_parsers(commands: argparse._SubParsersAction) -> None:
+
+def register_maintenance_parsers(
+    commands: argparse._SubParsersAction[StableArgumentParser],
+) -> None:
     """Register maintenance and utility subcommands on *commands*."""
     _register_quality_parsers(commands)
     _register_tooling_parsers(commands)
@@ -39,7 +45,7 @@ def register_maintenance_parsers(commands: argparse._SubParsersAction) -> None:
     register_wp_parsers(commands)
 
 
-def _register_canary_parsers(commands: argparse._SubParsersAction) -> None:
+def _register_canary_parsers(commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register ``gz canary`` subcommands (GHI #1161)."""
     p_canary = commands.add_parser(
         "canary",
@@ -104,7 +110,9 @@ def _register_canary_parsers(commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_frontmatter_parsers(commands: argparse._SubParsersAction) -> None:
+def _register_frontmatter_parsers(
+    commands: argparse._SubParsersAction[StableArgumentParser],
+) -> None:
     """Register ``gz frontmatter`` sub-command group (ADR-0.0.16 OBPI-03)."""
     p_fm = commands.add_parser(
         "frontmatter",
@@ -138,7 +146,9 @@ def _register_frontmatter_parsers(commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
+def _register_quality_parsers(
+    commands: argparse._SubParsersAction[StableArgumentParser],
+) -> None:
     """Register quality and validation subcommands."""
     p_lint = commands.add_parser(
         "lint",
@@ -1294,7 +1304,9 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
     p_check_paths.set_defaults(func=lambda a: _lazy("check_config_paths_cmd")(as_json=a.as_json))
 
 
-def _register_tooling_parsers(commands: argparse._SubParsersAction) -> None:
+def _register_tooling_parsers(
+    commands: argparse._SubParsersAction[StableArgumentParser],
+) -> None:
     """Register tooling, sync, and audit subcommands."""
     p_tidy = commands.add_parser(
         "tidy",
@@ -1546,7 +1558,7 @@ def _register_tooling_parsers(commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_chores_parsers(commands: argparse._SubParsersAction) -> None:
+def _register_chores_parsers(commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register ``gz chores`` sub-command group."""
     p_chores = commands.add_parser(
         "chores",
@@ -1736,7 +1748,7 @@ def _register_chores_parsers(commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_skill_parsers(commands: argparse._SubParsersAction) -> None:
+def _register_skill_parsers(commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register ``gz skill`` sub-command group."""
     p_skill = commands.add_parser(
         "skill",
@@ -1814,7 +1826,7 @@ def _register_skill_parsers(commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_agent_parsers(commands: argparse._SubParsersAction) -> None:
+def _register_agent_parsers(commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register ``gz agent`` sub-command group."""
     p_agent = commands.add_parser(
         "agent",
@@ -1912,7 +1924,7 @@ def _add_git_sync_options(parser: argparse.ArgumentParser) -> None:
     add_json_flag(parser, help_override="Output as JSON")
 
 
-def _register_flag_parsers(commands: argparse._SubParsersAction) -> None:
+def _register_flag_parsers(commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register ``gz flags`` and ``gz flag`` subcommands."""
     # --- gz flags (list) ---------------------------------------------------
     p_flags = commands.add_parser(

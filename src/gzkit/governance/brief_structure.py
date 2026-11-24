@@ -8,7 +8,7 @@ as LegacyBriefShape with a DeprecationWarning rather than raising.
 import re
 import warnings
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -234,7 +234,7 @@ class BriefStructure(BaseModel):
 
     @field_validator("reqs", mode="before")
     @classmethod
-    def _validate_reqs(cls, v: list) -> list:
+    def _validate_reqs(cls, v: list[object]) -> list[object]:
         for req in v:
             if not _REQ_ID_RE.match(str(req)):
                 raise InvalidBriefReqError(req)
@@ -242,7 +242,7 @@ class BriefStructure(BaseModel):
 
     @field_validator("tasks", mode="before")
     @classmethod
-    def _validate_tasks(cls, v: list) -> list:
+    def _validate_tasks(cls, v: list[object]) -> list[object]:
         """Reject malformed TASK IDs in the ``tasks:`` channel (GHI #753).
 
         Delegates to ``TaskId.parse`` rather than restating the grammar: the
@@ -267,7 +267,7 @@ class BriefStructure(BaseModel):
         return v
 
 
-def _extract_frontmatter(text: str) -> tuple[dict, str]:
+def _extract_frontmatter(text: str) -> tuple[dict[str, Any], str]:
     """Extract YAML frontmatter and body from markdown text."""
     if not text.startswith("---\n"):
         return {}, text

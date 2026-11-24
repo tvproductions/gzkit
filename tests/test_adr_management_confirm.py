@@ -145,11 +145,10 @@ class TestAdrManagementConfirmDecision(unittest.TestCase):
         negative by confirming the `gz adr` subcommand surface set
         remains exactly the pre-absorption set (no new verbs).
         """
-        import argparse
-
+        from gzkit.cli.parser import StableArgumentParser
         from gzkit.cli.parser_artifacts import _register_adr_parsers
 
-        root = argparse.ArgumentParser()
+        root = StableArgumentParser()
         commands = root.add_subparsers(dest="command")
         _register_adr_parsers(commands)
 

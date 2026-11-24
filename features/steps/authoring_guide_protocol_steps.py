@@ -14,6 +14,7 @@ import io
 import json
 import tempfile
 from pathlib import Path
+from typing import Any
 
 from behave import given, then, when
 
@@ -125,14 +126,14 @@ def _build_synthetic_environment() -> None:
     )
 
 
-def _collect_responses(messages: list[bytes]) -> list[dict]:
+def _collect_responses(messages: list[bytes]) -> list[dict[str, Any]]:
     """Run the server with the given messages and return all response dicts."""
     combined = b"".join(messages)
     stdin = io.BytesIO(combined)
     stdout = io.BytesIO()
     run_server(stdin=stdin, stdout=stdout)
     stdout.seek(0)
-    responses: list[dict] = []
+    responses: list[dict[str, Any]] = []
     try:
         while True:
             msg = read_message(stdout)

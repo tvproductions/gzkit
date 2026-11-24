@@ -17,6 +17,7 @@ import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Any
 
 from gzkit.mx import disposition, hardening, levels, marker
 from gzkit.mx.marker import Marker
@@ -30,7 +31,7 @@ def _iso(dt: datetime) -> str:
     return dt.isoformat()
 
 
-def _opened(session_id: str, ts: datetime) -> dict:
+def _opened(session_id: str, ts: datetime) -> dict[str, Any]:
     return {
         "schema": "gzkit.ledger.v1",
         "event": "mx_session_opened",
@@ -42,7 +43,7 @@ def _opened(session_id: str, ts: datetime) -> dict:
     }
 
 
-def _closed(session_id: str, ts: datetime) -> dict:
+def _closed(session_id: str, ts: datetime) -> dict[str, Any]:
     return {
         "schema": "gzkit.ledger.v1",
         "event": "mx_session_closed",
@@ -53,7 +54,7 @@ def _closed(session_id: str, ts: datetime) -> dict:
     }
 
 
-def _write_ledger(root: Path, events: list[dict]) -> None:
+def _write_ledger(root: Path, events: list[dict[str, Any]]) -> None:
     gzkit_dir = root / ".gzkit"
     gzkit_dir.mkdir(parents=True, exist_ok=True)
     (gzkit_dir / "ledger.jsonl").write_text(
@@ -309,7 +310,7 @@ class TestDebtAging(unittest.TestCase):
         self.assertFalse(result.grounds)
 
 
-def _opened_under(session_id: str, ts: datetime, contract: str) -> dict:
+def _opened_under(session_id: str, ts: datetime, contract: str) -> dict[str, Any]:
     return {**_opened(session_id, ts), "mode": "safe", "contract": contract}
 
 

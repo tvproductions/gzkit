@@ -16,6 +16,8 @@ from gzkit.cli.parser_handler_manifest import _lazy
 if TYPE_CHECKING:
     import argparse
 
+    from gzkit.cli.parser import StableArgumentParser
+
 _BOOK_EXAMPLES = [
     (
         "gz wp entry book --dispatch D-717d53816678475f --slug stamp-import"
@@ -51,7 +53,7 @@ _BOOK_EXIT_CODES = """Exit codes
 """
 
 
-def _register_wp_entry(wp_commands: argparse._SubParsersAction) -> None:
+def _register_wp_entry(wp_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register ``gz wp entry`` and its leaves, ``book`` and ``show``."""
     p_entry = wp_commands.add_parser(
         "entry",

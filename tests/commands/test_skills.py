@@ -25,7 +25,7 @@ from tests.commands.common import (
 # copytrees the template into its own workspace instead of paying the init
 # cost per test (GHI #253). ~130ms per init × 15 tests -> 1 × 130ms + 15 ×
 # ~40ms copytree = ~0.7s saved.
-_TEMPLATE_CTX: tempfile.TemporaryDirectory | None = None
+_TEMPLATE_CTX: tempfile.TemporaryDirectory[str] | None = None
 _TEMPLATE_DIR: Path | None = None
 _ORIG_CWD: Path | None = None
 
@@ -95,7 +95,7 @@ class _InitFromTemplate:
     """
 
     def __init__(self) -> None:
-        self._tmpctx: tempfile.TemporaryDirectory | None = None
+        self._tmpctx: tempfile.TemporaryDirectory[str] | None = None
         self._orig_cwd: Path | None = None
 
     def __enter__(self) -> None:

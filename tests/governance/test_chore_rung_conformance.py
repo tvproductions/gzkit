@@ -17,8 +17,12 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gzkit.governance.trust_audits import audit_chore_rung_conformance
+
+if TYPE_CHECKING:
+    from gzkit.core.validation_rules import ValidationError
 
 _DECLARATION = {
     "class": "conformance",
@@ -45,7 +49,7 @@ def _tree(root: Path, workflow: str, *, rung: str | None) -> None:
     )
 
 
-def _audit(workflow: str, *, rung: str | None) -> list:
+def _audit(workflow: str, *, rung: str | None) -> list[ValidationError]:
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
         _tree(root, workflow, rung=rung)

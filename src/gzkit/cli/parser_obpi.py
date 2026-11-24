@@ -17,6 +17,7 @@ pulling heavy handler dependencies.
 """
 
 import argparse
+from typing import TYPE_CHECKING
 
 from gzkit.cli.helpers import (
     add_dry_run_flag,
@@ -29,8 +30,11 @@ from gzkit.cli.parser_acceptance import acceptance_handler, configure_acceptance
 from gzkit.cli.parser_handler_manifest import _lazy
 from gzkit.lock_manager import DEFAULT_LOCK_TTL_MINUTES
 
+if TYPE_CHECKING:
+    from gzkit.cli.parser import StableArgumentParser
 
-def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
+
+def register_obpi_parsers(commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register ``gz obpi`` sub-command group."""
     p_obpi = commands.add_parser(
         "obpi",

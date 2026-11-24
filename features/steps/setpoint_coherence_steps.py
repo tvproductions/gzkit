@@ -16,7 +16,7 @@ from pathlib import Path
 from behave import given
 
 
-def _write_manifest(root: Path, payload: dict) -> None:
+def _write_manifest(root: Path, payload: dict[str, object]) -> None:
     """Write a vendor-manifest fixture under ``root/data`` and chdir to root."""
     data_dir = root / "data"
     data_dir.mkdir(parents=True, exist_ok=True)

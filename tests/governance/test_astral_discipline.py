@@ -509,7 +509,7 @@ class TestToolsRunFromTheLockEverywhere(unittest.TestCase):
 
 
 class TestTheAuditReadsItsBaseline(unittest.TestCase):
-    def _audit(self, baseline: str | None) -> list:
+    def _audit(self, baseline: str | None) -> list[ValidationError]:
         files = {".github/workflows/ci.yml": _CI.replace("--locked ", "")}
         if baseline is not None:
             files[BASELINE_RELPATH] = baseline
@@ -703,7 +703,7 @@ class TestTheScaffoldIsPlannedOnADryRun(unittest.TestCase):
 class TestGzValidateRunsTheScope(unittest.TestCase):
     """`gz validate --astral-discipline` reaches the audit and treats a finding as a breach."""
 
-    def _validate(self, findings: list) -> tuple[int, str]:
+    def _validate(self, findings: list[ValidationError]) -> tuple[int, str]:
         out = io.StringIO()
         with (
             mock.patch(

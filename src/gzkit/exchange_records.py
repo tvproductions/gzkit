@@ -42,6 +42,7 @@ record (GHI #763 § Prescribed scope).
 import re
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 import yaml
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
@@ -502,7 +503,7 @@ def write_completion_exchange(
 # ---------------------------------------------------------------------------
 
 
-def is_exchange_register_entry(frontmatter: dict) -> bool:
+def is_exchange_register_entry(frontmatter: dict[str, Any]) -> bool:
     """Return True when ``frontmatter`` is a completion-pairing exchange record.
 
     **Default-deny.** A document is admitted only when it carries a shape an

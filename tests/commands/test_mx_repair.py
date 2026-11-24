@@ -9,7 +9,7 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import override
+from typing import Any, override
 
 from gzkit.commands.mx_cmd import mx_enter_cmd, mx_repair_cmd
 from gzkit.mx import marker
@@ -18,7 +18,7 @@ from tests.commands.common import SilencedConsoleTestCase
 from tests.mx.held import bind_session
 
 
-def _events(root: Path, event_type: str) -> list[dict]:
+def _events(root: Path, event_type: str) -> list[dict[str, Any]]:
     ledger = root / ".gzkit" / "ledger.jsonl"
     if not ledger.is_file():
         return []
@@ -46,7 +46,7 @@ class TestMxRepair(SilencedConsoleTestCase):
         assert held is not None
         return held
 
-    def _repair(self) -> dict:
+    def _repair(self) -> dict[str, Any]:
         mx_repair_cmd(attestor="g0", project_root=self.root)
         return _events(self.root, "mx_marker_repaired")[-1]
 

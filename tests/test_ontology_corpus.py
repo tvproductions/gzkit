@@ -7,6 +7,7 @@ not from a run of the implementation.
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 from unittest import mock
 
 from pydantic import ValidationError
@@ -41,7 +42,7 @@ def _lineage_ledger(tmp: str) -> Ledger:
     return ledger
 
 
-def _parent_child_pairs(source_graph: dict[str, dict]) -> set[tuple[str, str]]:
+def _parent_child_pairs(source_graph: dict[str, dict[str, Any]]) -> set[tuple[str, str]]:
     # get_artifact_graph's authoritative forward adjacency (its ``children``
     # lists), which is what the projection must reproduce — NOT the raw parent
     # back-pointer (the two diverge on the live ledger).

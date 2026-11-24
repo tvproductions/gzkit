@@ -8,6 +8,7 @@ alone, so every variable `gz specify` computes was missing and the strict render
 import json
 import unittest
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 import yaml
@@ -18,7 +19,7 @@ from gzkit.ledger import Ledger
 from tests.commands.common import CliRunner, _quick_init
 
 
-def _frontmatter(path: Path) -> dict:
+def _frontmatter(path: Path) -> dict[str, Any]:
     text = path.read_text(encoding="utf-8")
     _, block, _ = text.split("---\n", 2)
     return yaml.safe_load(block)
@@ -39,7 +40,9 @@ class TestInterviewObpiRendersFromCompleteAnswers(unittest.TestCase):
         "acceptance_criteria": "1. f returns its input\n2. f rejects None",
     }
 
-    def _author(self, runner: CliRunner, answers: dict, confirm: bool = False) -> tuple[int, str]:
+    def _author(
+        self, runner: CliRunner, answers: dict[str, Any], confirm: bool = False
+    ) -> tuple[int, str]:
         created = runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
         self.assertEqual(created.exit_code, 0, msg=created.output)
         Path("a.json").write_text(json.dumps(answers), encoding="utf-8")

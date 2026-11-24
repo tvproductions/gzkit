@@ -12,6 +12,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 
 import yaml
@@ -20,6 +21,9 @@ from gzkit.commands import validate_task_envelope
 from gzkit.commands.validate_cmd import _validate_task_envelope_coherence
 from gzkit.traceability import covers
 
+if TYPE_CHECKING:
+    from gzkit.core.validation_rules import ValidationError
+
 
 def _write_ledger(root: Path, lines: list[str]) -> None:
     gzkit_dir = root / ".gzkit"
@@ -27,7 +31,7 @@ def _write_ledger(root: Path, lines: list[str]) -> None:
     (gzkit_dir / "ledger.jsonl").write_text("\n".join(lines), encoding="utf-8")
 
 
-def _write_brief(root: Path, frontmatter: dict) -> Path:
+def _write_brief(root: Path, frontmatter: dict[str, Any]) -> Path:
     brief_dir = (
         root / "docs" / "design" / "adr" / "foundation" / "ADR-0.0.64-test-fixture" / "obpis"
     )
@@ -444,7 +448,7 @@ class TestSignatureA(unittest.TestCase):
                 len(errors), 0, "composition_rendered telemetry must not trip signature (a)"
             )
 
-    def _rename_under_active_task(self, root: Path, reason: str) -> list:
+    def _rename_under_active_task(self, root: Path, reason: str) -> list[ValidationError]:
         _write_ledger(
             root,
             [

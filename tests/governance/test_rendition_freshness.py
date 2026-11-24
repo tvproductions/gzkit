@@ -15,7 +15,7 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 
 from gzkit.content.models.corpus import Corpus, CorpusEntry
 from gzkit.content.rendition_store import (
@@ -87,7 +87,7 @@ class _TempProjectMixin(QuietAdvisoriesMixin):
     def _corpus_file(self, surface: str) -> Path:
         return self.root / ".gzkit" / "corpus" / f"{surface}.jsonl"
 
-    def _ledger_events(self) -> list[dict]:
+    def _ledger_events(self) -> list[dict[str, Any]]:
         ledger_path = self.root / ".gzkit" / "ledger.jsonl"
         if not ledger_path.exists():
             return []

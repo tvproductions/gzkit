@@ -7,7 +7,7 @@ import tempfile
 import tomllib
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 from unittest.mock import patch
 
 from gzkit.cli import main
@@ -246,7 +246,7 @@ class TestInitProjectSkeleton(unittest.TestCase):
             self.assertNotIn("pyproject.toml", result.output)
 
 
-def _dev_group_names(project: dict) -> set[str]:
+def _dev_group_names(project: dict[str, Any]) -> set[str]:
     """Return the distribution names in a manifest's dev dependency group.
 
     Returns:
@@ -262,7 +262,7 @@ def _dev_group_names(project: dict) -> set[str]:
 class TestInitBuildsTheProjectThroughUv(unittest.TestCase):
     """RO-9 tranche 7: `gz init` builds a new project with uv init and uv add."""
 
-    def _init(self, *args: str) -> tuple[dict, Path]:
+    def _init(self, *args: str) -> tuple[dict[str, Any], Path]:
         result = CliRunner().invoke(main, ["init", *args])
         self.assertEqual(result.exit_code, 0, result.output)
         manifest = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
@@ -1031,7 +1031,7 @@ class TestScaffoldedManifestIsSelfConsistent(unittest.TestCase):
     """
 
     @staticmethod
-    def _declared_file_references(pyproject: dict) -> list[str]:
+    def _declared_file_references(pyproject: dict[str, Any]) -> list[str]:
         """Return every path in the manifest that must exist on disk.
 
         The PEP 621 file-valued fields plus uv_build's module root, the backend

@@ -13,7 +13,7 @@ declaration naming a step that no longer exists is stale rather than harmless.
 
 import json
 import unittest
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from gzkit.commands.common import get_project_root
 
@@ -27,7 +27,7 @@ def _no_op(_root: Path) -> None:
     """A step runner the partition never calls; it orders steps by name alone."""
 
 
-def _declared() -> dict[str, dict]:
+def _declared() -> dict[str, dict[str, Any]]:
     return json.loads(_DECLARATION.read_text(encoding="utf-8"))["steps"]
 
 

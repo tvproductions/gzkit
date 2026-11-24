@@ -16,6 +16,7 @@ import re
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.commands.obpi_complete import (
     _read_observation,
@@ -135,16 +136,16 @@ class TestSurrenderLockAtCompletion(unittest.TestCase):
         )
 
     @staticmethod
-    def _events(root: Path) -> list[dict]:
+    def _events(root: Path) -> list[dict[str, Any]]:
         raw = (root / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8")
         return [json.loads(line) for line in raw.splitlines() if line.strip()]
 
     @staticmethod
-    def _released(events: list[dict]) -> list[dict]:
+    def _released(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
         return [e for e in events if e.get("event") == "obpi_lock_released"]
 
     @staticmethod
-    def _handoff_path(event: dict) -> str | None:
+    def _handoff_path(event: dict[str, Any]) -> str | None:
         return event.get("handoff_path") or event.get("extra", {}).get("handoff_path")
 
     def test_releases_held_lock_and_emits_event_citing_handoff(self) -> None:

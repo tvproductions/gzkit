@@ -12,6 +12,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.ledger import Ledger
 from gzkit.ledger_events import adr_evaluation_event
@@ -23,7 +24,7 @@ class TestAdrEvaluationEventFactory(unittest.TestCase):
     """Verify the ``adr_evaluation_event`` factory produces the canonical shape."""
 
     def _make_event(self, **overrides):
-        defaults: dict = {
+        defaults: dict[str, Any] = {
             "artifact_id": "ADR-0.0.26",
             "artifact_type": "ADR",
             "dimensions": {"clarity": 3.0, "structure": 2.0},

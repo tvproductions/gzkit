@@ -1319,7 +1319,7 @@ class TestADispatchRecordsTheTaskAndCreditStaysOnTheLedger(unittest.TestCase):
             )
         )
 
-    def _crossings(self) -> list[dict]:
+    def _crossings(self) -> list[dict[str, Any]]:
         return [
             row.extra
             for row in Ledger(self.ledger.path).read_all()

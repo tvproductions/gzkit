@@ -370,7 +370,9 @@ def _complex_source(decorator: str = "") -> str:
 class TestHookHonoursIntrinsicAttestation(unittest.TestCase):
     """The auto-chain runtime honours both attestation paths (GHI #1102)."""
 
-    def _diagnose(self, source: str, *, ledger_event_qualname: str | None = None) -> list:
+    def _diagnose(
+        self, source: str, *, ledger_event_qualname: str | None = None
+    ) -> list[AdvisorDiagnosis]:
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "subject.py"
             target.write_text(source, encoding="utf-8")

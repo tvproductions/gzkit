@@ -22,7 +22,7 @@ import datetime as dt
 import json
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pydantic import ValidationError as PydanticValidationError
 
@@ -48,7 +48,7 @@ _LANE_RE = re.compile(r"^lane:\s*[\"']?(\w+)", re.MULTILINE)
 _STATUS_RE = re.compile(r"^status:\s*[\"']?([\w-]+)", re.MULTILINE)
 
 
-def _is_void_witness(event: dict) -> bool:
+def _is_void_witness(event: dict[str, Any]) -> bool:
     """Report whether a RED event says the run could not tell, rather than what it found.
 
     Two shapes, and they are the same claim (GHI #839, #849):
@@ -77,7 +77,7 @@ def _is_void_witness(event: dict) -> bool:
     return failure_class == "error" and provenance == "reconstructed"
 
 
-def _is_conclusive_red(event: dict) -> bool:
+def _is_conclusive_red(event: dict[str, Any]) -> bool:
     """Report whether a RED event may displace a standing ``none`` finding (GHI #1159).
 
     An ``assertion`` failed on its assertion, which is the same evidence on any tree.
@@ -96,7 +96,7 @@ def _is_conclusive_red(event: dict) -> bool:
     return failure_class == "error" and event.get("base_provenance") == "working-tree"
 
 
-def _iter_ledger(project_root: Path) -> Iterator[dict]:
+def _iter_ledger(project_root: Path) -> Iterator[dict[str, Any]]:
     """Yield each well-formed ledger event; skip unparseable lines."""
     try:
         text = (project_root / _LEDGER_REL).read_text(encoding="utf-8", errors="replace")
@@ -113,7 +113,7 @@ def _iter_ledger(project_root: Path) -> Iterator[dict]:
             yield event
 
 
-def _event_ts(event: dict) -> dt.datetime | None:
+def _event_ts(event: dict[str, Any]) -> dt.datetime | None:
     """Return a UTC-aware timestamp, reading naive values as UTC."""
     raw = event.get("ts")
     if not isinstance(raw, str):
@@ -125,7 +125,7 @@ def _event_ts(event: dict) -> dt.datetime | None:
     return parsed if parsed.tzinfo else parsed.replace(tzinfo=dt.UTC)
 
 
-def _proof_witnesses_falsifiability(event: dict) -> str | None:
+def _proof_witnesses_falsifiability(event: dict[str, Any]) -> str | None:
     """Return the REQ a valid executed acceptance proof witnesses, else None (GHI #1094).
 
     A BEHAVIOR proof's mutation controls each remove production behavior, and the
@@ -152,9 +152,9 @@ def _proof_witnesses_falsifiability(event: dict) -> str | None:
 
 def _collect(
     project_root: Path,
-) -> tuple[dict[str, dict], dict[str, dt.datetime], set[str]]:
+) -> tuple[dict[str, dict[str, Any]], dict[str, dt.datetime], set[str]]:
     """Single ledger pass: RED witnesses and proven REQs, and completion instants by OBPI."""
-    witnesses: dict[str, dict] = {}
+    witnesses: dict[str, dict[str, Any]] = {}
     completions: dict[str, dt.datetime] = {}
     proven: set[str] = set()
     # A raw-row audit must honour the write-side void, or every audit grows its

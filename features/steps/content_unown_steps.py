@@ -23,6 +23,7 @@ import json
 import shlex
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from typing import Any
 
 from behave import given, then, when
 
@@ -194,7 +195,7 @@ def step_floor_rose_by_span(context, surface: str) -> None:
     )
 
 
-def _ledger_events() -> list[dict]:
+def _ledger_events() -> list[dict[str, Any]]:
     path = Path(".gzkit") / "ledger.jsonl"
     if not path.exists():
         return []

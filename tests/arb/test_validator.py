@@ -7,6 +7,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 _VALID_LINT_RECEIPT = {
     "schema": "gzkit.arb.lint_receipt.v1",
@@ -33,7 +34,7 @@ _VALID_STEP_RECEIPT = {
 }
 
 
-def _write_receipt(directory: Path, name: str, payload: dict | str) -> Path:
+def _write_receipt(directory: Path, name: str, payload: dict[str, Any] | str) -> Path:
     """Write a receipt under the real ``arb-`` filename contract.
 
     ARB receipts are always written as ``arb-ruff-*`` / ``arb-step-*`` /

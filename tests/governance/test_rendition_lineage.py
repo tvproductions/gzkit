@@ -16,7 +16,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stderr
 from pathlib import Path
-from typing import Any, override
+from typing import TYPE_CHECKING, Any, override
 
 from gzkit.content.corpus_store import append_entry, load_corpus
 from gzkit.content.lineage import lineage_path
@@ -32,6 +32,9 @@ from gzkit.governance.trust_audits.rendition_lineage import (
     verify_candidate_against_declaration,
 )
 from gzkit.traceability import covers
+
+if TYPE_CHECKING:
+    from gzkit.core.validation_rules import ValidationError
 
 _SURFACE = "TestSurface.md"
 _OWNER = "TestType"
@@ -68,7 +71,7 @@ class _LineageFixtureMixin(unittest.TestCase):
         self.addCleanup(self._tempdir.cleanup)
         self._root = Path(self._tempdir.name)
 
-    def _validate(self, **kwargs: Any) -> list:
+    def _validate(self, **kwargs: Any) -> list[ValidationError]:
         """Run the gate with its advisory captured, and return the findings.
 
         The gate emits one `emit_advisory` line to stderr on EVERY run. Left

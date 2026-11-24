@@ -9,7 +9,7 @@ import tempfile
 import textwrap
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 
 from pydantic import ValidationError
 
@@ -72,7 +72,7 @@ ADR_NO_ASSERTIONS = textwrap.dedent("""\
 class TestFidelityAssertionModel(unittest.TestCase):
     """REQ-0.0.73-03-01: FidelityAssertion frozen, extra="forbid", 6 fields."""
 
-    def _make_valid_kwargs(self) -> dict:
+    def _make_valid_kwargs(self) -> dict[str, Any]:
         return {
             "adr_id": "ADR-0.0.73-verification-layer-binding-audit",
             "claim": "The gate exists.",

@@ -23,6 +23,7 @@ import sys
 from collections import defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 # Initial corrective-marker lexicon, pinned for TDD (OBPI-0.0.70-02
 # Requirements). Leading-position match, case-insensitive, on operator
@@ -93,7 +94,7 @@ def _cluster_key(text: str) -> str:
     return " ".join(words[:CLUSTER_KEY_WORDS])
 
 
-def _user_text(entry: dict) -> str | None:
+def _user_text(entry: dict[str, Any]) -> str | None:
     """Extract plain text from a user transcript entry, defensively."""
     message = entry.get("message")
     if not isinstance(message, dict):
@@ -111,7 +112,7 @@ def _user_text(entry: dict) -> str | None:
     return None
 
 
-def _is_operator_entry(entry: dict) -> bool:
+def _is_operator_entry(entry: dict[str, Any]) -> bool:
     """Return True for genuine operator messages, not harness-injected ones.
 
     Real transcripts inject user-typed entries the operator never wrote:
@@ -174,7 +175,7 @@ def scan_corrections(
     transcripts_dir: Path,
     *,
     threshold: int = DEFAULT_RECURRENCE_THRESHOLD,
-) -> dict:
+) -> dict[str, Any]:
     """Mine transcripts and return ONE run record: what was scanned + what it found.
 
     The record carries counts and config only — never operator text — so it can be
@@ -222,7 +223,7 @@ def mine_corrections(
     transcripts_dir: Path,
     *,
     threshold: int = DEFAULT_RECURRENCE_THRESHOLD,
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     """Mine transcript JSONL files for recurring operator corrections.
 
     Returns one proposal record (plain dict) per cluster whose distinct
@@ -240,9 +241,11 @@ def mine_corrections(
     return scan_corrections(transcripts_dir, threshold=threshold)["proposals"]
 
 
-def _proposals_from(occurrences: dict[str, list[tuple[str, str]]], threshold: int) -> list[dict]:
+def _proposals_from(
+    occurrences: dict[str, list[tuple[str, str]]], threshold: int
+) -> list[dict[str, Any]]:
     """Build proposal records for clusters meeting the distinct-session threshold."""
-    proposals: list[dict] = []
+    proposals: list[dict[str, Any]] = []
     for key, hits in sorted(occurrences.items()):
         session_ids = sorted({session_id for session_id, _ in hits})
         if len(session_ids) < threshold:
@@ -269,7 +272,7 @@ def _proposals_from(occurrences: dict[str, list[tuple[str, str]]], threshold: in
     return proposals
 
 
-def write_proposals(proposals: list[dict], proofs_dir: Path) -> list[Path]:
+def write_proposals(proposals: list[dict[str, Any]], proofs_dir: Path) -> list[Path]:
     """Write proposal records to the proofs directory, idempotently.
 
     A proposal's filename is keyed by its content hash over
@@ -291,7 +294,7 @@ def write_proposals(proposals: list[dict], proofs_dir: Path) -> list[Path]:
     return written
 
 
-def write_run_log(run: dict, proofs_dir: Path) -> Path:
+def write_run_log(run: dict[str, Any], proofs_dir: Path) -> Path:
     """Append one counts-only JSON line recording that the miner ran.
 
     This is the negative-signal surface (GHI #614): a run that produced no

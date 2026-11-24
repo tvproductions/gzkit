@@ -15,7 +15,7 @@ from pathlib import Path
 from behave import given
 
 
-def _empty_proof_diagnosis(diag_id: str | None = None) -> dict:
+def _empty_proof_diagnosis(diag_id: str | None = None) -> dict[str, object]:
     diag = {
         "metric": "radon_cc",
         "crossing_band": "warn",
@@ -34,7 +34,7 @@ def _empty_proof_diagnosis(diag_id: str | None = None) -> dict:
     return diag
 
 
-def _conforming_schema() -> dict:
+def _conforming_schema() -> dict[str, object]:
     return {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",

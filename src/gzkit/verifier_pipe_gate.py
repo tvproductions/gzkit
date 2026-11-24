@@ -58,6 +58,7 @@ Coverage limits are declared, not hidden — see :data:`UNWITNESSABLE`.
 
 import re
 from pathlib import Path
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -1033,7 +1034,7 @@ def _block_prose(verifier: str, command: str, arm: str = "pipe") -> str:
     )
 
 
-def decide(tool_name: str, tool_input: dict | None = None) -> Verdict:
+def decide(tool_name: str, tool_input: dict[str, Any] | None = None) -> Verdict:
     """Decide whether a tool call masks a verifier's exit status.
 
     Scoped to Bash: a verifier reaches the harness no other way, and the clause

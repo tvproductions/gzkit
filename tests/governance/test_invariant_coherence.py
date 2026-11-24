@@ -22,7 +22,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 
 from gzkit.content.rendition_store import save_rendition
 from gzkit.governance.trust_audits.invariant_coherence import validate_invariant_coherence
@@ -61,7 +61,7 @@ def _rendition_bytes(root: Path) -> bytes:
     return b""
 
 
-def _read_ledger_events(root: Path) -> list[dict]:
+def _read_ledger_events(root: Path) -> list[dict[str, Any]]:
     """Read all events from .gzkit/ledger.jsonl."""
     ledger_path = root / ".gzkit" / "ledger.jsonl"
     if not ledger_path.exists():

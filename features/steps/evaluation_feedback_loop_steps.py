@@ -23,6 +23,7 @@ import sys
 from contextlib import redirect_stderr, redirect_stdout
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 from unittest import mock
 
 from behave import given, then, when
@@ -106,7 +107,7 @@ def _append_event(event) -> None:
     Ledger(_ledger_path()).append(event)
 
 
-def _read_proposal(path: Path) -> dict:
+def _read_proposal(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 

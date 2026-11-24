@@ -317,7 +317,7 @@ def _ts_to_date(ts: str) -> date | None:
     return _iso_to_utc_date(ts)
 
 
-def _event_field(event: Mapping, key: str) -> object:
+def _event_field(event: Mapping[str, object], key: str) -> object:
     """Return ``event[key]`` honoring ``LedgerEvent.model_dump`` flattening.
 
     ``LedgerEvent`` carries event-specific data in ``.extra`` but its
@@ -338,7 +338,9 @@ def _event_field(event: Mapping, key: str) -> object:
     return None
 
 
-def _latest_receipt_event(obpi_id: str, events: Sequence[Mapping]) -> Mapping | None:
+def _latest_receipt_event(
+    obpi_id: str, events: Sequence[Mapping[str, object]]
+) -> Mapping[str, object] | None:
     """Return the most-recent matching receipt event for ``obpi_id``.
 
     Filters to events with ``event == "obpi_receipt_emitted"`` matching the
@@ -350,7 +352,7 @@ def _latest_receipt_event(obpi_id: str, events: Sequence[Mapping]) -> Mapping | 
         The matching event with the latest ``ts``, or None when no event matches.
 
     """
-    candidates: list[Mapping] = []
+    candidates: list[Mapping[str, object]] = []
     for event in events:
         if event.get("event") != "obpi_receipt_emitted":
             continue
@@ -366,7 +368,7 @@ def _latest_receipt_event(obpi_id: str, events: Sequence[Mapping]) -> Mapping | 
     return candidates[-1]
 
 
-def _build_receipt_from_event(req_id: str, event: Mapping) -> ReqClosingReceipt | None:
+def _build_receipt_from_event(req_id: str, event: Mapping[str, object]) -> ReqClosingReceipt | None:
     raw_anchor = _event_field(event, "anchor")
     if isinstance(raw_anchor, Mapping):
         anchor_str_keyed: Mapping[str, object] = cast("Mapping[str, object]", raw_anchor)
@@ -430,7 +432,7 @@ def _resolve_no_receipt_fallback(
 
 def resolve_req_closing_receipts(
     req_ids: Sequence[str],
-    obpi_completion_events: Sequence[Mapping],
+    obpi_completion_events: Sequence[Mapping[str, object]],
     *,
     project_root: Path,
     git_runner: GitRunner = _run_git,
@@ -992,7 +994,7 @@ def evaluate_backfill_for_audit(
     adr_kind: str,
     strict: bool,
     covers_locations: Sequence[tuple[str, str, int]],
-    obpi_completion_events: Sequence[Mapping],
+    obpi_completion_events: Sequence[Mapping[str, object]],
     thresholds_path: Path,
     git_runner: GitRunner = _run_git,
 ) -> BackfillResult:

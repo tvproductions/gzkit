@@ -12,7 +12,7 @@ import json
 import re
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from gzkit.commands.common import console
 from gzkit.core.models import ADR_PREFIX_BODY, OBPI_SHORT_ID_BODY
@@ -70,7 +70,7 @@ _RECOVERY_COMMANDS: dict[str, str] = {
 def _resolve_ledger_id_from_path(
     artifact_file: Path,
     artifact_type: str,
-    graph: dict,
+    graph: dict[str, dict[str, Any]],
     canonicalize: Callable[[str], str],
 ) -> str | None:
     """Key lookup on filesystem path only — never on frontmatter ``id:``.
@@ -120,9 +120,9 @@ def _field_error(rel_path: str, field: str, ledger_value: str, fm_value: str) ->
 
 
 def _check_one_artifact(
-    fm: dict,
+    fm: dict[str, Any],
     ledger_id: str,
-    info: dict,
+    info: dict[str, Any],
     rel_path: str,
     canonicalize: Callable[[str], str],
     *,
@@ -170,7 +170,7 @@ def _filter_artifact_files(
     files: list[Path],
     artifact_type: str,
     adr_scope: str | None,
-    graph: dict,
+    graph: dict[str, dict[str, Any]],
     canonicalize: Callable[[str], str],
 ) -> list[tuple[Path, str]]:
     """Pair each file with its resolved ledger id, filtered to ``adr_scope`` if set."""
@@ -188,7 +188,7 @@ def _filter_artifact_files(
     return results
 
 
-def _derive_status_from_graph(info: dict) -> str | None:
+def _derive_status_from_graph(info: dict[str, Any]) -> str | None:
     """Derive status using the canonical ledger semantics API.
 
     For ADRs uses ``Ledger.derive_adr_semantics`` — the same O(1) classmethod
@@ -295,7 +295,7 @@ def validate_frontmatter_coherence(
     errors: list[ValidationError] = []
     status_cache: dict[str, str | None] = {}
 
-    def _status_for(ledger_id: str, info: dict, fm_status: str) -> str | None:
+    def _status_for(ledger_id: str, info: dict[str, Any], fm_status: str) -> str | None:
         if ledger_id not in status_cache:
             status_cache[ledger_id] = _derive_status_from_graph(info)
         return status_cache[ledger_id]

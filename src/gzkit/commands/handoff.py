@@ -17,6 +17,7 @@ the structural exemplar.
 import json
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from rich.markup import escape
 
@@ -60,7 +61,7 @@ SECTION_PARAMS: dict[str, str] = {
 }
 
 
-def _list_payload(infos: list[HandoffInfo]) -> list[dict]:
+def _list_payload(infos: list[HandoffInfo]) -> list[dict[str, Any]]:
     """Machine-readable projection of a handoff listing (the ``--json`` shape)."""
     return [info.model_dump() for info in infos]
 

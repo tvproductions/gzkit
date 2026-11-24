@@ -68,8 +68,8 @@ _SHA = "a" * 64
 _LANDING_ID = "landing-20260927T120000Z-0123abcd"
 
 
-def _journal(**overrides: Any) -> dict:
-    document: dict = {
+def _journal(**overrides: Any) -> dict[str, Any]:
+    document: dict[str, Any] = {
         "landing_id": _LANDING_ID,
         "surface": LAND_SURFACE,
         "phase": "prepared",
@@ -100,7 +100,7 @@ def _journal(**overrides: Any) -> dict:
     return document
 
 
-def _with_path(path: str) -> dict:
+def _with_path(path: str) -> dict[str, Any]:
     document = _journal()
     document["consumers"][0]["artifacts"][0]["path"] = path
     return document
@@ -227,7 +227,7 @@ class TestPrepareLanding(_TempRoot):
     """prepare_landing plans every consumer under one landing_id and writes nothing."""
 
     def _prepare(self, **kwargs: Any):
-        arguments: dict = {"attestor": "g0", "attestation_text": "delta attested"}
+        arguments: dict[str, Any] = {"attestor": "g0", "attestation_text": "delta attested"}
         arguments.update(kwargs)
         return prepare_landing(self.root, LAND_SURFACE, **arguments)
 
@@ -641,7 +641,9 @@ class TestPublishLanding(_TempRoot):
         serialized = event.model_dump(mode="json")
         manifest = landing_mod._manifest_from_event(journal.surface, journal.landing_id, serialized)
 
-        def _shape(consumers: tuple) -> list:
+        def _shape(
+            consumers: tuple[ConsumerPlan, ...],
+        ) -> list[tuple[str, list[tuple[str, ArtifactKind, str | None, str | None]]]]:
             return [
                 (
                     c.consumer,
@@ -1053,7 +1055,7 @@ class TestResumeAfterKillMidStaging(_TempRoot):
 _RETENTION_TEXT = '{"surface": "LandSurface.md", "consumer": "alpha"}\n'
 
 
-def _journal_with_retention(new_sha256: str | None, payload: str | None) -> dict:
+def _journal_with_retention(new_sha256: str | None, payload: str | None) -> dict[str, Any]:
     document = _journal()
     consumer = document["consumers"][0]
     consumer["artifacts"].append(

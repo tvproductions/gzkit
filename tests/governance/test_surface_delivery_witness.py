@@ -27,6 +27,7 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import TYPE_CHECKING
 
 from gzkit.governance.trust_audits.surface_delivery_witness import (
     _MAX_ADVISORY_CHARS,
@@ -34,6 +35,9 @@ from gzkit.governance.trust_audits.surface_delivery_witness import (
     audit_surface_delivery_witness,
 )
 from gzkit.traceability import covers
+
+if TYPE_CHECKING:
+    from gzkit.core.validation_rules import ValidationError
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
@@ -101,7 +105,7 @@ def _write_manifest(root: Path, caps: dict[str, int] | None) -> None:
     (root / "data" / "vendor-manifest.json").write_text(json.dumps(payload), encoding="utf-8")
 
 
-def _run(root: Path) -> tuple[list, str]:
+def _run(root: Path) -> tuple[list[ValidationError], str]:
     """Run the witness, returning (fail-closed findings, stderr prose)."""
     stderr = io.StringIO()
     with contextlib.redirect_stderr(stderr):

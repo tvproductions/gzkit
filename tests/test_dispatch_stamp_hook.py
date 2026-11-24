@@ -18,7 +18,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
-from typing import TYPE_CHECKING, override
+from typing import TYPE_CHECKING, Any, override
 from unittest.mock import patch
 
 from gzkit.config import GzkitConfig
@@ -108,7 +108,7 @@ class _Session(unittest.TestCase):
         with self.ledger.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(row) + "\n")
 
-    def _returned(self, prompt: str, agent: str = _AGENT) -> dict:
+    def _returned(self, prompt: str, agent: str = _AGENT) -> dict[str, Any]:
         return {
             "hook_event_name": "PostToolUse",
             "tool_name": "Agent",
@@ -116,18 +116,18 @@ class _Session(unittest.TestCase):
             "tool_response": {"agentId": agent, "status": "completed"},
         }
 
-    def _claims(self) -> list[dict]:
+    def _claims(self) -> list[dict[str, Any]]:
         return self._events("dispatch_claimed")
 
-    def _events(self, event: str) -> list[dict]:
+    def _events(self, event: str) -> list[dict[str, Any]]:
         rows = [json.loads(line) for line in self.ledger.read_text(encoding="utf-8").splitlines()]
         return [row for row in rows if row.get("event") == event]
 
-    def _end(self, payload: dict) -> None:
+    def _end(self, payload: dict[str, Any]) -> None:
         """Run the end hook, asserting it books or does nothing and never raises."""
         self.assertIsNone(_raised(lambda: end_hook_output(payload, self.project)))
 
-    def _stopped(self, agent: str = _AGENT) -> dict:
+    def _stopped(self, agent: str = _AGENT) -> dict[str, Any]:
         """Return a ``SubagentStop`` payload as the probe measured it (ruling 115).
 
         Returns:
@@ -168,8 +168,8 @@ class _Session(unittest.TestCase):
         text = json.dumps(first) + "\n" + json.dumps(later) + "\n"
         (self.subagents / f"agent-{_AGENT}.jsonl").write_text(text, encoding="utf-8")
 
-    def _payload(self, command: str, *, agent: str | None = _AGENT) -> dict:
-        payload: dict = {
+    def _payload(self, command: str, *, agent: str | None = _AGENT) -> dict[str, Any]:
+        payload: dict[str, Any] = {
             "hook_event_name": "PreToolUse",
             "tool_name": "Bash",
             "tool_input": {"command": command, "description": "run it"},
@@ -188,7 +188,7 @@ class _Session(unittest.TestCase):
             The two stamp variables as the rewritten command's shell sees them.
 
         """
-        outputs: list[dict | None] = []
+        outputs: list[dict[str, Any] | None] = []
         payload = self._payload(command)
         self.assertIsNone(_raised(lambda: outputs.append(stamp_hook_output(payload, self.project))))
         (output,) = outputs
@@ -465,7 +465,7 @@ class TheStamp(_Session):
 class PowerShell(_Session):
     """Ruling 39: a subagent's PowerShell gz call is denied, never rewritten unprobed."""
 
-    def _powershell(self, command: str, *, agent: str | None = _AGENT) -> dict:
+    def _powershell(self, command: str, *, agent: str | None = _AGENT) -> dict[str, Any]:
         return {**self._payload(command, agent=agent), "tool_name": "PowerShell"}
 
     def test_a_subagents_powershell_gz_call_is_denied_with_recovery_prose(self) -> None:
@@ -908,7 +908,7 @@ class NoRootIsStamped(_Session):
 class TheGeneratedHook(_Session):
     """The rendered script, run as Claude Code runs it: JSON on stdin, JSON out."""
 
-    def _run_hook(self, payload: dict, *, shadow_gzkit: bool = False) -> str:
+    def _run_hook(self, payload: dict[str, Any], *, shadow_gzkit: bool = False) -> str:
         """Run the generated hook on one payload.
 
         Returns:

@@ -8,6 +8,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.personas import (
     TRAIT_PROXY_REGISTRY,
@@ -44,14 +45,14 @@ def _write_persona(
     (personas_dir / f"{name}.md").write_text(content, encoding="utf-8")
 
 
-def _write_ledger(root: Path, events: list[dict]) -> None:
+def _write_ledger(root: Path, events: list[dict[str, Any]]) -> None:
     ledger_path = root / ".gzkit" / "ledger.jsonl"
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
     lines = [json.dumps(e) for e in events]
     ledger_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def _write_audit_log(root: Path, records: list[dict]) -> None:
+def _write_audit_log(root: Path, records: list[dict[str, Any]]) -> None:
     log_dir = root / "docs" / "design" / "adr" / "test-adr" / "logs"
     log_dir.mkdir(parents=True, exist_ok=True)
     lines = [json.dumps(r) for r in records]

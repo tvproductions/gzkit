@@ -44,11 +44,11 @@ def _mk_target(root: Path, relpath: str = "notes.txt", body: str = "original con
     return relpath
 
 
-def _events(root: Path, event_type: str) -> list[dict]:
+def _events(root: Path, event_type: str) -> list[dict[str, Any]]:
     p = root / ".gzkit" / "ledger.jsonl"
     if not p.exists():
         return []
-    out: list[dict] = []
+    out: list[dict[str, Any]] = []
     for line in p.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if not line:

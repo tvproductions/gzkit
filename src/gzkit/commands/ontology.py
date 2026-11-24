@@ -17,6 +17,7 @@ never gates, Boundary Invariant #2); ``trace``/``reach`` exit 1 on an unknown id
 
 import json
 from pathlib import Path
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 from rich.markup import escape
@@ -243,7 +244,7 @@ def diff_snapshots(old: Snapshot, new: Snapshot) -> ShapeDiff:
     )
 
 
-def render_sense_json(projection: CorpusProjection | UnifiedProjection) -> dict:
+def render_sense_json(projection: CorpusProjection | UnifiedProjection) -> dict[str, Any]:
     """Machine-readable shape + the rebuild-fidelity self-report (REQ-06).
 
     Accepts either the corpus-only ``CorpusProjection`` or the composed

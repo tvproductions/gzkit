@@ -13,6 +13,7 @@ import logging
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 # RED: this module does not exist yet; import fails at collection time.
 from gzkit.governance.trust_audits.receipt_shape import audit_receipt_shape
@@ -55,7 +56,7 @@ def _write_adr(project_root: Path) -> None:
     adr_path.write_text(_ADR_FRONTMATTER, encoding="utf-8")
 
 
-def _write_ledger(project_root: Path, events: list[dict]) -> None:
+def _write_ledger(project_root: Path, events: list[dict[str, Any]]) -> None:
     ledger_path = project_root / _LEDGER_REL
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
     ledger_path.write_text(
@@ -89,7 +90,7 @@ def _receipt_event(
     attestor: str,
     attestation_requirement: str,
     obpi_completion: str,
-) -> dict:
+) -> dict[str, Any]:
     return {
         "event": "obpi_receipt_emitted",
         "ts": ts,

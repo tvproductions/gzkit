@@ -19,7 +19,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from typing import override
+from typing import TYPE_CHECKING, Any, override
 
 from pydantic import ValidationError
 
@@ -44,21 +44,24 @@ from gzkit.ledger_corrections import (
 )
 from gzkit.ledger_events import ledger_event_corrected_event
 
+if TYPE_CHECKING:
+    from gzkit.validate import ValidationError as GzkitValidationError
 
-def _row(event: str, ident: str, ts: str, **extra: object) -> dict:
+
+def _row(event: str, ident: str, ts: str, **extra: object) -> dict[str, Any]:
     """Build a raw ledger row in the on-disk (flattened) shape."""
     return {"schema": "gzkit.ledger.v1", "event": event, "id": ident, "ts": ts, **extra}
 
 
 def _correction(
-    subject: dict,
+    subject: dict[str, Any],
     disposition: str,
     *,
     ts: str,
     cause: str = "agent-error",
     reason: str = "recorded in error",
     attestor: str = "g0",
-) -> dict:
+) -> dict[str, Any]:
     return _row(
         CORRECTION_EVENT,
         subject["id"],
@@ -73,7 +76,7 @@ def _correction(
     )
 
 
-def _ledger_file(case: unittest.TestCase, rows: list[dict]) -> Path:
+def _ledger_file(case: unittest.TestCase, rows: list[dict[str, Any]]) -> Path:
     """Write ``rows`` to a real temp ledger and return its path.
 
     Shared so the validator and replay are handed the SAME bytes: the defect
@@ -92,7 +95,9 @@ def _ledger_file(case: unittest.TestCase, rows: list[dict]) -> Path:
     return path
 
 
-def _validate_rows(case: unittest.TestCase, rows: list[dict]) -> list:
+def _validate_rows(
+    case: unittest.TestCase, rows: list[dict[str, Any]]
+) -> list[GzkitValidationError]:
     """Run the shipped ledger validator over ``rows`` in a temp file."""
     from gzkit.validate_pkg.ledger_check import validate_ledger
 
@@ -102,7 +107,7 @@ def _validate_rows(case: unittest.TestCase, rows: list[dict]) -> list:
 class TestCorrectionEventFailsClosed(unittest.TestCase):
     """A correction with no accountable author is not a correction."""
 
-    def _kwargs(self) -> dict:
+    def _kwargs(self) -> dict[str, Any]:
         return {
             "id": "OBPI-0.35.0-08",
             "event": CORRECTION_EVENT,
@@ -357,7 +362,7 @@ class TestTypedAndRawShapesAgree(unittest.TestCase):
 class TestLedgerConsumers(unittest.TestCase):
     """The corrections must reach the real producers and consumers, not a fixture."""
 
-    def _ledger(self, rows: list[dict]) -> Ledger:
+    def _ledger(self, rows: list[dict[str, Any]]) -> Ledger:
         tmp = Path(self.enterContext(tempfile.TemporaryDirectory()))
         path = tmp / "ledger.jsonl"
         path.write_text(
@@ -642,10 +647,10 @@ class TestCorrectionsAreValidatedAtTheReplayBoundary(unittest.TestCase):
     the guard is decorative.
     """
 
-    def _subject(self) -> dict:
+    def _subject(self) -> dict[str, Any]:
         return _row("pipeline_launched", "OBPI-X", "2026-09-02T00:00:00+00:00")
 
-    def _invalid(self, **overrides: str) -> list[dict]:
+    def _invalid(self, **overrides: str) -> list[dict[str, Any]]:
         subject = self._subject()
         correction = _correction(subject, "void", ts="2026-09-06T20:00:00+00:00")
         correction.update(overrides)
@@ -704,7 +709,7 @@ class TestEveryGoverningConsumerReadsTheCorrectedStream(unittest.TestCase):
     ``read_all()`` pass, and ``active_task_trailers`` reads the JSONL directly.
     """
 
-    def _ledger(self, rows: list[dict]) -> Ledger:
+    def _ledger(self, rows: list[dict[str, Any]]) -> Ledger:
         tmp = Path(self.enterContext(tempfile.TemporaryDirectory()))
         path = tmp / "ledger.jsonl"
         path.write_text(
@@ -999,7 +1004,7 @@ class TestCorrectionAttributionIsTypeStrict(unittest.TestCase):
 
     SUBJECT = _row("gate_checked", "ADR-0.0.1", "2026-09-06T00:00:00+00:00")
 
-    def _correction(self, field: str, value: object) -> dict:
+    def _correction(self, field: str, value: object) -> dict[str, Any]:
         correction = _correction(self.SUBJECT, "void", ts="2026-09-06T01:00:00+00:00")
         correction[field] = value
         return correction
@@ -1174,8 +1179,8 @@ class TestInvalidCorrectionsCannotChangeDerivedState(unittest.TestCase):
 
     SUBJECT = _row("obpi_completed", "OBPI-X", "2026-09-06T00:00:00+00:00")
 
-    def _invalid_corrections(self) -> list[tuple[str, dict]]:
-        def mutate(label: str, **fields: object) -> tuple[str, dict]:
+    def _invalid_corrections(self) -> list[tuple[str, dict[str, Any]]]:
+        def mutate(label: str, **fields: object) -> tuple[str, dict[str, Any]]:
             correction = _correction(self.SUBJECT, "void", ts="2026-09-06T01:00:00+00:00")
             correction.update(fields)
             return label, correction
@@ -1245,7 +1250,7 @@ class TestMalformedContainersAreRejectedNotFatal(unittest.TestCase):
 
     _SUBJECT_TS = "2026-09-02T00:00:00+00:00"
 
-    def _rows_with(self, **overrides: object) -> list[dict]:
+    def _rows_with(self, **overrides: object) -> list[dict[str, Any]]:
         subject = _row("pipeline_launched", "OBPI-X", self._SUBJECT_TS)
         correction = _correction(subject, "void", ts="2026-09-06T20:00:00+00:00")
         correction.update(overrides)
@@ -1329,7 +1334,7 @@ class TestValidationAndReplayRefuseTheSameCorrections(unittest.TestCase):
             "pipeline_launched", "OBPI-0.35.0-08", self.SUBJECT_TS, **self.LAUNCH_FIELDS
         )
 
-    def _correcting(self, disposition: str = "void", **overrides: object) -> dict:
+    def _correcting(self, disposition: str = "void", **overrides: object) -> dict[str, Any]:
         correction = _correction(
             self.subject,
             disposition,
@@ -1339,7 +1344,7 @@ class TestValidationAndReplayRefuseTheSameCorrections(unittest.TestCase):
         correction.update(overrides)
         return correction
 
-    def _both(self, rows: list[dict]) -> tuple[list[str], list[str]]:
+    def _both(self, rows: list[dict[str, Any]]) -> tuple[list[str], list[str]]:
         """Return ``(validator messages, replayed event names)`` for one file."""
         path = _ledger_file(self, rows)
         from gzkit.validate_pkg.ledger_check import validate_ledger
@@ -1349,7 +1354,7 @@ class TestValidationAndReplayRefuseTheSameCorrections(unittest.TestCase):
             [e.event for e in Ledger(path).read_all()],
         )
 
-    def _assert_refused_by_both(self, rows: list[dict], expected: str) -> None:
+    def _assert_refused_by_both(self, rows: list[dict[str, Any]], expected: str) -> None:
         messages, replayed = self._both(rows)
         self.assertTrue(
             any(expected in message for message in messages),
@@ -1546,12 +1551,12 @@ class TestAStoredRowsEnvelopeIsNeverManufactured(unittest.TestCase):
 
     # -- fixtures ---------------------------------------------------------
 
-    def _void(self, **overrides: object) -> dict:
+    def _void(self, **overrides: object) -> dict[str, Any]:
         row = _correction(self.subject, "void", ts=self.VOID_TS, reason="started in error")
         row.update(overrides)
         return row
 
-    def _reinstate(self, **overrides: object) -> dict:
+    def _reinstate(self, **overrides: object) -> dict[str, Any]:
         row = _correction(
             self.subject,
             "reinstated",
@@ -1563,7 +1568,7 @@ class TestAStoredRowsEnvelopeIsNeverManufactured(unittest.TestCase):
         return row
 
     @staticmethod
-    def _without(row: dict, field: str) -> dict:
+    def _without(row: dict[str, Any], field: str) -> dict[str, Any]:
         """Return ``row`` with ``field`` ABSENT — not empty, not null, gone.
 
         Absence is the shape the model repaired; an empty or null value is a
@@ -1579,7 +1584,7 @@ class TestAStoredRowsEnvelopeIsNeverManufactured(unittest.TestCase):
 
     # -- the three readers, one file --------------------------------------
 
-    def _readers(self, rows: list[dict]) -> tuple[list[str], bool, bool]:
+    def _readers(self, rows: list[dict[str, Any]]) -> tuple[list[str], bool, bool]:
         """Return ``(validator messages, tolerant subject live, graph flag)``.
 
         One temporary file, read three ways. The last two are SUBJECT STATE:
@@ -1600,7 +1605,7 @@ class TestAStoredRowsEnvelopeIsNeverManufactured(unittest.TestCase):
         graph = Ledger(path).get_artifact_graph()[self.OBPI]["pipeline_launched"]
         return messages, live, bool(graph)
 
-    def _assert_inert_everywhere(self, correction: dict, expected: str) -> None:
+    def _assert_inert_everywhere(self, correction: dict[str, Any], expected: str) -> None:
         """A void the validator reports must leave the launch standing in BOTH readers."""
         messages, tolerant_live, graph_flag = self._readers(
             [self.created, self.subject, correction]
@@ -1612,7 +1617,7 @@ class TestAStoredRowsEnvelopeIsNeverManufactured(unittest.TestCase):
         self.assertTrue(tolerant_live, "the tolerant reader applied a correction it must refuse")
         self.assertTrue(graph_flag, "the graph applied a correction the validator rejects")
 
-    def _assert_cannot_revive(self, reinstatement: dict, expected: str) -> None:
+    def _assert_cannot_revive(self, reinstatement: dict[str, Any], expected: str) -> None:
         """A malformed reinstatement must leave a validly-voided launch voided."""
         messages, tolerant_live, graph_flag = self._readers(
             [self.created, self.subject, self._void(), reinstatement]

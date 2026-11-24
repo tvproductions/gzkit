@@ -10,7 +10,7 @@ import tempfile
 import textwrap
 import unittest
 from pathlib import Path
-from typing import override
+from typing import TYPE_CHECKING, override
 from unittest.mock import patch
 
 from gzkit.traceability import (
@@ -34,6 +34,9 @@ from gzkit.triangle import (
     ReqStatus,
     VertexType,
 )
+
+if TYPE_CHECKING:
+    from gzkit.triangle import LinkageRecord
 
 # Known REQs for testing (simulates brief-extracted REQs)
 _TEST_REQS = frozenset(
@@ -739,7 +742,7 @@ class TestComputeCoverage(unittest.TestCase):
             _make_req("0.20.0", "01", "03", "OBPI-0.20.0-01"),
         ]
 
-    def _make_linkage_records(self) -> list:
+    def _make_linkage_records(self) -> list[LinkageRecord]:
         """Create 5 linkage records covering some of the 8 REQs."""
         from gzkit.triangle import LinkageRecord, VertexRef
 

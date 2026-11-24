@@ -23,6 +23,7 @@ import json
 import re
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from gzkit.core.models import ADR_ID_PARTS_BODY, OBPI_ID_PARTS_BODY, SLUG_BODY
 from gzkit.core.validation_rules import ValidationError
@@ -72,12 +73,12 @@ def validate_evaluation_justify_binding(
     ]
 
 
-def _trigger_reasons(event: dict, thresholds: dict) -> list[str]:
+def _trigger_reasons(event: dict[str, Any], thresholds: dict[str, Any]) -> list[str]:
     """Return why ``event`` triggers the gate; empty when it does not."""
     low_score_threshold = thresholds.get("low_score_threshold", 3.0)
     red_team_count_threshold = thresholds.get("red_team_count_threshold", 3)
     dimensions: dict[str, float] = event.get("dimensions", {})
-    red_team: list = event.get("red_team_challenges_fired", [])
+    red_team: list[object] = event.get("red_team_challenges_fired", [])
     failing_dims = [dim for dim, score in dimensions.items() if score < low_score_threshold]
     reasons = []
     if failing_dims:
@@ -87,7 +88,7 @@ def _trigger_reasons(event: dict, thresholds: dict) -> list[str]:
     return reasons
 
 
-def _load_thresholds(project_root: Path) -> dict:
+def _load_thresholds(project_root: Path) -> dict[str, Any]:
     """Load eval feedback thresholds from ``data/eval_feedback_thresholds.json``."""
     config_path = project_root / "data" / "eval_feedback_thresholds.json"
     if not config_path.exists():
@@ -97,7 +98,7 @@ def _load_thresholds(project_root: Path) -> dict:
 
 def _latest_evaluation_event(
     ledger_path: Path, artifact_id: str
-) -> tuple[dict | None, frozenset[str]]:
+) -> tuple[dict[str, Any] | None, frozenset[str]]:
     """Return the most recent ``adr-evaluation`` event for ``artifact_id`` and its id aliases.
 
     Ids are compared through the ledger's rename map, so an evaluation booked
@@ -115,7 +116,7 @@ def _latest_evaluation_event(
     """
     if not ledger_path.exists():
         return None, frozenset({artifact_id})
-    evaluations: list[dict] = []
+    evaluations: list[dict[str, Any]] = []
     renames: list[tuple[str, str]] = []
     for line in ledger_path.read_text(encoding="utf-8").splitlines():
         line = line.strip()

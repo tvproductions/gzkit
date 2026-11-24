@@ -12,6 +12,7 @@ import unittest
 import unittest.mock
 from io import StringIO
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 from rich.console import Console
@@ -881,7 +882,9 @@ def _build_mock_git_cmd(
     return _side_effect
 
 
-def _build_mock_run_exec(auth_ok: bool = True, view_payloads: dict[int, dict] | None = None):
+def _build_mock_run_exec(
+    auth_ok: bool = True, view_payloads: dict[int, dict[str, Any]] | None = None
+):
     """Build a side_effect function for run_exec mock (post-GHI #233).
 
     Dispatches on command shape instead of a fixed sequence:
@@ -919,7 +922,7 @@ def _gh_view_payload(
     labels: list[str] | None = None,
     state: str = "CLOSED",
     title: str | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Construct a gh issue view JSON payload for tests."""
     return {
         "number": number,
@@ -1848,7 +1851,7 @@ def _foundation_receipt(
     *,
     receipt_event: str = "validated",
     commit: str = "abc1234",
-) -> dict:
+) -> dict[str, Any]:
     """Build an audit_receipt_emitted ledger event for a closed-out ADR."""
     return {
         "schema": "gzkit.ledger.v1",
@@ -1860,7 +1863,7 @@ def _foundation_receipt(
     }
 
 
-def _ledger_from_events(directory: Path, events: list[dict]):
+def _ledger_from_events(directory: Path, events: list[dict[str, Any]]):
     """Materialize a real Ledger over a temp JSONL file."""
     from gzkit.ledger import Ledger
 

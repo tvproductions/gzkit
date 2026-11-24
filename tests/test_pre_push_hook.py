@@ -5,7 +5,7 @@ Covers REQ-0.0.68-01-01 (pre-push gz check hook declared and version-controlled)
 
 import unittest
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import yaml
 
@@ -22,7 +22,7 @@ def covers[T](target: str) -> Callable[[T], T]:
     return _identity
 
 
-def _pre_push_gz_hooks() -> list[dict]:
+def _pre_push_gz_hooks() -> list[dict[str, Any]]:
     """Return all declared hooks with stages: [pre-push] whose entry runs gz check."""
     with Path(".pre-commit-config.yaml").open(encoding="utf-8") as fh:
         config = yaml.safe_load(fh)

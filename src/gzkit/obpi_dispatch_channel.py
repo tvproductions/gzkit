@@ -42,6 +42,7 @@ consults it.
 from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import Path
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -83,7 +84,7 @@ def _plans_dir(project_root: Path) -> Path:
     return pipeline_plans_dir(project_root)
 
 
-def _read_marker(project_root: Path, obpi_id: str) -> dict | None:
+def _read_marker(project_root: Path, obpi_id: str) -> dict[str, Any] | None:
     """Return this OBPI's marker payload, or None when absent/unreadable.
 
     Read through the loader the marker cache is written through: the per-OBPI
@@ -126,7 +127,7 @@ def project_ledger(project_root: Path) -> Ledger:
     return Ledger(project_root / rel)
 
 
-def _obpi_events(project_root: Path, obpi_id: str, event_type: str) -> list[dict]:
+def _obpi_events(project_root: Path, obpi_id: str, event_type: str) -> list[dict[str, Any]]:
     """Return this OBPI's payloads for ``event_type``, oldest first.
 
     The id filter is load-bearing, not defensive: the ledger is project-wide, so
@@ -291,7 +292,7 @@ def declare_single_driver(project_root: Path, obpi_id: str, *, reason: str) -> N
     rewrite_pipeline_markers(_plans_dir(project_root), obpi_id, marker)
 
 
-def single_driver_declaration(project_root: Path, obpi_id: str) -> dict | None:
+def single_driver_declaration(project_root: Path, obpi_id: str) -> dict[str, Any] | None:
     """Return the ledger-recorded single-driver declaration, or None.
 
     Last declaration wins. Re-declaring is an ordinary forward correction over an
@@ -311,7 +312,7 @@ def single_driver_declaration(project_root: Path, obpi_id: str) -> dict | None:
 def render_dispatch_channel(
     channel: list[RoleDispatch],
     *,
-    declaration: dict | None = None,
+    declaration: dict[str, Any] | None = None,
 ) -> str:
     """Render the channel as operator-facing markdown, verdict included."""
     rows = "\n".join(f"| {e.role} | {e.disposition.value} | {e.source} |" for e in channel)

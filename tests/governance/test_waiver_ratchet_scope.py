@@ -14,7 +14,7 @@ import tempfile
 import unittest
 from datetime import date
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from gzkit.cli.main import _build_parser
 from gzkit.governance.trust_audits.waiver_ratchet import audit_waiver_ratchet
@@ -24,7 +24,9 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
 
-def _project(registry: dict, data_files: Mapping[str, object]) -> tempfile.TemporaryDirectory:
+def _project(
+    registry: dict[str, Any], data_files: Mapping[str, object]
+) -> tempfile.TemporaryDirectory[str]:
     tmp = tempfile.TemporaryDirectory()
     root = Path(tmp.name)
     (root / "data").mkdir(parents=True, exist_ok=True)

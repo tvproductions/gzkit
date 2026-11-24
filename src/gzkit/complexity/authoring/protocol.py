@@ -14,7 +14,7 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import BinaryIO
+from typing import Any, BinaryIO
 
 from gzkit.complexity.authoring import engine
 
@@ -93,7 +93,7 @@ class MessageJsonDecodeError(ValueError):
         super().__init__(f"JSON decode error: {exc}")
 
 
-def read_message(stream: BinaryIO) -> dict:
+def read_message(stream: BinaryIO) -> dict[str, Any]:
     """Read one Content-Length-framed message from ``stream``.
 
     Scans lines looking for ``Content-Length: N``.  After finding it,
@@ -141,24 +141,24 @@ def read_message(stream: BinaryIO) -> dict:
         raise MessageJsonDecodeError(exc) from exc
 
 
-def write_message(stream: BinaryIO, payload: dict) -> None:
+def write_message(stream: BinaryIO, payload: dict[str, Any]) -> None:
     """Write ``payload`` as a Content-Length-framed message to ``stream``."""
     body = json.dumps(payload).encode("utf-8")
     header = f"Content-Length: {len(body)}\r\n\r\n".encode("ascii")
     stream.write(header + body)
 
 
-def make_response(request_id: object, result: dict) -> dict:
+def make_response(request_id: object, result: dict[str, Any]) -> dict[str, Any]:
     """Build a success response envelope."""
     return {"id": request_id, "result": result}
 
 
-def make_error(request_id: object, code: int, message: str) -> dict:
+def make_error(request_id: object, code: int, message: str) -> dict[str, Any]:
     """Build an error response envelope."""
     return {"id": request_id, "error": {"code": code, "message": message}}
 
 
-def handle_initialize(params: dict) -> dict:
+def handle_initialize(params: dict[str, Any]) -> dict[str, Any]:
     """Handle the ``initialize`` handshake.
 
     Validates the client's major version against ``PROTOCOL_VERSION``.
@@ -179,7 +179,7 @@ def handle_initialize(params: dict) -> dict:
     return {"version": PROTOCOL_VERSION, "capabilities": SUPPORTED_METHODS}
 
 
-def handle_analyze(params: dict) -> dict:
+def handle_analyze(params: dict[str, Any]) -> dict[str, Any]:
     """Handle the ``analyze`` request.
 
     Calls the authoring engine and returns serialized hints.
@@ -196,7 +196,7 @@ def handle_analyze(params: dict) -> dict:
     return {"hints": [h.model_dump() for h in hints]}
 
 
-def handle_shutdown(params: dict) -> dict:  # noqa: ARG001
+def handle_shutdown(params: dict[str, Any]) -> dict[str, Any]:  # noqa: ARG001
     """Handle the ``shutdown`` request."""
     return {"status": "ok", "shutdown": True}
 
@@ -223,7 +223,7 @@ _HANDLERS = {
 }
 
 
-def dispatch(request: dict) -> tuple[dict, bool]:
+def dispatch(request: dict[str, Any]) -> tuple[dict[str, Any], bool]:
     """Route ``request`` to the correct handler.
 
     Returns ``(response_payload, should_shutdown)``.  ``should_shutdown`` is

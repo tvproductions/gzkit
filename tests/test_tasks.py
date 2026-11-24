@@ -883,7 +883,7 @@ from tests.commands.common import (  # noqa: E402
 # full init for each of 8 classes (~3.5s each = ~28s total); now one module
 # setUp runs it once. Each test restores the ledger from a cached base so
 # tests remain isolated.
-_module_tmp_ctx: tempfile.TemporaryDirectory | None = None
+_module_tmp_ctx: tempfile.TemporaryDirectory[str] | None = None
 _module_orig_cwd: Path | None = None
 _module_workspace: Path | None = None
 _module_base_ledger: str = ""

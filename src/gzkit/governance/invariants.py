@@ -8,7 +8,7 @@ AGENTS.md "No YAML for gzkit data files" rule (2026-05-19).
 
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import jsonschema
 from pydantic import BaseModel, ConfigDict, Field
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from gzkit.content.models.bullet import Bullet
 
 
-def _load_schema() -> dict:
+def _load_schema() -> dict[str, Any]:
     """Load constitutional_invariant JSON Schema from the schemas package."""
     schema_path = Path(__file__).parent.parent / "schemas" / "constitutional_invariant.json"
     return json.loads(schema_path.read_text(encoding="utf-8"))

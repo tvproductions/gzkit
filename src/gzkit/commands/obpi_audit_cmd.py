@@ -6,6 +6,7 @@ import subprocess
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from gzkit.commands.common import console
 from gzkit.core.models import OBPI_SHORT_ID_BODY
@@ -79,7 +80,7 @@ def _audit_all_for_adr(project_root: Path, adr_id: str, as_json: bool) -> None:
             console.print("")
 
 
-def _audit_single(project_root: Path, obpi_id: str) -> dict:
+def _audit_single(project_root: Path, obpi_id: str) -> dict[str, Any]:
     """Audit a single OBPI and append ledger entry."""
     adr_id = _derive_adr_id(obpi_id)
     adr_dir = _find_adr_dir(project_root, adr_id) if adr_id else None
@@ -121,9 +122,9 @@ def _build_criteria(
     tests_passed: bool,
     test_count: int,
     coverage_pct: float | None,
-) -> list[dict]:
+) -> list[dict[str, str]]:
     """Build the criteria evaluation list."""
-    criteria: list[dict] = []
+    criteria: list[dict[str, str]] = []
     criteria.append(
         {
             "criterion": "Test files exist",
@@ -159,8 +160,8 @@ def _build_entry(
     test_count: int,
     coverage_pct: float | None,
     covers_tags: list[str],
-    criteria: list[dict],
-) -> dict:
+    criteria: list[dict[str, str]],
+) -> dict[str, Any]:
     """Build the audit ledger entry dict."""
     return {
         "type": "obpi-audit",
@@ -185,7 +186,7 @@ def _build_entry(
     }
 
 
-def _print_result(result: dict) -> None:
+def _print_result(result: dict[str, Any]) -> None:
     """Print audit result in human-readable format."""
     obpi = result.get("obpi_id", "unknown")
     criteria = result.get("criteria_evaluated", [])
@@ -399,7 +400,7 @@ def _find_covers_tags(project_root: Path, adr_id: str) -> list[str]:
     return found
 
 
-def _append_ledger(adr_dir: Path, entry: dict) -> None:
+def _append_ledger(adr_dir: Path, entry: dict[str, Any]) -> None:
     """Append audit entry to ADR-local JSONL ledger."""
     logs_dir = adr_dir / "logs"
     logs_dir.mkdir(parents=True, exist_ok=True)
@@ -408,12 +409,12 @@ def _append_ledger(adr_dir: Path, entry: dict) -> None:
         f.write(json.dumps(entry, separators=(",", ":")) + "\n")
 
 
-def _read_prior_audits(adr_dir: Path) -> dict[str, dict]:
+def _read_prior_audits(adr_dir: Path) -> dict[str, dict[str, Any]]:
     """Read the last audit entry per OBPI from the ADR-local JSONL ledger."""
     ledger_file = adr_dir / "logs" / "obpi-audit.jsonl"
     if not ledger_file.is_file():
         return {}
-    latest: dict[str, dict] = {}
+    latest: dict[str, dict[str, Any]] = {}
     for line in ledger_file.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if not line:
@@ -454,7 +455,7 @@ def _is_stale(project_root: Path, timestamp: str) -> bool:
         return True
 
 
-def _print_prior_state(prior_audits: dict[str, dict], project_root: Path) -> None:
+def _print_prior_state(prior_audits: dict[str, dict[str, Any]], project_root: Path) -> None:
     """Print prior audit state table before fresh analysis."""
     if not prior_audits:
         console.print("[dim]No prior audit entries found.[/dim]\n")

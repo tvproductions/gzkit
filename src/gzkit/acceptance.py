@@ -60,7 +60,12 @@ class Proof(AcceptanceModel):
 def proof_aliases(proofs: Sequence[Proof]) -> dict[str, str]:
     """Alias consecutive witnessed successes only; legacy/failed runs break reuse."""
     aliases: dict[str, str] = {}
-    previous: dict[str, tuple[tuple | None, str]] = {}
+    previous: dict[
+        str,
+        tuple[
+            tuple[str | None, str, str, tuple[str, ...], tuple[str, ...], str | None] | None, str
+        ],
+    ] = {}
     for proof in proofs:
         key = None
         if proof.valid and proof.claim_digest is not None:
@@ -223,7 +228,9 @@ class _ReviewState(BaseModel):
     errors: list[str] = Field(default_factory=list, description="Malformed record relationships")
 
 
-def _index_records(records: Sequence, subject: str, errors: list[str]) -> dict:
+def _index_records[R: Obligation | Proof | Review](
+    records: Sequence[R], subject: str, errors: list[str]
+) -> dict[str, R]:
     indexed = {}
     for record in records:
         if record.id in indexed:

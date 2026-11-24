@@ -10,7 +10,7 @@ the resolved callable.
 """
 
 import argparse
-from typing import override
+from typing import TYPE_CHECKING, override
 
 from gzkit.cli.helpers import (
     add_adr_option,
@@ -22,6 +22,9 @@ from gzkit.cli.helpers import (
 )
 from gzkit.cli.parser_governance_errors import BlankTargetError
 from gzkit.cli.parser_handler_manifest import _lazy
+
+if TYPE_CHECKING:
+    from gzkit.cli.parser import StableArgumentParser
 
 
 def _nonblank_target(value: str) -> str:
@@ -109,7 +112,9 @@ def _closeout_dispatch(a: argparse.Namespace) -> None:
         _lazy("closeout_cmd")(adr=a.adr, as_json=a.as_json, dry_run=a.dry_run)
 
 
-def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  # noqa: PLR0915
+def register_governance_parsers(  # noqa: PLR0915
+    commands: argparse._SubParsersAction[StableArgumentParser],
+) -> None:
     """Register governance lifecycle subcommands on *commands*."""
     p_init = commands.add_parser(
         "init",

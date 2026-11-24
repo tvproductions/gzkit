@@ -17,7 +17,7 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import override
+from typing import Any, override
 from unittest import mock
 
 from gzkit.mx import marker
@@ -31,7 +31,7 @@ def _mk_root(tmp: str) -> Path:
     return root
 
 
-def _write_ledger(root: Path, events: list[dict]) -> None:
+def _write_ledger(root: Path, events: list[dict[str, Any]]) -> None:
     path = root / ".gzkit" / "ledger.jsonl"
     path.write_text("\n".join(json.dumps(e) for e in events) + "\n", encoding="utf-8")
 

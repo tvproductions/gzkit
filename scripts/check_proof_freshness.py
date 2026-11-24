@@ -54,6 +54,7 @@ import subprocess
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from gzkit.commands.chores_staleness import git_artifact_changed
 
@@ -75,7 +76,7 @@ sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[missing-union-attribute]
 # `.claude/settings.local.json` is gitignored and grows with no commit.
 
 
-def _declared_staleness(slug: str) -> dict | None:
+def _declared_staleness(slug: str) -> dict[str, Any] | None:
     """Return *slug*'s declared ``staleness`` object, or None if it declares none."""
     registry = _PROJECT_ROOT / ".gzkit" / "chores" / "registry.json"
     try:

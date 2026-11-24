@@ -10,6 +10,7 @@ absence of operator email respectively.
 import json
 import unittest
 from pathlib import Path
+from typing import Any
 
 import jsonschema
 from pydantic import ValidationError
@@ -28,7 +29,7 @@ _SCHEMA_PATH = (
 )
 
 
-def _load_schema() -> dict:
+def _load_schema() -> dict[str, Any]:
     return json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
 
 
@@ -49,7 +50,7 @@ def _valid_doctrinal_frame() -> DoctrinalFrame:
     )
 
 
-def _valid_diagnosis_dict() -> dict:
+def _valid_diagnosis_dict() -> dict[str, Any]:
     return {
         "metric": "radon_cc",
         "crossing_band": "warn",

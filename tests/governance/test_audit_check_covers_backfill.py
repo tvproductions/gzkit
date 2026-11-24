@@ -20,7 +20,7 @@ import tempfile
 import unittest
 from datetime import date
 from pathlib import Path
-from typing import Any, override
+from typing import TYPE_CHECKING, Any, override
 
 from pydantic import ValidationError
 
@@ -40,6 +40,9 @@ from gzkit.commands.adr_audit_covers_backfill import (
 )
 from gzkit.commands.common import GzCliError
 from gzkit.traceability import covers
+
+if TYPE_CHECKING:
+    from unittest.mock import _patch
 
 # --------------------------------------------------------------------------- #
 # FakeGit — single mock boundary for every git call (REQ-0.0.23-05-08).        #
@@ -1574,11 +1577,10 @@ class TestCliSurfaceCoverage(unittest.TestCase):
     def test_strict_flag_registered_on_parser(self) -> None:
         """The --strict flag must reach the parser layer, not just the doc
         (REQ-10 mechanical surface)."""
-        import argparse
-
+        from gzkit.cli.parser import StableArgumentParser
         from gzkit.cli.parser_artifacts import register_artifact_parsers
 
-        parser = argparse.ArgumentParser()
+        parser = StableArgumentParser()
         sub = parser.add_subparsers(dest="cmd")
         register_artifact_parsers(sub)
         ns = parser.parse_args(["adr", "audit-check", "ADR-0.1.0", "--strict"])
@@ -1651,7 +1653,7 @@ class TestAdrAuditCheckIntegration(unittest.TestCase):
         *,
         obpi_findings: list[Any] | None = None,
         coverage_blocking: list[Any] | None = None,
-    ) -> list[unittest.mock.patch]:  # type: ignore
+    ) -> list[_patch[Any]]:
         """Build the standard infrastructure patches so the heuristic path is reachable."""
         from unittest.mock import MagicMock, patch
 
@@ -1697,13 +1699,13 @@ class TestAdrAuditCheckIntegration(unittest.TestCase):
             ),
         ]
 
-    def _apply_patches(self, patches: list) -> list:
+    def _apply_patches(self, patches: list[_patch[Any]]) -> list[Any]:
         started = []
         for p in patches:
             started.append(p.start())
         return started
 
-    def _stop_patches(self, patches: list) -> None:
+    def _stop_patches(self, patches: list[_patch[Any]]) -> None:
         """Stop patchers NEWEST FIRST. The order is load-bearing (GHI #857).
 
         ``patch.stop()`` restores whatever the attribute held when that patcher

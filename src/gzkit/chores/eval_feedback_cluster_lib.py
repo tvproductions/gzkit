@@ -16,6 +16,7 @@ import json
 import logging
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any, TypedDict
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -101,7 +102,7 @@ def _score_band(score: float) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _read_adr_evaluation_events(ledger_path: Path) -> list[dict]:
+def _read_adr_evaluation_events(ledger_path: Path) -> list[dict[str, Any]]:
     """Read adr-evaluation events from ledger.jsonl.
 
     Returns a list of raw dicts for lines where event == "adr-evaluation".
@@ -115,7 +116,7 @@ def _read_adr_evaluation_events(ledger_path: Path) -> list[dict]:
     if not ledger_path.exists():
         return []
 
-    events: list[dict] = []
+    events: list[dict[str, Any]] = []
     with ledger_path.open(encoding="utf-8") as fh:
         for line_num, line in enumerate(fh, start=1):
             line = line.strip()
@@ -168,7 +169,15 @@ def _parse_frontmatter(text: str) -> dict[str, str]:
     return fm
 
 
-def _walk_justify_artifacts(justify_root: Path) -> list[dict]:
+class _JustifyArtifact(TypedDict):
+    """One walked justify artifact: its file, anchor and authored text."""
+
+    path: Path
+    anchor_id: str
+    authored: str
+
+
+def _walk_justify_artifacts(justify_root: Path) -> list[_JustifyArtifact]:
     """Walk justify_root recursively for *.md files and parse frontmatter.
 
     Returns list of dicts: ``{"path": Path, "anchor_id": str, "authored": str}``.
@@ -182,7 +191,7 @@ def _walk_justify_artifacts(justify_root: Path) -> list[dict]:
     if not justify_root.exists():
         return []
 
-    artifacts: list[dict] = []
+    artifacts: list[_JustifyArtifact] = []
     for md_file in sorted(justify_root.rglob("*.md")):
         try:
             raw = md_file.read_text(encoding="utf-8")
@@ -243,10 +252,10 @@ def _extract_confusion_keywords(text: str) -> list[str]:
 
 
 def _build_buckets(
-    events: list[dict],
-    justify_artifacts: list[dict],
+    events: list[dict[str, Any]],
+    justify_artifacts: list[_JustifyArtifact],
     score_threshold: float,
-) -> dict[str, list[dict]]:
+) -> dict[str, list[dict[str, str]]]:
     """Build cluster buckets from events and justify artifacts.
 
     Cluster key families:
@@ -261,7 +270,7 @@ def _build_buckets(
         when at least one artifact matched.
 
     """
-    buckets: dict[str, list[dict]] = {}
+    buckets: dict[str, list[dict[str, str]]] = {}
 
     for event in events:
         artifact_id = event.get("artifact_id", "")
@@ -379,7 +388,7 @@ class ClusterSummary(BaseModel):
 
     events_read: int = Field(..., description="adr-evaluation events read from the ledger")
     artifacts_read: int = Field(..., description="gz-justify artifacts walked")
-    buckets: dict[str, list[dict]] = Field(
+    buckets: dict[str, list[dict[str, str]]] = Field(
         ..., description="cluster_key -> member records (artifact_id, artifact_path, ...)"
     )
 
@@ -467,7 +476,7 @@ def run_cluster(
     for cluster_key, members in buckets.items():
         # Deduplicate members by artifact_id within this bucket
         seen_ids: set[str] = set()
-        unique_members: list[dict] = []
+        unique_members: list[dict[str, str]] = []
         for member in members:
             aid = member["artifact_id"]
             if aid not in seen_ids:

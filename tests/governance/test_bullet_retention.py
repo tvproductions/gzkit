@@ -21,7 +21,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stderr
 from pathlib import Path
-from typing import override
+from typing import TYPE_CHECKING, override
 from unittest import mock
 
 from gzkit.advisory import advisory_lines
@@ -39,6 +39,9 @@ from gzkit.ledger import Ledger
 from gzkit.ledger_events import rendition_advisor_verdict_event
 from gzkit.registries import load_registry
 from gzkit.traceability import covers
+
+if TYPE_CHECKING:
+    from gzkit.core.validation_rules import ValidationError
 
 # ---------------------------------------------------------------------------
 # Minimal synthetic scorecard tables
@@ -830,7 +833,7 @@ class _OwnershipFixtureMixin(unittest.TestCase):
         for entry in entries:
             append_entry(self._root, "AGENTS.md", entry)
 
-    def _audit(self) -> tuple[list, list[str]]:
+    def _audit(self) -> tuple[list[ValidationError], list[str]]:
         """Run the audit and return ``(errors, advisory lines)`` with stderr captured."""
         captured = io.StringIO()
         with redirect_stderr(captured):

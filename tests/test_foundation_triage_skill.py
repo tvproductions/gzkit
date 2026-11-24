@@ -29,7 +29,7 @@ _AGENTS_MIRROR = _REPO_ROOT / ".agents" / "skills" / "gz-foundation-triage" / "S
 _TRIAGE_SCRIPT = _REPO_ROOT / ".gzkit" / "skills" / "gz-foundation-triage" / "scripts" / "triage.py"
 
 
-def _frontmatter_and_body(path: Path) -> tuple[dict, str]:
+def _frontmatter_and_body(path: Path) -> tuple[dict[str, str], str]:
     text = path.read_text(encoding="utf-8")
     fm, body = _parse_frontmatter(text)
     return fm, body

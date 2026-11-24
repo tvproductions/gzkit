@@ -10,7 +10,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 
 from gzkit.events import parse_typed_event
 from gzkit.tautological_processed import (
@@ -45,11 +45,15 @@ class RecordProcessed(unittest.TestCase):
         self.ledger = self.root / "ledger.jsonl"
 
     def _record(self, **kwargs: str | None) -> dict[str, str]:
-        fields: dict = {"file_path": _FILE, "disposition": "convert", "task_id": "TASK-x"}
+        fields: dict[str, str | None] = {
+            "file_path": _FILE,
+            "disposition": "convert",
+            "task_id": "TASK-x",
+        }
         fields.update(kwargs)
         return record_processed(self.root, ledger_path=self.ledger, **fields)
 
-    def _events(self) -> list[dict]:
+    def _events(self) -> list[dict[str, Any]]:
         if not self.ledger.is_file():
             return []
         return [json.loads(line) for line in self.ledger.read_text(encoding="utf-8").splitlines()]

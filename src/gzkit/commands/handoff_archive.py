@@ -11,6 +11,7 @@ calls the runtime plan/execute functions, and renders human or ``--json`` output
 import json
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from gzkit.cli.helpers.durations import parse_older_than_days
 from gzkit.commands.common import console, get_project_root
@@ -40,8 +41,8 @@ def _parse_older_than(raw: str) -> int:
     return parse_older_than_days(raw)
 
 
-def _payload(plan: ArchivePlan, result: ArchiveResult | None, *, dry_run: bool) -> dict:
-    payload: dict = {"dry_run": dry_run}
+def _payload(plan: ArchivePlan, result: ArchiveResult | None, *, dry_run: bool) -> dict[str, Any]:
+    payload: dict[str, Any] = {"dry_run": dry_run}
     payload.update({label: getattr(plan, label) for label in _SKIP_LABELS})
     if dry_run:
         payload["would_move"] = plan.eligible
@@ -54,7 +55,7 @@ def _payload(plan: ArchivePlan, result: ArchiveResult | None, *, dry_run: bool) 
     return payload
 
 
-def _render(payload: dict, *, dry_run: bool) -> None:
+def _render(payload: dict[str, Any], *, dry_run: bool) -> None:
     key, verb = ("would_move", "would move") if dry_run else ("moved", "moved")
     entries = payload[key]
     console.print(f"{verb}: {len(entries)}")

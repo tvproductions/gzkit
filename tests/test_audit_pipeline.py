@@ -15,6 +15,7 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 from gzkit.cli import _write_audit_artifacts, main
@@ -43,7 +44,7 @@ from tests.commands.common import (
 # Module-level cached templates (GHI #253): most tests in this module start
 # from either a bare ``init_git_repo + _quick_init`` state or an attested-ADR
 # state. Caching these once and copytree-ing per test saves ~45ms per test.
-_TEMPLATE_CTX: tempfile.TemporaryDirectory | None = None
+_TEMPLATE_CTX: tempfile.TemporaryDirectory[str] | None = None
 _BARE_TEMPLATE: Path | None = None
 _ATTESTED_TEMPLATE: Path | None = None
 
@@ -109,7 +110,7 @@ class _CopyTemplate:
 
     def __init__(self, template: Path) -> None:
         self._template = template
-        self._tmpctx: tempfile.TemporaryDirectory | None = None
+        self._tmpctx: tempfile.TemporaryDirectory[str] | None = None
         self._orig_cwd: Path | None = None
 
     def __enter__(self) -> None:
@@ -302,11 +303,11 @@ def _call_write_audit_artifacts(
     tmp: Path,
     adr_id: str = "ADR-0.19.0-f",
     ledger: Ledger | None = None,
-    result_rows: list | None = None,
+    result_rows: list[dict[str, Any]] | None = None,
     create_obpi_files: bool = False,
     *,
     create_closeout_form: bool = False,
-) -> tuple[Path, Path, dict]:
+) -> tuple[Path, Path, dict[str, Any]]:
     """Set up directory structure and call _write_audit_artifacts."""
     project_root = tmp
     adr_dir = tmp / "docs" / "design" / "adr" / "ADR-0.19.0-test"

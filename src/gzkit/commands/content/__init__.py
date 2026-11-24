@@ -6,7 +6,10 @@ ADR-0.0.34 § Decision item #3 — reverse-parse migration tooling.
 """
 
 import argparse
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from gzkit.cli.parser import StableArgumentParser
 
 
 def _default_attestor_from_config(parser: argparse.ArgumentParser) -> None:
@@ -37,7 +40,7 @@ def _content(module_name: str, attr_name: str) -> Any:
     return getattr(module, attr_name)
 
 
-def register_content_parsers(commands: argparse._SubParsersAction) -> None:
+def register_content_parsers(commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register the ``gz content`` sub-command group."""
     p_content = commands.add_parser(
         "content",
@@ -72,7 +75,7 @@ def register_content_parsers(commands: argparse._SubParsersAction) -> None:
     _register_advise_rendition(content_commands)
 
 
-def _register_import(content_commands: argparse._SubParsersAction) -> None:
+def _register_import(content_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     p = content_commands.add_parser(
         "import",
         help="Import a markdown file into a canonical content model",
@@ -111,7 +114,7 @@ def _register_import(content_commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_list(content_commands: argparse._SubParsersAction) -> None:
+def _register_list(content_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     p = content_commands.add_parser(
         "list",
         help="List registered content model types",
@@ -154,7 +157,7 @@ def _register_list(content_commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_show(content_commands: argparse._SubParsersAction) -> None:
+def _register_show(content_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     p = content_commands.add_parser(
         "show",
         help="Show a prose summary of a content model file",
@@ -198,7 +201,7 @@ def _register_show(content_commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_render(content_commands: argparse._SubParsersAction) -> None:
+def _register_render(content_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     p = content_commands.add_parser(
         "render",
         help="Render a content model file to canonical markdown",
@@ -235,7 +238,7 @@ def _register_render(content_commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_edit(content_commands: argparse._SubParsersAction) -> None:
+def _register_edit(content_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     p = content_commands.add_parser(
         "edit",
         help="Edit a content model file via $EDITOR with re-validation",
@@ -273,7 +276,9 @@ def _register_edit(content_commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_remember(content_commands: argparse._SubParsersAction) -> None:
+def _register_remember(
+    content_commands: argparse._SubParsersAction[StableArgumentParser],
+) -> None:
     p = content_commands.add_parser(
         "remember",
         help="Append an addressed entry to a surface's append-only corpus store",
@@ -336,7 +341,7 @@ def _register_remember(content_commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_retire(content_commands: argparse._SubParsersAction) -> None:
+def _register_retire(content_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     p = content_commands.add_parser(
         "retire",
         help="Retire a superseded corpus entry via an append-only retraction",
@@ -410,7 +415,7 @@ def _register_retire(content_commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_unown(content_commands: argparse._SubParsersAction) -> None:
+def _register_unown(content_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     p = content_commands.add_parser(
         "unown",
         help="Attested raise-path: un-own a corpus-owned section and raise the ratchet",
@@ -457,7 +462,7 @@ def _register_unown(content_commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_own(content_commands: argparse._SubParsersAction) -> None:
+def _register_own(content_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     p = content_commands.add_parser(
         "own",
         help="Governed lowering move: make the corpus own a section and lower the ratchet",
@@ -504,7 +509,9 @@ def _register_own(content_commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_compose(content_commands: argparse._SubParsersAction) -> None:
+def _register_compose(
+    content_commands: argparse._SubParsersAction[StableArgumentParser],
+) -> None:
     p = content_commands.add_parser(
         "compose",
         help="Stage a candidate rendition from the corpus (explicit or generated)",
@@ -551,7 +558,7 @@ def _register_compose(content_commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_commit(content_commands: argparse._SubParsersAction) -> None:
+def _register_commit(content_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     p = content_commands.add_parser(
         "commit",
         help="Promote a staged candidate to the committed rendition under attestation",
@@ -619,7 +626,7 @@ def _register_commit(content_commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_land(content_commands: argparse._SubParsersAction) -> None:
+def _register_land(content_commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     p = content_commands.add_parser(
         "land",
         help="Land a corpus delta across every routed consumer under one attestation",
@@ -698,7 +705,9 @@ def _register_land(content_commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_advise_rendition(content_commands: argparse._SubParsersAction) -> None:
+def _register_advise_rendition(
+    content_commands: argparse._SubParsersAction[StableArgumentParser],
+) -> None:
     p = content_commands.add_parser(
         "reconcile-retirements",
         help="Append a Layer-2 witness for corpus retirements that have none",

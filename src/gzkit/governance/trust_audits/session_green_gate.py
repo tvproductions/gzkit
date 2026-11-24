@@ -5,6 +5,7 @@ violation, never a pass.
 """
 
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -121,7 +122,7 @@ def _read_config(project_root: Path) -> dict[str, object]:
     return config if isinstance(config, dict) else {}
 
 
-def _hooks(config: dict) -> list[dict]:
+def _hooks(config: dict[str, Any]) -> list[dict[str, Any]]:
     """Flatten the config's hooks.
 
     Returns:

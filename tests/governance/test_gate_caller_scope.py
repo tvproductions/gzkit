@@ -33,7 +33,7 @@ def _project(
     workflows: dict[str, str] | None = None,
     chores: dict[str, str] | None = None,
     membership: Mapping[str, object] | None = None,
-) -> tempfile.TemporaryDirectory:
+) -> tempfile.TemporaryDirectory[str]:
     """Build a fixture root carrying the caller surfaces the audit scans."""
     tmp = tempfile.TemporaryDirectory()
     root = Path(tmp.name)

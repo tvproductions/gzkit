@@ -33,7 +33,7 @@ from gzkit.governance.trust_audits.cross_platform import (
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-def _fixture_root(source: str, rel: str = "sync_surfaces.py") -> TemporaryDirectory:
+def _fixture_root(source: str, rel: str = "sync_surfaces.py") -> TemporaryDirectory[str]:
     """Build a throwaway tree carrying EVERY surface-writer module.
 
     All of them, not just the one under probe: the audit reports an absent module

@@ -15,7 +15,7 @@ import json
 import re
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pydantic import ValidationError as PydanticValidationError
 
@@ -100,7 +100,7 @@ def _find_obpi_briefs(project_root: Path, adr_id: str) -> list[Path]:
     return list(project_root.glob(pattern))
 
 
-def _is_in_closeout(ceremony: dict) -> bool:
+def _is_in_closeout(ceremony: dict[str, Any]) -> bool:
     """Return True when a ceremony state indicates closeout is in progress."""
     return ceremony.get("completed_at") is None
 
@@ -118,7 +118,7 @@ def _parse_ts(value: str | None) -> datetime | None:
     return parsed
 
 
-def _is_active_closeout(ceremony: dict, now: datetime) -> bool:
+def _is_active_closeout(ceremony: dict[str, Any], now: datetime) -> bool:
     """Return True when an in-progress ceremony was touched within the active window.
 
     Used only by the gz-check sweep (no explicit ``adr_id``): a parked ceremony

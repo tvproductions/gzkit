@@ -20,7 +20,7 @@ import tempfile
 import unittest
 from datetime import UTC
 from pathlib import Path
-from typing import override
+from typing import Any, override
 
 from gzkit.commands.validate_cmd import dispatch_validator_scope
 
@@ -75,7 +75,7 @@ def _write_brief(adr_dir: Path, obpi_id: str, ac_lines: list[str]) -> None:
     obpis_dir.mkdir(parents=True, exist_ok=True)
     brief_path = obpis_dir / f"{obpi_id}.md"
 
-    fm: dict = {"id": obpi_id, "parent": adr_dir.name, "lane": "Heavy", "status": "Draft"}
+    fm: dict[str, Any] = {"id": obpi_id, "parent": adr_dir.name, "lane": "Heavy", "status": "Draft"}
     fm_text = yaml.dump(fm, default_flow_style=False)
     ac_block = "\n".join(f"- [ ] {line}" for line in ac_lines)
     body = f"# {obpi_id}\n\n## Acceptance Criteria\n\n{ac_block}\n"

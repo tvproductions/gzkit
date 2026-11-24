@@ -35,6 +35,7 @@ surface.
 
 import json
 from pathlib import Path
+from typing import Any
 
 from gzkit.advisory import emit_advisory
 from gzkit.content.parse import section_id
@@ -82,7 +83,7 @@ def _finding(relpath: str, message: str) -> ValidationError:
 
 
 def _declaration_errors(
-    relpath: str, declared: list[dict], cut_line: object, rendered_ids: list[str]
+    relpath: str, declared: list[dict[str, Any]], cut_line: object, rendered_ids: list[str]
 ) -> list[ValidationError]:
     """Fail-closed coherence between the declaration and the rendered surface."""
     errors: list[ValidationError] = []
@@ -193,7 +194,7 @@ def _audit_surface(project_root: Path, relpath: str, entry: object) -> list[Vali
                 + _DECLARATION_REMEDIATION,
             )
         ]
-    declared: list[dict] = [s for s in sections if isinstance(s, dict)]
+    declared: list[dict[str, Any]] = [s for s in sections if isinstance(s, dict)]
     rendered = _rendered_sections(surface)
     cut_line = entry.get("must_survive_through_rank")
     errors = _declaration_errors(relpath, declared, cut_line, [name for name, _ in rendered])

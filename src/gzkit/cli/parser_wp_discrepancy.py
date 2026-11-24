@@ -16,6 +16,8 @@ from gzkit.cli.parser_handler_manifest import _lazy
 if TYPE_CHECKING:
     import argparse
 
+    from gzkit.cli.parser import StableArgumentParser
+
 #: The members of ``gzkit.events.DiscrepancyGrade`` and ``DiscrepancySource``, spelled
 #: out as the sibling parsers spell theirs: a driving adapter imports no module outside
 #: its region's row (`docs/governance/hexagonal-architecture.md` § The dependency
@@ -92,7 +94,9 @@ _CLEAR_EXIT_CODES = """Exit codes
 """
 
 
-def _register_wp_discrepancy(wp_commands: argparse._SubParsersAction) -> None:
+def _register_wp_discrepancy(
+    wp_commands: argparse._SubParsersAction[StableArgumentParser],
+) -> None:
     """Register ``gz wp discrepancy`` and its leaves, ``record``, ``clear`` and ``show``."""
     p_discrepancy = wp_commands.add_parser(
         "discrepancy",

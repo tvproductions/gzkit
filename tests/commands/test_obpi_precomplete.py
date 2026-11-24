@@ -7,6 +7,7 @@ holds) and a negative test (fails with a named remediation when it doesn't).
 import json
 import unittest
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
@@ -856,7 +857,7 @@ class TestPrecompleteOperatorBlockCheck(unittest.TestCase):
     OBPI = "OBPI-0.1.0-01"
 
     @staticmethod
-    def _seed(root: Path, events: list[dict]) -> None:
+    def _seed(root: Path, events: list[dict[str, Any]]) -> None:
         gzkit_dir = root / ".gzkit"
         gzkit_dir.mkdir(parents=True, exist_ok=True)
         (gzkit_dir / "ledger.jsonl").write_text(

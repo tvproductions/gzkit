@@ -10,13 +10,13 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 
 from gzkit.governance.trust_audits.intrinsic_attestation import validate_intrinsic_attestation
 from gzkit.traceability import covers
 
 
-def _write_ledger(project_root: Path, events: list[dict]) -> None:
+def _write_ledger(project_root: Path, events: list[dict[str, Any]]) -> None:
     ledger_path = project_root / ".gzkit" / "ledger.jsonl"
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
     with ledger_path.open("w", encoding="utf-8") as f:
@@ -34,7 +34,7 @@ def _well_formed_event(
     metric: str = "radon_cc",
     crossing_band: str = "block",
     crossing_value: float = 14.0,
-) -> dict:
+) -> dict[str, Any]:
     return {
         "schema": "gzkit.ledger.v1",
         "event": "intrinsic-complexity-attestation",

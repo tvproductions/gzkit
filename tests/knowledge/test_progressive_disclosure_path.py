@@ -13,6 +13,7 @@ import re
 import subprocess
 import unittest
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -47,7 +48,7 @@ class TestBundleRootReachability(unittest.TestCase):
                 f"Concept doc linked from index.md does not exist: {link}",
             )
             concept_text = concept_path.read_text(encoding="utf-8")
-            frontmatter: dict = {}
+            frontmatter: dict[str, Any] = {}
             if concept_text.startswith("---"):
                 parts = concept_text.split("---", 2)
                 if len(parts) >= 2:

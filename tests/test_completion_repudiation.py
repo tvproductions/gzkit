@@ -7,6 +7,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 from unittest import TestCase
 
 from pydantic import ValidationError
@@ -23,7 +24,7 @@ from gzkit.traceability import covers
 _SCHEMA_PATH = Path(__file__).parent.parent / "src" / "gzkit" / "schemas" / "ledger.json"
 
 
-def _ledger_schema() -> dict:
+def _ledger_schema() -> dict[str, Any]:
     with open(_SCHEMA_PATH, encoding="utf-8") as f:
         return json.load(f)
 
@@ -31,7 +32,7 @@ def _ledger_schema() -> dict:
 class TestObpiCompletionRepudiatedEventModel(TestCase):
     """REQ-0.0.71-01-01, REQ-0.0.71-01-02: model validation."""
 
-    def _valid_kwargs(self) -> dict:
+    def _valid_kwargs(self) -> dict[str, Any]:
         return {
             "id": "OBPI-0.0.71-01",
             "event": "obpi_completion_repudiated",

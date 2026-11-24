@@ -348,7 +348,9 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             self.assertFalse(report.valid)
             self.assertTrue(any(issue.code == "SKA-LAST-REVIEWED-STALE" for issue in report.issues))
 
-    def _write_skill_all_roots(self, project_root: Path, config: GzkitConfig, fm: dict) -> None:
+    def _write_skill_all_roots(
+        self, project_root: Path, config: GzkitConfig, fm: dict[str, str | dict[str, str]]
+    ) -> None:
         """Write the same skill to every surface root the audit walks."""
         for root_rel in (
             config.paths.skills,

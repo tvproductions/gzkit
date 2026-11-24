@@ -40,7 +40,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-def _preflight_payload(target: str, phase: str | None, preflight: Preflight) -> dict:
+def _preflight_payload(target: str, phase: str | None, preflight: Preflight) -> dict[str, object]:
     """Machine-readable projection of a preflight result (the ``--json`` shape)."""
     seam_map = preflight.seam_map
     decision = preflight.decision.value if preflight.decision is not None else None
@@ -129,7 +129,7 @@ def airlock_in_cmd(
     _render_human(target, phase, preflight, dry_run)
 
 
-def _exit_payload(target: str, report: ExitReport) -> dict:
+def _exit_payload(target: str, report: ExitReport) -> dict[str, object]:
     """Machine-readable projection of an airlock-OUT report (the ``--json`` shape)."""
     return {
         "target": target,

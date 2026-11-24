@@ -9,7 +9,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
-from typing import override
+from typing import Any, override
 from unittest.mock import patch
 
 from gzkit.arb.ruff_reporter import run_ruff_via_arb
@@ -55,7 +55,7 @@ class TestRunRuffViaArb(unittest.TestCase):
             os.environ["GZKIT_ARB_RECEIPTS_ROOT"] = self._prior_env
         self._tempdir.cleanup()
 
-    def _assert_valid_receipt(self, path: Path, expected_exit: int) -> dict:
+    def _assert_valid_receipt(self, path: Path, expected_exit: int) -> dict[str, Any]:
         """Validate the receipt through the ARB validator that reads receipts in production."""
         from gzkit.arb.validator import validate_receipts
 

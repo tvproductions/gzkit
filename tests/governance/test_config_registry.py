@@ -12,11 +12,14 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.governance.trust_audits.config_registry import audit_config_registry
 
 
-def _root(registries: dict, data_files: list[str], modules: dict | None = None) -> Path:
+def _root(
+    registries: dict[str, Any], data_files: list[str], modules: dict[str, str] | None = None
+) -> Path:
     root = Path(tempfile.mkdtemp())
     (root / "data").mkdir()
     (root / "data" / "config_registry.json").write_text(

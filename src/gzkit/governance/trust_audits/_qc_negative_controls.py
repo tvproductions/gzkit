@@ -27,7 +27,7 @@ import subprocess
 import zipfile
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from gzkit.enforcement import create_fixture_tempdir, enforces, get_enforcement_registry
 from gzkit.executables import resolve_executable
@@ -55,6 +55,9 @@ from ._qc_nc_entrypoints import (
     _ep_supply_chain_audit,
     _ep_supply_chain_audit_admits_ignored,
 )
+
+if TYPE_CHECKING:
+    from gzkit.enforcement import EnforcementClaimRecord
 
 # ---------------------------------------------------------------------------
 # Fixture helpers
@@ -1979,7 +1982,9 @@ def _build_catalog() -> Path:
     return catalog.parents[1]
 
 
-def _catalog_project(slug: str, outcomes: list[dict], reqs: list[dict]) -> Path:
+def _catalog_project(
+    slug: str, outcomes: list[dict[str, object]], reqs: list[dict[str, object]]
+) -> Path:
     """Write a catalog project: one family H, the files, a two-FR PRD and the gate lanes."""
     root = _mkroot(slug)
     family = {"code": "H", "band": "product", "name": "Session continuity", "scope": "One."}
@@ -2698,7 +2703,7 @@ def _nc_probe_fixture() -> None:
     return
 
 
-def _build_enforcement_floor() -> list:
+def _build_enforcement_floor() -> list[EnforcementClaimRecord]:
     """Build a synthetic registry with one FACADE claim for the enforcement-floor NC.
 
     The meta-validator must detect the FACADE (facade_count > 0 = PASS for this NC).

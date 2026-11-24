@@ -17,6 +17,7 @@ import re
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 from unittest import mock
 
 import yaml
@@ -102,7 +103,7 @@ def _load_chore(rel: str):
     return module
 
 
-def _local_hooks() -> list[dict]:
+def _local_hooks() -> list[dict[str, Any]]:
     """Return every `repo: local` hook declared in `.pre-commit-config.yaml`."""
     config = yaml.safe_load(_PRECOMMIT.read_text(encoding="utf-8"))
     return [h for r in config["repos"] if r.get("repo") == "local" for h in r["hooks"]]

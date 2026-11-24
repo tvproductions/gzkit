@@ -18,7 +18,7 @@ import unittest
 from datetime import UTC, date, datetime, timedelta, timezone
 from pathlib import Path
 from types import ModuleType
-from typing import override
+from typing import Any, override
 from unittest import mock
 
 from gzkit.commands.common import get_project_root
@@ -54,7 +54,7 @@ def _load_gate(script: Path = _SCRIPT) -> ModuleType:
     return module
 
 
-def _target(start_count: int = 240, rate: int = 20) -> dict:
+def _target(start_count: int = 240, rate: int = 20) -> dict[str, Any]:
     return {"start_date": "2026-01-01", "start_count": start_count, "decline_per_month": rate}
 
 

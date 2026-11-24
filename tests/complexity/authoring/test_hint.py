@@ -15,6 +15,7 @@ REQ-05/06/07 land in test_engine.py.
 import json
 import unittest
 from pathlib import Path
+from typing import Any
 
 import jsonschema
 from pydantic import ValidationError
@@ -34,7 +35,7 @@ _SCHEMA_PATH = (
 )
 
 
-def _load_schema() -> dict:
+def _load_schema() -> dict[str, Any]:
     return json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
 
 
@@ -81,7 +82,7 @@ def _diagnosis(
     )
 
 
-def _valid_hint_kwargs() -> dict:
+def _valid_hint_kwargs() -> dict[str, Any]:
     return {
         "metric": "radon_cc",
         "precedence_band": "approaching",

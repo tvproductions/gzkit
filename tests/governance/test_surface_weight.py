@@ -23,6 +23,7 @@ import tempfile
 import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 from gzkit.core.validation_rules import ValidationError
 from gzkit.governance import trust_audits as _trust_audits_pkg
@@ -49,10 +50,10 @@ def _make_surface_tree(
     tmp: str,
     line_count: int,
     floor_lines: int,
-    waivers: list[dict] | None = None,
+    waivers: list[dict[str, Any]] | None = None,
     floor_timestamp: str | None = None,
     *,
-    ledger_events: list[dict] | None = None,
+    ledger_events: list[dict[str, Any]] | None = None,
 ) -> Path:
     """Create temp project root with synthetic surface files and data files.
 
@@ -476,7 +477,7 @@ class TestFloorDrift(unittest.TestCase):
             floor_ts = (now - timedelta(hours=48)).isoformat()  # 48h old
 
             # No recalibration events — bootstrap state
-            ledger_events: list[dict] = []
+            ledger_events: list[dict[str, Any]] = []
 
             root = _make_surface_tree(
                 tmp,

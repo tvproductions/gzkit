@@ -17,6 +17,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 from unittest import mock
 
 from gzkit.governance import stage4_evidence, stage4_packet
@@ -612,9 +613,9 @@ class TestReplayShellCanRunWhatTheGateSanctions(unittest.TestCase):
     green on one developer's machine and red on every Linux runner.
     """
 
-    def _spy_on_replay(self, command: str) -> tuple:
+    def _spy_on_replay(self, command: str) -> tuple[list[str] | str, bool | None]:
         """Return the ``(args, shell=)`` pair `_run` actually handed subprocess."""
-        captured: dict = {}
+        captured: dict[str, Any] = {}
         real_run = subprocess.run
 
         def spy(*args, **kwargs):

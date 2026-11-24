@@ -104,7 +104,7 @@ def step_reviewer_prompt_contains(context, text):
 # ---------------------------------------------------------------------------
 
 
-def _wrap_assessment(data: dict) -> str:
+def _wrap_assessment(data: dict[str, object]) -> str:
     return f"Review complete.\n```json\n{json.dumps(data)}\n```\nEnd of review."
 
 

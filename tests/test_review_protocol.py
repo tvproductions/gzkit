@@ -8,6 +8,7 @@ and the handle_review_cycle orchestration.
 import json
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.acceptance import Obligation, Readiness, assess_readiness
 from gzkit.pipeline_runtime import (
@@ -361,7 +362,7 @@ class TestReviewEvidenceInstructionsOutputContract(unittest.TestCase):
                 self.assertNotIn("tests exist and cover the implementation surfaces", text)
 
 
-def _json_block(obj: dict) -> str:
+def _json_block(obj: dict[str, Any]) -> str:
     """Wrap a dict as a JSON code block for output parsing tests."""
     return f"```json\n{json.dumps(obj)}\n```"
 
@@ -372,7 +373,7 @@ class TestParseReviewResult(unittest.TestCase):
     def _review_json(
         self,
         verdict: str = "PASS",
-        findings: list[dict] | None = None,
+        findings: list[dict[str, Any]] | None = None,
         summary: str = "All good",
     ) -> str:
         data = {

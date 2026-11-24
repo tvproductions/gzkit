@@ -17,6 +17,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 from gzkit.adr_eval import AdrEvalResult, DimensionScore, EvalVerdict
@@ -57,7 +58,7 @@ class TestAdrEvalCmdEmission(unittest.TestCase):
         result: AdrEvalResult,
         *,
         evaluate_raises: BaseException | None = None,
-    ) -> tuple[Path, list[dict]]:
+    ) -> tuple[Path, list[dict[str, Any]]]:
         with tempfile.TemporaryDirectory() as tmp:
             ledger_path = Path(tmp) / ".gzkit" / "ledger.jsonl"
             ledger_path.parent.mkdir(parents=True, exist_ok=True)

@@ -18,7 +18,7 @@ Coverage:
 """
 
 import unittest
-from typing import override
+from typing import Any, override
 
 from pydantic import ValidationError
 
@@ -60,7 +60,7 @@ _WORKLOG_EVENT_CLASSES = [
 ]
 
 # Minimal required constructor kwargs for each worklog event class
-_WORKLOG_EVENT_KWARGS: dict[type, dict] = {
+_WORKLOG_EVENT_KWARGS: dict[type, dict[str, Any]] = {
     ArtifactEditedEvent: {
         "event": "artifact_edited",
         "id": _EVT_ID,
@@ -218,7 +218,7 @@ class TestLedgerSchemaAdmitsTaskId(unittest.TestCase):
     @override
     def setUp(self) -> None:
         self._schema = load_schema("ledger")
-        self._event_rules: dict = self._schema.get("events", {})
+        self._event_rules: dict[str, Any] = self._schema.get("events", {})
 
     @covers("REQ-0.0.64-01-03")
     def test_legacy_event_without_task_id_has_no_missing_required(self) -> None:
@@ -252,7 +252,7 @@ class TestLedgerSchemaAdmitsTaskId(unittest.TestCase):
                 rule = self._event_rules.get(event_key)
                 self.assertIsNotNone(rule, f"Event key {event_key!r} missing from ledger.json")
                 assert rule is not None
-                properties: dict = rule.get("properties", {})
+                properties: dict[str, Any] = rule.get("properties", {})
                 self.assertIn(
                     "task_id",
                     properties,
@@ -325,7 +325,7 @@ class TestLedgerSchemaTaskIdProperty(unittest.TestCase):
     @override
     def setUp(self) -> None:
         self._schema = load_schema("ledger")
-        self._event_rules: dict = self._schema.get("events", {})
+        self._event_rules: dict[str, Any] = self._schema.get("events", {})
 
     def test_task_id_in_properties_and_not_in_required_for_all_8_events(self) -> None:
         """task_id property present in all 8 event schemas; absent from required."""

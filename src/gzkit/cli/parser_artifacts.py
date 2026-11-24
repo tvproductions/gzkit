@@ -9,6 +9,7 @@ the resolved callable.
 """
 
 import argparse
+from typing import TYPE_CHECKING
 
 from gzkit.cli.helpers import (
     add_dry_run_flag,
@@ -19,6 +20,9 @@ from gzkit.cli.helpers import (
 from gzkit.cli.helpers.attestor_default import default_attestor_from_config
 from gzkit.cli.parser_handler_manifest import _lazy
 from gzkit.cli.parser_obpi import register_obpi_parsers
+
+if TYPE_CHECKING:
+    from gzkit.cli.parser import StableArgumentParser
 
 _ADR_TYPE_NAMES = {"foundation", "feature", "pool"}
 
@@ -32,7 +36,9 @@ def _dispatch_adr_report(a: argparse.Namespace) -> None:
         _lazy("adr_report_cmd")(adr=target, adr_type=a.type)
 
 
-def register_artifact_parsers(commands: argparse._SubParsersAction) -> None:
+def register_artifact_parsers(
+    commands: argparse._SubParsersAction[StableArgumentParser],
+) -> None:
     """Register the artifact parser groups.
 
     Covers adr, obpi, task, justify, knowledge, issue, complexity, governance,
@@ -50,7 +56,7 @@ def register_artifact_parsers(commands: argparse._SubParsersAction) -> None:
     _register_context_parser(commands)
 
 
-def _register_context_parser(commands: argparse._SubParsersAction) -> None:
+def _register_context_parser(commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register the top-level ``gz context <ADR-ID>`` verb (ADR-0.28.0).
 
     Renders a focused Markdown context payload combining the target ADR
@@ -93,7 +99,9 @@ def _register_context_parser(commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_complexity_parsers(commands: argparse._SubParsersAction) -> None:
+def _register_complexity_parsers(
+    commands: argparse._SubParsersAction[StableArgumentParser],
+) -> None:
     """Register the ``gz complexity`` sub-command group (GHI #400).
 
     Currently exposes the single subverb ``distill`` that wraps the
@@ -339,7 +347,9 @@ def _register_complexity_parsers(commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_governance_parsers(commands: argparse._SubParsersAction) -> None:
+def _register_governance_parsers(
+    commands: argparse._SubParsersAction[StableArgumentParser],
+) -> None:
     """Register the ``gz governance`` sub-command group (ADR-0.0.37, OBPI-0.0.37-02).
 
     Exposes the ``render`` subverb that projects the constitutional invariant
@@ -404,7 +414,7 @@ DEFAULT_CORPUS_PATH_DISPLAY = "data/exemplar_corpus.json"
 DEFAULT_OUTPUT_DIR_DISPLAY = "docs/governance/complexity"
 
 
-def _register_justify_parser(commands: argparse._SubParsersAction) -> None:
+def _register_justify_parser(commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register the top-level ``gz justify`` verb (ADR-0.0.19).
 
     Supports two invocation shapes (OBPI-03 introduced the subverb form):
@@ -505,7 +515,9 @@ def _register_justify_parser(commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_knowledge_parser(commands: argparse._SubParsersAction) -> None:
+def _register_knowledge_parser(
+    commands: argparse._SubParsersAction[StableArgumentParser],
+) -> None:
     """Register the top-level ``gz knowledge`` verb (ADR-0.30.0, OBPI-0.30.0-04).
 
     Supports generating and refreshing the OKF orientation bundle over the
@@ -570,7 +582,7 @@ def _register_knowledge_parser(commands: argparse._SubParsersAction) -> None:
     p_refresh.set_defaults(func=lambda a: _lazy("knowledge_cmd")(subverb="refresh"))
 
 
-def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
+def _register_adr_parsers(commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register ``gz adr`` sub-command group."""
     p_adr = commands.add_parser(
         "adr",
@@ -942,7 +954,7 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_task_parsers(commands: argparse._SubParsersAction) -> None:
+def _register_task_parsers(commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register ``gz task`` sub-command group."""
     p_task = commands.add_parser(
         "task",
@@ -1130,7 +1142,7 @@ def _register_task_parsers(commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_issue_parsers(commands: argparse._SubParsersAction) -> None:
+def _register_issue_parsers(commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register the top-level ``gz issue`` verb (ADR-0.0.23, OBPI-04).
 
     ``gz issue file`` files a defect or enhancement at ``tvproductions/gzkit``
@@ -1210,7 +1222,7 @@ def _register_issue_parsers(commands: argparse._SubParsersAction) -> None:
     )
 
 
-def _register_report_parsers(commands: argparse._SubParsersAction) -> None:
+def _register_report_parsers(commands: argparse._SubParsersAction[StableArgumentParser]) -> None:
     """Register retained narrative publication without importing runtime IO."""
     group = commands.add_parser(
         "report",

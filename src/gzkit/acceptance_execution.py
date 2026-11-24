@@ -14,6 +14,7 @@ import subprocess
 import tempfile
 import uuid
 from pathlib import Path
+from typing import Any
 
 import yaml
 from gz_mutation_witness import Mutation, run_mutation_sweep
@@ -198,7 +199,7 @@ def _sha(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
 
-def proof_claim_digest(root: Path, payload: dict) -> str:
+def proof_claim_digest(root: Path, payload: dict[str, Any]) -> str:
     """Fingerprint specification and results, excluding only occurrence noise.
 
     Keep control outcomes, actual assertion output, selectors and invocation.
@@ -266,7 +267,7 @@ def _frontmatter_parts(content: str) -> tuple[str, str]:
     return "\n".join(lines[1:end]), "\n".join(lines[end + 1 :])
 
 
-def _brief_contract(root: Path, brief_path: AcceptanceSource) -> dict:
+def _brief_contract(root: Path, brief_path: AcceptanceSource) -> dict[str, Any]:
     if isinstance(brief_path, PackageContract):
         return brief_path.contract
     brief = _inside(root, brief_path)
@@ -457,7 +458,7 @@ def _covering_selectors(root: Path, req_id: str, tests: Path) -> set[str]:
     return result
 
 
-def _restored_run(root: Path, command: list[str], selectors: list[str]) -> dict:
+def _restored_run(root: Path, command: list[str], selectors: list[str]) -> dict[str, Any]:
     with tempfile.TemporaryDirectory() as cache:
         env = dict(os.environ, PYTHONPYCACHEPREFIX=cache)
         run = subprocess.run(  # noqa: S603 — the unittest argv this module builds; executable resolved
@@ -522,7 +523,7 @@ def _validate_behavior_inputs(
 
 def _behavior_evidence(
     root: Path, req_id: str, source: Path | None, mutations: list[Mutation], selectors: list[str]
-) -> tuple[dict, bool]:
+) -> tuple[dict[str, Any], bool]:
     """Execute validated controls, repeat the restored baseline, and retain observations."""
     source = _validate_behavior_inputs(root, req_id, source, mutations, selectors)
     command = ["uv", "run", "-m", "unittest", *selectors, "-v"]

@@ -8,7 +8,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from typing import TYPE_CHECKING, override
+from typing import TYPE_CHECKING, Any, override
 
 from pydantic import ValidationError
 
@@ -604,12 +604,12 @@ class TestManifestModels(unittest.TestCase):
 class TestLoadManifest(unittest.TestCase):
     """Test manifest loading from JSON files."""
 
-    def _write_manifest(self, root: Path, data: dict) -> None:
+    def _write_manifest(self, root: Path, data: dict[str, Any]) -> None:
         config_dir = root / "config"
         config_dir.mkdir(parents=True, exist_ok=True)
         (config_dir / "doc-coverage.json").write_text(json.dumps(data), encoding="utf-8")
 
-    def _valid_manifest_data(self) -> dict:
+    def _valid_manifest_data(self) -> dict[str, Any]:
         return {
             "version": "1.0.0",
             "description": "Test manifest",

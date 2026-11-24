@@ -14,7 +14,7 @@ import json
 import re
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -26,9 +26,12 @@ from gzkit.governance.frontmatter_coherence_errors import ReceiptConstructionErr
 from gzkit.governance.obpi_transition_monitor import TransitionMonitor
 from gzkit.governance.status_vocab import STATUS_VOCAB_MAPPING
 
+if TYPE_CHECKING:
+    from gzkit.core.validation_rules import ValidationError
+
 GovernedField = Literal["id", "parent", "lane", "status"]
 
-_GOVERNED_KEYS: frozenset[str] = frozenset({"id", "parent", "lane", "status"})
+_GOVERNED_KEYS: frozenset[GovernedField] = frozenset({"id", "parent", "lane", "status"})
 _POOL_PATH_SEGMENT = "/adr/pool/"
 
 # Frontmatter line pattern. Matches a YAML mapping line like
@@ -365,9 +368,9 @@ def rewrite_governed_keys_in_place(path: Path, edits: dict[str, str]) -> None:
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
-def _group_errors_by_path(errors: list) -> dict[str, list]:
+def _group_errors_by_path(errors: list[ValidationError]) -> dict[str, list[ValidationError]]:
     """Return a mapping of rel_path → list[ValidationError] for this file."""
-    grouped: dict[str, list] = {}
+    grouped: dict[str, list[ValidationError]] = {}
     for err in errors:
         grouped.setdefault(err.artifact, []).append(err)
     return grouped
@@ -428,7 +431,7 @@ def _should_refuse_rewrite(
 
 
 def _build_file_rewrite(
-    rel_path: str, errors: list
+    rel_path: str, errors: list[ValidationError]
 ) -> tuple[FileRewrite | None, SkipNote | None, str | None]:
     """Turn per-file ValidationErrors into a FileRewrite, skip note, or blocker term.
 
@@ -459,7 +462,7 @@ def _build_file_rewrite(
 
 def _process_file_rewrites(
     project_root: Path,
-    grouped: dict[str, list],
+    grouped: dict[str, list[ValidationError]],
     monitor: TransitionMonitor,
     dry_run: bool,
     files_rewritten: list[FileRewrite],
@@ -638,7 +641,7 @@ def _write_receipt(
     return out_path
 
 
-def _schema_validate(payload: dict) -> None:
+def _schema_validate(payload: dict[str, Any]) -> None:
     """Validate the receipt payload against the JSON schema before writing."""
     import jsonschema  # noqa: PLC0415
 

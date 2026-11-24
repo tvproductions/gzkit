@@ -8,6 +8,7 @@ import hashlib
 import json
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.config import GzkitConfig
 from gzkit.governance.frontmatter_coherence import _status_is_valid_obpi_transition
@@ -46,7 +47,7 @@ def _scaffold_obpi(root: Path, adr_id: str, obpi_id: str, frontmatter: str) -> P
     return path
 
 
-def _schema_validate(receipt_dict: dict) -> None:
+def _schema_validate(receipt_dict: dict[str, Any]) -> None:
     """Validate a receipt dict against the new schema file."""
     import jsonschema  # noqa: PLC0415
 
@@ -459,7 +460,7 @@ class ReconciliationLogicTests(unittest.TestCase):
             original_rewriter = fc.rewrite_governed_keys_in_place
             call_count = {"n": 0}
 
-            def _flaky_rewriter(path: Path, edits: dict) -> None:
+            def _flaky_rewriter(path: Path, edits: dict[str, str]) -> None:
                 call_count["n"] += 1
                 if call_count["n"] > 1:
                     raise OSError("simulated disk full after first file")

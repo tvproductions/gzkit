@@ -27,7 +27,7 @@ import datetime as dt
 import json
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from gzkit.validate import ValidationError
 
@@ -61,7 +61,7 @@ _STATUS_RE = re.compile(r"^status:\s*[\"']?([\w-]+)", re.MULTILINE)
 _STEP_4B_RE = re.compile(r"^###\s+Step 4b\b", re.MULTILINE)
 
 
-def _iter_ledger(project_root: Path) -> Iterator[dict]:
+def _iter_ledger(project_root: Path) -> Iterator[dict[str, Any]]:
     """Yield each well-formed ledger event; skip unparseable lines."""
     ledger = project_root / _LEDGER_REL
     try:
@@ -79,7 +79,7 @@ def _iter_ledger(project_root: Path) -> Iterator[dict]:
             yield event
 
 
-def _receipt_ts(event: dict) -> dt.datetime | None:
+def _receipt_ts(event: dict[str, Any]) -> dt.datetime | None:
     """Return the receipt's UTC-aware timestamp, or None when it is unusable.
 
     Naive timestamps are read as UTC — the ledger's writers all stamp UTC, and a
@@ -100,7 +100,7 @@ def _receipt_ts(event: dict) -> dt.datetime | None:
     return parsed if parsed.tzinfo else parsed.replace(tzinfo=dt.UTC)
 
 
-def _receipt_obpi_id(event: dict) -> str | None:
+def _receipt_obpi_id(event: dict[str, Any]) -> str | None:
     """Resolve the OBPI a receipt refers to.
 
     Completion receipts carry the OBPI slug on ``id`` and leave ``obpi_id`` null
@@ -150,10 +150,12 @@ def _load_grandfathered(project_root: Path) -> set[str]:
     return {entry for entry in entries if isinstance(entry, str)}
 
 
-def _collect_verdicts(project_root: Path) -> tuple[dict[str, list[dict]], list[dict]]:
+def _collect_verdicts(
+    project_root: Path,
+) -> tuple[dict[str, list[dict[str, Any]]], list[dict[str, Any]]]:
     """Single ledger pass: adversarial verdicts by OBPI, and completion receipts."""
-    verdicts: dict[str, list[dict]] = {}
-    receipts: list[dict] = []
+    verdicts: dict[str, list[dict[str, Any]]] = {}
+    receipts: list[dict[str, Any]] = []
     for event in _iter_ledger(project_root):
         name = event.get("event")
         if name == "adversarial_validation":
@@ -165,7 +167,7 @@ def _collect_verdicts(project_root: Path) -> tuple[dict[str, list[dict]], list[d
     return verdicts, receipts
 
 
-def _unresolved_refutation(events: list[dict]) -> bool:
+def _unresolved_refutation(events: list[dict[str, Any]]) -> bool:
     """Return True when the latest verdict is ``refuted`` with no recorded resolution."""
     latest = events[-1]
     return latest.get("verdict") == "refuted" and not latest.get("resolution")

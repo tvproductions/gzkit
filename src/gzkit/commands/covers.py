@@ -13,6 +13,7 @@ import json
 import sys
 from itertools import starmap
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gzkit.commands.common import GzCliError, console, get_project_root
 from gzkit.commands.validate_cmd import dispatch_validator_scope
@@ -24,6 +25,9 @@ from gzkit.traceability import (
     scan_test_tree,
 )
 from gzkit.triangle import scan_briefs
+
+if TYPE_CHECKING:
+    from gzkit.traceability import CoverageEntry
 
 
 def _filter_report(report: CoverageReport, target: str) -> CoverageReport:
@@ -67,8 +71,8 @@ def _filter_report(report: CoverageReport, target: str) -> CoverageReport:
     from gzkit.traceability import _obpi_sort_key, _rollup, adr_sort_key
     from gzkit.triangle import ReqId
 
-    obpi_groups: dict[str, list] = {}
-    adr_groups: dict[str, list] = {}
+    obpi_groups: dict[str, list[CoverageEntry]] = {}
+    adr_groups: dict[str, list[CoverageEntry]] = {}
     for entry in filtered:
         parsed = ReqId.parse(entry.req_id)
         obpi_key = parsed.obpi_id
