@@ -370,7 +370,7 @@ def _render_adr_report(result: dict[str, Any]) -> None:
     # --- ADR Overview ---
     adr_full = cast("str", result["adr"])
     full_semver = adr_semver(adr_full)
-    adr_short = compose_adr_id(full_semver) if full_semver is not None else adr_full
+    adr_short = compose_adr_id(full_semver) if full_semver not in {None, ""} else adr_full
 
     overview = Table(title="ADR Overview", box=box.ROUNDED, padding=(0, 1))
     overview.add_column("ADR", no_wrap=True)

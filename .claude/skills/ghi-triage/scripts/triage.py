@@ -661,7 +661,7 @@ def rationale(
     body = issue.body or ""
     parts: list[str] = []
     stale = _stale_blocker_note(issue, blocker_resolver)
-    if stale is not None:
+    if stale not in {None, ""}:
         # First, not appended: a precondition that no longer holds changes
         # whether the rest of the rationale is worth reading at all.
         parts.append(stale)

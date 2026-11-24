@@ -102,7 +102,7 @@ def _section_body(content: str, heading: str) -> str | None:
 
 def _implementation_summary_value(content: str) -> str | None:
     section = _section_body(content, "Implementation Summary")
-    if section is None:
+    if section in {None, ""}:
         return None
     bullet_matches = re.findall(r"^- [^:\n]+:[ \t]*(.+)$", section, flags=re.MULTILINE)
     for value in bullet_matches:
@@ -119,7 +119,7 @@ def _implementation_summary_value(content: str) -> str | None:
 
 def _extract_human_attestation(content: str) -> dict[str, str] | None:
     body = _section_body(content, "Human Attestation")
-    if body is None:
+    if body in {None, ""}:
         return None
     attestor_match = re.search(r"^- Attestor:\s*(.+)$", body, flags=re.MULTILINE)
     attestation_match = re.search(r"^- Attestation:\s*(.+)$", body, flags=re.MULTILINE)
@@ -236,7 +236,7 @@ def _record_obpi_completion_if_ready(
 
     # Block attested_completed if the brief's Human Attestation section is
     # missing or malformed (GHI-126).
-    if requires_human_attestation and human_attestation is None:
+    if requires_human_attestation and human_attestation in (None, {}):
         print(  # noqa: T201
             f"Warning: Skipping completion receipt for {obpi_id} — "
             f"Human Attestation section is missing or malformed "
@@ -260,11 +260,11 @@ def _record_obpi_completion_if_ready(
     }
     if parent_adr not in {None, ""}:
         evidence["parent_adr"] = parent_adr
-    if value_narrative is not None:
+    if value_narrative not in {None, ""}:
         evidence["value_narrative"] = value_narrative
-    if key_proof is not None:
+    if key_proof not in {None, ""}:
         evidence["key_proof"] = key_proof
-    if human_attestation is not None:
+    if human_attestation not in (None, {}):
         evidence["human_attestation"] = True
         evidence["attestation_text"] = human_attestation["attestation_text"]
         evidence["attestation_date"] = human_attestation["attestation_date"]
@@ -276,7 +276,7 @@ def _record_obpi_completion_if_ready(
             "attestor": human_attestation["attestor"] if human_attestation else None,
             "date": human_attestation["attestation_date"] if human_attestation else None,
         }
-        if human_attestation is not None
+        if human_attestation not in (None, {})
         else None,
     )
     enriched_evidence, anchor = enrich_completed_receipt_evidence(

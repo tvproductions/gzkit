@@ -43,7 +43,9 @@ class FlagService:
     ) -> None:
         """Initialize with flag registry and optional config overrides."""
         self._registry = registry
-        self._config_flags: dict[str, bool] = dict(config_flags) if config_flags is not None else {}
+        self._config_flags: dict[str, bool] = (
+            dict(config_flags) if config_flags not in (None, {}) else {}
+        )
         self._test_overrides: dict[str, bool] = {}
         self._runtime_overrides: dict[str, bool] = {}
 

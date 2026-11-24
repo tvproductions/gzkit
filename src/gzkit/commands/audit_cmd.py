@@ -236,7 +236,7 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
     _reject_pool_adr_for_lifecycle(adr_id, "audited")
     graph = ledger.get_artifact_graph()
     adr_info = graph.get(adr_id)
-    if adr_info is None or adr_info.get("type") != "adr":
+    if adr_info in (None, {}) or adr_info.get("type") != "adr":
         msg = f"ADR not found in ledger: {adr_id}"
         raise GzCliError(msg)
     if not adr_info.get("attested"):
@@ -388,7 +388,7 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
         console.print(f"Audit plan: {plan_file.relative_to(project_root).as_posix()}")
         console.print(f"Audit report: {audit_file.relative_to(project_root).as_posix()}")
         console.print(f"Validation receipt: emitted (by {auditor})")
-        if status_transition is not None:
+        if status_transition not in (None, {}):
             console.print("ADR status: Completed -> Validated")
         else:
             console.print("[yellow]ADR status: NOT transitioned (failures detected)[/yellow]")

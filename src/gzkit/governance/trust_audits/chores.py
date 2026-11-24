@@ -548,7 +548,7 @@ def audit_chore_suppression(project_root: Path) -> list[ValidationError]:
         for criterion in criteria:
             command = " ".join(str(criterion.get("command", "")).split())
             reason = _criterion_hides_exit(command) if command else None
-            if reason is not None:
+            if reason not in {None, ""}:
                 artifact = acceptance.relative_to(project_root).as_posix()
                 errors.append(_suppression_error(artifact, f"criterion `{command}` {reason}"))
         chore_md_path = slug_dir / "CHORE.md"

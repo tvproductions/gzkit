@@ -716,7 +716,7 @@ def _transit_changed_files(ledger: Ledger, obpi_id: str, project_root: Path) -> 
     info = ledger.get_artifact_graph().get(ledger.canonicalize_id(obpi_id), {})
     evidence = info.get("latest_completion_evidence") or {}
     sealed = normalize_scope_audit(evidence.get("scope_audit"))
-    if sealed is not None and sealed["changed_files"]:
+    if sealed not in (None, {}) and sealed["changed_files"]:
         return sealed["changed_files"]
     return collect_changed_files(project_root)
 

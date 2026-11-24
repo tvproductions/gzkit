@@ -44,7 +44,7 @@ def _filter_report(report: CoverageReport, target: str) -> CoverageReport:
         target_semver = adr_semver(target_upper)
         filtered = (
             [e for e in report.entries if e.req_id.startswith(req_prefix(target_semver))]
-            if target_semver is not None
+            if target_semver not in {None, ""}
             else []
         )
     else:

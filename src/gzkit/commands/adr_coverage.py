@@ -123,7 +123,7 @@ def _compute_adr_coverage(
         "uncovered": [],
     }
     semver = _extract_adr_semver(adr_id)
-    if semver is None:
+    if semver in {None, ""}:
         return empty
 
     if adr_dir is None:
@@ -348,7 +348,7 @@ def _extract_obpi_requirement_targets(
 
         for req_id in req_ids:
             requirement_targets.add(req_id)
-            if req_prefix is not None and not req_id.startswith(req_prefix):
+            if req_prefix not in {None, ""} and not req_id.startswith(req_prefix):
                 invalid_requirement_targets.append(
                     {
                         "obpi": obpi_id,

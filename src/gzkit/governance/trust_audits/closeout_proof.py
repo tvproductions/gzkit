@@ -292,7 +292,7 @@ def _check_req(
                 f"Re-run: uv run gz validate --closeout-proof",
             )
         rerun = _extract_rerun_command(line)
-        suffix = f" Re-run: {rerun}" if rerun is not None else ""
+        suffix = f" Re-run: {rerun}" if rerun not in {None, ""} else ""
         return _err(artifact, f"{req_id} [SUPPORT]: {proof_status}.{suffix}")
     if kind == "STRUCTURAL_FENCE":
         # Pass req_text so resolve_fence_proof can apply the OBPI-0.0.74-18

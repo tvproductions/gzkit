@@ -100,7 +100,7 @@ def _plan_git_sync(
         blockers.append("Merge commit at HEAD. Linearize history before git-sync.")
 
     status_lines, status_error = _git_status_lines(project_root)
-    if status_error is not None:
+    if status_error not in {None, ""}:
         blockers.append(status_error)
     dirty = bool(status_lines)
 

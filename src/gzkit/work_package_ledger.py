@@ -443,9 +443,9 @@ def record_work_package_transition(
     if not move.evidence.strip():
         _refuse("A transition names what justifies it; evidence is empty.")
     current = work_package_state(ledger, move.work_package)
-    if (refusal := lifecycle_refusal(package, current, move.to_state)) is not None:
+    if (refusal := lifecycle_refusal(package, current, move.to_state)) not in {None, ""}:
         _refuse(refusal)
-    if (refusal := block_refusal(ledger, package.id)) is not None:
+    if (refusal := block_refusal(ledger, package.id)) not in {None, ""}:
         _refuse(refusal)
     _check_move(catalog, ledger, package, move)
     fields = move.model_dump(exclude_unset=True)

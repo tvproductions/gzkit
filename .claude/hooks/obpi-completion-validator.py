@@ -308,11 +308,11 @@ def main():
 
     # 3. Extract identifiers
     obpi_id = extract_obpi_id(rel_str)
-    if obpi_id is None:
+    if obpi_id in {None, ""}:
         sys.exit(0)
 
     adr_id = extract_adr_id(obpi_id)
-    if adr_id is None:
+    if adr_id in {None, ""}:
         sys.exit(0)
 
     # 4. Find parent ADR directory and file

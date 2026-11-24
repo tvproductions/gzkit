@@ -416,7 +416,7 @@ def forbid_skill_sync_drift(root: Path) -> int:
         if path.startswith(".gzkit/skills/") and path.endswith("SKILL.md"):
             rel = path[len(".gzkit/skills/") :]
             error = _missing_mirror_error(path, rel, skill_roots, staged_paths)
-            if error is not None:
+            if error not in {None, ""}:
                 errors.append(error)
         if path.startswith(".gzkit/rules/") and path.endswith(".md"):
             rel = path[len(".gzkit/rules/") :]
@@ -425,7 +425,7 @@ def forbid_skill_sync_drift(root: Path) -> int:
             if Path(rel).name in NESTED_SURFACE_NAMES:
                 continue
             error = _missing_mirror_error(path, rel, rule_roots, staged_paths)
-            if error is not None:
+            if error not in {None, ""}:
                 errors.append(error)
     if errors:
         _safe_print("Skill/rule sync drift detected:")

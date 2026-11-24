@@ -220,7 +220,9 @@ def _test_module_source(parts: list[str]) -> tuple[ast.AST, list[str]] | None:
     candidates = (
         (_module_file(".".join(parts[:split])), split) for split in range(len(parts) - 1, 0, -1)
     )
-    found = next(((origin, split) for origin, split in candidates if origin is not None), None)
+    found = next(
+        ((origin, split) for origin, split in candidates if origin not in {None, ""}), None
+    )
     if found is None:
         return None
     origin, split = found

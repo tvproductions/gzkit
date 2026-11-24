@@ -85,7 +85,7 @@ def section_body(content: str, heading: str) -> str | None:
 def extract_allowed_paths(content: str) -> list[str]:
     """Extract normalized allowlist patterns from an OBPI brief."""
     section = section_body(content, "Allowed Paths")
-    if section is None:
+    if section in {None, ""}:
         return []
 
     patterns: list[str] = []
@@ -421,7 +421,7 @@ class ObpiValidator:
                 completion_evidence = obpi_info.get("latest_completion_evidence") or {}
                 scope_audit = normalize_scope_audit(completion_evidence.get("scope_audit"))
                 changed_files = (
-                    scope_audit.get("changed_files", []) if scope_audit is not None else []
+                    scope_audit.get("changed_files", []) if scope_audit not in (None, {}) else []
                 )
             else:
                 changed_files = collect_changed_files(self.project_root)

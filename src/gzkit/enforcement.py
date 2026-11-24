@@ -310,7 +310,7 @@ def enforces(
         raise ValueError(msg)
 
     source_fn = _qualified_fn_name(entrypoint)
-    gate_targets = () if delegates_to is not None else _derive_gate_targets(entrypoint)
+    gate_targets = () if delegates_to not in {None, ""} else _derive_gate_targets(entrypoint)
 
     def decorator(fn: _EF) -> _EF:
         record = EnforcementClaimRecord(

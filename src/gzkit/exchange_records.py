@@ -410,10 +410,10 @@ def write_completion_exchange(
     # absent rather than synthesizing `ADR-0.0.0`, an id naming no real artifact
     # (GHI #709).
     adr_id = obpi_adr_id(obpi_id)
-    parent_phrase = f" under {adr_id}" if adr_id is not None else ""
+    parent_phrase = f" under {adr_id}" if adr_id not in {None, ""} else ""
     next_step = (
         f"1. Continue the parent {adr_id} checklist, or open the next OBPI.\n\n"
-        if adr_id is not None
+        if adr_id not in {None, ""}
         else "1. Open the next OBPI, or continue the parent ADR checklist.\n\n"
     )
 

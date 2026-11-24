@@ -539,7 +539,7 @@ def _plan_audit_gate_script() -> str:
                     sys.exit(0)
 
                 prior_art_warning = check_prior_art_awareness(plan_file)
-                if prior_art_warning is not None:
+                if prior_art_warning not in {None, ""}:
                     print(prior_art_warning, file=sys.stderr)
 
                 obpi_ids = extract_obpi_ids(plan_file)

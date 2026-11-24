@@ -412,12 +412,12 @@ def _commit_advance(
         "updated_at": now,
         "completed_at": completed_at,
     }
-    if extra_update is not None:
+    if extra_update not in (None, {}):
         update.update(extra_update)
     new_state = state.model_copy(update=update)
     save_ceremony_state(project_root, new_state)
     output = _present_step(new_state, project_root, adr_file, lane, manifest, obpi_files=obpi_files)
-    if completed_at is not None:
+    if completed_at not in {None, ""}:
         _cleanup_hook_files(project_root, state.adr_id)
     _output(as_json, new_state, output)
 

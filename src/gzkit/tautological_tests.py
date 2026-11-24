@@ -225,7 +225,7 @@ def _calls_production_via_helper(
         if not isinstance(child, ast.Call):
             continue
         name = _called_local_name(child.func)
-        target = helpers.get(name) if name is not None else None
+        target = helpers.get(name) if name not in {None, ""} else None
         if (
             target is not None
             and target is not node

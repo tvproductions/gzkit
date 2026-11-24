@@ -176,7 +176,7 @@ def main() -> int:
 
     for outcome in sorted(tally):
         print(f"{tally[outcome]:5d}  {outcome}")
-    return 1 if tally.get("refused") is not None else 0
+    return 1 if tally.get("refused") not in {None, 0} else 0
 
 
 if __name__ == "__main__":

@@ -296,7 +296,7 @@ def _derive_anchor_analysis(
     anchor_required = _completion_anchor_required(completion_evidence, scope_audit, git_sync_state)
 
     normalized_anchor = _normalize_anchor(info.get("latest_completion_anchor"))
-    anchor_commit = normalized_anchor.get("commit") if normalized_anchor is not None else None
+    anchor_commit = normalized_anchor.get("commit") if normalized_anchor not in (None, {}) else None
     current_head = _resolve_current_head(project_root, current_head)
 
     if not ledger_completed:
@@ -313,7 +313,7 @@ def _derive_anchor_analysis(
             current_head=current_head,
         )
 
-    if normalized_anchor is None or anchor_commit is None:
+    if normalized_anchor in (None, {}) or anchor_commit in {None, ""}:
         return _anchor_result(
             anchor_state="missing",
             anchor_commit=None,

@@ -160,7 +160,7 @@ def from_grep_tool(tool_input: dict[str, Any]) -> tuple[str | None, list[str]]:
     """
     filters = [str(tool_input[k]) for k in ("glob", "type") if tool_input.get(k)]
     path = tool_input.get("path")
-    if path and file_filter(str(path)) is not None:
+    if path and file_filter(str(path)) not in {None, ""}:
         filters.append(str(path))
     return tool_input.get("pattern"), filters
 
@@ -262,7 +262,7 @@ def from_args(args: list[str]) -> tuple[str | None, list[str]]:
     """
     regexps, filters, positionals = classify_args(args)
     pattern = regexps[0] if regexps else (positionals.pop(0) if positionals else None)
-    filters.extend(f for p in positionals if (f := file_filter(p)) is not None)
+    filters.extend(f for p in positionals if (f := file_filter(p)) not in {None, ""})
     return pattern, filters
 
 

@@ -122,7 +122,7 @@ def upgrade_cmd(args: argparse.Namespace) -> None:
     """Refresh .gzkit/<surface>/ from installed wheel package data."""
     surfaces = _validate_surfaces(args.surface or "")
     surfaces_to_process: list[str] = (
-        list(surfaces) if surfaces is not None else list(KNOWN_SURFACES)
+        list(surfaces) if surfaces not in (None, []) else list(KNOWN_SURFACES)
     )
 
     project_root = get_project_root()

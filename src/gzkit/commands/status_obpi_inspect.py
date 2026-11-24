@@ -90,7 +90,7 @@ def _section_body_with_prefix(content: str, heading_prefix: str) -> str | None:
 
 def _has_substantive_section(content: str, heading: str) -> bool:
     body = _section_body(content, heading)
-    if body is None:
+    if body in {None, ""}:
         return False
     normalized = body.strip().lower()
     return normalized not in {"", "-", "...", "tbd", "(none)", "n/a", "paste test output here"}
@@ -124,7 +124,7 @@ def _has_substantive_implementation_summary(content: str) -> bool:
 
 def _implementation_summary_validation_commands(content: str) -> str | None:
     body = _section_body(content, "Implementation Summary")
-    if body is None:
+    if body in {None, ""}:
         return None
 
     lines = body.splitlines()
@@ -147,7 +147,7 @@ def _implementation_summary_validation_commands(content: str) -> str | None:
 def _resolved_key_proof_body(content: str) -> str | None:
     for heading in ("Key Proof", "Verification", "Gate Evidence"):
         body = _section_body(content, heading)
-        if body is not None and _has_substantive_section(content, heading):
+        if body not in {None, ""} and _has_substantive_section(content, heading):
             return body
     prefixed_verification = _section_body_with_prefix(content, "Verification")
     if _has_substantive_body(prefixed_verification):
@@ -165,7 +165,7 @@ def _resolved_key_proof_body(content: str) -> str | None:
 
 def _extract_human_attestation(content: str) -> dict[str, Any]:
     body = _section_body(content, "Human Attestation")
-    if body is None:
+    if body in {None, ""}:
         return {"present": False, "valid": False}
 
     attestor_match = re.search(r"^- Attestor:\s*(.+)$", body, flags=re.MULTILINE)
@@ -211,7 +211,7 @@ def _extract_tracked_defects(content: str) -> list[dict[str, Any]]:
 
     """
     body = _section_body(content, "Tracked Defects")
-    if body is None:
+    if body in {None, ""}:
         return []
 
     defects: list[dict[str, Any]] = []

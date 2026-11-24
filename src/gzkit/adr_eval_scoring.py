@@ -94,19 +94,19 @@ def _score_problem_clarity(content: str) -> tuple[int, list[str]]:
     intent = section_body(content, "Intent")
     checks = 0
     total = 4
-    if intent is not None:
+    if intent not in {None, ""}:
         checks += 1
     else:
         findings.append("Missing ## Intent section")
-    if intent is not None and _word_count(intent) > 120:
+    if intent not in {None, ""} and _word_count(intent) > 120:
         checks += 1
     else:
         findings.append("Intent section is short (<120 words)")
-    if intent is not None and _references_concrete_artifacts(intent):
+    if intent not in {None, ""} and _references_concrete_artifacts(intent):
         checks += 1
     else:
         findings.append("Intent contains no concrete references (code, path, or issue)")
-    if intent is not None and _substantive_sentence_count(intent) >= 2:
+    if intent not in {None, ""} and _substantive_sentence_count(intent) >= 2:
         checks += 1
     else:
         findings.append("Intent has fewer than two longer (>8-word) sentences")
@@ -131,21 +131,21 @@ def _score_decision_justification(content: str) -> tuple[int, list[str]]:
     decision = section_body(content, "Decision")
     checks = 0
     total = 4
-    if decision is not None:
+    if decision not in {None, ""}:
         checks += 1
     else:
         findings.append("Missing ## Decision section")
-    if decision is not None and _word_count(decision) > 100:
+    if decision not in {None, ""} and _word_count(decision) > 100:
         checks += 1
     else:
         findings.append("Decision section is short (<100 words)")
     alternatives = section_body(content, "Alternatives Considered")
-    if alternatives is not None and _has_rejected_alternatives_subsection(alternatives):
+    if alternatives not in {None, ""} and _has_rejected_alternatives_subsection(alternatives):
         checks += 1
     else:
         findings.append("No Alternatives section naming explicit rejections")
     consequences = section_body(content, "Consequences")
-    if consequences is not None and _has_negative_consequences_subsection(consequences):
+    if consequences not in {None, ""} and _has_negative_consequences_subsection(consequences):
         checks += 1
     else:
         findings.append("No Consequences section naming downsides")
@@ -154,7 +154,7 @@ def _score_decision_justification(content: str) -> tuple[int, list[str]]:
 
 def _count_checklist_items(content: str) -> list[str]:
     checklist = section_body(content, "Checklist")
-    if checklist is None:
+    if checklist in {None, ""}:
         return []
     return re.findall(r"^- \[[ x]\] (.+)$", checklist, re.MULTILINE)
 
@@ -290,13 +290,14 @@ def _score_scope_discipline(content: str) -> tuple[int, list[str]]:
 
     consequences = section_body(content, "Consequences")
     non_goals = section_body(content, "Non-Goals")
-    if consequences is not None or non_goals is not None:
+    if consequences not in {None, ""} or non_goals not in {None, ""}:
         checks += 1
     else:
         findings.append("Missing Consequences and Non-Goals sections")
 
-    if (non_goals is not None and _word_count(non_goals) > 20) or (
-        consequences is not None and _has_keywords(consequences, ["not", "exclude", "out of scope"])
+    if (non_goals not in {None, ""} and _word_count(non_goals) > 20) or (
+        consequences not in {None, ""}
+        and _has_keywords(consequences, ["not", "exclude", "out of scope"])
     ):
         checks += 1
     else:
@@ -326,7 +327,7 @@ def _score_evidence_requirements(
             for h in ["Quality Gates", "Quality Gates (Heavy)", "Quality Gates (Lite)"]
         ):
             gates_present += 1
-        if section_body(oc, "Acceptance Criteria") is not None:
+        if section_body(oc, "Acceptance Criteria") not in {None, ""}:
             ac = section_body(oc, "Acceptance Criteria") or ""
             if "Given/When/Then behavior criterion" not in ac:
                 criteria_present += 1

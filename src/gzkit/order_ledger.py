@@ -348,7 +348,7 @@ def _check_frozen(catalog: Catalog, ledger: Ledger, order: Order, move: OrderMov
 
 def _check_not_superseded(successors: dict[str, list[str]], req: str) -> None:
     """Refuse freezing a superseded REQ, naming every REQ to freeze instead (85, 87)."""
-    if (later := successors.get(req)) is None:
+    if (later := successors.get(req)) in (None, []):
         return
     heads = _chain_heads(successors, req)
     instead = (
@@ -382,7 +382,7 @@ def _chain_heads(successors: dict[str, list[str]], req: str) -> list[str]:
         if current in seen:
             continue
         seen.add(current)
-        if (later := successors.get(current)) is not None:
+        if (later := successors.get(current)) not in (None, []):
             pending.extend(later)
         else:
             heads.append(current)
@@ -424,7 +424,9 @@ def _check_decision_fields(move: OrderMove) -> None:
     if own is not None and not (getattr(move, own) or "").strip():
         _refuse(f"A {move.decision} carries {own.replace('_', '-')} (RP-12 ruling 73).")
     # Another decision's field is refused whenever it is given, blank or not.
-    given = {f for f in _DECISION_FIELD.values() if f is not None and getattr(move, f) is not None}
+    given = {
+        f for f in _DECISION_FIELD.values() if f not in {None, ""} and getattr(move, f) is not None
+    }
     if others := sorted(given - {own}):
         flags = ", ".join(f"--{f.replace('_', '-')}" for f in others)
         _refuse(f"A {move.decision} does not carry {flags} (RP-12 ruling 73).")
@@ -651,7 +653,7 @@ def carry_standing(ledger: Ledger, order_id: str) -> CarryStanding:
             for tag in hung
             if len(lines.get(tag, ())) == 1
         ),
-        uncarried=tuple(tag for tag in hung if lines.get(tag) is None),
+        uncarried=tuple(tag for tag in hung if lines.get(tag) in (None, [])),
         doubled=tuple((tag, tuple(lines[tag])) for tag in hung if len(lines.get(tag, ())) > 1),
     )
 
@@ -711,7 +713,7 @@ def _check_accepted(ledger: Ledger, order: Order, move: OrderMove) -> None:
             f"Order {order.id}'s acceptance books whether it read ready, `acceptance_ready`, "
             "which its Gate 5 reads (RP-12 rulings 84 and 86)."
         )
-    if (refusal := hung_tag_refusal(ledger, order)) is not None:
+    if (refusal := hung_tag_refusal(ledger, order)) not in {None, ""}:
         _refuse(refusal)
     if not move.acceptance_ready and not order_took_stopping_exit(ledger, order.id):
         _refuse(
@@ -813,7 +815,7 @@ def record_order_transition(
     if not move.evidence.strip():
         _refuse("A transition names what justifies it; evidence is empty.")
     current = order_state(ledger, order.id)
-    if (refusal := order_move_refusal(ledger, order, move.to_state)) is not None:
+    if (refusal := order_move_refusal(ledger, order, move.to_state)) not in {None, ""}:
         _refuse(refusal)
     _check_move(catalog, ledger, order, move)
     event = OrderTransitionedEvent.model_validate(

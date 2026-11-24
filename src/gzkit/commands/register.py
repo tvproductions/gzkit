@@ -467,7 +467,7 @@ def _collect_adrs_to_register(
     for adr_id, parent, adr_lane in to_register:
         if parent.startswith("ADR-") and parent not in all_adr_ids:
             resolved = _resolve_short_form_parent(parent, all_adr_ids)
-            if resolved is not None:
+            if resolved not in {None, ""}:
                 console.print(
                     f"[yellow]Warning:[/yellow] {adr_id} uses short-form "
                     f"parent '{parent}', resolved to '{resolved}'"
@@ -519,7 +519,7 @@ def _collect_obpis_to_register(
         canonical_parent = ledger.canonicalize_id(parent_id)
         if canonical_parent not in eligible_parent_ids:
             resolved = _resolve_short_form_parent(canonical_parent, eligible_parent_ids)
-            if resolved is not None:
+            if resolved not in {None, ""}:
                 console.print(
                     f"[yellow]Warning:[/yellow] {obpi_file.name} uses short-form "
                     f"parent '{parent}', resolved to '{resolved}'"

@@ -721,12 +721,12 @@ def collect_handoff_account(repo_root: Path, now: datetime) -> dict[str, object]
     unprocessed = sum(1 for ts, _ in bookmarks if ts > anchor_ts)
     dirty = _tree_is_dirty(repo_root)
 
-    commits = git_side["commits"] if git_side is not None else []
-    commits_total = git_side["total"] if git_side is not None else 0
+    commits = git_side["commits"] if git_side not in (None, {}) else []
+    commits_total = git_side["total"] if git_side not in (None, {}) else 0
     return {
         "anchor": rel,
         "anchor_age": classify_freshness(now, anchor_ts),
-        "landed": git_side["landed"] if git_side is not None else None,
+        "landed": git_side["landed"] if git_side not in (None, {}) else None,
         "git_unavailable": git_side is None,
         "commits": commits,
         "commits_total": commits_total,

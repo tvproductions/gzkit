@@ -193,7 +193,7 @@ def _by_date(
     signal = staleness.signal
     period = timedelta(days=staleness.period_days or 0)
     witness = "passing run"
-    if staleness.artifacts is not None:
+    if staleness.artifacts not in {None, ()}:
         last_run = artifact_changed(staleness.artifacts)
         witness = "scan record change"
     if last_run is None:
@@ -240,7 +240,7 @@ def _by_surfaces(
     # A declared period dates the chore beside its surfaces: due at whichever comes first.
     dated_at = (
         last_run + timedelta(days=staleness.period_days)
-        if staleness.period_days is not None
+        if staleness.period_days not in {None, 0}
         else None
     )
     if dated_at is not None and dated_at <= now and (moved_at is None or dated_at < moved_at):

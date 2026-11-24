@@ -32,7 +32,7 @@ def obpi_audit_cmd(obpi_id: str | None, adr_id: str | None, as_json: bool) -> No
 
     if not as_json:
         derived_adr = _derive_adr_id(obpi_id)
-        if derived_adr is not None:
+        if derived_adr not in {None, ""}:
             adr_dir = _find_adr_dir(project_root, derived_adr)
             if adr_dir:
                 prior = _read_prior_audits(adr_dir)
@@ -69,7 +69,7 @@ def _audit_all_for_adr(project_root: Path, adr_id: str, as_json: bool) -> None:
     results = []
     for brief in sorted(obpis_dir.glob("OBPI-*.md")):
         oid = _extract_obpi_id(brief)
-        if oid is not None:
+        if oid not in {None, ""}:
             results.append(_audit_single(project_root, oid))
 
     if as_json:
@@ -83,7 +83,7 @@ def _audit_all_for_adr(project_root: Path, adr_id: str, as_json: bool) -> None:
 def _audit_single(project_root: Path, obpi_id: str) -> dict[str, Any]:
     """Audit a single OBPI and append ledger entry."""
     adr_id = _derive_adr_id(obpi_id)
-    adr_dir = _find_adr_dir(project_root, adr_id) if adr_id is not None else None
+    adr_dir = _find_adr_dir(project_root, adr_id) if adr_id not in {None, ""} else None
 
     brief_path = _find_brief(adr_dir, obpi_id) if adr_dir else None
     brief_status = "unknown"
@@ -306,7 +306,7 @@ def _brief_src_paths(brief_path: Path | None) -> list[str]:
     if brief_path is None:
         return []
     allowed = extract_allowed_paths(brief_path)
-    if allowed is None:
+    if allowed in (None, []):
         return []
     src_paths: list[str] = []
     for raw in allowed:

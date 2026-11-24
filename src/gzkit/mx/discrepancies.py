@@ -452,7 +452,7 @@ def _check_cause(
             )
         labels = _recurs(request.recurs, witnesses)
         required = True
-    if required and (request.root_cause is None or request.corrective_action is None):
+    if required and (request.root_cause in {None, ""} or request.corrective_action in {None, ""}):
         why = "blocks return to service" if grade == BLOCKS else "recurs"
         _refuse(
             f"--root-cause and --corrective-action are required: the line {why}, and such a "
