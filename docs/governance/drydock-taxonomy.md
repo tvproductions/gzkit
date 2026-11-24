@@ -518,7 +518,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T24 | **Settled by canon (2026-10-18, RO-5 tranche 1): construction work takes its lane from the outcome's `user_facing`, which binds Gate 4 (`requirements-model.md` § 10, decision 10); a repair package holds its own lane (`catalog.py`, `WorkPackage`); the ADR lane retires, and `AGENTS.md` § Gate Covenant's wording is the coupled surface the model names.** Lane's home: the ADR, the outcome's `user_facing`, or the package | three homes |
 | T25 | **Ruled W47: the operator rules and the agent acts through the skill; the floor is `GATE5_INVARIANTS`, and what safe mode never suspends is the floor plus the conduct rules and the level-pinned checks.** Who opens and closes the hangar (rulings 447 and 448 against the skill and the doctrine), and the floor's one list | contradicted |
 | T26 | **Ruled W48: `gz mx exit`'s re-run, then the handback, then the flag closes on the operator's return-to-service words; the subagent's report is the dispatch report.** The handback: before or after the exit, and the subagent's "handback" renamed | contradicted |
-| T27 | *"The briefing gates nothing"* (the constitution) against kit ruling 19's turnover gate | contradicted |
+| T27 | **Ruled W49: different acts; the briefing gates no work, and the record is validated.** *"The briefing gates nothing"* (the constitution) against kit ruling 19's turnover gate | contradicted |
 | T28 | The passage log: rows per act after *act* retired, and RP-12's missing rows | stale since 2026-11-04 |
 | T29 | The task trailer for order work, and the task's ledger binding to its order | four trailer spellings; TASK events lack `order` |
 | T30 | The specification pages' file names (`harbor-roN`), RP-0's page, and how sub-ids are namespaced | unruled |
@@ -1142,6 +1142,22 @@ put after it.
 
   The doctrine, skill, contract and `gz mx exit` amendments and the three refusal messages are
   owed on T10's route. T26 is ruled.
+- **W49 (2026-11-24, T27, the briefing and the turnover gate).** The constitution
+  (`command-doctrine.md:154-158`, ruling of 2026-08-17): *"The briefing gates nothing; the
+  relieving session owns the completeness of its own briefing as much as the one leaving"*, and
+  *"no tier gates: staleness announces"* (`:176`); the handoff resume gate was retired on it. Kit
+  ruling 19 (2026-11-04, *"A"*): `gz handoff create` composes § Shift turnover from the views, and
+  a hangar handoff *"whose turnover lacks a tag hung at that moment fails `gz check`"*. Neither
+  cites the other. Three options were put:
+  - A: different acts. The briefing, reading a handoff and acting on it, gates no work; ruling 19
+    refuses a defective record, as the seven-section validator already refuses a handoff with an
+    empty section. The constitution gains *"the record is validated; the briefing gates no work"*.
+    Recommended.
+  - B: the constitution wins; ruling 19 reduced to an announcement.
+  - C: ruling 19 a drydock exception; the constitution amended to say the turnover gates the
+    handoff while the hangar is open.
+
+  Operator: *"A: Different acts"*. The constitution's clause is owed on T10's route. T27 is ruled.
 
 ## 10. The gathering, closed
 
