@@ -517,7 +517,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T23 | **Ruled W46: the side is construction and its package the work package, store kind `delivery` renamed `work`, `catalog` kept as the REQ specialization; the maintenance visit settled by W41, not a third kind.** The construction side's one name (construction, catalog, delivery), and whether the maintenance visit is a third kind of package | three names; the store holds two kinds |
 | T24 | **Settled by canon (2026-10-18, RO-5 tranche 1): construction work takes its lane from the outcome's `user_facing`, which binds Gate 4 (`requirements-model.md` § 10, decision 10); a repair package holds its own lane (`catalog.py`, `WorkPackage`); the ADR lane retires, and `AGENTS.md` § Gate Covenant's wording is the coupled surface the model names.** Lane's home: the ADR, the outcome's `user_facing`, or the package | three homes |
 | T25 | **Ruled W47: the operator rules and the agent acts through the skill; the floor is `GATE5_INVARIANTS`, and what safe mode never suspends is the floor plus the conduct rules and the level-pinned checks.** Who opens and closes the hangar (rulings 447 and 448 against the skill and the doctrine), and the floor's one list | contradicted |
-| T26 | The handback: before or after the exit, and the subagent's "handback" renamed | contradicted |
+| T26 | **Ruled W48: `gz mx exit`'s re-run, then the handback, then the flag closes on the operator's return-to-service words; the subagent's report is the dispatch report.** The handback: before or after the exit, and the subagent's "handback" renamed | contradicted |
 | T27 | *"The briefing gates nothing"* (the constitution) against kit ruling 19's turnover gate | contradicted |
 | T28 | The passage log: rows per act after *act* retired, and RP-12's missing rows | stale since 2026-11-04 |
 | T29 | The task trailer for order work, and the task's ledger binding to its order | four trailer spellings; TASK events lack `order` |
@@ -1118,6 +1118,30 @@ put after it.
     Operator: *"A: Floor + never-suspended"*.
 
   The doctrine, contract and skill wording is owed on T10's route. T25 is ruled.
+- **W48 (2026-11-24, T26, the handback).** Put in two parts.
+  - *Before or after the exit.* The contract makes the ratified handback a condition of safe
+    mode's end (exit item 9, *"Safe mode ends when … 9. The handback amendment is ratified"*), and
+    item 8 takes `gz mx exit`'s re-run as its witness. The doctrine (2026-10-16) and the skill put
+    it after: *"The handback amendment follows the exit and precedes civil rule"*
+    (`safe-mode-doctrine.md:99`), the skill's step 6 after step 5, and the code's exit removes the
+    marker at once. The skill's step 4 stops the exit on *"one unmet condition"*, item 9 included,
+    which cannot be met before the exit. W32 rules that *"The operator's return-to-service words
+    are its closing event, and the flag closes on it."* Options put: A, `gz mx exit` runs the
+    full-strength re-run and holds the marker, the session drafts the handback, and the operator's
+    ratification, the return-to-service words, closes the flag and resumes civil rule; the
+    doctrine's *"follows the exit"*, the skill's step order and step 4's reading of item 9 amended,
+    and exit's marker removal moved to the ratification; B, exit closes the flag and the handback
+    follows, W32 and item 9 amended; C, the handback ratified before the exit's re-run. Operator:
+    *"A: Re-run, handback, close"*.
+  - *The second sense.* `mx/discrepancies.py:217, 228, 567` tell a stamped performer to *"report
+    it in the handback"*, the subagent's report to the coordinator (KIT:104, `handbackReport`),
+    against the doctrine's handback, *"The amendment the operator ratifies at seaworthiness"*.
+    Options put: A, the subagent's return is the **dispatch report**, made on its dispatch record
+    and read by the coordinator, and *handback* is kept for the transfer of custody; B, a plain
+    *report*; C, both senses kept as a collision. Operator: *"A: "Dispatch report""*.
+
+  The doctrine, skill, contract and `gz mx exit` amendments and the three refusal messages are
+  owed on T10's route. T26 is ruled.
 
 ## 10. The gathering, closed
 
