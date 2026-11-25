@@ -382,6 +382,18 @@ severity (blocking, degrading, latent), readiness (ready, ruling, sequence, desi
 disposition at close (five) and problem-report state (B12's four), beside the packaging label
 `repair` and the script's `chore` and `unlabeled` classes. Three of them are called *class*.
 
+## decision · a GHI's axes fall in three groups, each axis with one name and one home
+
+Question: how are the GHI's classifications organized, given that they answer what the
+discrepancy is, where it stands and how it is ended? Options put: A, three groups by question:
+*what it is* (set when the report is classified, B12's state, and fixed after: class, the
+secondary properties, severity, family), *where it stands* (changing over its life: the
+problem-report state as one exclusive lifecycle, Backplane's rule, and readiness), *how it is
+ended* (route, prescriptive shape, disposition), each axis with one name and one home, *class*
+naming one axis only, and `repair` and `chore` leaving the GHI's classification; B, one kind and
+one lifecycle only, the rest working notes of triage and closing; C, the names untangled and
+the structure kept. Recommended A. Operator: *"A: Three groups, one home each"*.
+
 ---
 
 ## Disposition map
