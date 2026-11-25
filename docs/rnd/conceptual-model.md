@@ -689,6 +689,23 @@ audit's `gz-obpi-lock` family, one stale cause behind six sentences, is one disc
 the cross-GHI concept and keeps the name. `ghi-author`'s `## Class of failure` heading and
 `ghi-close` 7b's *"the contract's family"* meet this ruling in diamond 2.
 
+The agent said the operator had taken the recommended option on every question this session and
+asked whether the questions were the right ones. Operator, verbatim: *"questions are fine"*.
+
+## decision · family is a reading, never stored on the GHI
+
+Question: is a family stored on the GHI? Options put: A, not stored: a reading made per run by
+triage and at authoring by `ghi-author`; where a family is tracked as a class its locus holds it
+(a row of `docs/governance/advisory-rules-audit.md`, a campaign box, a placement finding such as
+RP-7 F2), and each member cites that locus in its `## Related`; accumulated drift, kept with
+family when the `tech-debt` label retired, is a family reading too; B, exactly one `family:*`
+label from a closed set; C, a tracking issue per family with members as native sub-issues, the
+parent then a GHI that is no discrepancy. Recommended A, under the landscape record's *"Family
+membership is a *reading*, not a measurement"*. Operator: *"Not stored (Recommended)"*.
+
+So the *what it is* group closes with two stored axes, class and found, and the failure mechanism
+in the body. Family leaves it as a stored axis and stays a reading with a locus.
+
 ---
 
 ## Disposition map
