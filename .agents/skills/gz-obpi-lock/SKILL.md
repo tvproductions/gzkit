@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-17
 metadata:
-  skill-version: "6.4.5"
+  skill-version: "6.4.6"
 model: haiku
 ---
 
@@ -147,7 +147,7 @@ Agents identify themselves by environment:
 | `CODEX_SANDBOX` env var | `codex` |
 | Fallback | `unknown-<pid>` |
 
-`--agent` overrides the resolved name on `claim` and `release` only (`lock_manager.resolve_agent`); completion, the reaper and the pipeline gate resolve without it, so a lock claimed under `--agent` is not seen as held by the session that completes it. Because the Claude Code name carries the session id, a new session (after `/clear`) is a different agent from the one that claimed, and a dispatched subagent resolves to its orchestrator's name while the harness exports the session id to it. Every Codex session resolves to plain `codex`, so two Codex sessions are one agent. The MX hangar's `mx-session` lock is the exception to all of this: `gz mx enter` mints its own id and records it as both agent and session id (RP-12 ruling 149).
+`--agent` overrides the resolved name on `claim` and `release` only (`lock_manager.resolve_agent`); completion, the reaper and the pipeline gate resolve without it: completion surrenders the lock whoever holds it and records the release under its own name, and the pipeline gate does not count a lock claimed under `--agent` as this session's. Because the Claude Code name carries the session id, a new session (after `/clear`) is a different agent from the one that claimed, and a dispatched subagent resolves to its orchestrator's name while the harness exports the session id to it. Every Codex session resolves to plain `codex`, so two Codex sessions are one agent. The MX hangar's `mx-session` lock is the exception to all of this: `gz mx enter` mints its own id and records it as both agent and session id (RP-12 ruling 149).
 
 ---
 

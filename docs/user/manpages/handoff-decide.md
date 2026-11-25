@@ -51,7 +51,7 @@ gz handoff decide --handoff PATH --operator-text TEXT --session-id ID
 | `--set-aside STEP` | An advised step this ruling declines (repeatable). The clearance-amendment record. |
 | `--json` | Emit `{"status": "decided", "decision": ..., ...}` instead of the human line. |
 
-`--session-id` is explicit rather than read from a `CLAUDE_SESSION_ID` env var:
+`--session-id` is explicit rather than read from the harness environment (Claude Code exports `CLAUDE_CODE_SESSION_ID`):
 `src/gzkit/commands/` is fenced to a two-entry env allowlist (`NO_COLOR` /
 `FORCE_COLOR`) so vendor coupling cannot leak into the command layer.
 

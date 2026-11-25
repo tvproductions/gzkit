@@ -281,6 +281,23 @@ class TestRecordedSessionIsTheHarnessSession(unittest.TestCase):
             "recorded under it with no session cannot be attributed to the session",
         )
 
+    def test_claude_session_id_is_the_fallback(self) -> None:
+        root = _repo()
+        _write_and_commit(root, _BRIEF, when=_T1)
+        # given: no CLAUDE_CODE_SESSION_ID, only the older CLAUDE_SESSION_ID
+        harness = {
+            k: v
+            for k, v in os.environ.items()
+            if k not in {"CLAUDE_CODE_SESSION_ID", "COPILOT_SESSION_ID"}
+        }
+        harness["CLAUDE_SESSION_ID"] = "legacy-session-1"
+        # when: the commit-locus recorder runs
+        with mock.patch.dict(os.environ, harness, clear=True):
+            record_committed_artifact_edits(root)
+        # then: the row names the fallback session, as resolve_session_id reads it
+        row = next(r for r in _rows(root) if r.get("event") == "artifact_edited")
+        self.assertEqual(row.get("session"), "legacy-session-1")
+
 
 if __name__ == "__main__":
     unittest.main()
