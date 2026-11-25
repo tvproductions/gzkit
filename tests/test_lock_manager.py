@@ -1,6 +1,7 @@
 """Tests for gzkit.lock_manager — lock file I/O and TTL logic."""
 
 import json
+import os
 import tempfile
 import unittest
 import unittest.mock
@@ -150,14 +151,13 @@ class TestLockData(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
-@covers("OBPI-0.0.14-01")
 class TestHarnessSessionId(unittest.TestCase):
     """The harness session id is read in one place (GHI #484, GHI #1360)."""
 
     def _env(self, **values: str) -> dict[str, str]:
         base = {
             k: v
-            for k, v in __import__("os").environ.items()
+            for k, v in os.environ.items()
             if k not in {"CLAUDE_CODE_SESSION_ID", "CLAUDE_SESSION_ID", "COPILOT_SESSION_ID"}
         }
         return {**base, **values}
@@ -183,6 +183,7 @@ class TestHarnessSessionId(unittest.TestCase):
             self.assertIsNone(harness_session_id())
 
 
+@covers("OBPI-0.0.14-01")
 class TestResolveAgent(unittest.TestCase):
     """Unit tests for resolve_agent()."""
 
