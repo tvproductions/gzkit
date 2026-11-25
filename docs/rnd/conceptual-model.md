@@ -285,6 +285,19 @@ AC 00-71 § 3.1's objects (anomalous behavior, process non-compliance, deficienc
 data). The method decision above stands with the operator's emphasis: options are welcome, put
 with the operator's input favored.
 
+## decision · a discrepancy is measured against declared intent of record
+
+Question: what is the approved data a gzkit discrepancy is measured against? Options put: A,
+declared intent of record, anything the operator approved (the catalog's REQs and FIXes, ADRs,
+the PRD, ruled canon: rules, doctrine, AGENTS.md, the contract), the correction doctrine's
+*"original declared intent"*, with behavior measured against requirements, process against
+process canon and life-cycle data against its ruled standards, and unruled prose not approved
+data; B, the requirement records only; C, anything documented, ruled or not. Recommended A.
+Operator: *"A: Declared intent of record"*.
+
+So a gzkit discrepancy is a finding that gzkit's behavior, process or life-cycle data does not
+meet its declared intent of record.
+
 ---
 
 ## Disposition map
