@@ -548,7 +548,45 @@ verified: blocked-by on GitHub Enterprise Server. Operator, verbatim: *"yes, A �
 move on"*.
 
 **commissions:** 4 — `.gzkit/rules/gh-cli.md` § Allowed commands widened to the per-issue
-native verbs; `ghi-author`, `ghi-close` and `ghi-triage` carry the fields as ruled. Defect-fix routing's OBPI arm has
+native verbs; `ghi-author`, `ghi-close` and `ghi-triage` carry the fields as ruled.
+
+## source · what reads the secondary labels
+
+Read 2026-11-25. `src/gzkit/commands/patch_release.py:454-456`:
+
+> def _classify_ghi(project_root: Path, ghi: GhiRecord, base_ref: str | None) -> GhiQualification:
+>     """Classify a GHI by cross-validating runtime label and src diff in range."""
+>     has_label = "runtime" in ghi.labels
+
+`.gzkit/rules/security-sensitivity.md` § Direct-fix path:
+
+> so a registry correction filed as a GHI has **no brief and therefore no declaration channel**.
+> `gz validate --sensitivity` reads OBPI brief frontmatter only [...] Until a commit-side channel
+> exists (candidate: a `Sensitivity: security` trailer checked by `gz validate --commit-trailers`)
+
+`.gzkit/rules/task-discovery.md` § Conventions:
+
+> **The trailer set is CLOSED (operator ruling 2026-09-01, verbatim *"never"*):** `Task:`,
+> `Ceremony:` and `Eval-feedback-source:` only.
+
+No code or skill reads `tech-debt` as a label (`git grep`, 2026-11-25); `ghi-author` states its
+reader as *"Routes the GHI into tech-debt sweeps and chore plans"*.
+
+## decision · the secondary labels retire; sensitivity is read from the diff
+
+Question: what becomes of `runtime`, `security` and `tech-debt`? Options put: A, retire all
+three, patch release qualifying on `class:behavior` and the `src/` diff it already checks,
+security moving to the commit side, accumulated drift kept with family; B, keep `runtime`;
+C, keep all three with the readers they claim. Recommended A. Operator: *"A: Retire all three"*.
+
+The agent had recommended the security rule's `Sensitivity: security` trailer without citing the
+closed trailer set, and said so before recording. Question: where is a direct fix's security
+sensitivity declared? Options put: A, read from the diff, a fix commit being security-sensitive
+when it touches a path in `data/security_surfaces.json`, the overlap rule briefs already follow,
+the trailer set staying closed; B, reopen the trailer set; C, keep the label. Recommended A.
+Operator: *"A: Read it from the diff"*.
+
+So the GHI carries no secondary labels. The *what it is* group holds class, found and family. Defect-fix routing's OBPI arm has
 no GHI destination under this run's rulings; its repair is diamond 2.
 
 ---
