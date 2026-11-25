@@ -175,6 +175,14 @@ record carries that answer in their words. Options stay available, put beside or
 operator's input, never in place of it. AGENTS.md § Operator Economy's A/B/C rule stands; this
 weights it. Recorded as an insight, the first reading superseded.
 
+## decision · this run is not the DDD-discipline run
+
+Asked whether this run takes up the commission of the DDD-discipline run (design-amendment Q8,
+never opened), the operator, verbatim: *"you found the ddd run and it is related, but we were
+untangling something different"*. So this run keeps its own subject, the conflated concepts the
+walk surfaced, and the DDD-discipline run stays its own commission: related, still unopened, and
+recorded as a defect the same session (operator: *"leaving that rnd unstarted is not good"*).
+
 ---
 
 ## Disposition map
