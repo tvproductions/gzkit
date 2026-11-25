@@ -242,7 +242,7 @@ def record_committed_artifact_edits(root: Path, rev: str = "HEAD") -> list[str]:
     if not pending:
         return []
     commit = _git(["rev-parse", rev], root).strip() or None
-    session = os.environ.get("CLAUDE_SESSION_ID") or os.environ.get("COPILOT_SESSION_ID")
+    session = os.environ.get("CLAUDE_CODE_SESSION_ID") or os.environ.get("CLAUDE_SESSION_ID")
     ledger = Ledger(ledger_path)
     for path in pending:
         ledger.append(artifact_edited_event(path, session, commit=commit))

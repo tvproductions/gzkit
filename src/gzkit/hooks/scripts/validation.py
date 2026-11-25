@@ -509,8 +509,8 @@ def _ledger_writer_script() -> str:
                 try:
                     from gzkit.hooks.core import record_artifact_edit
 
-                    session = os.environ.get("CLAUDE_SESSION_ID") or os.environ.get(
-                        "COPILOT_SESSION_ID"
+                    session = os.environ.get("CLAUDE_CODE_SESSION_ID") or os.environ.get(
+                        "CLAUDE_SESSION_ID"
                     )
 
                     # This will trigger validation and raise if it fails

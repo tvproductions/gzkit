@@ -24,11 +24,13 @@ would otherwise decide it by race.
 """
 
 import json
+import os
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 from typing import Any
+from unittest import mock
 
 from gzkit.hooks.commit_ledger import record_committed_artifact_edits
 from tests.commands.common import _isolated_git_env
@@ -252,6 +254,32 @@ class TestRecorderNeverObstructsACommit(unittest.TestCase):
         before = len(_rows(root))
         self.assertEqual(record_committed_artifact_edits(root), [])
         self.assertEqual(len(_rows(root)), before)
+
+
+class TestRecordedSessionIsTheHarnessSession(unittest.TestCase):
+    """The row names the session Claude Code exports (GHI #484, GHI #1360)."""
+
+    def test_claude_code_session_id_is_recorded(self) -> None:
+        root = _repo()
+        _write_and_commit(root, _BRIEF, when=_T1)
+        # given: the environment Claude Code exports, which carries no CLAUDE_SESSION_ID
+        harness = {
+            k: v
+            for k, v in os.environ.items()
+            if k not in {"CLAUDE_SESSION_ID", "COPILOT_SESSION_ID"}
+        }
+        harness["CLAUDE_CODE_SESSION_ID"] = "cc-session-1"
+        # when: the commit-locus recorder runs
+        with mock.patch.dict(os.environ, harness, clear=True):
+            record_committed_artifact_edits(root)
+        # then: the row names that session
+        row = next(r for r in _rows(root) if r.get("event") == "artifact_edited")
+        self.assertEqual(
+            row.get("session"),
+            "cc-session-1",
+            "Claude Code exports CLAUDE_CODE_SESSION_ID, not CLAUDE_SESSION_ID; a row "
+            "recorded under it with no session cannot be attributed to the session",
+        )
 
 
 if __name__ == "__main__":

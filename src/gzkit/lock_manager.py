@@ -124,7 +124,8 @@ def resolve_agent(agent_override: str | None = None) -> str:
 
     If *agent_override* is provided it is returned as-is. Otherwise the
     running environment is inspected: ``CLAUDECODE`` env var (Claude Code
-    exports this, not ``CLAUDE_CODE``) → ``"claude-code[-<sid8>]"``,
+    exports this; ``CLAUDE_CODE`` is accepted too) → ``"claude-code[-<sid8>]"``,
+    the session id read from ``CLAUDE_CODE_SESSION_ID``, else ``CLAUDE_SESSION_ID``;
     ``CODEX_SANDBOX`` env var → ``"codex"``, fallback → ``"unknown-<pid>"``.
 
     Returns:

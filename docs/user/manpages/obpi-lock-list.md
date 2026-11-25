@@ -51,7 +51,7 @@ gz obpi lock list --json
   "locks": [
     {
       "obpi_id": "mx-session",
-      "agent": "claude-code-e6800367",
+      "agent": "e6800367-eb28-4b68-9624-65d94f7cdf17",
       "pid": 69162,
       "session_id": "e6800367-eb28-4b68-9624-65d94f7cdf17",
       "claimed_at": "2026-10-18T16:50:05.726480+00:00",

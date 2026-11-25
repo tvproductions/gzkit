@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-17
 metadata:
-  skill-version: "6.4.4"
+  skill-version: "6.4.5"
 model: haiku
 ---
 
@@ -73,9 +73,9 @@ Path: `.gzkit/locks/obpi/{OBPI-ID}.lock.json`
 ```json
 {
   "obpi_id": "OBPI-0.0.25-03",
-  "agent": "claude-code",
+  "agent": "claude-code-1a2b3c4d",
   "pid": 12345,
-  "session_id": "abc123",
+  "session_id": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
   "claimed_at": "2026-02-14T12:00:00Z",
   "branch": "master",
   "ttl_minutes": 120
@@ -143,11 +143,11 @@ Agents identify themselves by environment:
 
 | Signal | Agent |
 |--------|-------|
-| `CLAUDECODE` env var (or `CLAUDE_CODE`) | `claude-code-<first 8 of CLAUDE_CODE_SESSION_ID>`, or `claude-code` with no session id |
+| `CLAUDECODE` env var (or `CLAUDE_CODE`) | `claude-code-<first 8 of the session id>`, the id read from `CLAUDE_CODE_SESSION_ID`, else `CLAUDE_SESSION_ID`; `claude-code` when neither is set |
 | `CODEX_SANDBOX` env var | `codex` |
 | Fallback | `unknown-<pid>` |
 
-`--agent` overrides the resolved name (`lock_manager.resolve_agent`). Because the Claude Code name carries the session id, a new session (after `/clear` or a restart) is a different agent from the one that claimed, while a dispatched subagent inherits the session id and resolves to its orchestrator's name.
+`--agent` overrides the resolved name on `claim` and `release` only (`lock_manager.resolve_agent`); completion, the reaper and the pipeline gate resolve without it, so a lock claimed under `--agent` is not seen as held by the session that completes it. Because the Claude Code name carries the session id, a new session (after `/clear`) is a different agent from the one that claimed, and a dispatched subagent resolves to its orchestrator's name while the harness exports the session id to it. Every Codex session resolves to plain `codex`, so two Codex sessions are one agent. The MX hangar's `mx-session` lock is the exception to all of this: `gz mx enter` mints its own id and records it as both agent and session id (RP-12 ruling 149).
 
 ---
 
