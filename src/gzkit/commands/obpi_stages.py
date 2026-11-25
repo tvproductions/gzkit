@@ -652,6 +652,6 @@ def _run_pipeline_sync_stage(
     console.print("")
     console.print(
         f"Pipeline complete. {obpi_id} synced. The work lock was surrendered "
-        f"mechanically at completion (register-entry handoff written, lock "
+        f"mechanically at completion (completion exchange record written, lock "
         f"released); no manual 'gz obpi lock release' is required (GHI #619)."
     )

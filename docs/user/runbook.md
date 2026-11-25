@@ -355,7 +355,7 @@ uv run gz arb patterns --compact      # optional: scan for recurring anti-patter
 
 # 5) Complete OBPI atomically (attestation + brief + receipt in one transaction).
 #    Completion also surrenders any held work lock mechanically — it writes a
-#    register-entry handoff and releases the lock; no manual
+#    completion exchange record and releases the lock; no manual
 #    `gz obpi lock release` step is needed (GHI #619). Cite the ARB receipt IDs
 #    from step 4b in --attestation-text per `AGENTS.md` § Attestation.
 uv run gz obpi complete OBPI-<X.Y.Z-NN-slug>-<slug> --attestor "<name>" --attestation-text "<attestation>"
@@ -892,7 +892,7 @@ uv run gz lint
 ```
 
 After the Heavy-lane ceremony is accepted, complete the OBPI atomically (completion
-surrenders any held lock mechanically and writes its register-entry handoff — GHI
+surrenders any held lock mechanically and writes its completion exchange record — GHI
 #619), then sync and reconcile:
 
 ```bash

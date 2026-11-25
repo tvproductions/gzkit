@@ -5,7 +5,7 @@ description: Use to create or resume a session handoff document.
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "7.9.3"
+  skill-version: "7.9.4"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
@@ -175,7 +175,7 @@ The CREATE workflow writes a new handoff document when an agent is pausing work.
 
    **The list marker is load-bearing, not styling (GHI #722).** `[operator-ruled] ...` with no `- ` parses to NOTHING, and the successor's `Settled Rulings` promotes zero rulings; ten operator rulings left the chain that way before it was caught. `validate_decision_markers` now refuses the shape at authoring.
 
-   **The mechanical completion handoff attributes its own decision.** `write_completion_handoff` (the token-block exit edge, GHI #619) marks its entry `[operator-ruled]` unconditionally — Gate 5 is universal (ADR-0.0.36), so a completion handoff's decision is *always* a human attestation. The abandon-path writer stays unattributed on purpose — its entry is a mechanical lock-surrender record, not a ruling. In these mechanically written handoffs, embedded evidence (attestation text, implementation summary, key proof) is cut at 600 chars on a word boundary with a trailing `…`; the full attestation always remains in the ledger receipt.
+   **The mechanical completion exchange record attributes its own decision.** `write_completion_exchange` (the token-block exit edge, GHI #619) marks its entry `[operator-ruled]` unconditionally — Gate 5 is universal (ADR-0.0.36), so a completion record's decision is *always* a human attestation. The abandon-path writer stays unattributed on purpose — its entry is a mechanical lock-surrender record, not a ruling. In these mechanically written handoffs, embedded evidence (attestation text, implementation summary, key proof) is cut at 600 chars on a word boundary with a trailing `…`; the full attestation always remains in the ledger receipt.
 
    **`Settled Rulings` is written for you — do NOT hand-fill it.** The optional
    `## Settled Rulings` section is composed by construction: `create_handoff`

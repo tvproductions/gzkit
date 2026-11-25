@@ -1,6 +1,6 @@
 <!-- markdownlint-configure-file { "MD013": { "line_length": 9999 } } -->
 
-# Token-Block Doctrine — Lock-Release Coupled to Handoff Register Entry
+# Token-Block Doctrine — Lock-Release Coupled to an Exchange-Record Register Entry
 
 **Source ADR:** [ADR-0.0.41 — Token-Block Lock Discipline](../design/adr/foundation/ADR-0.0.41-token-block-lock-discipline/ADR-0.0.41-token-block-lock-discipline.md)
 
@@ -70,9 +70,9 @@ The dual phrasing — *the register entry is required at every signal box, not o
 |---|---|
 | Token (tablet, staff, key token) | OBPI lock instrument |
 | Token issue at signal box | `obpi_lock_claimed` ledger event |
-| Train register entry on issue | First handoff CREATE following claim (or chained from prior session) |
+| Train register entry on issue | `obpi_lock_claimed` itself; the exchange record that concludes the traversal names it (`last_lock_event_timestamp`) |
 | Token surrender at exit signal box | `obpi_lock_released` ledger event |
-| Train register entry on surrender | Handoff CREATE before lock release — fail-closed |
+| Train register entry on surrender | Exchange record under `.gzkit/locks/exchange/` before lock release — `gz obpi complete`, or `gz obpi lock release --abandon` — fail-closed |
 | Bound book (the train register itself) | `.gzkit/ledger.jsonl` (append-only) |
 | Section / block | An OBPI under active implementation |
 | Two trains, two signal boxes | Two agents, lock-claim and lock-release boundaries |
@@ -174,7 +174,7 @@ The treatment of the audit trail as a Layer-2 primitive in gzkit's state doctrin
 - [`docs/governance/state-doctrine.md`](state-doctrine.md) — Layer-2 source-of-truth doctrine; this doctrine extends Layer-2 with audit-coupling.
 - [ADR-0.0.9 — State Doctrine and Source-of-Truth Hierarchy](../design/adr/foundation/ADR-0.0.9-state-doctrine-source-of-truth/ADR-0.0.9-state-doctrine-source-of-truth.md) — parent doctrine.
 - `.gzkit/rules/token-block-discipline.md` — the binding-bullets rule file (authored under OBPI-0.0.41-01); this document is its pedagogical companion.
-- `.gzkit/skills/gz-session-handoff/SKILL.md` — the agent-facing skill whose CREATE workflow produces the register entry; trigger semantics rewritten under OBPI-0.0.41-05.
+- `.gzkit/skills/gz-obpi-lock/SKILL.md` — the agent-facing skill for claim and surrender; the register entry is written by `gz obpi complete` or `gz obpi lock release --abandon`, never by a session handoff (`gz-session-handoff`, relocated by GHI #763).
 - [GHI #410](https://github.com/tvproductions/gzkit/issues/410) — the surfacing observation; closed `superseded` against ADR-0.0.41.
 - [GHI #326](https://github.com/tvproductions/gzkit/issues/326) — the SessionStart auto-load (read-side counterpart whose mechanical-floor presence exposed the asymmetry this doctrine closes).
 
@@ -189,16 +189,16 @@ The treatment of the audit trail as a Layer-2 primitive in gzkit's state doctrin
 - **Register entry** — the **exchange record** written to `.gzkit/locks/exchange/` (canonical storage; relocated from `.gzkit/handoffs/` by GHI #763); the audit pairing for every lock release. It is NOT a session handoff: `exchange` notes one block's vacation, `handoff` is a session-to-session memory refresh, and `transit` is entry to and exit from the ecosystem — three systems, one word they used to share. This line previously defined the correct term using the wrong one
 - **Traversal** — a single OBPI work session; may span multiple agent invocations and clock boundaries
 - **Abandonment** — surrender of a token due to external circumstance (network loss, blocker, wrong claim, tool failure) recorded via a degenerate exchange record with `abandoned: true`
-- **Reaping** — forcible surrender of an expired token by a different agent (or the same agent in a later session), paired with a degenerate `abandoned_by_reaper` register entry
+- **Reaping** — surrender of an expired token on the operator's word (`gz obpi lock release --force --abandon reaping:<reason>`), or the automatic reap of the orphan `mx-session` lock, each paired with a degenerate register entry; expiry alone never evicts (operator ruling 2026-10-18)
 
-## Lock/handoff-coupling audit path
+## Lock/exchange-coupling audit path
 
-(Lifted from the rule's § Audit Path, 2026-08-02.) When troubleshooting lock/handoff coupling failures:
+(Lifted from the rule's § Audit Path, 2026-08-02.) When troubleshooting lock/exchange coupling failures:
 
 1. `uv run gz validate --lock-exchange-coupling` — fail-closed validator that replays ledger and checks every `obpi_lock_released` event.
 2. `grep "obpi_lock_released" .gzkit/ledger.jsonl` — find all release events; each MUST have a `handoff_path` field.
 3. `test -f "<path-from-handoff_path>"` — verify register entry exists on-disk.
 4. `head -n 10 <path>` — check frontmatter for timestamp, commit SHA, decision context, branch state.
-5. Cross-check frontmatter timestamp against `obpi_lock_claimed` timestamp for the same OBPI/agent pair — handoff timestamp must be later.
+5. Cross-check frontmatter timestamp against `obpi_lock_claimed` timestamp for the same OBPI/agent pair — the record's timestamp must be later.
 
 The rule's former § Cross-Links pointers are absorbed by § Cross-references within gzkit above. Governance context: Behavior Rule Always #11 (course correction) and the Anti-vibing mantra operative claims establish why every token surrender requires explicit verification, not memory or good faith. (The lifted text's "5:1 governance ratio" phrasing was already retired by AGENTS.md as rhetorical — read the rule, not the metaphor — and is corrected here in transit.)

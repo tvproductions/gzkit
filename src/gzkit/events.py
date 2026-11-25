@@ -1463,7 +1463,7 @@ class HandoffResumeAuthorizedEvent(_EventBase):
     ``operator_text`` is the operator's VERBATIM words, passed through unchanged
     per AGENTS.md § Attestation. Session-scoped: authorization was per
     ``session_id``, so it could not leak across sessions and a mechanically
-    written completion handoff (GHI #619) could not re-arm the gate mid-session.
+    written completion exchange record (GHI #619) could not re-arm the gate mid-session.
     """
 
     event: Literal["handoff_resume_authorized"]

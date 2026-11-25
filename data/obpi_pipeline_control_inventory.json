@@ -8150,8 +8150,11 @@
       "stage5"
      ],
      "cause": null,
-     "delivered_span": "If the register entry could not be\n   written, the lock is left for TTL reaping. Report that to the operator, and\n   never `--abandon` a completed OBPI.",
-     "reworded": null
+     "delivered_span": "If the register entry could not be\n   written, the lock stays held (expiry is booked and announced, never evicted). Report that to the operator, and\n   never `--abandon` a completed OBPI.",
+     "reworded": {
+      "text": "If the register entry could not be\n   written, the lock stays held (expiry is booked and announced, never evicted). Report that to the operator, and\n   never `--abandon` a completed OBPI.",
+      "reason": "A ruled correction (GHI #1359; operator 2026-11-25, \"proceed with M3\"): expiry never evicts (token-block § Sub-Invariants 3 and 4, operator ruling 2026-10-18), so a lock left held is not reaped at its TTL; it stays held, its expiry is booked and announced, and only an abandon release on the operator's word frees it."
+     }
     }
    ],
    "non_control": [
@@ -8748,8 +8751,11 @@
       "stage5"
      ],
      "cause": null,
-     "delivered_span": "| A lock survives `gz obpi complete` | The completion register entry could not be written, so the lock was left for TTL reaping (Stage 5 step 3). Report it; never `--abandon` a completed OBPI. |",
-     "reworded": null
+     "delivered_span": "| A lock survives `gz obpi complete` | The completion register entry could not be written, so the lock stays held, its expiry booked and never evicted (Stage 5 step 3). Report it; never `--abandon` a completed OBPI. |",
+     "reworded": {
+      "text": "| A lock survives `gz obpi complete` | The completion register entry could not be written, so the lock stays held, its expiry booked and never evicted (Stage 5 step 3). Report it; never `--abandon` a completed OBPI. |",
+      "reason": "A ruled correction (GHI #1359; operator 2026-11-25, \"proceed with M3\"): expiry never evicts (token-block § Sub-Invariants 3 and 4, operator ruling 2026-10-18), so a lock left held is not reaped at its TTL; it stays held, its expiry is booked and announced, and only an abandon release on the operator's word frees it."
+     }
     }
    ],
    "non_control": []

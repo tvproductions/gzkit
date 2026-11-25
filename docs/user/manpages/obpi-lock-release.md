@@ -23,7 +23,9 @@ gz obpi lock release OBPI-X.Y.Z-NN [--force] [--agent NAME]
 
 - Removes lock file from `.gzkit/locks/obpi/`
 - Validates ownership (release only allowed by lock holder unless
-  `--force`)
+  `--force`, which waives the ownership check only)
+- Refuses (exit 3) unless an exchange record postdating the claim exists or
+  `--abandon <category>:<reason>` is passed (token-block § Sub-Invariant 5)
 - Emits `obpi_lock_released` event to ledger for audit trail
 
 ## `--abandon` flag (token-block discipline, ADR-0.0.41)

@@ -1122,6 +1122,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `token-block-discipline.md`
 
+### `0.10.3` (2026-11-25)
+
+§ Sub-Invariants 1 and 5 named `lock_manager.release_lock()`, a function that does not exist; release lives in `obpi_lock_release_cmd` alone (independent review of GHI #1359, finding N1). Binding rules unchanged.
+
 ### `0.10.2` (2026-11-25)
 
 Prior `0.10.1` banner: *"the reaping procedure, the 50 % warning text and the completion fallback now match `lock_manager.py`, `session_orientation.py` and the no-eviction ruling."* Superseded under GHI #1359, prompt-audit mechanism M3 (operator, 2026-11-25: *"proceed with M3"*; for the brief-owned surfaces, *"Fix now, record REQ-08 (Recommended)"*): the Doctrine Foundation and § Sub-Invariants 2, 5 and 6 called the register entry a "handoff document" or "completion handoff", although the three-subjects ruling and GHI #763 moved it to an exchange record under `.gzkit/locks/exchange/` that a session handoff never satisfies; the 50 % warning text told the holder to "hand off and release via gz-session-handoff", a route that releases nothing. **Binding rules unchanged:** the wording now names what `is_exchange_register_entry` and `release_lock()` already require.

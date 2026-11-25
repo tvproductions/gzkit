@@ -10,7 +10,8 @@ one block's occupancy (here); *handoff* is one session's memory refresh
 (`.gzkit/handoffs/`, ADR-0.0.65). Three systems, one word they used to share.
 
 Written mechanically by `gz obpi complete`, by
-`gz obpi lock release --abandon <category>:<reason>`, and by TTL reaping. Do
+`gz obpi lock release --abandon <category>:<reason>`, and by the reap of an
+orphan `mx-session` lock (expiry never evicts a work lock). Do
 not hand-author one to discharge a lock — take the completion or abandon path.
 
 Tracked on purpose: the sibling `.gzkit/locks/` tree is gitignored runtime

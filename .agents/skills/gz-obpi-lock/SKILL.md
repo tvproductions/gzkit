@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-17
 metadata:
-  skill-version: "6.4.2"
+  skill-version: "6.4.3"
 model: haiku
 ---
 
@@ -152,7 +152,7 @@ Agents identify themselves by environment:
 
 ## Integration with Pipeline
 
-The pipeline calls `uv run gz obpi lock claim` at Stage 1 (Load Context). At Stage 5 `uv run gz obpi complete` writes the completion exchange record and surrenders the lock; no separate release runs. On an abort the pipeline surrenders with `uv run gz obpi lock release {OBPI-SLUG} --abandon <category>:<reason>`; when no category describes the abort the lock stays held, is named in the handoff, and is reaped at its TTL.
+The pipeline calls `uv run gz obpi lock claim` at Stage 1 (Load Context). At Stage 5 `uv run gz obpi complete` writes the completion exchange record and surrenders the lock; no separate release runs. On an abort the pipeline surrenders with `uv run gz obpi lock release {OBPI-SLUG} --abandon <category>:<reason>`; when no category describes the abort the lock stays held and is named in the handoff; at its TTL its expiry is booked and announced, never evicted, until its holder completes or the operator's word frees it.
 
 ---
 

@@ -2,7 +2,7 @@ Feature: Lock-exchange coupling validator (ADR-0.0.41 / OBPI-0.0.41-04)
   As a governance maintainer,
   I want the lock-exchange coupling validator wired into gz check,
   so that every obpi_lock_released event after the OBPI-02 cutover
-  is mechanically verified to carry a valid handoff register entry.
+  is mechanically verified to carry a valid exchange-record register entry.
 
   @REQ-0.0.41-04-01
   Scenario: Validator passes on a clean ledger with no post-cutover releases

@@ -29,7 +29,7 @@ to work it.
 
 - **Already implemented** → `gz-obpi-pipeline` with `--from=verify`; **already
   verified** → `--from=ceremony`.
-- **A stage aborts** → the pipeline releases the lock and writes a handoff; the
+- **A stage aborts** → the pipeline surrenders the lock with `--abandon <category>:<reason>` and writes a handoff; the
   next session resumes from it.
 - **Another agent may be working nearby** → **`gz-obpi-lock`** to see or manage
   claims. The pipeline claims its own lock.

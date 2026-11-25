@@ -14,9 +14,10 @@ all to the handoff bookmark, and leave."*
 
 The bookmark is always ``CHECKPOINT`` mode. A writer firing on session exit
 cannot know whether the operator is finished or merely typed ``/clear``, and a
-``CREATE`` handoff postdating a lock claim satisfies token-block discipline
-§ Sub-Invariant 5 — an automatic producer emitting those would let any session's
-work lock be released on the evidence of an artifact nobody authored. The mode
+``CREATE`` document an automatic producer emitted would read as a departure
+nobody authored. A session handoff never discharges a lock: release needs an
+exchange record under ``.gzkit/locks/exchange/`` (token-block discipline
+§ Sub-Invariant 5). The mode
 distinction is what makes running this automatically safe at all.
 
 Vendor-neutral by construction: the decision and the write live here, and each

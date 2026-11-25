@@ -90,7 +90,7 @@ STAGE_PROCEDURES: tuple[StageProcedure, ...] = (
         number=5,
         label="Sync And Account",
         filename="stage-5-sync-and-account.md",
-        sha256="3e44e10bfb209960c6b037deb79abf74efc0cafdf8f025dd9a27358c85ac2a54",
+        sha256="501f6b40179b9bcb2b4636ad84c70fc7e74b70a8c374474567c6c4bd0aeea60e",
     ),
 )
 

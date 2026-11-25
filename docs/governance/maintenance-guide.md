@@ -204,7 +204,7 @@ Erect the hangar, close the door, and run the cycle:
 To return to revenue service, **re-run every lock fail-closed. You cannot roll
 out dirty.** Exit *is* the torque-and-verify step. Anything still red at exit must
 be either fixed or explicitly MEL'd with an (O)/(M) and a repair clock. Exit
-couples to a handoff / register entry (ADR-0.0.41), and the MX log is its receipt.
+couples to an exchange-record register entry (ADR-0.0.41), and the MX log is its receipt.
 
 ---
 

@@ -77,7 +77,8 @@ def validate_lock_exchange_coupling(project_root: Path) -> list[ValidationError]
                     message=(
                         f"obpi_lock_released event for {obpi_id!r} (agent={agent!r}, "
                         f"ts={ev.ts!r}) is missing required handoff_path payload. "
-                        f"Run gz-session-handoff before releasing the lock."
+                        f"Surrender through `gz obpi complete` or `gz obpi lock release --abandon "
+                        f"<category>:<reason>`, which write the exchange record."
                     ),
                 )
             )
@@ -323,8 +324,8 @@ def _check_mode(
                 f"obpi_lock_released event for {obpi_id!r} (agent={agent!r}, "
                 f"ts={release_ts!r}) cites a {CHECKPOINT_MODE} handoff. A "
                 "mid-flight bookmark is not a token surrender (token-block "
-                "discipline § Sub-Invariant 5). Author a departure handoff via "
-                "the `gz-session-handoff` skill, or surrender explicitly with "
+                "discipline § Sub-Invariant 5). Surrender through `gz obpi "
+                "complete` or explicitly with "
                 "`gz obpi lock release --abandon <category>:<reason>`."
             ),
         )

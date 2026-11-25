@@ -828,7 +828,8 @@ def obpi_lock_ttl_warning_event(
     """Create an OBPI lock TTL-warning event (token-block-discipline.md § Sub-Invariant 4).
 
     Emitted by the SessionStart hook when a held lock has crossed 50% of its
-    TTL but has not yet expired (expired locks are reaped, not warned).
+    TTL but has not yet expired (an expired lock is booked as
+    ``obpi_lock_lease_expired`` and stays held).
 
     Returns:
         The ``obpi_lock_ttl_warning`` LedgerEvent, keyed by ``obpi_id``.

@@ -10,11 +10,11 @@ paths:
   - ".gzkit/handoffs/**"
   - "scripts/session_orientation.py"
 ---
-<!-- rule-version: 0.10.2 -->
+<!-- rule-version: 0.10.3 -->
 
 # Token-Block Discipline (gzkit)
 
-> **Rule version:** `0.10.2` — the register entry is named an exchange record under `.gzkit/locks/exchange/` throughout, never a session handoff, and the 50 % warning names a surrender that works (GHI #1359); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#token-block-disciplinemd).
+> **Rule version:** `0.10.3` — the register entry is an exchange record under `.gzkit/locks/exchange/`, never a session handoff, the 50 % warning names a surrender that works, and § Sub-Invariants 1 and 5 cite only the release code that exists (GHI #1359); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#token-block-disciplinemd).
 
 ## Three subjects (operator ruling, verbatim canon)
 
@@ -28,7 +28,7 @@ Keep three subjects distinct: transit is ecosystem movement through the airlock 
 
 ## Sub-Invariant 1: Auditable Abandon Categories
 
-`obpi_lock_release_cmd` and `lock_manager.release_lock()` accept `--abandon <category>:<reason>`; it writes a degenerate exchange record (`abandoned: true`, category and reason) and releases. Without it, release requires an existing register entry (§ Sub-Invariant 5).
+`obpi_lock_release_cmd` accepts `--abandon <category>:<reason>`; it writes a degenerate exchange record (`abandoned: true`, category and reason) and releases. Without it, release requires an existing register entry (§ Sub-Invariant 5).
 
 The abandon categories are closed: `network_loss`, `external_blocker`, `wrong_obpi_claimed`, `tool_failure`, plus `reaping` (§ Sub-Invariant 3). A new category needs ADR-backed rationale and a checklist item in the next maintenance ADR; `parse_abandon_spec` rejects an unregistered category at parse time, and free-text-only abandonment (`--abandon "session timeout"`) is refused.
 
@@ -53,7 +53,7 @@ The default TTL is 24 hours (`lock_manager.py`). At 50 % the SessionStart hook w
 
 ## Sub-Invariant 5: Release Fail-Closed Precondition
 
-`obpi_lock_release_cmd` and `lock_manager.release_lock()` refuse to release unless either:
+`obpi_lock_release_cmd` refuses to release unless either:
 
 1. an exchange record exists under `.gzkit/locks/exchange/` whose frontmatter timestamp is later than the matching `obpi_lock_claimed` event, does NOT carry `abandoned: true`, has `mode: CREATE`, and carries the four § Sub-Invariant 2 fields; or
 2. the caller passes `--abandon <category>:<reason>` (§ Sub-Invariants 1 and 3).

@@ -90,8 +90,9 @@ The distinction is mechanical, not advisory. A session writing a checkpoint
 still holds its work lock, so `gz obpi lock release` will **not** accept one as
 the register entry — token-block discipline § Sub-Invariant 5 is unrelaxed
 (`find_exchange_for_release` skips checkpoints; `gz validate
---lock-exchange-coupling` is the ledger-replay backstop). To surrender a token,
-author a departure handoff or use `--abandon <category>:<reason>`.
+--lock-exchange-coupling` is the ledger-replay backstop). No session handoff
+surrenders a token: complete the OBPI (`gz obpi complete`) or use
+`gz obpi lock release --abandon <category>:<reason>`.
 
 ```bash
 uv run gz handoff create --mode CHECKPOINT --slug midflight-bookmark --agent g0 \

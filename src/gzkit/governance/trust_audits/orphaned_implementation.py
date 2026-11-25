@@ -9,8 +9,8 @@ the lock without running ``gz obpi complete``. Frontmatter still says
 ``Draft``, the audit row already exists, and downstream reconciliation
 does not surface the mismatch.
 
-Recovery, by case. Work still in flight (a TTL reap or an ended
-session): the operator re-claims the lock with
+Recovery, by case. Work still in flight (an abandon release or an
+ended session): the operator re-claims the lock with
 ``uv run gz obpi lock claim <OBPI-ID>``; a claim later than the
 force-release clears the finding. Work ready for ceremony: complete it
 with ``uv run gz obpi pipeline <OBPI-ID> --from=verify``. When the
@@ -197,7 +197,7 @@ def _build_error(
         f"since lock claim at {claim_ts.isoformat()}. Implementation may have landed "
         "without ceremony, and only a ledger completion event makes an OBPI complete "
         "(docs/governance/state-doctrine.md Rule 1). Recover by the case that applies. "
-        "Work still in flight (a TTL reap or an ended session): the operator re-claims "
+        "Work still in flight (an abandon release or an ended session): the operator re-claims "
         f"the lock with `uv run gz obpi lock claim {obpi_id}`; a claim later than the "
         "force-release clears this finding. Work ready for ceremony: the operator runs "
         f"`uv run gz obpi pipeline {obpi_id} --from=verify`. Landed without ceremony on "

@@ -1,4 +1,4 @@
-<!-- Stage 5 procedure, served by the runtime at stage entry (OBPI-0.35.0-17; cut over in OBPI-0.35.0-20). Rendered from data/obpi_pipeline_control_inventory.json by gzkit.governance.pipeline_procedure_render: the stage's own section first, then every block from another section holding a control whose applies_at names this stage. Every control is verbatim from the attested baseline of .gzkit/skills/gz-obpi-pipeline/SKILL.md (072317673, body sha256 fe97fe3139282b0ceec5b11866e97efad11761d8e35a5e4977c84f3d6b388367); passages the inventory classes as rationale are in docs/governance/obpi-pipeline-control-rationale.md under the control they explain, and a control that applies elsewhere is left out of its block here. Reworded, each with its reason in the inventory: I-069. Do not edit by hand: tests/governance/test_pipeline_procedure_render.py holds this file to the render. -->
+<!-- Stage 5 procedure, served by the runtime at stage entry (OBPI-0.35.0-17; cut over in OBPI-0.35.0-20). Rendered from data/obpi_pipeline_control_inventory.json by gzkit.governance.pipeline_procedure_render: the stage's own section first, then every block from another section holding a control whose applies_at names this stage. Every control is verbatim from the attested baseline of .gzkit/skills/gz-obpi-pipeline/SKILL.md (072317673, body sha256 fe97fe3139282b0ceec5b11866e97efad11761d8e35a5e4977c84f3d6b388367); passages the inventory classes as rationale are in docs/governance/obpi-pipeline-control-rationale.md under the control they explain, and a control that applies elsewhere is left out of its block here. Reworded, each with its reason in the inventory: I-069, S5-033, T-017. Do not edit by hand: tests/governance/test_pipeline_procedure_render.py holds this file to the render. -->
 
 # Stage 5: Sync And Account — served procedure
 
@@ -94,7 +94,7 @@ Fix the required behavior or obtain the
 3. **Confirm the lock is gone — `gz obpi complete` released it.** Run
    `uv run gz obpi lock list` to confirm. Do not run `gz obpi lock release`
    afterwards; it prints `No lock found`. If the register entry could not be
-   written, the lock is left for TTL reaping. Report that to the operator, and
+   written, the lock stays held (expiry is booked and announced, never evicted). Report that to the operator, and
    never `--abandon` a completed OBPI.
 
 > Rationale: docs/governance/obpi-pipeline-control-rationale.md § S5-030
@@ -217,7 +217,7 @@ When a gate blocks and you suspect the brief — not the code — is stale, run 
 
 | `git sync` fails or repo remains unsynced | Stop before `gz obpi complete` and repair blockers |
 | Gate blocks on stale brief/allowlist (reconcile drift, security floor, under-declared coupled surface) | Run the **Gate Friction: Evaluator Escalation** loop (above) — dispatch evaluator → determination → operator approval → surgical brief amendment + documented override. Do NOT contort code to fit the brief or file a GHI to stall. |
-| A lock survives `gz obpi complete` | The completion register entry could not be written, so the lock was left for TTL reaping (Stage 5 step 3). Report it; never `--abandon` a completed OBPI. |
+| A lock survives `gz obpi complete` | The completion register entry could not be written, so the lock stays held, its expiry booked and never evicted (Stage 5 step 3). Report it; never `--abandon` a completed OBPI. |
 
 **Lock bracket:** Lock is claimed at Stage 1 and surrendered by `gz obpi complete` at Stage 5, or by an abort surrender.
 

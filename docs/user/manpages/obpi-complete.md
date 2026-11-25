@@ -127,8 +127,8 @@ grounds (GHI #587) stands unchanged.
 
 Steps 1-7 are the all-or-nothing transaction: if any step fails, all changes are
 rolled back (no partial writes). Step 8 runs after the transaction commits and is
-best-effort — if the register entry cannot be written the lock is left for TTL
-reaping rather than surrendered without one.
+best-effort — if the register entry cannot be written the lock stays held (its
+expiry is booked and announced, never evicted) rather than surrendered without one.
 
 ## Exit Codes
 
