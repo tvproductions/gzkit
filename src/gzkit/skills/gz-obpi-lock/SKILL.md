@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-17
 metadata:
-  skill-version: "6.4.6"
+  skill-version: "6.4.7"
 model: haiku
 ---
 
@@ -166,26 +166,13 @@ Files known to cause multi-agent conflicts:
 | File Pattern | Conflict Type | Mitigation |
 |-------------|---------------|------------|
 | `docs/governance/GovZero/adr-status.md` | Derived ADR status index | Never hand-edit; regenerate via `uv run gz register-adrs` |
-| `**/logs/obpi-audit.jsonl` | Append-only ledger | JSONL merge driver (see below) |
+| `**/logs/obpi-audit.jsonl` | Per-ADR audit log | Not under the merge driver; `.gitattributes` does not name it |
 | `docs/design/adr/**/*.md` (status field) | Brief status | Lock prevents concurrent edits |
 | `.gzkit/insights/agent-insights.jsonl` | Append-only log | JSONL merge driver |
 
 ### JSONL Merge Strategy
 
-For append-only JSONL files, conflicts are resolvable by union merge:
-
-1. Parse both sides as line arrays
-2. Union (deduplicate by timestamp + content hash)
-3. Sort by timestamp ascending
-4. Write merged result
-
-Add to `.gitattributes`:
-
-```gitattributes
-*.jsonl merge=union
-```
-
-The `merge=union` strategy keeps lines from both sides, which is correct for append-only ledgers.
+`.gitattributes` routes `.gzkit/ledger.jsonl`, `.gzkit/insights/agent-insights.jsonl` and `.gzkit/corpus/*.jsonl` to the `gzkit-jsonl` merge driver, `gz ledger merge-driver`, which merges both sides' appended rows as a timestamp-ordered union (GHI #811). Its registration lives in local git config, which `gz git-sync` and `gz init` seed. Git's built-in `merge=union` is not a substitute: it concatenates without ordering, and ledger rows are strictly timestamp-ordered (GHI #812). Contract and recovery: [`gz ledger merge-driver`](../../../docs/user/manpages/ledger-merge-driver.md).
 
 ### Pre-Push Conflict Check
 
