@@ -275,6 +275,16 @@ maintenance) and an AC 00-71 problem report (development assurance), with its *c
 pointing at ghi-author's unratified table; and it keeps a second home for discrepancies, the list,
 holding what the work leaves broken and the inspector's rejections.
 
+## decision · a discrepancy combines the in-service and the development-assurance senses
+
+Asked what a discrepancy is in gzkit, after both texts above were quoted, the operator, verbatim:
+*"do not be afraid to offer me options. it is a combination of both of these: 14 CFR § 43.11(b),
+§ 91.405) and AC 00-71 § 3.1"*. So a gzkit discrepancy carries § 43.11(b)'s measure (a finding
+against the approved data the article depends on, listed, then repaired or placarded) and
+AC 00-71 § 3.1's objects (anomalous behavior, process non-compliance, deficiencies in life cycle
+data). The method decision above stands with the operator's emphasis: options are welcome, put
+with the operator's input favored.
+
 ---
 
 ## Disposition map
