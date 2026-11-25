@@ -511,10 +511,10 @@
       "stage1"
      ],
      "cause": "GHI #288",
-     "delivered_span": "| \"No plan receipt exists — the brief is clear enough to skip planning\" | The plan-audit handoff is a governance checkpoint. Invoke `/gz-plan-audit <OBPI-ID>` in this same turn (see the Plan-Mode Gate controls below); do not end the turn to ask permission. |",
+     "delivered_span": "| \"No plan receipt exists — the brief is clear enough to skip planning\" | The plan-audit handoff is a governance checkpoint. Invoke `/gz-plan-audit <OBPI-ID>` in this same turn (see the Plan-Mode Gate controls below, from \"No plan receipt → no implementation\"); do not end the turn to ask permission. |",
      "reworded": {
-      "text": "| \"No plan receipt exists — the brief is clear enough to skip planning\" | The plan-audit handoff is a governance checkpoint. Invoke `/gz-plan-audit <OBPI-ID>` in this same turn (see the Plan-Mode Gate controls below); do not end the turn to ask permission. |",
-      "reason": "A ruled correction (GHI #1364; operator 2026-11-25, \"do M6\"): the § The Plan-Mode Gate heading is a structure passage the cutover no longer delivers; its controls render below without it (review 7162604775, B3)."
+      "text": "| \"No plan receipt exists — the brief is clear enough to skip planning\" | The plan-audit handoff is a governance checkpoint. Invoke `/gz-plan-audit <OBPI-ID>` in this same turn (see the Plan-Mode Gate controls below, from \"No plan receipt → no implementation\"); do not end the turn to ask permission. |",
+      "reason": "A ruled correction (GHI #1364; operator 2026-11-25, \"do M6\"): the § The Plan-Mode Gate heading is a structure passage the cutover no longer delivers; its controls render below without it (review 7162604775, B3). The pointer names the first control of the group (re-review 7162691441, N-b)."
      }
     }
    ],
@@ -715,8 +715,11 @@
       "stage4"
      ],
      "cause": "operator ruling 2026-09-05",
-     "delivered_span": "| \"The adversary found something, so the OBPI cannot pass\" | Apply the September 5 independent-closure rule below: every finding against the agreed requirements or their required proof needs a disposition and independent closure. Severity alone does not clear it. Track independent discoveries without silently making them acceptance prerequisites; never dismiss a relevant finding merely because it arose in an auxiliary audit. |",
-     "reworded": null
+     "delivered_span": "| \"The adversary found something, so the OBPI cannot pass\" | Apply the September 5 independent-closure rule above (\"Step 4b closes on independent confirmation of the corrected state\"): every finding against the agreed requirements or their required proof needs a disposition and independent closure. Severity alone does not clear it. Track independent discoveries without silently making them acceptance prerequisites; never dismiss a relevant finding merely because it arose in an auxiliary audit. |",
+     "reworded": {
+      "text": "| \"The adversary found something, so the OBPI cannot pass\" | Apply the September 5 independent-closure rule above (\"Step 4b closes on independent confirmation of the corrected state\"): every finding against the agreed requirements or their required proof needs a disposition and independent closure. Severity alone does not clear it. Track independent discoveries without silently making them acceptance prerequisites; never dismiss a relevant finding merely because it arose in an auxiliary audit. |",
+      "reason": "A ruled correction (GHI #1364; operator 2026-11-25, \"do M6\"): the cutover moved this row to the end of the Stage 4 procedure, after the rule it cites, so \"below\" led nowhere (re-review 7162691441, R1)."
+     }
     }
    ],
    "non_control": []
@@ -8762,8 +8765,11 @@
       "stage5"
      ],
      "cause": null,
-     "delivered_span": "| Gate blocks on stale brief/allowlist (reconcile drift, security floor, under-declared coupled surface) | Run the **Gate Friction: Evaluator Escalation** loop (above) — dispatch evaluator → determination → operator approval → surgical brief amendment + documented override. Do NOT contort code to fit the brief or file a GHI to stall. |",
-     "reworded": null
+     "delivered_span": "| Gate blocks on stale brief/allowlist (reconcile drift, security floor, under-declared coupled surface) | Run the implementer → evaluator → human-approval loop (above, \"When a gate blocks and you suspect the brief\") — dispatch evaluator → determination → operator approval → surgical brief amendment + documented override. Do NOT contort code to fit the brief or file a GHI to stall. |",
+     "reworded": {
+      "text": "| Gate blocks on stale brief/allowlist (reconcile drift, security floor, under-declared coupled surface) | Run the implementer → evaluator → human-approval loop (above, \"When a gate blocks and you suspect the brief\") — dispatch evaluator → determination → operator approval → surgical brief amendment + documented override. Do NOT contort code to fit the brief or file a GHI to stall. |",
+      "reason": "A ruled correction (GHI #1364; operator 2026-11-25, \"do M6\"): the \"Gate Friction: Evaluator Escalation\" heading is a structure passage no stage file delivers; the pointer names the text the loop opens with (re-review 7162691441, N-a)."
+     }
     }
    ],
    "non_control": []

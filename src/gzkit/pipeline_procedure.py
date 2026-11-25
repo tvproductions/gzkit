@@ -62,7 +62,7 @@ STAGE_PROCEDURES: tuple[StageProcedure, ...] = (
         number=1,
         label="Load Context",
         filename="stage-1-load-context.md",
-        sha256="ca5ce0e398204c21ce2ec2bce334aab49875cce0ba41852396a1f6af8c68447d",
+        sha256="c82606b70c2bf7a62864af7bab2ea963a63d416aa317f22fa1fde3f4042156b8",
     ),
     StageProcedure(
         key="stage2",
@@ -83,14 +83,14 @@ STAGE_PROCEDURES: tuple[StageProcedure, ...] = (
         number=4,
         label="Present Evidence",
         filename="stage-4-present-evidence.md",
-        sha256="392c80ce383711c74c5e0c9d4133261305474c0d91c9eb8dc6b9163fa017d202",
+        sha256="60c6dc94c6303ee1e35ed5cdb4486841683812c31ec494418f98c1fe49234c83",
     ),
     StageProcedure(
         key="stage5",
         number=5,
         label="Sync And Account",
         filename="stage-5-sync-and-account.md",
-        sha256="804b3caa59b120028b7189338cc911bd15108f95c0388a285ef94d37453e1be1",
+        sha256="3798e9c2c5ebf140fe8e32cf1c2c432d1820d56de4d977ca63a9b27d3c018678",
     ),
 )
 
