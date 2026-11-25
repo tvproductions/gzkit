@@ -521,7 +521,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T27 | **Ruled W49: different acts; the briefing gates no work, and the record is validated.** *"The briefing gates nothing"* (the constitution) against kit ruling 19's turnover gate | contradicted |
 | T28 | **Ruled W50: the passage log closes as a dated record; the maintenance record is its successor, one entry per task; no backfill.** The passage log: rows per act after *act* retired, and RP-12's missing rows | stale since 2026-11-04 |
 | T29 | **Settled by W22 and W30: a task's parent is its one REQ or FIX and its start event records the order it ran under; a commit carries `Task: TASK-<n>`, six digits minimum; legacy forms frozen. The four live spellings and TASK events requiring `obpi_id` and `adr_id` are defects owed on T10's route.** The task trailer for order work, and the task's ledger binding to its order | four trailer spellings; TASK events lack `order` |
-| T30 | The specification pages' file names (`harbor-roN`), RP-0's page, and how sub-ids are namespaced | unruled |
+| T30 | **Ruled W51 in part: pages renamed `RP-nnnn-<slug>` (*harbor* allowed in the slug) behind a path-alias map; RP-0 gets its own page. Sub-ids paused to the conceptual-model R&D: no sub-id structure was ever designed.** The specification pages' file names (`harbor-roN`), RP-0's page, and how sub-ids are namespaced | unruled |
 | T31 | The overloaded words: order, level, run, block, package, repair, freeze, proceed, pause, hold, departure, terminate, advisory, clearance, gate, sortie, checkpoint, dispatch | each with two to six senses (A, B, F collisions) |
 | T32 | The settled-ruling corpus: mark a superseded ruling under its *"do NOT re-open"* banner | three unmarked instances found (B 14) |
 | T33 | The ADR and pool identifiers: `ADR-[0-9]{4,}-<slug>`, `ADR-pool.<slug>` against `ADR-0.2.0-pool.<slug>` | ruled in RP-6, not applied |
@@ -531,7 +531,7 @@ pass adds. Each is put one at a time, with its options and a recommendation, and
 | T38 | **Ruled W10.** One repair discipline in every condition: drydock, safe mode and line GHI work all run as repair package → repair order → FIX + task (operator, 2026-11-22: *"this discipline works for dry dock, safe mode and "normal" GHI work I would imagine"*). What differs by condition: the epic (a return to service package only when the marker is open), whether one GHI is a package of one order, and Gate 5 on a line order | line GHI work leaves one `fix(…): (GHI #N)` commit and no record |
 | T39 | Gate 5 on a line repair order, against `AGENTS.md` § Attestation's *"a GHI needs no completion attestation"* | line GHIs close on a reviewer subagent |
 | T40 | **Done W13**, in the requirements model § The store. The catalog store documented in one place: every file under `data/catalog/`, its kind, its writer verb and its schema (W12) | spread over `harbor-ro3`, `harbor-ro5`, the kit and the model docstrings |
-| T37 | Numbered rulings on each package's specification page (RP-12 holds 205, RP-11 holds 11), cited as *"RP-11 ruling 4"*: a fourth id family, scoped by page, never in the store or the identity seam | prose only |
+| T37 | **Paused to the conceptual-model R&D (W51).** Numbered rulings on each package's specification page (RP-12 holds 205, RP-11 holds 11), cited as *"RP-11 ruling 4"*: a fourth id family, scoped by page, never in the store or the identity seam | prose only |
 
 ## 9. Rulings
 
@@ -1174,6 +1174,49 @@ put after it.
 
   Operator: *"A: Close, no backfill"*. The contract amendments are owed on T10's route. T28 is
   ruled.
+- **W51 (2026-11-24, T30, the specification pages; the walk paused).** Ruled in three parts, and a
+  fourth paused.
+  - *File names.* Every page is `harbor-roN-*` while its record is RP-N; two pairs share a prefix
+    (`ro7`, `ro9`). Asked *"shouldm't we rename to RP-nnnn-<slug>? why use "harbor" as a
+    prefix?"*, the agent answered that *harbor* names this drydock (`RTS-0001-harbor-pilotage`,
+    W32), which an RP record already names as its parent (W29, W32), and measured about 400
+    citing files, 93 handoffs, `rulings.jsonl` and the ledger that cannot be edited, and the
+    contract pinned by path in the open MX session. Options put: A, rename the RP pages now, fix
+    every live citation, old paths resolving through an alias table, the contract's path kept
+    until the flag closes; B, the contract renamed too, with `mx_contract_amended`; C, the names
+    ruled and the move made at civil rule. Operator: *"A. and harbor can be used in thed slug if
+    that helps them stand out"*.
+  - *Timing.* The agent then corrected option A: no alias table exists; `artifact_renamed` maps
+    ids, never paths. Options put: A, the rename is one item of the execution plan, its commit
+    adding a path-alias map under `data/` checked to cover every renamed path, the old names
+    standing until then; B, rename now with stub files at the old paths; C, rename now, dated
+    citations left broken. Operator: *"A: Alias map, then rename"*.
+  - *RP-0.* RP-0 (*"the drydock itself"*) has no page, only its contract row and a five-line
+    discrepancy subsection, while W32 makes the contract RTS-0001's specification. Options put:
+    A, carve its own page `RP-0000-<slug>.md` in the rename commit, the contract keeping only the
+    return to service specification; B, the contract stays RP-0's specification; C, RP-0 retires
+    into the return to service package. Operator: *"A: Carve its own page"*.
+  - *Sub-ids, paused.* Asked *"since when did these enter canon? is there even a designed and
+    vetted structure for these?"*, the agent found none: gather C counts 30 sub-unit names across
+    17 pages, each coined by its page; only `tranche`, `act` and the O-numbers were later ruled out
+    or absorbed (W37, W31). Asked their purpose, the agent measured the citations: *"ruling n"*
+    2,591 (885 in `src/`), *"tranche n"* 537, held rulings 68, open points 15. The thread then
+    showed the numbered rulings are mostly requirements without a requirement record (W6's FIX,
+    `@covers` under W18; `data/catalog/reqs.json` holds 0 REQs; requirements model § 12 still
+    states the design W6 reversed), that W9's *"exactly one GHI"* carries no recorded reason, that
+    RP-12 builds new capability against § 1's *"a remodel go[es] to a Release Package"*, and that
+    the GHI has no designed kind taxonomy (24 labels mixing kind, process and packaging; B12's
+    *"classified"* names a scheme no ruling made). The operator: *"you keep offering easy
+    solutions, but we are learning that there is a signifocant amount of conflation here"*; the
+    agent listed thirteen conflations surfaced in this session, among them position and persona,
+    ruling and requirement, repair and construction, discrepancy and GHI, and identifier and
+    citation. Operator: *"record the T30 rulings first, then pause for the R&D (this is classic
+    LLM drift: a vibe coded variant of whimsy and copycat convenience)"*.
+
+  The walk pauses here. T30's sub-ids, T37, W9's cardinality, a FIX's source, the GHI's kind and
+  the construction reading of RP-12's rulings go to the conceptual-model R&D, which W15's
+  documentation run follows or absorbs as that R&D rules. W44 to W50 were ruled in the same
+  vocabulary and are open to that R&D's review. T31 to T36 and T39 stay unruled.
 
 ## 10. The gathering, closed
 
