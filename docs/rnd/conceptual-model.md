@@ -394,6 +394,21 @@ naming one axis only, and `repair` and `chore` leaving the GHI's classification;
 one lifecycle only, the rest working notes of triage and closing; C, the names untangled and
 the structure kept. Recommended A. Operator: *"A: Three groups, one home each"*.
 
+## decision · a discrepancy's class is behavior, process or life-cycle data
+
+Question: what are the class values? Options put: A, the three objects of the ruled definition:
+behavior (gzkit does not do what its intent of record says), process (the work did not follow
+its process canon), life-cycle data (a record, doc, schema or requirement is deficient), effect
+left to severity so the axes do not overlap, investigation read as the *recorded* state before
+classification, and enhancement retired as no discrepancy; B, AC 00-71 § 3.3's four by priority,
+Significant read for gzkit as touching the floor, what safe mode never suspends or an external
+contract; C, A's three objects with a significant flag. Recommended A. Operator: *"A:
+Behavior/process/data"*.
+
+This takes AC 00-71 § 3.1's three objects and departs from its § 3.3 scheme, which splits
+behavior by effect; gzkit carries effect on severity instead. *Enhancement* and *investigation*
+leave the class axis: the first is no discrepancy, the second is a state.
+
 ---
 
 ## Disposition map
