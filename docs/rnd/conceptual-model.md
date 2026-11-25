@@ -514,7 +514,41 @@ Not stated on the pages, per the report: whether a type can be scoped to some re
 may manage types, what a deleted type does to issues carrying it, and whether an issue holds more
 than one type. Measured locally 2026-11-25: `gh` 2.105.0 takes `--type` on `issue create`,
 `issue edit` and `issue list`; gzkit's last 200 issues carry no type, and the sampled issues of
-airlineops and flightops carry none. Defect-fix routing's OBPI arm has
+airlineops and flightops carry none.
+
+## decision · per-issue native features first; class and found stay labels
+
+The agent put prescriptive shape and disposition; the operator asked, verbatim: *"wouldn't we want
+to use gh native features here?"*. Shown the native features (close reason with `--duplicate-of`;
+timeline commit references; `blockedBy` and `blocking`; live relationships) and that
+`.gzkit/rules/gh-cli.md` § Allowed commands permits none beyond `close --comment`, three options
+were put: A, native first with labels only where no native feature exists, the rule widened;
+B, native for closing only; C, A plus the class as an organization issue type. Asked *"tell me
+more about option C"*, the agent read GitHub's documentation (source above) and reported its
+gain (a native single-valued field, filtered in search and Projects) and its costs, chief among
+them that types are organization settings an adopter's own administrator must add, while gzkit
+ships to repositories it does not own through `gz init`. Operator, verbatim: *"ok, c is out
+because of the adopter limitation, what was A?"*. A was restated with the adopter test applied:
+a per-issue native feature needs no organization setting.
+
+- **disposition**: the native close reason, *fixed* to completed, *duplicate* to duplicate with
+  `--duplicate-of`, *superseded*, *withdrawn* and *won't-fix* to not planned; the close comment
+  keeps the evidence and names which of the five;
+- **resolved**: the timeline reference the `(GHI #N)` trailer leaves;
+- **waits on another GHI**: native `blockedBy` and `blocking`, in place of blocker prose;
+- **links between GHIs**: native relationships where one fits, comment prose only otherwise;
+- **prescriptive shape**: not stored, ghi-close's working reading;
+- **class and found**: one `class:*` and one `found:*` label each.
+
+The agent corrected its own table: a package is a catalog record (W12), not an issue, so
+parent and sub-issues do not carry a package's GHIs; the package record's `issues` field does.
+The gh-cli rule's allowed list widens to the native verbs, each used only through `ghi-author`,
+`ghi-close` or `gz wp`, which also brings `gz wp attach`'s `gh issue edit` (C11) inside it. Not
+verified: blocked-by on GitHub Enterprise Server. Operator, verbatim: *"yes, A — record it and
+move on"*.
+
+**commissions:** 4 — `.gzkit/rules/gh-cli.md` § Allowed commands widened to the per-issue
+native verbs; `ghi-author`, `ghi-close` and `ghi-triage` carry the fields as ruled. Defect-fix routing's OBPI arm has
 no GHI destination under this run's rulings; its repair is diamond 2.
 
 ---
