@@ -428,6 +428,19 @@ record; B, exactly one `state:*` label on an open GHI, Backplane's rule; C, a le
 transition with labels as display. Recommended A, under the state doctrine (a derived view traces
 to Layer 1 or 2). Operator: *"A: Derived, not stored"*.
 
+## decision · how a discrepancy surfaced is one of six, in one `found:*` label
+
+Question: what is the surfacing route, given its scattered values (the `DSC-` sources
+left-broken, inspector-rejection and found-in-work in `src/gzkit/events.py:2123`; the doctrine's
+reported squawk and scheduled check finding; the `eval-feedback` label, which
+`src/gzkit/commands/validate_commit_trailers.py:122` reads for the `Eval-feedback-source:`
+trailer)? Options put: A, one closed set of six (reported, found-in-work, left-broken,
+inspector-rejection, check-finding, eval-feedback) in exactly one `found:*` label, `eval-feedback`
+becoming `found:eval-feedback` with the trailer validator repointed in the same commit and the
+trailer kept; B, two values, reported or found; C, no route axis, provenance in the body.
+Recommended A. Operator: *"A: Six values, one label"*. The route sits in the *what it is* group,
+set once.
+
 ---
 
 ## Disposition map
