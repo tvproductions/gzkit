@@ -165,7 +165,7 @@ The doctrine does not name specific ADRs in this page. The validators surface th
 ## Anti-patterns
 
 - **Treating frontmatter `status: Validated` as proof.** Per State Doctrine, frontmatter is Layer-1 authorship; the ledger is Layer-2 truth. Fidelity audits read the ledger.
-- **Self-closing brief-level attestation on a heavy-lane or foundation-kind parent.** Per the OBPI Acceptance Protocol Lane & Kind Attestation Matrix, both axes alone force human attestation at the brief level. The validators assert this constraint.
+- **Self-closing brief-level attestation.** Gate 5 is universal (ADR-0.0.36, `AGENTS.md` § Gate Covenant): every OBPI completion requires human attestation at the brief level, whatever the parent's lane or kind. `_requires_human_obpi_attestation` enforces it.
 - **Capturing OBPI completion receipts from a dirty worktree.** Receipts captured against superseded anchors are a fidelity signal. The validators flag `recorder_warnings: ["Working tree was dirty when the completion receipt was captured."]` entries in the ledger.
 - **Letting a Mechanical or Promotable bullet drift to "redundant, can be cut."** Bullet retention is binary. Cutting requires advisory-scorecard reclassification first; reclassification is itself an attested doctrine artifact.
 - **Speculative line-count floors.** The warning bands are provisional; recalibration is the load-bearing artifact, not the band edges. Treat the bands as guidance until operational evidence supports tightening.

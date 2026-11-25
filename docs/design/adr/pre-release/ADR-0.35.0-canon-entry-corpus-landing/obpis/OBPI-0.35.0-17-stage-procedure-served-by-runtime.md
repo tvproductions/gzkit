@@ -286,7 +286,7 @@ The GHI leaves each of these open. The brief is written to the recommended optio
 
 - [ ] Acceptance scenarios pass: `uv run -m behave features/obpi_pipeline_stage_procedure.feature`, each scenario tagged with the REQ it proves (`@REQ-0.35.0-17-04`, `@REQ-0.35.0-17-05`) so Stage 3 can scope the run
 
-### Gate 5: Human (every lane, ADR-0.0.36)
+### Gate 5: Human (all lanes)
 
 - [ ] Human attestation recorded
 

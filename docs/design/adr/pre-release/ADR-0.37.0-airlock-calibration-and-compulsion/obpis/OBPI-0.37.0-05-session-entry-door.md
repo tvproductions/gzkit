@@ -141,7 +141,7 @@ OBPI-0.37.0-05 session-entry-door -- SessionStart fires airlock-IN; the handoff-
 
 - [ ] Acceptance scenarios pass: `uv run -m behave features/`
 
-### Gate 5: Human (every lane, ADR-0.0.36)
+### Gate 5: Human (all lanes)
 
 - [ ] Human attestation recorded
 

@@ -361,7 +361,7 @@ modifications to work in an external project, the surface is broken
 
 - OBPI is the atomic implementation unit.
 - ADR status is a roll-up of OBPI completion plus attestation.
-- **Lane inheritance:** `kind` and `lane` are orthogonal axes (ADR-0.0.17 § Decision #2). Attestation rigor keys on lane: if the parent ADR is heavy-lane (any kind), human attestation is required for all OBPIs regardless of their individual lane designation. Foundation-kind ADRs additionally follow the attestation walkthrough doctrine in ADR-0.0.18 regardless of lane.
+- **Lane inheritance:** `kind` and `lane` are orthogonal axes (ADR-0.0.17 § Decision #2). Human attestation (Gate 5) is required for every OBPI completion, whatever the lane or kind (ADR-0.0.36). Foundation-kind ADRs additionally follow the attestation walkthrough doctrine in ADR-0.0.18 regardless of lane.
 
 ### ADR series selection
 

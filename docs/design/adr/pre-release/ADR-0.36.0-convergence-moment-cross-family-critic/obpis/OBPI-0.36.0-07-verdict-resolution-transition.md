@@ -206,7 +206,7 @@ the heightened walkthrough, including the `arb-step-security-scan-*` receipt.
 
 - [ ] Acceptance scenarios pass: `uv run -m behave features/`
 
-### Gate 5: Human (every lane, ADR-0.0.36)
+### Gate 5: Human (all lanes)
 
 - [ ] Human attestation recorded
 

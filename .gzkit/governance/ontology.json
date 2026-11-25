@@ -96,7 +96,7 @@
     "D-GATE-ATTESTATION": {
       "also_stated_in": [
         "AGENTS.md#obpi-acceptance-protocol",
-        "AGENTS.md#lane-inheritance-rule"
+        "AGENTS.md#gate-covenant"
       ],
       "canonical_source": "docs/governance/GovZero/charter.md",
       "category": "process",

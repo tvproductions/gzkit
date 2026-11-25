@@ -133,7 +133,7 @@ The 29 waiver, grandfather and baseline rosters leave the settings surface for t
 
 - [ ] Acceptance scenarios pass: `uv run -m behave features/`
 
-### Gate 5: Human (every lane, ADR-0.0.36)
+### Gate 5: Human (all lanes)
 
 - [ ] Human attestation recorded
 

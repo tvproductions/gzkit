@@ -117,7 +117,7 @@ _[Author: For each new control, state its level at the operational condition, ha
 - [ ] Lint clean: `uv run gz lint`
 - [ ] Type check clean: `uv run gz typecheck`
 
-<!-- Heavy lane only: -->
+<!-- Heavy lane only: Gates 3 and 4. Gate 5 applies in every lane. -->
 ### Gate 3: Docs (Heavy only)
 
 - [ ] Docs build: `uv run mkdocs build --strict`
@@ -127,7 +127,7 @@ _[Author: For each new control, state its level at the operational condition, ha
 
 - [ ] Acceptance scenarios pass: `uv run -m behave features/`
 
-### Gate 5: Human (every lane, ADR-0.0.36)
+### Gate 5: Human (all lanes)
 
 - [ ] Human attestation recorded
 
@@ -193,7 +193,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] **Key Proof:** One concrete usage example is included
 - [ ] **OBPI Acceptance:** Evidence recorded below
 
-> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
+> For ceremony steps and the universal Gate 5 attestation, see `AGENTS.md` sections `Gate Covenant` and `OBPI Acceptance Protocol`.
 
 ## Evidence
 
@@ -275,9 +275,9 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `<name>`
+- Attestation: substantive attestation text
+- Date: YYYY-MM-DD
 
 ---
 

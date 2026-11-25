@@ -316,7 +316,7 @@ Each question names a choice the GHI leaves open. The REQs below are written to 
 - [ ] Acceptance scenarios pass: `uv run -m behave features/obpi_lock_continuity.feature`
 - [ ] Each scenario carries the `@REQ-0.35.0-19-NN` tag of the criterion it walks
 
-### Gate 5: Human (every lane, ADR-0.0.36)
+### Gate 5: Human (all lanes)
 
 - [ ] Human attestation recorded
 - [ ] Security walkthrough completed with its `arb-step-security-scan-*` receipt

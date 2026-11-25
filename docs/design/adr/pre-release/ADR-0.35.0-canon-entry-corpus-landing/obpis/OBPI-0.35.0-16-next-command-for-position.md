@@ -271,7 +271,7 @@ A dated record, read 2026-10-04 at `skill-version` 6.64.3. The skill and the cod
 - [ ] `features/obpi_pipeline_next_command.feature` carries one scenario per operator-visible BEHAVIOR REQ (`REQ-0.35.0-16-02` to `-05`), each tagged with its `@REQ-` id
 - [ ] Acceptance scenarios pass: `uv run -m behave features/obpi_pipeline_next_command.feature`
 
-### Gate 5: Human (every lane, ADR-0.0.36)
+### Gate 5: Human (all lanes)
 
 - [ ] Human attestation recorded, with the security walkthrough of `.gzkit/rules/security-sensitivity.md`
 

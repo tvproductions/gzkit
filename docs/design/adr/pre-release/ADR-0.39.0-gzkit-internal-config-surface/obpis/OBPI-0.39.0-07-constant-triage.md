@@ -132,7 +132,7 @@ Each of the 56 rostered module constants is triaged against the shrink-only rost
 
 - [ ] Acceptance scenarios pass: `uv run -m behave features/`
 
-### Gate 5: Human (every lane, ADR-0.0.36)
+### Gate 5: Human (all lanes)
 
 - [ ] Human attestation recorded
 

@@ -134,7 +134,7 @@ A single flat `.gzkit/config/settings.json` is the one place gzkit reads its own
 
 - [ ] Acceptance scenarios pass: `uv run -m behave features/`
 
-### Gate 5: Human (every lane, ADR-0.0.36)
+### Gate 5: Human (all lanes)
 
 - [ ] Human attestation recorded
 

@@ -74,12 +74,9 @@ OBPI closure follows a ceremony, not just a checklist:
 4. Wait for explicit human acceptance
 5. Only then set `Brief Status: Completed`
 
-Lane inheritance applies:
+Gate 5 is universal: every OBPI completion requires human attestation, whatever the parent ADR's lane or kind (ADR-0.0.36). No OBPI is self-closeable.
 
-- Parent ADR lane `Heavy` or Foundation (`0.0.x`) requires human attestation before OBPI completion.
-- Parent ADR lane `Lite` may be self-closeable after evidence is presented.
-
-Reference: `AGENTS.md` section `OBPI Acceptance Protocol`.
+Reference: `AGENTS.md` sections `Gate Covenant` and `OBPI Acceptance Protocol`.
 
 ## Transaction Boundaries
 
