@@ -1513,10 +1513,10 @@ def _surrender_lock_at_completion(
     and if a lock is held it is deleted and an ``obpi_lock_released`` event is
     emitted citing that record — no operator prompt, no manual
     ``gz obpi lock release`` chore. Best-effort and fail-safe: if the register entry
-    cannot be written the lock is left for TTL reaping rather than surrendered
-    without one (token-block discipline § Sub-Invariant 5). Runs after the atomic
-    transaction has committed, so it never affects completion's all-or-nothing
-    guarantee.
+    cannot be written the lock stays held (expiry books and announces it, never
+    evicts it) rather than being surrendered without one (token-block discipline
+    § Sub-Invariant 5). Runs after the atomic transaction has committed, so it
+    never affects completion's all-or-nothing guarantee.
 
     ``observation`` and ``open_loops`` carry the observation report half of the
     exchange record (GHI #764) and are optional on the same terms as everything

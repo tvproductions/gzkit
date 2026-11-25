@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-24
 metadata:
-  skill-version: "6.69.4"
+  skill-version: "6.69.5"
 model: sonnet
 ---
 
@@ -212,7 +212,7 @@ All OBPIs require per-OBPI human attestation (universal per ADR-0.0.36).
 
 | CLI Command / Skill | Role in Pipeline |
 |---------------------|-----------------|
-| `gz obpi lock claim/release` | Stage 1 claim, Stage 5 release, abort release (`--force`) |
+| `gz obpi lock claim/release` | Stage 1 claim; Stage 5 `gz obpi complete` surrenders; abort release (`--abandon <category>:<reason>`) |
 | `/gz-plan-audit` | Pre-pipeline — runs in plan mode, produces receipt |
 | `gz obpi complete` | Stage 5 atomic completion (attestation + brief + receipt) |
 | `gz obpi sync` | Stage 5 confirmation — receipt and brief agree |

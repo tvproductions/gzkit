@@ -1,6 +1,6 @@
 # gz preflight
 
-Detect and clean stale markers, orphan receipts, and expired locks.
+Detect and clean stale markers and orphan receipts; report expired locks.
 
 ## Usage
 

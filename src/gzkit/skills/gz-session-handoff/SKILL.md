@@ -5,7 +5,7 @@ description: Use to create or resume a session handoff document.
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "7.9.2"
+  skill-version: "7.9.3"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
@@ -117,8 +117,6 @@ owes goes to its own tracker; a bare `#N` or `GHI #N` means gzkit's issue (GHI #
 | `agent` | Yes | Agent identifier (e.g. `claude-code`, `codex`) |
 | `slug` | Yes | Short descriptor for filename (e.g. `create-workflow`) |
 | `obpi_id` | No | OBPI identifier if handoff is scoped to a specific brief |
-| `last_lock_event_timestamp` | When concluding a held lock | Frontmatter key — ts of the matching `obpi_lock_claimed` event (Sub-Invariant 2; read by `gz validate --lock-exchange-coupling`) |
-| `last_commit_sha` | When concluding a held lock | Frontmatter key — HEAD at handoff creation (`git rev-parse --short HEAD`) |
 | `session_id` | No | Session identifier for tracing |
 | `continues_from` | No | Path to previous handoff document (for chained sessions) |
 

@@ -9298,8 +9298,11 @@
       "invocation"
      ],
      "cause": null,
-     "delivered_span": "| `gz obpi lock claim/release` | Stage 1 claim, Stage 5 release, abort release (`--force`) |",
-     "reworded": null
+     "delivered_span": "| `gz obpi lock claim/release` | Stage 1 claim; Stage 5 `gz obpi complete` surrenders; abort release (`--abandon <category>:<reason>`) |",
+     "reworded": {
+      "text": "| `gz obpi lock claim/release` | Stage 1 claim; Stage 5 `gz obpi complete` surrenders; abort release (`--abandon <category>:<reason>`) |",
+      "reason": "A ruled correction (GHI #1359; operator 2026-11-25, \"proceed with M3\"): `gz obpi complete` surrenders the lock at Stage 5 (token-block § Sub-Invariant 6), and an abort surrenders with `--abandon`; `--force` alone cannot release a held lock without a register entry (§ Sub-Invariant 5, GHI #1167). The same skill's Lock bracket already says so."
+     }
     }
    ],
    "non_control": []

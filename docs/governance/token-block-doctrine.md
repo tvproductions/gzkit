@@ -77,7 +77,7 @@ The dual phrasing — *the register entry is required at every signal box, not o
 | Section / block | An OBPI under active implementation |
 | Two trains, two signal boxes | Two agents, lock-claim and lock-release boundaries |
 | Lost-token procedure | `--abandon <category>:<reason>` with auditable category enum |
-| Reaping a forgotten / abandoned token | `lock_manager.py:reap_expired_locks` emitting an `abandoned_by_reaper` register entry |
+| Reaping a forgotten / abandoned token | `gz obpi lock release <obpi> --force --abandon reaping:<reason>` on the operator's word (expiry never evicts, ruling 2026-10-18); `lock_manager.py:reap_expired_locks` reaps only the orphan `mx-session` lock, writing an `abandoned_by_reaper` register entry |
 | "T" written-authority form | (no current gzkit analogue — would correspond to a manual ledger amendment under operator attestation, intentionally not provided) |
 | Rule Book (GE/RT8000) | AGENTS.md + `.gzkit/rules/**` |
 | Signal-engineering interlock (galvanic circuit between instruments) | The fail-closed precondition in `obpi_lock_release_cmd` |

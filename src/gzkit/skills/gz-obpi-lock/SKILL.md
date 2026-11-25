@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-17
 metadata:
-  skill-version: "6.4.1"
+  skill-version: "6.4.2"
 model: haiku
 ---
 
@@ -23,7 +23,7 @@ These thoughts mean STOP — you are about to bypass coordination:
 |---------|---------|
 | "No one else is working on this, I don't need to lock" | You do not know what other agents are doing. The lock is coordination, not permission. |
 | "I'll just do a quick fix, no need for a lock" | Quick fixes that conflict with another agent's work create merge conflicts. Lock first, always. |
-| "The lock expired, so I'll just re-claim it" | An expired lock may mean another agent started work. Check status before re-claiming. |
+| "The lock expired, so I'll just re-claim it" | Expiry never evicts (operator ruling 2026-10-18): another agent's expired lock stays held and your claim is refused. Only its holder's completion, or an abandon release on the operator's word, frees it. |
 | "I'll release the lock manually later" | `gz obpi complete` surrenders it at Stage 5. Manual release outside the pipeline risks orphaned work. |
 | "Lock conflicts slow me down" | Merge conflict resolution after concurrent edits is far slower than waiting for a lock. |
 
@@ -84,10 +84,10 @@ Path: `.gzkit/locks/obpi/{OBPI-ID}.lock.json`
 
 ### Lock Rules
 
-1. **Claim succeeds** if no lock file exists or existing lock is expired (past TTL)
-2. **Claim fails** if lock exists and is not expired — show who holds it
+1. **Claim succeeds** if no lock file exists, or the claiming agent already holds it (rule 5)
+2. **Claim fails** if another agent holds the lock, expired or not — show who holds it
 3. **Release** deletes the lock file once the surrender is accounted for: an exchange record that postdates the claim, or an `--abandon` category
-4. **Stale lock detection** — locks older than TTL are automatically released on next claim attempt
+4. **Expiry is booked, never evicted** — a lock past its TTL stays held; `gz obpi lock list`, `gz preflight` and the SessionStart hook book `obpi_lock_lease_expired` once and announce it. It is freed by its holder's completion or by `gz obpi lock release <obpi> --force --abandon <category>:<reason>` on the operator's word. Only the orphan `mx-session` lock is reaped
 5. **Same-agent re-claim** — if the claiming agent already holds the lock, refresh the timestamp
 6. **Concurrent locks** — Multiple OBPIs from the same ADR can be locked concurrently by different agents when their allowed paths are non-overlapping. One lock per OBPI at a time; each OBPI's human attestation is independent (universal per ADR-0.0.36).
 

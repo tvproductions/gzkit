@@ -857,8 +857,8 @@ def register_obpi_parsers(commands: argparse._SubParsersAction[StableArgumentPar
 
     p_lock_list = lock_commands.add_parser(
         "list",
-        help="List active OBPI work locks (auto-reaps expired)",
-        description="Reap expired locks, then list remaining active locks.",
+        help="List held OBPI work locks, marking expired leases",
+        description="List held work locks; book and mark an expired lease, never evict it.",
         epilog=build_epilog(
             [
                 "gz obpi lock list",

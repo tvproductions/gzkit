@@ -1325,7 +1325,7 @@ def _register_tooling_parsers(
     p_preflight = commands.add_parser(
         "preflight",
         help="Scan for stale pipeline artifacts",
-        description="Detect and clean stale markers, orphan receipts, and expired locks.",
+        description="Detect and clean stale markers and orphan receipts; report expired locks.",
         epilog=build_epilog(["gz preflight", "gz preflight --apply", "gz preflight --json"]),
     )
     p_preflight.add_argument(

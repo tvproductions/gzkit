@@ -112,7 +112,7 @@ When state across layers is inconsistent, use this table to determine which laye
 | Pipeline marker exists but ledger has no pipeline event | **L2 (Ledger)** — marker is stale | Delete the marker; it will be recreated if needed |
 | ADR table shows `Pending` but brief frontmatter says `Completed` | **L1 (Brief)** over L3 (table) | Run `gz obpi sync` to update the ADR table from brief source |
 | Brief frontmatter says `Completed` but ledger disagrees | **L2 (Ledger)** over L3 (frontmatter) | Run `gz obpi sync` to align frontmatter with ledger |
-| Lock file exists but process is dead | **L3 is ephemeral** — lock is stale | Re-claim the lock; stale locks auto-release past TTL |
+| Lock file exists but process is dead | **L3 is ephemeral** — lock is stale | Expiry never evicts (operator ruling 2026-10-18): the holder re-claims its own lock; another agent's lock is freed only by its holder's completion or an abandon release on the operator's word |
 | Config manifest lists a path that no longer exists on disk | **L1 (Disk)** — manifest is stale | Update manifest or run `gz check-config-paths` |
 
 ### General Precedence

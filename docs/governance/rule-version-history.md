@@ -1122,6 +1122,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `token-block-discipline.md`
 
+### `0.10.2` (2026-11-25)
+
+Prior `0.10.1` banner: *"the reaping procedure, the 50 % warning text and the completion fallback now match `lock_manager.py`, `session_orientation.py` and the no-eviction ruling."* Superseded under GHI #1359, prompt-audit mechanism M3 (operator, 2026-11-25: *"proceed with M3"*; for the brief-owned surfaces, *"Fix now, record REQ-08 (Recommended)"*): the Doctrine Foundation and § Sub-Invariants 2, 5 and 6 called the register entry a "handoff document" or "completion handoff", although the three-subjects ruling and GHI #763 moved it to an exchange record under `.gzkit/locks/exchange/` that a session handoff never satisfies; the 50 % warning text told the holder to "hand off and release via gz-session-handoff", a route that releases nothing. **Binding rules unchanged:** the wording now names what `is_exchange_register_entry` and `release_lock()` already require.
+
 ### `0.10.1` (2026-11-08)
 
 Prior `0.10.0` banner: *"an expired work lock is booked and announced, never evicted (operator ruling 2026-10-18)."* Superseded under the operator's *"fix what is stale"*: § Sub-Invariant 3 now describes the reap `lock_manager.reap_expired_locks()` performs (record, delete, `obpi_lock_released` with `force: true`; no `--abandon reaping:` release, no ledger statement about ordering); § Sub-Invariant 4 quotes the 50 % warning `session_orientation.py` prints; § Sub-Invariant 6 no longer leaves an unsurrendered lock "for TTL reaping", which the 2026-10-18 ruling retired.

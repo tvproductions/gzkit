@@ -173,7 +173,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz agent sync control-surfaces`](agent-sync-control-surfaces.md) | Regenerate control surfaces |
 | [`gz covers`](covers.md) | Report requirement coverage from @covers annotations |
 | [`gz test-shape`](test-shape.md) | Advisory inventory of test-shape debt (tautological + output assertions) |
-| [`gz preflight`](preflight.md) | Detect and clean stale markers, orphan receipts, expired locks |
+| [`gz preflight`](preflight.md) | Detect and clean stale markers and orphan receipts; report expired locks |
 | [`gz tidy`](tidy.md) | Run maintenance checks and cleanup |
 | [`gz interview`](interview.md) | Run interactive governance interviews |
 | [`gz chores advise`](chores-advise.md) | Dry-run acceptance criteria for one chore |

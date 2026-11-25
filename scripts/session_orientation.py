@@ -1587,7 +1587,8 @@ def render(state: dict[str, Any], now: datetime) -> str:
                     )
                 elif lock.get("ttl_warning"):
                     lines.append(
-                        "  - WARNING: past 50% TTL; hand off and release via gz-session-handoff."
+                        "  - WARNING: past 50% TTL; complete the OBPI, or surrender with "
+                        "`gz obpi lock release <obpi> --abandon <category>:<reason>`."
                     )
     else:
         lines.append("- (no active locks)")
