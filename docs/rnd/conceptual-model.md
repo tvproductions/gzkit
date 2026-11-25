@@ -441,6 +441,34 @@ trailer kept; B, two values, reported or found; C, no route axis, provenance in 
 Recommended A. Operator: *"A: Six values, one label"*. The route sits in the *what it is* group,
 set once.
 
+## source · the grades a finding can carry
+
+`docs/rnd/contractor-kit/sources/inventory-navy-jfmm-v5.md:476, 478` · read 2026-11-25
+
+> | Minor findings | "Minor deficiencies which do not affect certification of a component or system or the nature of the finding does not warrant specific follow up action, may be entered into a deficiency-tracking system for trend analysis or corrected without causal analysis or long-term corrective action unless recurring in nature." | I-9.3.1.a |
+
+> | Certification-affecting findings | "All deficiencies which affect certification must be categorized as "IMMEDIATE CORRECTIVE ACTION"." | I-9.4.1.b(1) |
+
+with ghi-triage's severity (*blocking*, *degrading*, *latent*, quoted above) and the `DSC-` grade
+(`DiscrepancyGrade = Literal["blocks-return-to-service", "due-by-event"]`, quoted above).
+
+## decision · no fixed severity axis; MX reads the hold on return to service
+
+The agent put severity as a fixed grade of significance beside triage's urgency. The operator
+asked, verbatim: *"why are these two dimensions needed, how will they help mx work?"*. Tested by
+what reads each: the hold on return to service (*blocks-return-to-service* or *due-by-event*) is
+read by `gz mx exit` and the handback, and B′ asks root cause and corrective action of a blocking
+line; triage's blocking, degrading and latent order what to pull next, recomputed each run and
+never stored; significance has no reader, since B′ ties causal analysis to blocking or recurrence
+and recurrence is measured (`gz insights recurrence`), the nearest live consumer being the
+`security` label's heightened Gate 5 walkthrough. Put to the operator: no fixed severity axis,
+urgency left to triage, and the hold on return to service the grade MX uses. Operator, verbatim:
+*"yes, record that and move to readiness"*.
+
+So *severity* leaves the *what it is* group. The hold on return to service belongs to a GHI
+carried by a return to service package and sits in *where it stands*. Triage's per-run grade is
+urgency.
+
 ---
 
 ## Disposition map
