@@ -1,4 +1,4 @@
-<!-- Stage 4 procedure, served by the runtime at stage entry (OBPI-0.35.0-17; cut over in OBPI-0.35.0-20). Rendered from data/obpi_pipeline_control_inventory.json by gzkit.governance.pipeline_procedure_render: the stage's own section first, then every block from another section holding a control whose applies_at names this stage. Every control is verbatim from the attested baseline of .gzkit/skills/gz-obpi-pipeline/SKILL.md (072317673, body sha256 fe97fe3139282b0ceec5b11866e97efad11761d8e35a5e4977c84f3d6b388367); passages the inventory classes as rationale are in docs/governance/obpi-pipeline-control-rationale.md under the control they explain, and a control that applies elsewhere is left out of its block here. Reworded, each with its reason in the inventory: I-012, I-013, I-015, I-028, I-069, S4-002, S4-032, S4-033, S4-045, S4-065. Do not edit by hand: tests/governance/test_pipeline_procedure_render.py holds this file to the render. -->
+<!-- Stage 4 procedure, served by the runtime at stage entry (OBPI-0.35.0-17; cut over in OBPI-0.35.0-20). Rendered from data/obpi_pipeline_control_inventory.json by gzkit.governance.pipeline_procedure_render: the stage's own section first, then every block from another section holding a control whose applies_at names this stage. Every control is verbatim from the attested baseline of .gzkit/skills/gz-obpi-pipeline/SKILL.md (072317673, body sha256 fe97fe3139282b0ceec5b11866e97efad11761d8e35a5e4977c84f3d6b388367); passages the inventory classes as rationale are in docs/governance/obpi-pipeline-control-rationale.md under the control they explain, and a control that applies elsewhere is left out of its block here. Reworded, each with its reason in the inventory: I-012, I-013, I-015, I-028, I-069, S4-002, S4-032, S4-033, S4-045, S4-047, S4-065. Do not edit by hand: tests/governance/test_pipeline_procedure_render.py holds this file to the render. -->
 
 # Stage 4: Present Evidence — served procedure
 
@@ -155,7 +155,7 @@ Then present the open findings, what each round changed, and one recommendation.
 
 **Trigger:** "Present OBPI Acceptance Ceremony" task becomes next pending. Mark `in_progress`.
 
-**Narrator dispatch** (per § Persona Dispatch). Dispatch a `narrator` subagent with the populated template fields (Value Narrative input, REQ coverage table from Stage 3, ARB receipts from quality gates) and instruct it to render the final attestation surface per the template below. do not improvise one through `SubagentDispatchRecord`, which accepts Stage-2 roles only.
+**Narrator dispatch** (per the narrator row carried into this file from § Persona Dispatch). Dispatch a `narrator` subagent with the populated template fields (Value Narrative input, REQ coverage table from Stage 3, ARB receipts from quality gates) and instruct it to render the final attestation surface per the template below. do not improvise one through `SubagentDispatchRecord`, which accepts Stage-2 roles only.
 
 > Rationale: docs/governance/obpi-pipeline-control-rationale.md § S4-047, § S4-049
 
@@ -580,7 +580,7 @@ Do NOT mark ceremony task `completed` until attestation is received.
 THE PIPELINE IS NOT COMPLETE UNTIL STAGE 5 FINISHES.
 ```
 
-Every stage flows into the next. No "stop and summarize" between stages; the two legitimate stops are the Stage 4 human attestation and a recorded block, both in the Stage 4 procedure. No pause except the Stage 4 human attestation, in every mode — and that pause comes only **after** Step 4b (the independent adversary) has run and its verdict is on the table. Soliciting attestation with Step 4b skipped is not a valid pause; it is a gate bypass. If you have not reached the end of Stage 5, you are not done. One other stop is legitimate: when Stage 4's round bound is reached or a round repeats the prior round's root, record `gz obpi block` and put the decision to the operator (§ Stage 4 — The review window, the bound, and the exit).
+Every stage flows into the next. No "stop and summarize" between stages: stop only where a procedure names a stop — the Stage 4 human attestation, a recorded block (`gz obpi block`), or an abort surrender. No pause except the Stage 4 human attestation, in every mode — and that pause comes only **after** Step 4b (the independent adversary) has run and its verdict is on the table. Soliciting attestation with Step 4b skipped is not a valid pause; it is a gate bypass. If you have not reached the end of Stage 5, you are not done. One other stop is legitimate: when Stage 4's round bound is reached or a round repeats the prior round's root, record `gz obpi block` and put the decision to the operator (§ Stage 4 — The review window, the bound, and the exit).
 
 > Rationale: docs/governance/obpi-pipeline-control-rationale.md § I-016
 

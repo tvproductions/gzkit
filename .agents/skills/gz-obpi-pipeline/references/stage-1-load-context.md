@@ -1,4 +1,4 @@
-<!-- Stage 1 procedure, served by the runtime at stage entry (OBPI-0.35.0-17; cut over in OBPI-0.35.0-20). Rendered from data/obpi_pipeline_control_inventory.json by gzkit.governance.pipeline_procedure_render: the stage's own section first, then every block from another section holding a control whose applies_at names this stage. Every control is verbatim from the attested baseline of .gzkit/skills/gz-obpi-pipeline/SKILL.md (072317673, body sha256 fe97fe3139282b0ceec5b11866e97efad11761d8e35a5e4977c84f3d6b388367); passages the inventory classes as rationale are in docs/governance/obpi-pipeline-control-rationale.md under the control they explain, and a control that applies elsewhere is left out of its block here. Reworded, each with its reason in the inventory: I-012, I-015, I-069. Do not edit by hand: tests/governance/test_pipeline_procedure_render.py holds this file to the render. -->
+<!-- Stage 1 procedure, served by the runtime at stage entry (OBPI-0.35.0-17; cut over in OBPI-0.35.0-20). Rendered from data/obpi_pipeline_control_inventory.json by gzkit.governance.pipeline_procedure_render: the stage's own section first, then every block from another section holding a control whose applies_at names this stage. Every control is verbatim from the attested baseline of .gzkit/skills/gz-obpi-pipeline/SKILL.md (072317673, body sha256 fe97fe3139282b0ceec5b11866e97efad11761d8e35a5e4977c84f3d6b388367); passages the inventory classes as rationale are in docs/governance/obpi-pipeline-control-rationale.md under the control they explain, and a control that applies elsewhere is left out of its block here. Reworded, each with its reason in the inventory: I-012, I-015, I-019, I-069, S1-028. Do not edit by hand: tests/governance/test_pipeline_procedure_render.py holds this file to the render. -->
 
 # Stage 1: Load Context — served procedure
 
@@ -71,7 +71,7 @@
 
 **Abort if:** brief not found, brief already `Completed`, or plan receipt verdict is `FAIL`.
 
-**On any abort:** Surrender the lock per [Abort surrender](#abort-surrender), then run `/gz-session-handoff` to preserve context.
+**On any abort:** Surrender the lock per [Abort surrender](../SKILL.md#abort-surrender), then run `/gz-session-handoff` to preserve context.
 
 #### Stage 1→2 Justification Gate
 
@@ -101,11 +101,11 @@ When none of the three holds, proceed to Stage 2 and say so in one line naming w
 THE PIPELINE IS NOT COMPLETE UNTIL STAGE 5 FINISHES.
 ```
 
-Every stage flows into the next. No "stop and summarize" between stages; the two legitimate stops are the Stage 4 human attestation and a recorded block, both in the Stage 4 procedure. If you have not reached the end of Stage 5, you are not done.
+Every stage flows into the next. No "stop and summarize" between stages: stop only where a procedure names a stop — the Stage 4 human attestation, a recorded block (`gz obpi block`), or an abort surrender. If you have not reached the end of Stage 5, you are not done.
 
 These thoughts mean STOP — you are about to break the pipeline:
 
-| "No plan receipt exists — the brief is clear enough to skip planning" | The plan-audit handoff is a governance checkpoint. Invoke `/gz-plan-audit <OBPI-ID>` in this same turn (see § The Plan-Mode Gate); do not end the turn to ask permission. |
+| "No plan receipt exists — the brief is clear enough to skip planning" | The plan-audit handoff is a governance checkpoint. Invoke `/gz-plan-audit <OBPI-ID>` in this same turn (see the Plan-Mode Gate controls below); do not end the turn to ask permission. |
 | "The hook blocked me, I'll work around it" | Hook blocks are signals. Diagnose the cause. NEVER create marker files manually to bypass. |
 
 **No plan receipt → no implementation.** If Stage 1 finds no `.plan-audit-receipt-<OBPI-ID>.json` (or the existing receipt's `obpi_id` does not match this OBPI) and the pipeline was invoked without `--from`, you MUST produce a canonical-name plan and a fresh PASS receipt before touching any source file.

@@ -88,4 +88,4 @@ nothing and is left alone — silence is honest; only a claim is checked.
 ## See Also
 
 - [OBPI acceptance](obpi-acceptance.md) — where a replay record is imported
-- [OBPI pipeline skill](../skills/gz-obpi-pipeline.md) — Step 4b's dispatch contract
+- [OBPI pipeline skill](../skills/gz-obpi-pipeline.md); Step 4b's dispatch contract is in the Stage 4 procedure, `.gzkit/skills/gz-obpi-pipeline/references/stage-4-present-evidence.md` § Step 4b

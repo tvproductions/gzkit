@@ -144,7 +144,7 @@ GHI for the binding rule.
 THE PIPELINE IS NOT COMPLETE UNTIL STAGE 5 FINISHES.
 ```
 
-Every stage flows into the next. No "stop and summarize" between stages; the two legitimate stops are the Stage 4 human attestation and a recorded block, both in the Stage 4 procedure. If you have not reached the end of Stage 5, you are not done.
+Every stage flows into the next. No "stop and summarize" between stages: stop only where a procedure names a stop — the Stage 4 human attestation, a recorded block (`gz obpi block`), or an abort surrender. If you have not reached the end of Stage 5, you are not done.
 
 These thoughts mean STOP — you are about to break the pipeline:
 
