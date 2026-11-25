@@ -27,6 +27,7 @@ from gzkit.ledger import (
     parse_frontmatter_value,
     resolve_adr_lane,
 )
+from gzkit.lock_manager import harness_session_id  # noqa: F401 — the generated hook templates import it from here
 from gzkit.surface_write import ensure_dir, write_if_changed
 from gzkit.utils import capture_validation_anchor_with_warnings
 
@@ -423,7 +424,6 @@ invisible to both.
 """
 
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -472,8 +472,9 @@ def main() -> int:
     # Import gzkit and record edit/validate
     sys.path.insert(0, str(project_root / "src"))
     try:
-        from gzkit.hooks.core import record_artifact_edit
-        session = os.environ.get("CLAUDE_CODE_SESSION_ID") or os.environ.get("CLAUDE_SESSION_ID")
+        from gzkit.hooks.core import harness_session_id, record_artifact_edit
+
+        session = harness_session_id()
 
         # This will trigger validation and raise if it fails
         record_artifact_edit(project_root, str(rel_path), session)

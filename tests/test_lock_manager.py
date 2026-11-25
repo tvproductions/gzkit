@@ -16,6 +16,7 @@ from gzkit.lock_manager import (
     LockData,
     current_branch,
     delete_lock,
+    harness_session_id,
     list_locks,
     lock_dir,
     lock_path,
@@ -150,6 +151,38 @@ class TestLockData(unittest.TestCase):
 
 
 @covers("OBPI-0.0.14-01")
+class TestHarnessSessionId(unittest.TestCase):
+    """The harness session id is read in one place (GHI #484, GHI #1360)."""
+
+    def _env(self, **values: str) -> dict[str, str]:
+        base = {
+            k: v
+            for k, v in __import__("os").environ.items()
+            if k not in {"CLAUDE_CODE_SESSION_ID", "CLAUDE_SESSION_ID", "COPILOT_SESSION_ID"}
+        }
+        return {**base, **values}
+
+    def test_claude_code_session_id_is_read_first(self):
+        # given: both variables set, as a harness exporting both would
+        env = self._env(CLAUDE_CODE_SESSION_ID="cc-1", CLAUDE_SESSION_ID="legacy-1")
+        # when / then: Claude Code's own variable wins
+        with patch.dict("os.environ", env, clear=True):
+            self.assertEqual(harness_session_id(), "cc-1")
+
+    def test_claude_session_id_is_the_fallback(self):
+        with patch.dict("os.environ", self._env(CLAUDE_SESSION_ID="legacy-1"), clear=True):
+            self.assertEqual(harness_session_id(), "legacy-1")
+
+    def test_no_harness_session_is_none(self):
+        # given: neither variable, and an empty one, which carries no session
+        with patch.dict("os.environ", self._env(CLAUDE_CODE_SESSION_ID=""), clear=True):
+            self.assertIsNone(harness_session_id())
+
+    def test_copilot_session_id_is_not_read(self):
+        with patch.dict("os.environ", self._env(COPILOT_SESSION_ID="cp-1"), clear=True):
+            self.assertIsNone(harness_session_id())
+
+
 class TestResolveAgent(unittest.TestCase):
     """Unit tests for resolve_agent()."""
 

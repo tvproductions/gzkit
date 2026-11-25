@@ -137,20 +137,32 @@ def resolve_agent(agent_override: str | None = None) -> str:
         return agent_override
     claudecode = os.environ.get("CLAUDECODE")
     if claudecode not in {None, ""} or os.environ.get("CLAUDE_CODE") not in {None, ""}:
-        sid = os.environ.get("CLAUDE_CODE_SESSION_ID") or os.environ.get("CLAUDE_SESSION_ID")
-        return f"claude-code-{sid[:8]}" if sid not in {None, ""} else "claude-code"
+        sid = harness_session_id()
+        return f"claude-code-{sid[:8]}" if sid is not None else "claude-code"
     if os.environ.get("CODEX_SANDBOX") not in {None, ""}:
         return "codex"
     return f"unknown-{os.getpid()}"
 
 
+def harness_session_id() -> str | None:
+    """Return the agent harness's session id, or None when it exports none.
+
+    Claude Code exports ``CLAUDE_CODE_SESSION_ID``; ``CLAUDE_SESSION_ID`` is the
+    older name, read second. This is the one place gzkit reads either (GHI #484,
+    GHI #1360): every hook and resolver calls it, so a renamed variable is
+    corrected once. ``tests/policy/test_harness_session_single_source.py`` holds
+    that fence.
+
+    Returns:
+        The first non-empty of the two variables, else ``None``.
+
+    """
+    return os.environ.get("CLAUDE_CODE_SESSION_ID") or os.environ.get("CLAUDE_SESSION_ID") or None
+
+
 def resolve_session_id() -> str:
-    """Return session identifier from environment, or fall back to PID."""
-    return (
-        os.environ.get("CLAUDE_CODE_SESSION_ID")
-        or os.environ.get("CLAUDE_SESSION_ID")
-        or str(os.getpid())
-    )
+    """Return the harness session id, or fall back to the PID."""
+    return harness_session_id() or str(os.getpid())
 
 
 def current_branch() -> str:

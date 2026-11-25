@@ -452,7 +452,6 @@ def _ledger_writer_script() -> str:
             \"\"\"
 
             import json
-            import os
             import sys
             from pathlib import Path
 
@@ -507,11 +506,9 @@ def _ledger_writer_script() -> str:
                 # Import gzkit and record edit/validate
                 sys.path.insert(0, str(project_root / "src"))
                 try:
-                    from gzkit.hooks.core import record_artifact_edit
+                    from gzkit.hooks.core import harness_session_id, record_artifact_edit
 
-                    session = os.environ.get("CLAUDE_CODE_SESSION_ID") or os.environ.get(
-                        "CLAUDE_SESSION_ID"
-                    )
+                    session = harness_session_id()
 
                     # This will trigger validation and raise if it fails
                     record_artifact_edit(project_root, str(rel_path), session)

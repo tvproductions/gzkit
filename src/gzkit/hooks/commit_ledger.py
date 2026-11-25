@@ -57,6 +57,7 @@ from gzkit.config import GzkitConfig
 from gzkit.executables import resolve_executable
 from gzkit.hooks.core import is_governance_artifact
 from gzkit.ledger import Ledger, artifact_edited_event
+from gzkit.lock_manager import harness_session_id
 
 _ARTIFACT_EDITED = "artifact_edited"
 
@@ -242,7 +243,7 @@ def record_committed_artifact_edits(root: Path, rev: str = "HEAD") -> list[str]:
     if not pending:
         return []
     commit = _git(["rev-parse", rev], root).strip() or None
-    session = os.environ.get("CLAUDE_CODE_SESSION_ID") or os.environ.get("CLAUDE_SESSION_ID")
+    session = harness_session_id()
     ledger = Ledger(ledger_path)
     for path in pending:
         ledger.append(artifact_edited_event(path, session, commit=commit))
