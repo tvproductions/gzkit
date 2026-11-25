@@ -469,6 +469,16 @@ So *severity* leaves the *what it is* group. The hold on return to service belon
 carried by a return to service package and sits in *where it stands*. Triage's per-run grade is
 urgency.
 
+## decision · readiness stays triage's per-run reading, settled by canon
+
+Canon rules it, so nothing was put: `docs/rnd/ghi-batch-closure.md` Q5 (2026-09-27, *"Enum in
+input; rulings asked live (Recommended)"*) makes readiness (*ready*, *ruling*, *sequence*,
+*design*) one enum in triage's rank input, never stored on the GHI. Under the reader test the
+operator applied to severity, it has readers: triage's landing queue and ruling docket, and, in MX
+terms, *ready* marks what a coordinator can draw into a repair order now. It changes with every
+ruling and landing, and that run found stale blockers on nine issues, so it stays a per-run
+reading in *where it stands*.
+
 ---
 
 ## Disposition map
