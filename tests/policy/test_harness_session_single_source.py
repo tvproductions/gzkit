@@ -20,11 +20,16 @@ from gzkit import lock_manager
 from gzkit.hooks import core as hooks_core
 
 REPO = Path(__file__).resolve().parents[2]
-ROOTS = (
-    REPO / "src" / "gzkit",
-    REPO / "scripts",
-    REPO / ".gzkit" / "skills",
-    REPO / ".gzkit" / "chores",
+# Each root and the files under it that can carry a read: Python modules, the
+# Jinja templates gzkit renders, the generated Claude hooks (a hand edit there
+# would otherwise go unseen until the next sync) and the extensionless git hooks.
+ROOTS: tuple[tuple[Path, tuple[str, ...]], ...] = (
+    (REPO / "src" / "gzkit", ("*.py", "*.j2")),
+    (REPO / "scripts", ("*.py",)),
+    (REPO / ".gzkit" / "skills", ("*.py",)),
+    (REPO / ".gzkit" / "chores", ("*.py",)),
+    (REPO / ".gzkit" / "hooks", ("*",)),
+    (REPO / ".claude" / "hooks", ("*.py",)),
 )
 HOME = REPO / "src" / "gzkit" / "lock_manager.py"
 HARNESS_VARIABLES = (
@@ -35,7 +40,8 @@ HARNESS_VARIABLES = (
     "CLAUDE_CODE",
     "CODEX_SANDBOX",
 )
-_LITERAL = re.compile(rf"""["'](?:{"|".join(HARNESS_VARIABLES)})["']""")
+# The closing quote may be escaped, as inside a template that writes a quoted name.
+_LITERAL = re.compile(rf"""["'](?:{"|".join(HARNESS_VARIABLES)})\\?["']""")
 
 # One module body per literal read form the fence must see.
 _READ_FORMS = {
@@ -47,17 +53,19 @@ _READ_FORMS = {
     "setdefault.py": 'os.environ.setdefault("CODEX_SANDBOX", "")\n',
     "alias.py": 'env = os.environ\nenv.pop("COPILOT_SESSION_ID", None)\n',
     "template.py": 'SCRIPT = """\nos.getenv("CLAUDE_CODE")\n"""\n',
+    "escaped.py": 'SCRIPT = "os.getenv(\\"CLAUDE_SESSION_ID\\")"\n',
 }
 
 
-def harness_variable_literals(roots: tuple[Path, ...], home: Path) -> list[str]:
+def harness_variable_literals(
+    roots: tuple[tuple[Path, tuple[str, ...]], ...], home: Path
+) -> list[str]:
     """Return every quoted harness-variable literal outside *home*, as path:line."""
     found: list[str] = []
-    for root in roots:
-        if not root.exists():
-            continue
-        for path in sorted(root.rglob("*.py")):
-            if path == home:
+    for root, patterns in roots:
+        paths = {p for pattern in patterns for p in root.rglob(pattern) if p.is_file()}
+        for path in sorted(paths):
+            if path == home or path.suffix == ".md" or "__pycache__" in path.parts:
                 continue
             for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
                 if _LITERAL.search(line):
@@ -85,9 +93,15 @@ class TestHarnessVariablesAreReadInOnePlace(unittest.TestCase):
             for name, body in _READ_FORMS.items():
                 (root / name).write_text(body, encoding="utf-8")
             # when: the fence scans the tree
-            hits = harness_variable_literals((root,), home)
+            hits = harness_variable_literals(((root, ("*.py",)),), home)
         # then: every form is reported, and the home module is not
         self.assertEqual({hit.split(":")[0] for hit in hits}, {f"pkg/{n}" for n in _READ_FORMS})
+
+
+class TestEveryScannedRootExists(unittest.TestCase):
+    def test_a_renamed_root_fails_rather_than_shrinking_the_fence(self):
+        missing = [root.relative_to(REPO).as_posix() for root, _ in ROOTS if not root.is_dir()]
+        self.assertEqual(missing, [], "a fence root moved; update ROOTS: " + ", ".join(missing))
 
 
 class TestTheTemplatesImportResolves(unittest.TestCase):
