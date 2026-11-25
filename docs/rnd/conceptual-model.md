@@ -589,6 +589,106 @@ Operator: *"A: Read it from the diff"*.
 So the GHI carries no secondary labels. The *what it is* group holds class, found and family. Defect-fix routing's OBPI arm has
 no GHI destination under this run's rulings; its repair is diamond 2.
 
+## decision · the run resumes at family, with a prompt audit as its test case
+
+Session 85e9de78, 2026-11-25. The operator called for a prompt audit of the Claude Code
+configuration, which returned 47 High and 64 Medium findings grouped in six families. Walking it,
+the operator ruled the routing *"Split (Recommended)"*: the High findings repaired now, one GHI
+per family. The agent then found that ruling against this run's *"So one discrepancy is one GHI"*
+(option C, one GHI carrying several discrepancies, having been rejected), and put the count of
+GHIs to the operator. Operator, verbatim: *"Rule family first (Recommended)"*: this axis is
+taken now, the audit's six families its test case, and the audit's GHIs are filed in the unit it
+sets. Checked against git: the record is clean at `75c4664b6`. The frontier, recomputed from the
+subject: family, the last axis of *what it is*; then the construction question, T37 and the
+sub-ids, and the review of W44 to W50.
+
+The test case, from the audit report (session scratchpad, to be landed with the GHIs): family 1,
+eight surfaces calling `gz validate` scopes gates that no gate runs, already held as RP-7
+placement finding F2 for five of them; family 2, four surfaces describing Gate 5 as lane- or
+mode-dependent, beside GHI #1188 on `GovZero/**` and placement finding F8 on the code; family 3,
+`gz-obpi-lock` stating six lock and merge mechanics the code contradicts, one cause on one
+surface; family 4, numbers stated where canon says cite the authority; family 5, paths and names
+that no longer resolve; family 6, skill text contradicting the code or `AGENTS.md`.
+
+## source · what reads a family today
+
+Read 2026-11-25: `docs/rnd/ghi-landscape-reorganization.md` (304 lines, in full);
+`.gzkit/skills/ghi-author/SKILL.md` Step 0 and the body template; `.gzkit/skills/ghi-triage/SKILL.md`
+Step 1 and Step 2; `.gzkit/skills/ghi-close/SKILL.md` Phase 4 step 7b;
+`src/gzkit/commands/insights.py` `recurrence`; root `AGENTS.md` § DO IT RIGHT.
+
+Root `AGENTS.md` § DO IT RIGHT:
+
+> 1. Fix the class of failure, not the instance.
+
+`ghi-author`, the body template:
+
+> ## Class of failure
+>
+> <one sentence: what family of inputs produces this? Not just this instance.>
+
+`ghi-close` Phase 4 step 7b:
+
+> **Class-of-failure check — verify the contract's family against its witnesses.** Does the fix
+> cover the failure mechanism across the declared inputs, states and consumers? A missing member
+> blocks a `fixed` disposition
+
+> Write the family out as a list of causes, and for each cause name the test that exercises
+> *that cause*.
+
+`ghi-author` Step 0, the family row:
+
+> | The finding is the **Nth member of a recurring family** already tracked as a class | **Do not
+> enumerate the siblings.** [...] Name the family once and the locus that tracks it — the campaign
+> box, or the row of `docs/governance/advisory-rules-audit.md` that scores the class — and file
+> only if THIS instance needs its own work order.
+
+`ghi-landscape-reorganization` § source · family taxonomy of the open queue:
+
+> **Epistemic status.** Family membership is a *reading*, not a measurement.
+
+> | F1 doctrine-declared-without-mechanism | 14 — [...] | A binding claim in one layer; the witness
+> is absent, narrower than the claim, or never invoked |
+
+`ghi-triage` Step 2:
+
+> decide family membership from the body's root cause rather than from whether `family_signal`
+> fired [...] Ranking several members of one family adjacently is a legitimate ordering judgment;
+> reporting a family *count* from the signal is not.
+
+`gz insights recurrence --help`:
+
+> Resolve each cited insight (by its ts) or GHI (#N) to its full timestamp and report whether the
+> citations reach the recurrence threshold in data/recurrence_threshold.json with every pair at
+> least one session lease apart
+
+with the JFMM quoted above: minor findings are corrected *"without causal analysis or long-term
+corrective action unless recurring in nature."*
+
+So *family* carries two concepts today. One is inside a single GHI: the set of inputs, states
+and consumers its failure mechanism reaches, which its fix must cover and its close verifies
+(`ghi-author` § Class of failure, `ghi-close` 7b, *"Fix the class of failure"*). The other spans
+GHIs: separate issues sharing a root-cause mechanism (F1 to F12), read by `ghi-author` Step 0 to
+name a tracking locus, by `ghi-triage` to rank members adjacently, and by the recurrence threshold
+that triggers causal analysis. Both are called *family*; the first is also called *class of
+failure*, which collides with the *class* axis ruled above.
+
+## decision · a discrepancy is one failure mechanism; family groups discrepancies
+
+Question: how are the two concepts separated? Options put: A, two concepts: inside a GHI its
+*failure mechanism* (`ghi-close` 7b's own term) and the instances, inputs and consumers it
+reaches, all fixed and verified under that one GHI; across GHIs, *family*, a grouping of separate
+discrepancies sharing a root-cause pattern; *class of failure* retired as a name, freeing *class*
+for the ruled axis; one discrepancy, one mechanism, one GHI; B, one concept, a GHI able to carry a
+whole family, which sits beside the rejected option C; C, family only inside a GHI, the
+cross-GHI grouping left as triage's and recurrence's working judgment. Recommended A. Operator:
+*"Two concepts (Recommended)"*.
+
+So the unit of a GHI is the failure mechanism, and the instances it reaches travel with it: the
+audit's `gz-obpi-lock` family, one stale cause behind six sentences, is one discrepancy. Family is
+the cross-GHI concept and keeps the name. `ghi-author`'s `## Class of failure` heading and
+`ghi-close` 7b's *"the contract's family"* meet this ruling in diamond 2.
+
 ---
 
 ## Disposition map
