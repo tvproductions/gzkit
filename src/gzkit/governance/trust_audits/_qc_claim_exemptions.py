@@ -228,8 +228,9 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     "dispatch-absorption-marker": EXEMPTS_NONE,
     # Scans for stale pipeline markers, orphan receipts, and expired locks. An
     # unreadable receipt is reported as an orphan and an unreadable lock as expired,
-    # so the error paths accuse rather than excuse. `--apply` cleans up; it never
-    # suppresses.
+    # so the error paths accuse rather than excuse. `--apply` cleans markers, orphan
+    # receipts and the orphan mx-session lock (an expired work lock stays held); it
+    # never suppresses.
     "preflight": EXEMPTS_NONE,
     # Scores four disciplines against an IN-CODE check table and exits non-zero on
     # any required failure or a sub-2.0 overall score. The `required` bit is a fixed

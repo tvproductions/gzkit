@@ -809,7 +809,7 @@ def register_obpi_parsers(commands: argparse._SubParsersAction[StableArgumentPar
         epilog=build_epilog(
             [
                 "gz obpi lock release OBPI-0.1.0-01",
-                "gz obpi lock release OBPI-0.1.0-01 --force",
+                "gz obpi lock release OBPI-0.1.0-01 --force --abandon reaping:lease-expired",
                 "gz obpi lock release OBPI-0.1.0-01 --json",
                 "gz obpi lock release OBPI-0.1.0-01 --abandon network_loss:reason",
             ]
