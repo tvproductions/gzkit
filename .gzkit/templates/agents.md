@@ -201,7 +201,7 @@ Run `uv run gz skill list` for the authoritative active catalog. For details on 
 
 ### Lane Rules
 
-- **lite**: Gates 1, 2 required
+- **lite**: Gates 1, 2 required, plus Gate 5 (universal)
 - **heavy**: All gates required; reserved for command/API/schema/runtime-contract changes used by humans or external systems. Documentation/process/template-only changes stay Lite unless they change one of those external surfaces.
 
 ### Kinds (pool, foundation, feature)

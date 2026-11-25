@@ -212,7 +212,7 @@ without a gzkit-surface marker (`gz <verb>`, `.gzkit/`, `src/gzkit/`,
 | 4 | BDD | `features/` scenarios if present |
 | 5 | Human attestation | `uv run gz attest ADR-<X.Y.Z> --status completed` |
 
-Lane rule: `lite` requires Gates 1-2; `heavy` requires Gates 1-5.
+Lane rule: `lite` requires Gates 1-2; `heavy` adds Gates 3-4; Gate 5 applies in every lane (ADR-0.0.36).
 
 ### Layered trust
 

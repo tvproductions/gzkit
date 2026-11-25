@@ -17,15 +17,21 @@ TEMPLATE_DIRS = (REPO_ROOT / ".gzkit" / "templates", REPO_ROOT / "src" / "gzkit"
 # A line about Gate 5 or the attestation: the gate named, any attest- word, or a
 # Gate Covenant row keyed by its bare number (`| 5 | Human attests |`).
 _SUBJECT = re.compile(r"gate\s*5|attest|^\|\s*5\s*\|", re.IGNORECASE)
-# A lane, kind or mode qualifier. A hyphenated compound ("foundation-attested",
-# a foundation ADR's attestation) names an artifact, not a scope.
+# A lane, kind or mode qualifier. "foundation-attested" (a foundation ADR's
+# attestation) names an artifact, not a scope; "heavy-lane" is still a scope.
 _SCOPING = re.compile(
-    r"(?<!-)\b(heavy|lite|foundation)\b(?!-)|when required|not required|otherwise"
+    r"\b(heavy|lite|foundation)\b(?!-attest)|when required|not required|otherwise"
     r"|parent lane|normal mode|exception mode|optional|\bn/a\b",
     re.IGNORECASE,
 )
 _LANE_ONLY = re.compile(r"lane only", re.IGNORECASE)
 _GATE_TABLE_ROW = re.compile(r"^\|\s*Gate\s*(\d)[^|]*\|\s*([^|]+?)\s*\|")
+# A line that states Gate 5 universal may name a lane beside it ("lite: Gates 1, 2,
+# plus Gate 5 (universal)"), but never with a condition or an exception.
+_UNIVERSAL = re.compile(r"universal|every lane|all lanes", re.IGNORECASE)
+_CONDITION = re.compile(
+    r"when required|not required|otherwise|optional|\bn/a\b|except|unless", re.IGNORECASE
+)
 
 
 def _template_lines() -> list[tuple[str, int, str]]:
@@ -45,6 +51,8 @@ def _scopes_gate5(line: str) -> bool:
         return row.group(1) == "5" and row.group(2).lower() != "all"
     if _LANE_ONLY.search(line):
         return "Gate 5 applies in every lane" not in line
+    if _UNIVERSAL.search(line) and not _CONDITION.search(line):
+        return False
     return bool(_SUBJECT.search(line) and _SCOPING.search(line))
 
 
@@ -76,6 +84,8 @@ class TestTemplateGate5Universal(unittest.TestCase):
             "- Attestor: `<name>` (n/a on lite)",
             "Attestation optional in Exception mode",
             "| 5 | Human attests (heavy) |",
+            "Gate 5 applies to heavy-lane work",
+            "Gate 5 is universal, except for lite-lane work",
         ]
         for line in retired:
             with self.subTest(line=line):
@@ -88,6 +98,7 @@ class TestTemplateGate5Universal(unittest.TestCase):
             "| Gate 3 (Docs) | Heavy | Documentation updated |",
             "<!-- Heavy lane only: Gates 3 and 4. Gate 5 applies in every lane. -->",
             "- Attestor: `<name>`",
+            "- **lite**: Gates 1, 2 required, plus Gate 5 (universal)",
             "| 5 | Human attests | the operator's attestation |",
             "2. **Departures are foundation-attested.** Adding a runtime dependency needs an ADR.",
         ]

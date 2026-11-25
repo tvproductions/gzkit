@@ -8,8 +8,10 @@ Lanes determine which gates must be satisfied.
 
 | Lane | Required gates | Typical trigger |
 |------|----------------|-----------------|
-| Lite | 1, 2 | Internal implementation, documentation, process, or template changes that do not alter an external runtime contract |
+| Lite | 1, 2, 5 | Internal implementation, documentation, process, or template changes that do not alter an external runtime contract |
 | Heavy | 1, 2, 3, 4, 5 | Command, API, schema, or other runtime-contract changes used by humans or external systems |
+
+Gate 5, the human attestation, is required in every lane (ADR-0.0.36); lane decides only whether Gates 3 and 4 apply.
 
 ---
 

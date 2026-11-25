@@ -112,7 +112,7 @@ in frontmatter.
 
 **Kind** describes *what the ADR is about*. **Lane** describes *external-contract
 exposure* (Lite: internal surface, Gates 1–2; Heavy: external runtime contract,
-Gates 1–5). The two axes are orthogonal — any kind can be any lane.
+adding Gates 3–4; Gate 5 in every lane). The two axes are orthogonal — any kind can be any lane.
 
 | | **Lite lane** | **Heavy lane** |
 |---|---|---|
@@ -120,9 +120,8 @@ Gates 1–5). The two axes are orthogonal — any kind can be any lane.
 | **Feature** | Capability ship with no external-contract surface (e.g., a developer-only workflow improvement). | Capability ship on a public surface (CLI, schema, API, runbook contract). The common shape for feature work. |
 | **Pool** | *(no lane)* — pool ADRs are backlog entries. Lane is assigned at promotion, not at pool intake. | |
 
-**Attestation note.** Attestation rigor attaches to **lane**, not kind —
-a Heavy-lane ADR gates OBPI completion on Gate 5 human attestation regardless
-of kind. Foundation-kind ADRs additionally follow the foundation attestation
+**Attestation note.** Gate 5 human attestation gates every OBPI completion,
+whatever the lane or kind (ADR-0.0.36). Foundation-kind ADRs additionally follow the foundation attestation
 walkthrough discipline (see `AGENTS.md` § OBPI Acceptance Protocol) regardless
 of lane, because doctrine drift is invariant drift.
 

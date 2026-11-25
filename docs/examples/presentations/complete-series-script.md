@@ -867,7 +867,7 @@ If you can't test it, rewrite the criterion."
 
 - Gate 1: Your ADR exists and has a decision + checklist
 - Gate 2: All tests pass; coverage is reasonable
-- Heavy lane adds Gates 3-5 (docs, BDD, human attestation)
+- Heavy lane adds Gates 3-4 (docs, BDD); Gate 5 human attestation is every lane
 - The point: you can't declare "done" without evidence
 
 ---
@@ -1109,7 +1109,7 @@ The CLI just removes the boilerplate."
 
 | Lane | Gates Required | When to Use |
 |---|---|---|
-| Lite | 1 (ADR) + 2 (TDD) | Internal changes, refactoring |
+| Lite | 1 (ADR) + 2 (TDD) + 5 (Human) | Internal changes, refactoring |
 | Heavy | All 5 gates | External contracts, CLI, APIs |
 
 - For coursework, Lite lane is sufficient for most tasks

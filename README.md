@@ -102,7 +102,9 @@ Work flows through five gates, adapted by lane (Lite or Heavy):
 
 **Lite lane** (internal changes): Gates 1, 2
 
-**Heavy lane** (external contracts): Gates 1, 2, 3, 4, 5
+**Heavy lane** (external contracts): Gates 1, 2, 3, 4
+
+Gate 5 (human attestation) applies in every lane (ADR-0.0.36).
 
 ## Workflow Lifecycle
 

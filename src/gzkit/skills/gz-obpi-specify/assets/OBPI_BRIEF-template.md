@@ -549,7 +549,7 @@ statuses require full ADR folder structure in `adr-X.Y.x/`.
 | Status | Meaning |
 |--------|---------|
 | **Accepted** | Brief accepted, work may begin |
-| **Completed** | All applicable gates pass; for Heavy includes attestation |
+| **Completed** | All applicable gates pass, and Gate 5 attestation is recorded (every lane) |
 
 **Any other status is a governance violation.**
 
@@ -801,8 +801,8 @@ Summarize the OBPI's delivery in three parts:
 **Brief Status:** Completed
 ```
 
-### PROHIBITION (Heavy)
+### PROHIBITION (every lane)
 
-**NEVER mark a Heavy lane OBPI as completed before receiving human attestation.**
+**NEVER mark an OBPI as completed before receiving human attestation.**
 
 Implementation completion ≠ Brief completion. Gate 5 is mandatory.

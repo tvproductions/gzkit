@@ -100,7 +100,7 @@ If you can't test it, rewrite the criterion."
 
 - Gate 1: Your ADR exists and has a decision + checklist
 - Gate 2: All tests pass; coverage is reasonable
-- Heavy lane adds Gates 3-5 (docs, BDD, human attestation)
+- Heavy lane adds Gates 3-4 (docs, BDD); Gate 5 human attestation is every lane
 - The point: you can't declare "done" without evidence
 
 ---

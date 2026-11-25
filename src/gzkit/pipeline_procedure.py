@@ -83,7 +83,7 @@ STAGE_PROCEDURES: tuple[StageProcedure, ...] = (
         number=4,
         label="Present Evidence",
         filename="stage-4-present-evidence.md",
-        sha256="f9c1d11b145449c02caca50297c39b7f63a5bbd19efa6aa1b523f76f2da0d768",
+        sha256="4254e931f1f7e9614ba6f6214a968d9b4c5a74deee3a8bf872674a6bb717fc52",
     ),
     StageProcedure(
         key="stage5",

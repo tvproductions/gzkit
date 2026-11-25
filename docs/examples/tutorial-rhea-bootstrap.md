@@ -80,7 +80,7 @@ rhea/
 ```
 
 **Why Lite mode?** RHEA is a library with no CLI, no external API, and no
-user-facing documentation yet. Lite lane (Gates 1-2: ADR + TDD) is
+user-facing documentation yet. Lite lane (Gates 1-2: ADR + TDD, plus Gate 5 attestation) is
 appropriate until RHEA has a public surface worth governing with Heavy gates.
 
 ### Step 1.2: Create the PRD

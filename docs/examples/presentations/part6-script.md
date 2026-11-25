@@ -152,7 +152,7 @@ The CLI just removes the boilerplate."
 
 | Lane | Gates Required | When to Use |
 |---|---|---|
-| Lite | 1 (ADR) + 2 (TDD) | Internal changes, refactoring |
+| Lite | 1 (ADR) + 2 (TDD) + 5 (Human) | Internal changes, refactoring |
 | Heavy | All 5 gates | External contracts, CLI, APIs |
 
 - For coursework, Lite lane is sufficient for most tasks
