@@ -30,7 +30,9 @@ _GATE_TABLE_ROW = re.compile(r"^\|\s*Gate\s*(\d)[^|]*\|\s*([^|]+?)\s*\|")
 # plus Gate 5 (universal)"), but never with a condition or an exception.
 _UNIVERSAL = re.compile(r"universal|every lane|all lanes", re.IGNORECASE)
 _CONDITION = re.compile(
-    r"when required|not required|otherwise|optional|\bn/a\b|except|unless", re.IGNORECASE
+    r"when required|not required|otherwise|optional|\bn/a\b|except|unless|\bonly\b|\bbut\b"
+    r"|\b(for|on|in|to)\s+(the\s+)?(heavy|lite|foundation)\b|normal mode|exception mode",
+    re.IGNORECASE,
 )
 
 
@@ -86,6 +88,11 @@ class TestTemplateGate5Universal(unittest.TestCase):
             "| 5 | Human attests (heavy) |",
             "Gate 5 applies to heavy-lane work",
             "Gate 5 is universal, except for lite-lane work",
+            "Gate 5 is universal for heavy work",
+            "Gate 5 (universal) applies to Heavy and Foundation ADRs",
+            "Gate 5 is universal in Normal mode",
+            "Gate 5: all lanes, but lite may self-close",
+            "Gate 5 is universal for heavy-lane and foundation work only",
         ]
         for line in retired:
             with self.subTest(line=line):

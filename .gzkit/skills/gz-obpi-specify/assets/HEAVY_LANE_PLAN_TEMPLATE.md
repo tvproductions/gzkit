@@ -58,7 +58,7 @@ uv run gz [verb] [target] --json
 
 ## Prohibitions
 
-- **NEVER** mark a Heavy lane OBPI as closed before human attestation
+- **NEVER** mark an OBPI as closed before human attestation (Gate 5, every lane)
 - **NEVER** assume implementation completion = brief completion
 - **NEVER** offer raw SQL as attestation evidence (CLI only)
 - **NEVER** skip the "STOP — Wait" steps
