@@ -1,6 +1,6 @@
 """Skill catalog, mirror management, and validation for gzkit sync.
 
-Extracted from sync.py to keep modules under 600 lines.
+Extracted from sync.py to keep modules under the 600-line limit then in force.
 """
 
 import re

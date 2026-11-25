@@ -2,7 +2,7 @@
 
 Each function constructs a typed ``LedgerEvent`` with the correct event name
 and extra payload.  Keeping them in a dedicated module keeps ``ledger.py``
-under the 600-line module limit while preserving the same public API via
+under the 600-line module limit then in force while preserving the same public API via
 re-exports.
 """
 

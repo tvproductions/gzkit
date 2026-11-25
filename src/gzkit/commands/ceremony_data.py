@@ -3,7 +3,7 @@
 Provides structured data from OBPI briefs, doc-alignment checks,
 and demo-command discovery for ceremony step renderers.
 
-Split from ``ceremony_steps.py`` to keep all modules under 600 lines.
+Split from ``ceremony_steps.py`` to keep all modules under the 600-line limit then in force.
 """
 
 import argparse

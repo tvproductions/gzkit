@@ -1,7 +1,8 @@
 """Ceremony state models, persistence, and pure step/verdict helpers.
 
 Extracted from ``closeout_ceremony.py`` to keep both modules under the
-600-line budget (`.claude/rules/pythonic.md`; precedent: ``pipeline_markers.py``
+600-line budget then in force (since replaced by the `lizard_file_nloc` bands of
+`.gzkit/rules/complexity-thresholds.json`; precedent: ``pipeline_markers.py``
 and ``ledger_events.py`` carved out of ``pipeline_runtime.py``). The public
 API is preserved by re-import in ``closeout_ceremony.py`` — existing
 ``from gzkit.commands.closeout_ceremony import CeremonyState`` call sites and

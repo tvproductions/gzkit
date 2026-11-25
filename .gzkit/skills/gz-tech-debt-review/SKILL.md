@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-21
 metadata:
-  skill-version: "1.4.7"
+  skill-version: "1.4.8"
 model: sonnet
 ---
 
@@ -84,7 +84,7 @@ read.
 
 | Class | Signal sources | What it catches |
 |-------|----------------|-----------------|
-| `size-cap` | Lizard NLOC / `module-sloc-cap-radon` chore | Functions >50 LOC, modules >600 LOC, classes >300 LOC |
+| `size-cap` | Lizard NLOC / `module-sloc-cap-radon` chore | Functions and modules past the `warn` or `block` band of `lizard_nloc` / `lizard_file_nloc` (`.gzkit/rules/complexity-thresholds.json`); classes >300 lines (`pythonic.md`) |
 | `complexity` | Ruff `C901`, `gz validate --complexity-ceiling` / `complexity-reduction-xenon` chore | Cyclomatic and cognitive complexity hot-spots above the configured ceilings |
 | `lint` | `uv run gz lint` | Ruff findings outside `data/ruff_baseline.json`, and the rows that baseline still holds (the debt itself) |
 | `types` | `uv run ty check .` | Unresolved type errors, suppressed-but-still-firing `# type: ignore[code]` (the GHI #197 class) |
@@ -114,7 +114,7 @@ big the diff is to fix.
 | Severity | Definition | Examples |
 |----------|------------|----------|
 | **Critical** | Violates a Prime-Directive invariant, a Gate Covenant rule, or a published external contract. Operator should stop and route now. | Unsuppressed `# type: ignore[code]` (GHI #197 class), missing `@covers` on a **BEHAVIOR** REQ in a Completed/Validated heavy brief, `gz` verb prescribed in runbook but unregistered, ledger reference to a missing receipt, security-sensitivity finding. |
-| **High** | Breaks a binding rule but not Gate-Covenant. Will block the next operator touching the surface. | Module >600 LOC, function >50 LOC in a hot path, complexity hot-spot above the configured ceiling, ruff/ty error not suppressed, doc example drifted from CLI output, frontmatter/ledger disagreement. |
+| **High** | Breaks a binding rule but not Gate-Covenant. Will block the next operator touching the surface. | Module or function past its `block` band in `.gzkit/rules/complexity-thresholds.json` in a hot path, complexity hot-spot above the configured ceiling, ruff/ty error not suppressed, doc example drifted from CLI output, frontmatter/ledger disagreement. |
 | **Medium** | Drift that compounds silently. Worth scheduling but won't block a near-term change. | Pythonic-pattern candidate, dead code with no tests pinning it, TODO older than 90 days, dependency >2y stale (not yet 5y), CLI verb registered but undocumented. |
 | **Low** | Stylistic or cosmetic, fixed by autotools or one-line edits. Bundle into the next opportunistic touch. | ruff-fixable warning, missing docstring, single-line dead import. |
 
@@ -147,7 +147,7 @@ For each class, the canonical probe:
 
 | Class | Canonical command | Notes |
 |-------|-------------------|-------|
-| `size-cap` | `uv run lizard <files>` | Filter to functions >50, modules >600, classes >300. |
+| `size-cap` | `uv run lizard <files>` | Compare function NLOC and file NLOC with the `lizard_nloc` / `lizard_file_nloc` bands in `.gzkit/rules/complexity-thresholds.json`; classes >300 lines. |
 | `complexity` | `uv run ruff check <subtree> --select C901` and `uv run gz-mindload <subtree> --top 20` | The ceilings the pre-commit gates and the `complexity-reduction-xenon` chore enforce (`max-complexity`, `.gzkit.json`'s `complexity.cognitive_ceiling`); a stricter ceiling reports code the gates pass. For C901 a non-zero exit IS the signal; for the cognitive list, the scores above the ceiling are. |
 | `lint` | `uv run gz lint <files>` for the gate's verdict; `uv run ruff check <files> --output-format=json` for every finding, held ones included | JSON for grouping; the baseline rows for `<files>` are the held debt. |
 | `types` | `uv run ty check <files>` | Capture stdout; cross-reference `tests/governance/test_type_ignore_syntax.py` for the suppression class. |

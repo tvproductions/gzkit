@@ -1,6 +1,6 @@
 """Pool ADR parsing utilities for promotion workflow.
 
-Extracted from adr_promote.py to stay under the 600-line module cap.
+Extracted from adr_promote.py to stay under the 600-line module cap then in force.
 Covers: title extraction, slug derivation, semver parsing, bucket assignment,
 pool-content marking, section extraction, checklist generation, and source
 resolution.

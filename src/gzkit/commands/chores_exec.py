@@ -1,6 +1,6 @@
 """Chores criterion parsing, evaluation, and log writing.
 
-Extracted from chores.py to stay under the 600-line module cap.
+Extracted from chores.py to stay under the 600-line module cap then in force.
 """
 
 # ---------------------------------------------------------------------------

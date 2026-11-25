@@ -1,6 +1,6 @@
 """REQ-level parallel verification dispatch models and orchestration.
 
-Extracted from pipeline_runtime.py to keep module sizes under 600 lines.
+Extracted from pipeline_runtime.py to keep module sizes under the 600-line limit then in force.
 All public symbols are re-exported from pipeline_runtime for backward compatibility.
 """
 

@@ -3,7 +3,7 @@
 Handles discovery index generation, Claude surface sync,
 manifest generation, and the main ``sync_all`` orchestration entry point.
 
-Extracted from sync.py to keep modules under 600 lines.
+Extracted from sync.py to keep modules under the 600-line limit then in force.
 """
 
 import json

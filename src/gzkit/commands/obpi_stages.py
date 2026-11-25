@@ -1,6 +1,6 @@
 """OBPI pipeline stage execution functions.
 
-Extracted from obpi_cmd.py to stay under the 600-line module cap.
+Extracted from obpi_cmd.py to stay under the 600-line module cap then in force.
 Covers: verification command parsing, pipeline output helpers, and
 stage runners (verify, ceremony, sync).
 """

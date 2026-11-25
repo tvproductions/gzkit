@@ -1,7 +1,7 @@
 """Step renderers and walkthrough discovery for the closeout ceremony.
 
 Each renderer returns a text block for exactly one ceremony step.
-Split from ``closeout_ceremony.py`` to keep both modules under 600 lines.
+Split from ``closeout_ceremony.py`` to keep both modules under the 600-line limit then in force.
 """
 
 from pathlib import Path

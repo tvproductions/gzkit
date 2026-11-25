@@ -3,7 +3,7 @@
 Parses the parent ADR's ``## Intent`` bullets, matches each bullet to the
 OBPIs that deliver it via token overlap on slug/title/objective, and renders
 the pairing as a 2-column table. Split from ``ceremony_data.py`` to keep that
-module under the 600-line cap.
+module under the 600-line cap then in force.
 """
 
 import re

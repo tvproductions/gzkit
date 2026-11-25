@@ -4,7 +4,7 @@ Compares the four governed frontmatter fields (``id``, ``parent``, ``lane``,
 ``status``) against the ledger's artifact graph. Keys lookups on filesystem
 path only — never on frontmatter ``id:`` (that reproduces GHI #166).
 
-Extracted from ``validate_cmd`` to keep both modules under the 600-line cap.
+Extracted from ``validate_cmd`` to keep both modules under the 600-line cap then in force.
 Shares the canonical ledger semantics API used by ``gz adr report``.
 """
 

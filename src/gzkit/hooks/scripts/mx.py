@@ -2,7 +2,7 @@
 
 The generated-script home for the Maintenance Hangar (MX) vendor hook
 adapters. Keeping these out of ``validation.py`` holds that module under the
-600-line ceiling and keeps the MX surface a single discoverable concern.
+600-line ceiling then in force and keeps the MX surface a single discoverable concern.
 """
 
 from textwrap import dedent

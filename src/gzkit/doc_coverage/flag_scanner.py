@@ -7,7 +7,8 @@ in an existing subcommand's parser but no corresponding section is added to
 flag-grained — a new flag never tripped any mechanical check.
 
 The implementation lives in a separate module from ``scanner.py`` to keep the
-parent under the 600-line module cap (``.claude/rules/pythonic.md``); the AST
+parent under the 600-line module cap then in force (``pythonic.md``, since replaced by
+the ``lizard_file_nloc`` bands of ``.gzkit/rules/complexity-thresholds.json``); the AST
 helpers it depends on are imported from ``scanner.py`` rather than duplicated.
 """
 
