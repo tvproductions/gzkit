@@ -183,6 +183,98 @@ untangling something different"*. So this run keeps its own subject, the conflat
 walk surfaced, and the DDD-discipline run stays its own commission: related, still unopened, and
 recorded as a defect the same session (operator: *"leaving that rnd unstarted is not good"*).
 
+## decision · the knot: the GHI and what a discrepancy is
+
+Asked what was being untangled and where to start, the operator, verbatim: *"the GHI and what a
+discrepancy is"*. The frontier is computed from that.
+
+## source · the discrepancy, in the borrowed text
+
+`docs/rnd/contractor-kit/sources/14cfr43.md`, 14 CFR § 43.11(b) · read 2026-11-25
+
+> (b) Listing of discrepancies and placards. If the person performing any inspection required by
+> part 91 or 125 or § 135.411(a)(1) of this chapter finds that the aircraft is unairworthy or does
+> not meet the applicable type certificate data, airworthiness directives, or other approved data
+> upon which its airworthiness depends, that persons must give the owner or lessee a signed and
+> dated list of those discrepancies. For those items permitted to be inoperative under
+> § 91.213(d)(2) of this chapter, that person shall place a placard, that meets the aircraft's
+> airworthiness certification regulations, on each inoperative instrument and the cockpit control
+> of each item of inoperative equipment, marking it "Inoperative," and shall add the items to the
+> signed and dated list of discrepancies given to the owner or lessee.
+
+`docs/rnd/contractor-kit/sources/14cfr91-119-121-maintenance-gaps.md`, 14 CFR § 91.405 · read
+2026-11-25
+
+> (a) Shall have that aircraft inspected as prescribed in subpart E of this part and shall between
+> required inspections, except as provided in paragraph (c) of this section, have discrepancies
+> repaired as prescribed in part 43 of this chapter;
+
+In the text, a discrepancy is what an inspection finds against approved data, listed to the owner,
+and repaired or placarded.
+
+## source · the problem report, in the borrowed text
+
+`docs/rnd/renewing-vows/sources/us-gov-faa-ac-00-71-open-problem-reports.md` (AC 00-71, read in
+full 2026-10-08 from the operator's PDF) and its quotation in
+`docs/rnd/contractor-kit/sources/inventory-aviation-civil.md` · read 2026-11-25
+
+> **Problem report (PR); open problem report (OPR); OPR summary report** (aircraft certification /
+> development assurance — not in-service maintenance)
+> - "Problem report (PR) – A means to identify and record the resolution of anomalous behavior,
+>   process non-compliance with development assurance plans and standards, and deficiencies in life
+>   cycle data (adapted from DO-178C/ED-12C)." — AC 00-71 § 3.1 [S7]
+
+> ### The four classifications (§ 3.3)
+>
+> Significant – assessed at the product, system, or equipment level, a PR that has an actual or
+> potential effect on the product, system, or equipment function that may lead to a Catastrophic,
+> Hazardous, or Major failure condition, or may affect compliance with the operating rules.
+>
+> Functional – a PR that has an actual or a potential effect on a function at the product, system,
+> or equipment level.
+>
+> Process – a PR that records a process non-compliance or deficiency that cannot result in a
+> potential safety nor a potential functional effect.
+>
+> Life Cycle Data – a PR that is linked to a deficiency in a life cycle data item but not linked to
+> a process non-compliance or process deficiency.
+
+> 4.2.1 The most important clarification when compared with the former classification scheme is to
+> give each OPR a single classification using a given order of priority
+
+The inventory itself marks the problem report as development assurance, not in-service
+maintenance. Its classification scheme comes with it; B12 took the states and not the scheme.
+
+## source · gzkit's GHI, squawk and list of discrepancies
+
+`docs/governance/safe-mode-doctrine.md:15` · read 2026-11-25
+
+> The squawk is the on-demand repair of one reported discrepancy: the GitHub issue is the write-up,
+> and a hangar visit or a direct fix answers it
+
+> In its role the GitHub issue is a problem report (AC 00-71 § 3.1), and its states are recorded,
+> classified, resolved and closed
+
+`.gzkit/skills/ghi-close/references/problem-report-states.md` · read 2026-11-25
+
+> | **classified** | *"A problem report that has been categorized in accordance with an established classification scheme."* | carries its `ghi-author` Step 1 class label and its class of failure |
+
+`docs/rnd/contractor-kit.md`, decision *the punch list becomes the list of discrepancies* · read
+2026-11-25
+
+> - **B′.** A **list of discrepancies**: one line per discrepancy, graded *blocks return to service*
+>   or *due by a named event*, cleared with its evidence.
+
+and decision *three records* · read 2026-11-25
+
+> the punch list (outstanding deficiencies, what is left broken and the inspector's rejections;
+> cleared before return to service)
+
+gzkit's canon makes the GHI at once the write-up of one reported discrepancy (in-service
+maintenance) and an AC 00-71 problem report (development assurance), with its *classified* state
+pointing at ghi-author's unratified table; and it keeps a second home for discrepancies, the list,
+holding what the work leaves broken and the inspector's rejections.
+
 ---
 
 ## Disposition map
