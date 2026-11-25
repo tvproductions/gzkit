@@ -145,7 +145,7 @@ OBPI-0.37.0-01 parent-invariant-threading -- thread parent_invariants from the p
 
 - [ ] Acceptance scenarios pass: `uv run -m behave features/`
 
-### Gate 5: Human (Heavy only)
+### Gate 5: Human (every lane, ADR-0.0.36)
 
 - [ ] Human attestation recorded
 

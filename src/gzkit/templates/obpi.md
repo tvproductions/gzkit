@@ -127,7 +127,7 @@ _[Author: For each new control, state its level at the operational condition, ha
 
 - [ ] Acceptance scenarios pass: `uv run -m behave features/`
 
-### Gate 5: Human (Heavy only)
+### Gate 5: Human (every lane, ADR-0.0.36)
 
 - [ ] Human attestation recorded
 
@@ -245,7 +245,7 @@ _No substantive adjustments recorded yet._
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+# Record attestation text here (Gate 5 applies in every lane, ADR-0.0.36)
 ```
 
 ### Value Narrative

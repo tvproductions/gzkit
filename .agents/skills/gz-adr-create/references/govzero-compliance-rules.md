@@ -32,11 +32,11 @@
 | Gate 2 (TDD) | All | Red-Green-Refactor cycle followed, tests derived from brief, coverage >=40% |
 | Gate 3 (Docs) | Heavy only | Markdown lint clean, mkdocs build passes |
 | Gate 4 (BDD) | Heavy only | Behave scenarios pass (CLI/API/schema contracts) |
-| Gate 5 (Attestation) | Heavy only | Human directly observes and attests |
+| Gate 5 (Attestation) | All | Human directly observes and attests (universal, ADR-0.0.36) |
 
 **Lane doctrine:**
 
-- Lite lane (default): Gates 1-2 only (internal changes)
+- Lite lane (default): Gates 1-2, plus Gate 5 attestation (internal changes)
 - Heavy lane: Gates 1-5 (external contract changes: CLI, API, schema, errors)
 
 ## OBPI Discipline

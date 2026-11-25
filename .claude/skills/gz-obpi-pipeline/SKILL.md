@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-24
 metadata:
-  skill-version: "6.69.3"
+  skill-version: "6.69.4"
 model: sonnet
 ---
 
@@ -110,7 +110,7 @@ Stage 1 always runs — context is needed for ceremony and sync regardless of en
 
 ## Pipeline Stages
 
-The pipeline executes 5 stages sequentially. **Stage 4 behavior depends on execution mode** — all other stages are autonomous.
+The pipeline executes 5 stages sequentially. **Stage 4 is the human gate in every lane, kind and execution mode (ADR-0.0.36)** — all other stages are autonomous.
 
 ```text
 ┌──────────────────────────────────────────────────────────────┐

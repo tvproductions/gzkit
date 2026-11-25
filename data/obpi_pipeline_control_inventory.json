@@ -1460,8 +1460,11 @@
       "stage5"
      ],
      "cause": "ADR-0.0.36",
-     "delivered_span": "The pipeline executes 5 stages sequentially. **Stage 4 behavior depends on execution mode** — all other stages are autonomous.",
-     "reworded": null
+     "delivered_span": "The pipeline executes 5 stages sequentially. **Stage 4 is the human gate in every lane, kind and execution mode (ADR-0.0.36)** — all other stages are autonomous.",
+     "reworded": {
+      "text": "The pipeline executes 5 stages sequentially. **Stage 4 is the human gate in every lane, kind and execution mode (ADR-0.0.36)** — all other stages are autonomous.",
+      "reason": "A ruled correction (GHI #1358; operator 2026-11-25, \"New GHI, fix now (Recommended)\"): Gate 5 is universal (ADR-0.0.36; AGENTS.md § Gate Covenant), so Stage 4 does not depend on execution mode. The baseline sentence contradicted the diagram that follows it (I-070), which already reads \"universal per ADR-0.0.36\"."
+     }
     }
    ],
    "non_control": []

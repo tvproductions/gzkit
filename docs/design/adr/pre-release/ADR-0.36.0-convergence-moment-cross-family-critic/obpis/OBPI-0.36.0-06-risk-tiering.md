@@ -185,7 +185,7 @@ never mints an envelope: OBPI-05 mints, OBPI-02 transports, OBPI-03/04/09 render
 
 - [ ] Acceptance scenarios pass: `uv run -m behave features/`
 
-### Gate 5: Human (Heavy only)
+### Gate 5: Human (every lane, ADR-0.0.36)
 
 - [ ] Human attestation recorded
 

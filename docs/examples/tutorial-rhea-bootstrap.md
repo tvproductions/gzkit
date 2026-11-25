@@ -139,7 +139,7 @@ business logic.
 | Gate 2 (TDD) | All | Tests pass, coverage ≥40% |
 | Gate 3 (Docs) | Heavy | Documentation updated |
 | Gate 4 (BDD) | Heavy | Behavior tests pass |
-| Gate 5 (Human) | Heavy | Human attestation recorded |
+| Gate 5 (Human) | All | Human attestation recorded |
 
 ## Q&A Transcript
 

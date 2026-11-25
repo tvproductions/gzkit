@@ -215,7 +215,7 @@ Both questions were drafted in `OBPI-0.35.0-17` and moved here with the cutover 
 
 - [ ] The stage-entry scenarios `OBPI-0.35.0-17` landed still pass after the cutover: `uv run -m behave features/obpi_pipeline_stage_procedure.feature`. This OBPI adds no operator-visible command behaviour of its own; its BEHAVIOR REQs are proven by `@covers` unit tests.
 
-### Gate 5: Human (Heavy only)
+### Gate 5: Human (every lane, ADR-0.0.36)
 
 - [ ] Human attestation recorded, naming every reworded row id (Requirement 4)
 

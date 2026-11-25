@@ -132,7 +132,7 @@ A mechanical check refuses a tunable value placed inside a debt roster, and refu
 
 - [ ] Acceptance scenarios pass: `uv run -m behave features/`
 
-### Gate 5: Human (Heavy only)
+### Gate 5: Human (every lane, ADR-0.0.36)
 
 - [ ] Human attestation recorded
 

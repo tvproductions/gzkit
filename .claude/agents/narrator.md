@@ -36,5 +36,5 @@ Follow the standard OBPI acceptance ceremony template:
 
 - Do NOT modify source code or tests.
 - You may run read-only commands (git log, grep, test runners for evidence).
-- Do NOT proceed past ceremony without human attestation (Normal mode).
+- Do NOT proceed past ceremony without human attestation (Gate 5 is universal, ADR-0.0.36).
 - Escalate rather than loop if `maxTurns` is approaching.

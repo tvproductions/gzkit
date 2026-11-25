@@ -72,8 +72,8 @@ governance, not just a process to follow.
 
 The Lite/Heavy lane system naturally supports progressive learning:
 
-- **Week 1-4:** Lite lane (Gates 1-2 only: ADR + tests)
-- **Week 5-8:** Heavy lane (add docs, BDD, attestation)
+- **Week 1-4:** Lite lane (Gates 1-2: ADR + tests, plus Gate 5 human attestation)
+- **Week 5-8:** Heavy lane (add docs and BDD)
 
 Students start with minimal ceremony and graduate to full governance as their
 comfort grows.
@@ -180,7 +180,7 @@ test case for evaluating whether gzkit can bootstrap a greenfield project.
 3. `gz plan 0.1.0 --title "Core ReadRepo interface"` — first ADR
 4. Create 3-4 OBPI briefs (ReadRepo interface, predicate DSL, in-memory
    adapter, SQLite adapter)
-5. Implement in Lite lane (Gates 1-2 only)
+5. Implement in Lite lane (Gates 1-2, plus Gate 5 attestation)
 6. `gz attest ADR-0.1.0 --status completed`
 
 This sequence would reveal any friction points in the greenfield onboarding
