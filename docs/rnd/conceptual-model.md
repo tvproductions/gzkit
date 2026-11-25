@@ -161,17 +161,19 @@ class, not its census. The agent's reading of the mechanism, unruled: a surface 
 locally or reuses one, and a later ruling builds on it without reconciling. The operator named it
 *"classic LLM drift: a vibe coded variant of whimsy and copycat convenience"*.
 
-## decision · this run asks open questions and takes the operator's words as the model
+## decision · this run favors the operator's input over the agent's framings
 
 Operator, verbatim, as the run opened: *"one thing that would help us is when yu favor my input
 over vibes or multiple choice vibings"*. In the walk, the agent's A/B/C options set the answer
 space from its own unvetted framings, and the operator's model reached the page only by
-rejecting them. So in this run a question is open; the operator's answer, in their words, is
-what the record carries; the agent supplies the facts and sources the question needs, and offers
-options only when the operator asks for them or canon already closes the answer space. This
-departs from AGENTS.md § Operator Economy (*"offer A/B/C with tradeoffs and a recommendation"*)
-and from this skill's *"a recommended answer on every question"* for this run, on the operator's
-word. Recorded as an insight the same turn.
+rejecting them.
+
+The agent first read this as *open questions only*. The operator corrected it, verbatim: *"i
+didn't say exclusive, i said favor"*. So the operator's own words and model carry more weight
+than the agent's framings: a question leaves room for the operator's answer first, and the
+record carries that answer in their words. Options stay available, put beside or after the
+operator's input, never in place of it. AGENTS.md § Operator Economy's A/B/C rule stands; this
+weights it. Recorded as an insight, the first reading superseded.
 
 ---
 
