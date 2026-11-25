@@ -3,6 +3,9 @@
 **Lane:** Lite
 **Slug:** `dependency-currency`
 
+> **Version 2.0.1 (2026-11-25, GHI #1368):** § 2a names the fence that keeps
+> its grading in this file.
+>
 > **Version 2.0.0 (2026-10-27, operator ruling):** the chore runs daily and brings
 > dependencies up to date when it checks. The rung moves from propose to repair;
 > the apply step is the `gz-deps-upgrade` procedure. Operator, verbatim: *"the gobal
@@ -105,7 +108,10 @@ curl -s https://pypi.org/pypi/<name>/json | uv run python -c "import json,sys; d
 
 - **Stale or abandoned.** A release older than a year is *stale*; it is
   *abandoned* only on evidence (an archived repository, a maintainer's
-  notice), never on age alone. Record which, with the evidence.
+  notice), never on age alone. Record which, with the evidence. This chore is
+  the grading's one home: other surfaces cite it, and
+  `tests/policy/test_dependency_currency_cites_the_chore.py` refuses an age
+  restated as a currency grade anywhere else (GHI #1368).
 - **Parser support.** The tool must parse the `requires-python` floor's
   syntax. `uv run gz validate --complexity-ceiling` refusing a function as
   unmeasured is the observed signal; record any, and never lower a ceiling to

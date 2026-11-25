@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-21
 metadata:
-  skill-version: "1.4.9"
+  skill-version: "1.4.10"
 model: sonnet
 ---
 
@@ -95,7 +95,7 @@ read.
 | `cli-drift` | `uv run gz cli audit`, `gz validate --cli-alignment` | Unregistered verbs in docs, undocumented verbs in code |
 | `doc-drift` | `doc-coverage` chore, `gz validate --documents --surfaces`, `mkdocs build --strict` | Stale examples, drifted manpages, broken links |
 | `frontmatter-drift` | `gz validate --frontmatter`, `frontmatter-ledger-coherence` chore | Brief/ADR frontmatter out of sync with ledger |
-| `dep-currency` | `dependency-currency` chore | Outdated runtime deps (>5y aging policy) |
+| `dep-currency` | `dependency-currency` chore | Dependencies behind upstream latest, and complexity analyzers that chore grades stale or abandoned (its `CHORE.md` owns the grading) |
 | `todo-rot` | grep `TODO|FIXME|XXX|HACK` with git-blame age | TODOs older than 90 days, FIXMEs without GHI refs |
 | `governance` | `gz validate --advisory-scorecard`, rule version markers | Promotable rules still advisory, unversioned rule edits |
 | `evidence-integrity` | `evidence-integrity-audit` chore | ARB receipts cited but missing, status frontmatter without ledger backing |
@@ -115,7 +115,7 @@ big the diff is to fix.
 |----------|------------|----------|
 | **Critical** | Violates a Prime-Directive invariant, a Gate Covenant rule, or a published external contract. Operator should stop and route now. | Unsuppressed `# type: ignore[code]` (GHI #197 class), missing `@covers` on a **BEHAVIOR** REQ in a Completed/Validated heavy brief, `gz` verb prescribed in runbook but unregistered, ledger reference to a missing receipt, security-sensitivity finding. |
 | **High** | Breaks a binding rule but not Gate-Covenant. Will block the next operator touching the surface. | Module past its `block` band in `.gzkit/rules/complexity-thresholds.json` (the Module size gate refuses it), function past its `block` band in a hot path, complexity hot-spot above the configured ceiling, ruff/ty error not suppressed, doc example drifted from CLI output, frontmatter/ledger disagreement. |
-| **Medium** | Drift that compounds silently. Worth scheduling but won't block a near-term change. | Pythonic-pattern candidate, dead code with no tests pinning it, TODO older than 90 days, dependency >2y stale (not yet 5y), CLI verb registered but undocumented. |
+| **Medium** | Drift that compounds silently. Worth scheduling but won't block a near-term change. | Pythonic-pattern candidate, dead code with no tests pinning it, TODO older than 90 days, a dependency or analyzer the `dep-currency` probe reports, CLI verb registered but undocumented. |
 | **Low** | Stylistic or cosmetic, fixed by autotools or one-line edits. Bundle into the next opportunistic touch. | ruff-fixable warning, missing docstring, single-line dead import. |
 
 If a finding could be graded two ways, grade up — debt's main failure
@@ -157,7 +157,7 @@ For each class, the canonical probe:
 | `cli-drift` | `uv run gz cli audit` and `uv run gz validate --cli-alignment` | Both must exit 0 to clear the class. |
 | `doc-drift` | `uv run gz chores run doc-coverage` and `uv run mkdocs build --strict` | Strict build catches link rot. |
 | `frontmatter-drift` | `uv run gz validate --frontmatter`, `uv run gz chores run frontmatter-ledger-coherence` | **Tracked-defects awareness:** before grading a brief-level drift, parse the brief's `## Tracked Defects` H2 section. If the drift is already named there (Allowed Paths drift, Verification command drift, etc.), discard the finding — the brief already paid the audit-trail cost and re-flagging it is noise. Tracked-defects entries are operator-attested admission of drift; the skill respects that attestation. |
-| `dep-currency` | `uv run gz chores run dependency-currency` | |
+| `dep-currency` | `uv tree --outdated --depth 1`, then the analyzers' grading in the newest `.gzkit/chores/dependency-currency/proofs/drift-report-*.md` | Observe only. `gz chores run` would record a run of a repair chore that did no repair (GHI #1368). |
 | `todo-rot` | `git grep -n -E '\b(TODO\|FIXME\|XXX\|HACK)\b' -- <files>` then `git blame` for age on each hit | Skip hits with a `(GHI #N)` reference — those are tracked. |
 | `governance` | `uv run gz validate --advisory-scorecard` | Promotable rules are flagged High. |
 | `evidence-integrity` | `uv run gz chores run evidence-integrity-audit` | |
