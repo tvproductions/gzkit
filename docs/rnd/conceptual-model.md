@@ -479,6 +479,21 @@ terms, *ready* marks what a coordinator can draw into a repair order now. It cha
 ruling and landing, and that run found stale blockers on nine issues, so it stays a per-run
 reading in *where it stands*.
 
+## decision · a GHI carries no stored route
+
+Question: what is a GHI's route, given that Defect-fix routing's direct fix or OBPI reads every
+issue *direct-fix* (*"authority, not readiness"*, ghi-batch-closure), that W10 puts all repair on
+one discipline with the alarm test deciding line or out of service, and that construction never
+comes through a GHI? Options put: A, route as the alarm test's answer, line or out of service,
+Defect-fix routing's OBPI arm retired for GHIs; B, the size and surface test kept beside the
+alarm test; C, no stored route, the coordinator deciding line or out of service under the alarm
+test when drawing the GHI into work, the decision showing in which package carries it.
+Recommended A. Operator: *"C: No stored route"*.
+
+So route leaves the GHI's classification. Line or out of service is the coordinator's act under
+the alarm test, recorded by the package that carries the GHI. Defect-fix routing's OBPI arm has
+no GHI destination under this run's rulings; its repair is diamond 2.
+
 ---
 
 ## Disposition map
