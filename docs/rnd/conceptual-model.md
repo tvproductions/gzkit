@@ -331,6 +331,57 @@ record"*.
 So one discrepancy is one GHI. The list of discrepancies, the `DSC-` record and RP-12 rulings 9,
 172, 178 to 181 meet this ruling on the separated model; their repair is diamond 2.
 
+## source · the classifications a GHI already carries
+
+Operator, as the agent put AC 00-71's scheme: *"be careful here, we have some classification of
+ghi's. also, this: https://github.com/tvproductions/superpowers-backplane"*. Read in full
+2026-11-25: `.gzkit/skills/ghi-triage/SKILL.md` (242 lines), `docs/rnd/ghi-landscape-reorganization.md`
+(304), `docs/rnd/ghi-batch-closure.md` (396); `.gzkit/skills/ghi-author/SKILL.md` Step 1 and
+`.gzkit/skills/ghi-close/SKILL.md` Phase 1 step 2 and Phase 4 step 8 read at those sections.
+
+`ghi-author` Step 1:
+
+> 1. **Classify the GHI** using the table below. Pick exactly one; a single GHI is one class.
+
+with Defect, Enhancement, Investigation, and *"Secondary labels (binding — additive, not
+exclusive)"*: `runtime`, `tech-debt`, `security`, `eval-feedback`.
+
+`ghi-triage` Step 1 and Step 2:
+
+> Each record contains: `number`, `title`, `labels`, `klass` (one of
+> `defect`/`enhancement`/`investigation`/`chore`/`unlabeled`), [...] `route`, `urgency`
+
+> | `severity` | one of `blocking` (current work fails), `degrading` (succeeds but produces drift), `latent` (deferrable) |
+> | `readiness` | optional; one of `ready`, `ruling`, `sequence`, `design`; on every entry or on none (a partial set exits 1) |
+
+`ghi-landscape-reorganization` § source · family taxonomy of the open queue:
+
+> | F1 doctrine-declared-without-mechanism | 14 — [...] | A binding claim in one layer; the witness is absent, narrower than the claim, or never invoked |
+
+(twelve families, F1 to F12, each a shared root-cause mechanism; *"Family membership is a
+*reading*, not a measurement."*)
+
+`ghi-close` Phase 1 step 2, *"Classify the GHI's prescriptive shape"*: single prescribed fix;
+multiple options with a dominant choice; multiple options with none; investigation;
+already-resolved; forward-reference tracker. Phase 4 step 8, the dispositions: `fixed`,
+`superseded`, `withdrawn`, `duplicate`, `won't-fix`.
+
+`ghi-batch-closure` § decision · this run's terms are held:
+
+> - **readiness** — whether an open GHI can be ended by an agent now: R1 ready, R2 ruling,
+>   R3 sequence, R4 design. _Avoid_: *route* (which `ghi-triage` already uses for authority).
+
+Backplane, measured 2026-11-25 over its own last 24 issues: one carries a native type
+(`Feature`); 23 carry none, most with `backplane:backlog`. Its contract keeps kind in the native
+type and lifecycle in one label; its own queue exercises little of either.
+
+So a GHI is classified today along at least nine axes by five surfaces: class (Defect,
+Enhancement, Investigation), secondary properties (runtime, tech-debt, security, eval-feedback),
+severity (blocking, degrading, latent), readiness (ready, ruling, sequence, design), route
+(direct fix or OBPI), family (F1 to F12, a root-cause reading), prescriptive shape (six),
+disposition at close (five) and problem-report state (B12's four), beside the packaging label
+`repair` and the script's `chore` and `unlabeled` classes. Three of them are called *class*.
+
 ---
 
 ## Disposition map
