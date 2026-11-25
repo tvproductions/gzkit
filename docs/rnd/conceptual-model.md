@@ -419,6 +419,15 @@ Feature. Options put: A, exactly one `class:behavior`, `class:process` or
 in the *recorded* state; B, organization issue types; C, a `Class:` line in the body. Recommended
 A. Operator: *"A: One namespaced label"*.
 
+## decision · the lifecycle state is derived, never stored
+
+Question: where does B12's state live? Options put: A, derived from facts that exist, with no
+lifecycle label: *recorded*, open with no class label; *classified*, open with one; *resolved*,
+open with a landed `(GHI #N)` commit; *closed*, closed on GitHub with the review comment on
+record; B, exactly one `state:*` label on an open GHI, Backplane's rule; C, a ledger event per
+transition with labels as display. Recommended A, under the state doctrine (a derived view traces
+to Layer 1 or 2). Operator: *"A: Derived, not stored"*.
+
 ---
 
 ## Disposition map
