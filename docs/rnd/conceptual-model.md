@@ -491,7 +491,30 @@ test when drawing the GHI into work, the decision showing in which package carri
 Recommended A. Operator: *"C: No stored route"*.
 
 So route leaves the GHI's classification. Line or out of service is the coordinator's act under
-the alarm test, recorded by the package that carries the GHI. Defect-fix routing's OBPI arm has
+the alarm test, recorded by the package that carries the GHI.
+
+## source · GitHub's organization issue types
+
+`https://docs.github.com/en/issues/tracking-your-work-with-issues/configuring-issues/managing-issue-types-in-an-organization`,
+with the filtering pages it links, read 2026-11-25 through a `web-fetch` subagent; its report
+quotes, held as the subagent's reading (secondary until re-read):
+
+> "You can create up to 25 issue types that you can apply to issues."
+
+> "Default issue types are included in every organization and user account... The default types
+> are task, bug, and feature."
+
+> "If you disable an issue type, it will not be shown and it won't be possible to set an issue to
+> that type, but if you later decide to enable the issue type, it will be displayed again on any
+> issues previously set to the issue type."
+
+> "Filter for issues with a particular type: `is:open type:"Bug"`"
+
+Not stated on the pages, per the report: whether a type can be scoped to some repositories, who
+may manage types, what a deleted type does to issues carrying it, and whether an issue holds more
+than one type. Measured locally 2026-11-25: `gh` 2.105.0 takes `--type` on `issue create`,
+`issue edit` and `issue list`; gzkit's last 200 issues carry no type, and the sampled issues of
+airlineops and flightops carry none. Defect-fix routing's OBPI arm has
 no GHI destination under this run's rulings; its repair is diamond 2.
 
 ---
