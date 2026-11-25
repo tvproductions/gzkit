@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-21
 metadata:
-  skill-version: "1.4.10"
+  skill-version: "1.4.11"
 model: sonnet
 ---
 
@@ -157,7 +157,7 @@ For each class, the canonical probe:
 | `cli-drift` | `uv run gz cli audit` and `uv run gz validate --cli-alignment` | Both must exit 0 to clear the class. |
 | `doc-drift` | `uv run gz chores run doc-coverage` and `uv run mkdocs build --strict` | Strict build catches link rot. |
 | `frontmatter-drift` | `uv run gz validate --frontmatter`, `uv run gz chores run frontmatter-ledger-coherence` | **Tracked-defects awareness:** before grading a brief-level drift, parse the brief's `## Tracked Defects` H2 section. If the drift is already named there (Allowed Paths drift, Verification command drift, etc.), discard the finding — the brief already paid the audit-trail cost and re-flagging it is noise. Tracked-defects entries are operator-attested admission of drift; the skill respects that attestation. |
-| `dep-currency` | `uv tree --outdated --depth 1`, then the analyzers' grading in the newest `.gzkit/chores/dependency-currency/proofs/drift-report-*.md` | Observe only. `gz chores run` would record a run of a repair chore that did no repair (GHI #1368). |
+| `dep-currency` | `uv tree --locked --outdated --depth 1`, then the analyzer read in `dependency-currency` `CHORE.md` § 2a, graded as that section grades | Observe only. `gz chores run` would record a run of a repair chore that did no repair (GHI #1368). An analyzer read that cannot run is `probe-error`, never clean. |
 | `todo-rot` | `git grep -n -E '\b(TODO\|FIXME\|XXX\|HACK)\b' -- <files>` then `git blame` for age on each hit | Skip hits with a `(GHI #N)` reference — those are tracked. |
 | `governance` | `uv run gz validate --advisory-scorecard` | Promotable rules are flagged High. |
 | `evidence-integrity` | `uv run gz chores run evidence-integrity-audit` | |
