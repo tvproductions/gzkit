@@ -1,0 +1,1161 @@
+# Proposed diff: prompt audit, 2026-11-25. Nothing in this file has been applied.
+#
+# How to read it:
+# - One hunk per finding. The ID in each comment (A1, R1, S1, ...) matches prompt-audit-report.md.
+# - Every hunk targets the CANONICAL source: .gzkit/skills, .gzkit/rules, or the root AGENTS.md
+#   corpus. Never edit the generated mirrors.
+# - Line numbers are approximate. Where a hunk says "…", that text is unchanged and was trimmed
+#   from a long single line. Anchor each hunk on its quoted context.
+# - This is a review diff, not a `git apply` patch.
+#
+# After applying any hunk:
+# 1. Bump the version: skill-version and last_reviewed for a skill; the rule-version marker and
+#    banner for a rule.
+# 2. Run `uv run gz agent sync control-surfaces`.
+#
+# Group 2 edits (stale facts, conflicts) are proposals for the operator to confirm. They are
+# never applied on a blanket request.
+
+############################  ROOT AGENTS.md (land through gz content remember / land)  ############################
+
+# A1: gz check does not run every validator (data/validator_reachability_grandfather.json)
+--- a/AGENTS.md   (corpus: .gzkit/corpus/AGENTS.md.jsonl, § Execution Rules)
++++ b/AGENTS.md
+@@ -169 +169 @@
+-`uv run gz check` is the per-change gate: lint, format, typecheck, every validator, the smoke tier and the tests the change touches. …
++`uv run gz check` is the per-change gate: lint, format, typecheck, every validator wired into its steps, the smoke tier and the tests the change touches; the scopes in `data/validator_reachability_grandfather.json` run only when invoked by name. …
+--- a/AGENTS.md   (corpus, § Governance doctrine surfaces)
++++ b/AGENTS.md
+@@ -209 +209 @@
+-`uv run gz check` runs every registered validator; a failing validator's message names the rule and its recovery, … Mechanical scopes that bind here:
++`uv run gz check` runs every validator wired into its steps; a scope listed in `data/validator_reachability_grandfather.json` binds only when run by name. A failing validator's message names the rule and its recovery, … Mechanical scopes that bind here:
+
+# A2: receipts fail closed on heavy lane OR foundation kind (obpi_complete.py:396,708)
+--- a/AGENTS.md   (corpus, § Attestation)
++++ b/AGENTS.md
+@@ -176 +176 @@
+-… Missing receipts warn on Lite and fail closed on Heavy. …
++… Missing receipts warn on Lite and fail closed on Heavy lane or foundation kind. …
+
+############################  .claude/agents and .claude/commands (edit in place)  ############################
+
+# A4: cite the authority, not the value
+--- a/.claude/agents/quality-reviewer.md
++++ b/.claude/agents/quality-reviewer.md
+@@ -24 +24 @@
+-   - Test coverage adequacy (>= 40% floor)
++   - Test coverage adequacy (at or above `coverage_floor` in `.gzkit/manifest.json`)
+
+# A6: keep the prohibition, attach the reason, drop the volume
+--- a/.claude/commands/git-commit.md
++++ b/.claude/commands/git-commit.md
+@@ -26 +26 @@
+-- NEVER use --no-verify (treat it like a forbidden word)
++- Never use --no-verify: the hooks are the project's commit gate (AGENTS.md § Behavior Rules)
+
+############################  .gzkit/rules  ############################
+
+# R1
+--- a/.gzkit/rules/pythonic.md
++++ b/.gzkit/rules/pythonic.md
+@@ -36,1 +36,1 @@
+-| Classes <=300 | `gz validate --class-size` (`code_quality.py`, `limit = 300` hardcoded, waivers in `_CLASS_SIZE_WAIVERS`) | **live gate** |
++| Classes <=300 | `gz validate --class-size` (`code_quality.py`, `limit = 300` hardcoded, waivers in `_CLASS_SIZE_WAIVERS`) | explicit-only: reachable from no gate (`data/validator_reachability_grandfather.json`); run it yourself |
+
+# R2
+--- a/.gzkit/rules/cli.md
++++ b/.gzkit/rules/cli.md
+@@ -83,1 +83,1 @@
+-Seven obligations fire for a new verb, each mechanically checked; satisfy them in the authoring patch. The authority is the code — …
++Seven obligations fire for a new verb; satisfy them in the authoring patch. `gz cli audit`, a `gz check` step, checks the manifest and documentation obligations; obligation 7 is checked only by `gz validate --skill-alignment`, which is explicit-only and reachable from no gate (`data/validator_reachability_grandfather.json`), so run it yourself. The authority is the code — …
+
+# R3
+--- a/.gzkit/rules/skill-authoring.md
++++ b/.gzkit/rules/skill-authoring.md
+@@ -53,1 +53,1 @@
+-… `gz validate --cli-alignment` resolves every `gz <verb>` a skill names. `gz validate --skill-alignment` holds every verb to a wielding skill. Qualitative parsimony …
++… `gz validate --cli-alignment` resolves every `gz <verb>` a skill names and `gz validate --skill-alignment` holds every verb to a wielding skill; both are explicit-only, reachable from no gate (`tool-skill-runbook-alignment.md` § Enforcement posture), so run them when authoring. Qualitative parsimony …
+
+# R4a
+--- a/.gzkit/rules/cross-platform.md
++++ b/.gzkit/rules/cross-platform.md
+@@ -36,1 +36,1 @@
+-… need explicit `sys.stdout.reconfigure(encoding='utf-8')`. Enforced by `gz validate --utf8-prefix` (GHI #275).
++… need explicit `sys.stdout.reconfigure(encoding='utf-8')`. Checked by `gz validate --utf8-prefix` (GHI #275) when run by name; no gate runs it.
+
+# R4b
+--- a/.gzkit/rules/chores.md
++++ b/.gzkit/rules/chores.md
+@@ -66,1 +66,1 @@
+-| **Layout discipline** | Stray `CHORE.md` or `acceptance.json` outside the two canonical roots is a defect — `gz validate --chores-layout` enforces it (REQ-0.0.21-08-04). |
++| **Layout discipline** | Stray `CHORE.md` or `acceptance.json` outside the two canonical roots is a defect — `gz validate --chores-layout` checks it when run by name; no gate runs it (REQ-0.0.21-08-04). |
+
+# R4c
+--- a/.gzkit/rules/tests.md
++++ b/.gzkit/rules/tests.md
+@@ -38,1 +38,1 @@
+-… there is no smoke directory (`gz validate --test-tiers` forbids a third tier). …
++… there is no smoke directory (`gz validate --test-tiers` forbids a third tier when run by name; no gate runs it). …
+
+# R5
+--- a/.gzkit/rules/mx-mode.md
++++ b/.gzkit/rules/mx-mode.md
+@@ -143,3 +143,3 @@
+ **Safe mode differs (ruling 2026-10-25):** a remodel leaves things partially broken, so *fix
+-immediately* waits for the exit and *every defect trackable* binds through the contract's punch
+-list. The exception is lint and fast-static debt, which each act sweeps (operator, 2026-10-27,
++immediately* waits for the exit and *every defect trackable* binds through the contract's list
++of discrepancies. The exception is lint and fast-static debt, which each act sweeps (operator, 2026-10-27,
+
+# R24
+--- a/.gzkit/rules/mx-mode.md
++++ b/.gzkit/rules/mx-mode.md
+@@ -146 +146 @@
+-*"somebody sweeps up the shop floor every night"*). The hangar below is unchanged.
++*"somebody sweeps up the shop floor every night"*). In the hangar the rules below bind in full.
+
+# R6
+--- a/.gzkit/rules/cli.md
++++ b/.gzkit/rules/cli.md
+@@ -3,2 +3,3 @@
+ paths:
+   - "src/gzkit/commands/**"
++  - "src/gzkit/cli/**"
+
+# R7
+--- a/.gzkit/rules/hexagonal-architecture.md
++++ b/.gzkit/rules/hexagonal-architecture.md
+@@ -55,3 +55,2 @@
+-5. *Retired 2026-11-12.* The second-adapter threshold is gone: every driven port
+-   has a hand-written fake from its first test, so its second adapter is never
+-   speculative (specification § Testing).
++5. *(Retired.)* Every driven port has a hand-written fake from its first test, so
++   its second adapter is never speculative (specification § Testing).
+
+# R8
+--- a/.gzkit/rules/complexity-thresholds.md
++++ b/.gzkit/rules/complexity-thresholds.md
+@@ -68,4 +68,3 @@
+ The per-metric `(corpus_percentile, absolute_number, trigger_semantic)`
+-rows previously rendered as markdown tables in this file now live in
+-[`complexity-thresholds.json`](complexity-thresholds.json) as the
+-runtime source of truth. The data file declares six canonical metrics
++rows live in [`complexity-thresholds.json`](complexity-thresholds.json), the
++runtime source of truth. The data file declares six canonical metrics
+
+# R9a
+--- a/.gzkit/rules/complexity-thresholds.md
++++ b/.gzkit/rules/complexity-thresholds.md
+@@ -78,5 +78,3 @@
+-Radon's seven (`radon_cc`, `radon_mi`, the three Halstead metrics,
+-`radon_raw_nloc`, `radon_raw_lloc`) retired with Radon in RO-9 tranche 4
+-(GHI #1183). Each metric must declare at least a `block` band; the
++Each metric must declare at least a `block` band; the
+ loader fails closed when a canonical metric is missing a block-band
+ row. One metric carries bootstrap absolutes per the carve-out below.
+
+# R9b
+--- a/.gzkit/rules/complexity-thresholds.md
++++ b/.gzkit/rules/complexity-thresholds.md
+@@ -93,5 +93,1 @@
+   bands (operator, "Keep bootstrap, file GHI (Rec.)"; GHI #1265)
+-
+-`radon_mi` (inverted polarity, GHI #405) retired with Radon, and
+-`lizard_nesting_depth` (all-zero corpus, GHI #404) took corpus bands
+-from the 2026-10-22 pass (operator, "Corpus bands (Rec.)").
+
+# R10
+--- a/.gzkit/rules/gate5-runbook-code-covenant.md
++++ b/.gzkit/rules/gate5-runbook-code-covenant.md
+@@ -45,1 +45,1 @@
+-- Do not declare completion without explicit human attestation. Attestation is **universal** — required for every OBPI completion regardless of kind, lane, or sensitivity (ADR-0.0.36). The prior "for heavy/foundation scope" qualifier described branching collapsed at ADR-0.0.36 and is retired.
++- Do not declare completion without explicit human attestation. Attestation is **universal** — required for every OBPI completion regardless of kind, lane, or sensitivity (ADR-0.0.36).
+
+# R11
+--- a/.gzkit/rules/gate5-runbook-code-covenant.md
++++ b/.gzkit/rules/gate5-runbook-code-covenant.md
+@@ -43,1 +43,1 @@
+-- Do not leave placeholder output examples. **(Advisory — no mechanical witness, and none is planned.)** The scorecard carried this as a promotion candidate … Reclassify on a named instance of a placeholder example that actually shipped.
++- Do not leave placeholder output examples. **(Advisory — no mechanical witness, and none is planned:** a token scan cannot tell a placeholder from manpage usage syntax or captured `...` elision; the measurement is row 49 of `docs/governance/advisory-rules-audit.md`.**)** Reclassify on a named instance of a placeholder example that actually shipped.
+
+# R12
+--- a/.gzkit/rules/gh-cli.md
++++ b/.gzkit/rules/gh-cli.md
+@@ -44,1 +44,1 @@
+-Every `gh <noun> list` returns ONE page — `--limit` defaults to 30 — with no truncation marker and exit 0, so `--json number --jq 'length'` faithfully counts a silently capped page. Measured 2026-09-06 (GHI #972): the default form returned `30` against a true open count of 44, the handoff chain booked that page size as the queue three times, and the "re-derive the count" step it carried was the same capped command.
++Every `gh <noun> list` returns ONE page — `--limit` defaults to 30 — with no truncation marker and exit 0, so `--json number --jq 'length'` faithfully counts a silently capped page, and re-running the same command re-derives the same wrong count (GHI #972).
+
+# R13
+--- a/.gzkit/rules/pythonic.md
++++ b/.gzkit/rules/pythonic.md
+@@ -44,1 +44,1 @@
+-- **No lazy imports** unless required for optional dependencies or cycle avoidance. **(PLC0415 runs under Ruff `ALL` since 2026-10-23; scorecard row 23 is Promotable until a control plants a lazy import.)** … The acceptance of 2026-08-08 (138 sites, then unselected) is recorded in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
++- **No lazy imports** unless required for optional dependencies or cycle avoidance. Ruff `I` enforces the ordering above and PLC0415 this half (RO-9 tranche 4); sites that predate PLC0415 are held per file in `data/ruff_baseline.json`, so a new lazy import fails `uv run gz lint`. A legitimate deferred import carries a `# noqa: PLC0415` naming its carve-out. History: [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
+
+# R14
+--- a/.gzkit/rules/pythonic.md
++++ b/.gzkit/rules/pythonic.md
+@@ -53,4 +53,2 @@
+
+-**Mechanized 2026-08-08 by ruff `BLE001`, after running nowhere for as long as this clause has existed.** … a wrong suppression code is invisible when the rule it names never runs.
+-
+ Scope is the shipped package. …
+
+# R15
+--- a/.gzkit/rules/security-sensitivity.md
++++ b/.gzkit/rules/security-sensitivity.md
+@@ -29,1 +29,1 @@
+-… This demotion is **deliberate, not a defect**: the briefs most likely to trip the floor are exactly the ones an operator enters the hangar to repair (GHI #682, closed 2026-07-24, was two post-cutover briefs failing the floor over incidental overlap), and a fail-closed sensitivity scope would lock the repair path against the thing being repaired. Promoting `sensitivity` into `GATE5_INVARIANTS` would set that trap; do not do it without first discharging #682. What was wrong was the **silence** — the demotion happened unannounced. It is now named.
++… The demotion is deliberate: the briefs most likely to trip the floor are the ones an operator enters the hangar to repair, and a fail-closed scope would lock that repair path (GHI #682). Do not promote `sensitivity` into `GATE5_INVARIANTS` without first discharging #682.
+
+# R16
+--- a/.gzkit/rules/security-sensitivity.md
++++ b/.gzkit/rules/security-sensitivity.md
+@@ -33,1 +33,1 @@
+-The omitted-declaration floor was tightened from informational (`sensitivity-floor-info`, exit 0) to fail-closed (`sensitivity-floor-violation`, exit 3) after 87 pre-existing briefs were found overlapping a registered surface without a declaration — most overlaps incidental (e.g. an additive audit-wrapper touching `src/gzkit/quality.py`), not unflagged security work. Those briefs are grandfathered in [`data/sensitivity_floor_grandfather.json`](../../data/sensitivity_floor_grandfather.json); they remain at the informational floor. Every **new** brief that overlaps a registered surface MUST declare `sensitivity: security` or it fails closed. If the overlap is an incidental false positive, narrow the Allowed Paths or discharge at completion via `gz obpi complete --accept-security-floor`. Do not add new entries to the grandfather file to silence a fresh violation — that is the escape the cutover exists to close.
++Briefs listed in [`data/sensitivity_floor_grandfather.json`](../../data/sensitivity_floor_grandfather.json) stay at the informational floor (`sensitivity-floor-info`, exit 0); their overlaps are mostly incidental. Every other brief that overlaps a registered surface MUST declare `sensitivity: security` or fails closed (`sensitivity-floor-violation`, exit 3). For an incidental false positive, narrow the Allowed Paths or discharge at completion via `gz obpi complete --accept-security-floor`. Do not add entries to the grandfather file to silence a fresh violation.
+
+# R17
+--- a/.gzkit/rules/security-sensitivity.md
++++ b/.gzkit/rules/security-sensitivity.md
+@@ -37,1 +37,1 @@
+-… Scanner-unavailable is fail-closed (no degradation). The co-presence proxy gate this walkthrough once named was removed with the TTY attestation gate (ADR-0.0.36; its residue is GHI #1308).
++… Scanner-unavailable is fail-closed (no degradation).
+
+# R18
+--- a/.gzkit/rules/token-block-discipline.md
++++ b/.gzkit/rules/token-block-discipline.md
+@@ -23,1 +23,1 @@
+-> Carried verbatim from root `AGENTS.md` § Operator Doctrine on 2026-09-17 (GHI #921), and into this surface on 2026-09-24 (GHI #1091, sweep findings S07/S08), where transit, exchange and lock work happens. The corpus `.gzkit/corpus/AGENTS.md.jsonl` keeps the ruling's history.
++> Operator ruling, carried verbatim here where transit, exchange and lock work happens (GHI #921, #1091); the same text is in the `gz-session-handoff` skill, and `.gzkit/corpus/AGENTS.md.jsonl` keeps its history.
+
+# R19
+--- a/.gzkit/rules/changelog-release-notes.md
++++ b/.gzkit/rules/changelog-release-notes.md
+@@ -53,3 +53,3 @@
+-> The `gz validate --changelog` structural scope is landed and runs standalone
+-> and at release-time (operator-chosen: not in the default `gz check`). The
+-> `gz-patch-release` coverage cross-check is the networked half.
++> `gz validate --changelog` runs standalone and at release time, never in
++> `gz check` (operator-chosen). The `gz-patch-release` coverage cross-check is
++> the networked half.
+
+# R20
+--- a/.gzkit/rules/brief-heading-conventions.md
++++ b/.gzkit/rules/brief-heading-conventions.md
+@@ -36,2 +36,2 @@
+-Gate 2 (`## Objective`, `## Acceptance Criteria`, `## ALLOWED PATHS`, etc.)
+-remains H2: those are top-level brief structure, not per-pass evidence.
++Top-level brief sections (`## Objective`, `## Acceptance Criteria`, `## Allowed Paths`,
++etc.) stay H2: they are brief structure, not per-pass evidence.
+
+# R21
+--- a/.gzkit/rules/guardrail-feedback-prose.md
++++ b/.gzkit/rules/guardrail-feedback-prose.md
+@@ -55,25 +55,9 @@
+ ## Enforcement posture — advisory by design, per-surface witness
+
+-**This rule is ADVISORY at the global level, and that is the settled
+-disposition rather than a waiting room.** … (through the end of the
+-§ Recommended promotion order freeze paragraph: "a new fail-closed check is
+-added only on a specific observed drift instance.")
++**Advisory at the global level, and settled (ADR-0.0.70 § Decision).** No `gz validate`
++scope grades the three-part shape across surfaces, and none is planned: a prose grader
++scores shape, not whether the prose tells an agent what to do — the
++`shape-graded-not-substance` signature ADR-0.0.73 refuses. The binding channel is the
++per-surface assertion in § First enforcement consumer.
++
++Reclassify only on a fail-closed surface that shipped without recovery prose and was
++caught late for want of that assertion; an unasserted backlog is not that evidence
++(§ Recommended promotion order freeze, `docs/governance/advisory-rules-audit.md`).
+
+# R22
+--- a/.gzkit/rules/task-discovery.md
++++ b/.gzkit/rules/task-discovery.md
+@@ -28,1 +28,1 @@
+-… `intrinsic-complexity-attestation`, `composition_rendered`; `artifact_edited` left the roster under GHI #947) | …
++… `intrinsic-complexity-attestation`, `composition_rendered`) | …
+
+# R23
+--- a/.gzkit/rules/chores.md
++++ b/.gzkit/rules/chores.md
+@@ -97,5 +97,4 @@
+ 1. **Read advice** — Identify discrete actions
+-2. **Create TODO list** — Exactly one item in-progress at a time
+-3. **Implement surgically** — Minimal diffs, preserve behavior
+-4. **Validate locally** — Lint, typecheck, tests
+-5. **Sync if green** — Commit/push after validation passes
++2. **Implement surgically** — Minimal diffs, preserve behavior
++3. **Validate locally** — Lint, typecheck, tests
++4. **Sync if green** — Commit/push after validation passes
+
+############################  .gzkit/skills — High  ############################
+
+# S1
+--- a/.gzkit/skills/gz-obpi-lock/SKILL.md
++++ b/.gzkit/skills/gz-obpi-lock/SKILL.md
+@@ -87,5 +87,5 @@
+-1. **Claim succeeds** if no lock file exists or existing lock is expired (past TTL)
+-2. **Claim fails** if lock exists and is not expired — show who holds it
++1. **Claim succeeds** if no lock file exists, or the claiming agent already holds it (rule 5)
++2. **Claim fails** if another agent holds the lock, whether or not its lease has expired — show who holds it
+ 3. **Release** deletes the lock file once the surrender is accounted for: an exchange record that postdates the claim, or an `--abandon` category
+-4. **Stale lock detection** — locks older than TTL are automatically released on next claim attempt
+-5. **Same-agent re-claim** — if the claiming agent already holds the lock, refresh the timestamp
++4. **Expiry never evicts** — past its TTL a lock stays held; expiry is booked (`obpi_lock_lease_expired`) and announced. Its holder's completion frees it, or `--force --abandon <category>:<reason>` on the operator's word (`.gzkit/rules/token-block-discipline.md` § Sub-Invariant 4)
++5. **Same-agent re-claim** — if the claiming agent already holds the lock, live or expired, refresh the timestamp
+
+# S2
+--- a/.gzkit/skills/gz-obpi-lock/SKILL.md
++++ b/.gzkit/skills/gz-obpi-lock/SKILL.md
+@@ -142,8 +142,7 @@
+-Agents identify themselves by environment:
++Agents identify themselves by environment (`resolve_agent` in `src/gzkit/lock_manager.py`; `--agent` overrides):
+
+ | Signal | Agent |
+ |--------|-------|
+-| `CLAUDE_CODE` env var or Claude Code runtime | `claude-code` |
++| `CLAUDECODE` (or `CLAUDE_CODE`) env var | `claude-code-<first 8 chars of the session id>`, or `claude-code` without one |
+ | `CODEX_SANDBOX` env var | `codex` |
+-| VS Code Copilot context | `copilot` |
+ | Fallback | `unknown-{PID}` |
+
+# S3
+--- a/.gzkit/skills/gz-obpi-lock/SKILL.md
++++ b/.gzkit/skills/gz-obpi-lock/SKILL.md
+@@ -155 +155 @@
+-… when no category describes the abort the lock stays held, is named in the handoff, and is reaped at its TTL.
++… when no category describes the abort the lock stays held, is named in the handoff and reported to the operator; expiry books and announces it but never evicts it.
+
+# S4
+--- a/.gzkit/skills/gz-obpi-lock/SKILL.md
++++ b/.gzkit/skills/gz-obpi-lock/SKILL.md
+@@ -172,16 +172,7 @@
+ ### JSONL Merge Strategy
+
+-For append-only JSONL files, conflicts are resolvable by union merge:
+-… (the four-step list, the `*.jsonl merge=union` block and its closing sentence)
++`.gitattributes` routes `.gzkit/ledger.jsonl`, `.gzkit/insights/agent-insights.jsonl` and
++`.gzkit/corpus/*.jsonl` through the `gzkit-jsonl` merge driver (`gz ledger merge-driver`),
++a timestamp-ordered union; `gz git-sync` registers it in local git config. Do not use
++git's built-in `merge=union`: it concatenates without ordering, and ledger rows are
++strictly ts-ordered (`gz validate --ledger`, GHI #812).
+
+# S5
+--- a/.gzkit/skills/gz-obpi-lock/SKILL.md
++++ b/.gzkit/skills/gz-obpi-lock/SKILL.md
+@@ -196 +196 @@
+-git diff --name-only origin/main..HEAD | grep -E '(adr_status|obpi-audit\.jsonl|agent-insights\.jsonl)'
++git diff --name-only origin/main..HEAD | grep -E '(adr-status\.md|ledger\.jsonl|obpi-audit\.jsonl|agent-insights\.jsonl)'
+
+# S6
+--- a/.gzkit/skills/gz-obpi-pipeline/SKILL.md
++++ b/.gzkit/skills/gz-obpi-pipeline/SKILL.md
+@@ -41 +41 @@
+-The pipeline dispatches four subagent personas across its stages. Stage-2 implementer/spec-reviewer/quality-reviewer dispatch is documented procedurally below (§ Stage 2); the Stage-4 narrator dispatch is declared here:
++The pipeline dispatches four subagent personas: `implementer`, `spec-reviewer` and `quality-reviewer` at Stage 2, and `narrator` at Stage 4. Each dispatch is specified in its stage's procedure file (`references/stage-2-implement.md`, `references/stage-4-present-evidence.md`).
+
+# S7  (coupled: the same sentence in references/stage-*.md needs a rewording row in data/obpi_pipeline_control_inventory.json)
+--- a/.gzkit/skills/gz-obpi-pipeline/SKILL.md
++++ b/.gzkit/skills/gz-obpi-pipeline/SKILL.md
+@@ -113 +113 @@
+-The pipeline executes 5 stages sequentially. **Stage 4 behavior depends on execution mode** — all other stages are autonomous.
++The pipeline executes 5 stages sequentially. Stage 4 waits for the operator's attestation (universal, ADR-0.0.36); every other stage runs without pausing.
+
+# S8
+--- a/.gzkit/skills/gz-obpi-pipeline/SKILL.md
++++ b/.gzkit/skills/gz-obpi-pipeline/SKILL.md
+@@ -215 +215 @@
+-| `gz obpi lock claim/release` | Stage 1 claim, Stage 5 release, abort release (`--force`) |
++| `gz obpi lock claim/release` | Stage 1 claim; `gz obpi complete` surrenders it at Stage 5; an abort surrenders with `release --abandon <category>:<reason>` |
+
+# S9
+--- a/.gzkit/skills/gz-plan-audit/SKILL.md
++++ b/.gzkit/skills/gz-plan-audit/SKILL.md
+@@ -303 +303 @@
+-- Consumer: `.gzkit/skills/gz-obpi-pipeline/SKILL.md` (Stage 1)
++- Consumer: `.gzkit/skills/gz-obpi-pipeline/references/stage-1-load-context.md` (Stage 1)
+
+# S10
+--- a/.gzkit/skills/gz-obpi-simplify/SKILL.md
++++ b/.gzkit/skills/gz-obpi-simplify/SKILL.md
+@@ -144 +144 @@
+-- Functions exceeding 50 lines or modules exceeding 600 lines
++- Functions or modules past their size bands (`lizard_nloc`, `lizard_file_nloc` in `.gzkit/rules/complexity-thresholds.json`; cite the table, never a number — `.gzkit/rules/pythonic.md` § Size Limits)
+
+# S11a
+--- a/.gzkit/skills/gz-tech-debt-review/SKILL.md
++++ b/.gzkit/skills/gz-tech-debt-review/SKILL.md
+@@ -87 +87 @@
+-| `size-cap` | Lizard NLOC / `module-sloc-cap-radon` chore | Functions >50 LOC, modules >600 LOC, classes >300 LOC |
++| `size-cap` | Lizard NLOC / `module-sloc-cap-radon` chore | Functions and modules past the `lizard_nloc` / `lizard_file_nloc` bands of `.gzkit/rules/complexity-thresholds.json`; classes >300 LOC (`.gzkit/rules/pythonic.md`) |
+
+# S11b
+--- a/.gzkit/skills/gz-tech-debt-review/SKILL.md
++++ b/.gzkit/skills/gz-tech-debt-review/SKILL.md
+@@ -117 +117 @@
+-| **High** | … | Module >600 LOC, function >50 LOC in a hot path, complexity hot-spot above the configured ceiling, … |
++| **High** | … | Module, or hot-path function, past its size band in `.gzkit/rules/complexity-thresholds.json`, complexity hot-spot above the configured ceiling, … |
+
+# S11c
+--- a/.gzkit/skills/gz-tech-debt-review/SKILL.md
++++ b/.gzkit/skills/gz-tech-debt-review/SKILL.md
+@@ -150 +150 @@
+-| `size-cap` | `uv run lizard <files>` | Filter to functions >50, modules >600, classes >300. |
++| `size-cap` | `uv run lizard <files>` | Filter against the `lizard_nloc` and `lizard_file_nloc` bands of `.gzkit/rules/complexity-thresholds.json`, and classes >300. |
+
+# S12a
+--- a/.gzkit/skills/gz-tech-debt-review/SKILL.md
++++ b/.gzkit/skills/gz-tech-debt-review/SKILL.md
+@@ -98 +98 @@
+-| `dep-currency` | `dependency-currency` chore | Outdated runtime deps (>5y aging policy) |
++| `dep-currency` | `dependency-currency` chore | Stale or abandoned runtime deps, as that chore's CHORE.md grades them |
+
+# S12b
+--- a/.gzkit/skills/gz-tech-debt-review/SKILL.md
++++ b/.gzkit/skills/gz-tech-debt-review/SKILL.md
+@@ -118 +118 @@
+-| **Medium** | … | Pythonic-pattern candidate, dead code with no tests pinning it, TODO older than 90 days, dependency >2y stale (not yet 5y), CLI verb registered but undocumented. |
++| **Medium** | … | Pythonic-pattern candidate, dead code with no tests pinning it, TODO older than 90 days, dependency the `dependency-currency` chore grades stale, CLI verb registered but undocumented. |
+
+# S13a
+--- a/.gzkit/skills/gz-tidy/SKILL.md
++++ b/.gzkit/skills/gz-tidy/SKILL.md
+@@ -123 +123 @@
+-| "Tidy exited 0, so the project is tidy" | Tidy exits 0 whatever it reports. Only the printed sections say what it found. |
++| "Tidy exited 0, so the project is tidy" | Exit 0 judges only the three breach sections; the pending-attestation inventory never gates. Read every printed section. |
+
+# S13b
+--- a/.gzkit/skills/gz-tidy/SKILL.md
++++ b/.gzkit/skills/gz-tidy/SKILL.md
+@@ -132 +132 @@
+-- Reading tidy's exit code instead of its output
++- Acting on tidy's exit code without reading the section that produced it
+
+# S14  (coupled: docs/governance/rnd-discipline.md:199 carries the same citation)
+--- a/.gzkit/skills/gz-rnd/SKILL.md
++++ b/.gzkit/skills/gz-rnd/SKILL.md
+@@ -137 +137 @@
+-- **Never ask what canon already answers** (AGENTS.md § Operator Economy #7). Search canon
++- **Never ask what canon already answers** (AGENTS.md § Operator Economy of Effort, "Consult canon before asking"). Search canon
+
+# S15
+--- a/.gzkit/skills/gz-ontology/SKILL.md
++++ b/.gzkit/skills/gz-ontology/SKILL.md
+@@ -73 +73 @@
+-- Manpage: [`gz ontology`](../../docs/user/manpages/ontology.md)
++- Manpage: [`gz ontology`](../../../docs/user/manpages/ontology.md)
+
+# S16
+--- a/.gzkit/skills/gz-check/SKILL.md
++++ b/.gzkit/skills/gz-check/SKILL.md
+@@ -18,2 +18,1 @@
+-Unified quality gate for all code verification. Replaces the individual
+-`/lint`, `/test`, `/format`, `/gz-typecheck`, and `/gz-arb` skills.
++Unified quality gate for all code verification.
+
+# S17
+--- a/.gzkit/skills/gz-check/SKILL.md
++++ b/.gzkit/skills/gz-check/SKILL.md
+@@ -79,8 +79,3 @@
+-When deterministic receipts are needed (e.g., for audit evidence):
+-
+-```bash
+-uv run gz lint
+-uv run gz typecheck
+-uv run gz test --bdd    # full suite including behave — pre-attestation
+-uv run gz check
+-```
++These commands emit no receipt. When attestation or audit evidence needs
++receipt IDs, run the canonical ARB invocations listed in `gz-arb`
++(`AGENTS.md` § Attestation).
+
+# S18
+--- a/.gzkit/skills/gz-check/SKILL.md
++++ b/.gzkit/skills/gz-check/SKILL.md
+@@ -71,5 +71,4 @@
+-3. **CLAUDE.md is under budget** — read `CLAUDE.md` with the Read tool and
+-   check that the final line number reported is ≤ 200. Read returns
+-   numbered lines so the count is observable without invoking `wc`. If
+-   over budget, trim before attestation (200-line ceiling for optimal
+-   adherence).
++3. **Instruction files are under budget** — run
++   `uv run gz validate --instructions-files-budget`; the budgets live in
++   `data/instructions_files_budget.json`. Trim an over-budget file through
++   `gz-context-diet` before attestation.
+@@ -136,1 +135,1 @@
+-- CLAUDE.md over 200 lines (budget exceeded, adherence drops)
++- An instruction file over its budget in `data/instructions_files_budget.json`
+
+# S19
+--- a/.gzkit/skills/gz-arb/SKILL.md
++++ b/.gzkit/skills/gz-arb/SKILL.md
+@@ -106,1 +106,1 @@
+-- Binding rule: `AGENTS.md` § Attestation (em-dash pattern + canonical invocations + lane behavior + receipt-ID discipline)
++- Binding rule: `AGENTS.md` § Attestation (lane behavior and receipt-ID discipline; it points here for the canonical invocations)
+
+# S20
+--- a/.gzkit/skills/gz-airlock/SKILL.md
++++ b/.gzkit/skills/gz-airlock/SKILL.md
+@@ -133,2 +133,2 @@
+-- Manpage: [`gz airlock`](../../docs/user/manpages/airlock.md),
+-  [`gz permitted-entry`](../../docs/user/manpages/permitted-entry.md)
++- Manpage: [`gz airlock`](../../../docs/user/manpages/airlock.md),
++  [`gz permitted-entry`](../../../docs/user/manpages/permitted-entry.md)
+
+# S21
+--- a/.gzkit/skills/gz-chore-runner/SKILL.md
++++ b/.gzkit/skills/gz-chore-runner/SKILL.md
+@@ -23,1 +23,1 @@
+-- `lane`: The configured lane reported by `gz chores show` (lite, medium, or heavy).
++- `lane`: The configured lane reported by `gz chores show` (lite or heavy).
+
+# S22
+--- a/.gzkit/skills/gz-chore-runner/SKILL.md
++++ b/.gzkit/skills/gz-chore-runner/SKILL.md
+@@ -127,1 +127,1 @@
+-| "advise passed, no need to run audit" | `gz chores audit` is what records the proof. Skipping it leaves the chore unverified in the registry. |
++| "advise passed, no need to run audit" | `gz chores run` writes the proof log; `gz chores audit` verifies it is there. Skipping the audit leaves the proof unchecked. |
+
+# S23
+--- a/.gzkit/skills/gz-content-remember/SKILL.md
++++ b/.gzkit/skills/gz-content-remember/SKILL.md
+@@ -56,8 +56,12 @@
+-is the rest of the chain, and an ordinary session runs it rather than leaving the tree red:
++is the rest of the chain, and an ordinary session runs it rather than leaving the tree red.
++The append prints the governed next step: one landing across every routed consumer under
++the operator's corpus attestation, then playback:
+
+ ```bash
+-gz content compose <surface> --consumer <vendor> --candidate <file>   # /gz-content-compose
+-gz content advise-rendition <surface> --consumer <vendor> --score N --explanation "..."
+-gz content commit <surface> --consumer <vendor> --attestor <who> --attestation-text "<verbatim>"
+-gz agent sync control-surfaces                                        # playback writes the surface
++uv run gz content land <surface> --attestor <handle> --attestation-text "<the operator's verbatim words>"
++uv run gz agent sync control-surfaces    # playback writes the surface
+ ```
++
++The per-consumer route (`gz-content-compose`, `gz-advisor-qc`, `gz content commit`) remains
++for a hand-drafted candidate.
+
+# S24
+--- a/.gzkit/skills/gz-context-diet/SKILL.md
++++ b/.gzkit/skills/gz-context-diet/SKILL.md
+@@ -72,4 +72,4 @@
+-1. **Narrative trim, never invariant relaxation.** *"Lighter ceremony is
+-   not a tradeoff axis"* — `AGENTS.md` § MAKE LLM STOCHASTIC VIBES INERT
+-   operative claim 1. Every Mechanical / Promotable bullet on the advisory
+-   scorecard remains in the per-turn contract.
++1. **Narrative trim, never invariant relaxation.** *"Maintenance burden,
++   speed and lighter ceremony are not reasons to choose"* — `AGENTS.md`
++   § MAKE LLM STOCHASTIC VIBES INERT. Every Mechanical / Promotable bullet on
++   the advisory scorecard remains in the per-turn contract.
+
+# S25
+--- a/.gzkit/skills/gz-intent-trace/SKILL.md
++++ b/.gzkit/skills/gz-intent-trace/SKILL.md
+@@ -137,5 +137,6 @@
+-A trace run is deliverable-bearing work and will compete with the active
+-campaign, which is Magna Carta (`AGENTS.md` § Operator Doctrine). The sample's
+-top entries are frequently the ADRs the campaign is already sequenced around.
+-**Surface the collision to the operator and get a ruling before running** — do
+-not resolve it unilaterally (Behavior Rule 9).
++A trace run is deliverable-bearing work and will compete with the active
++campaign plan (`docs/governance/*-campaign-*.md`; its work-selection ruling is
++carried in `gz-obpi-pipeline`). The sample's top entries are frequently the ADRs
++the campaign is already sequenced around. **Surface the collision to the
++operator and get a ruling before running** — do not resolve it unilaterally
++(`AGENTS.md` § Behavior Rules).
+
+# S26
+--- a/.gzkit/skills/gz-issue-file/SKILL.md
++++ b/.gzkit/skills/gz-issue-file/SKILL.md
+@@ -47,5 +47,3 @@
+-- In-flight defects against gzkit that meet the direct-fix thresholds in
+-  `AGENTS.md` § Defect-fix routing (diff size ≤10 source lines **OR** ≤2
+-  source files; single named surface; ≥3 recent `fix(` precedents) — fix
+-  in place with `fix(<scope>): … (GHI #N)` rather
+-  than filing.
++- In-flight defects against gzkit that `AGENTS.md` § Defect-fix routing
++  sends to a direct fix — fix in place with a `fix(<scope>): …` commit
++  rather than filing.
+
+# S27
+--- a/.gzkit/skills/gz-issue-file/SKILL.md
++++ b/.gzkit/skills/gz-issue-file/SKILL.md
+@@ -73 +73 @@
+-   and propagates `gh`'s exit code on failure.
++   and exits 2 when `gh` fails.
+
+# S28
+--- a/.gzkit/skills/gz-mx/SKILL.md
++++ b/.gzkit/skills/gz-mx/SKILL.md
+@@ -22,2 +22,4 @@
+-surfaces blocking the repair itself. Two guards NEVER drop: `gate5_invariants`
+-and the PRIME DIRECTIVE (ownership — "fix what you know AND what you find").
++surfaces blocking the repair itself. The floor never drops: `gate5_invariants`,
++the guards pinned `CRITICAL` (`.gzkit/rules/mx-mode.md` § Opting a guard into
++the floor), and the PRIME DIRECTIVE (ownership — "fix what you know AND what
++you find").
+
+# S29
+--- a/.gzkit/skills/git-sync/SKILL.md
++++ b/.gzkit/skills/git-sync/SKILL.md
+@@ -139,5 +139,3 @@
+ ## Related Skills
+
+-- `lint`
+-- `test`
+-- `format`
++- `gz-check`
+
+# S30
+--- a/.gzkit/skills/git-sync/SKILL.md
++++ b/.gzkit/skills/git-sync/SKILL.md
+@@ -82 +82 @@
+-**Output**: Runs `uv run gz git-sync --apply` (or dry-run first if safety confirmation is needed). Pre-commit hook handles lint/test automatically.
++**Output**: Runs `uv run gz git-sync --apply` (or dry-run first if safety confirmation is needed). Commit-time hooks run the cheap gates; the pre-push hook runs `gz check`.
+
+# S31
+--- a/.gzkit/skills/git-sync/SKILL.md
++++ b/.gzkit/skills/git-sync/SKILL.md
+@@ -117,4 +117,3 @@
+-| "I'll skip `--lint --test` to be quick" | The bare `--apply` exists for git-only operations. Skipping the quality gates on a code change is the failure mode the ritual was designed to prevent. |
+ | "Divergence with remote — just rebase and force" | … |
+ | "Dry-run looks fine, no need to actually run --apply" | … |
+-| "Pre-commit hook failed — `--no-verify` it" | Hooks are part of the contract. Skipping them with `--no-verify` is the same anti-pattern as skipping `--lint --test`. Diagnose, don't bypass. |
++| "Pre-commit hook failed — `--no-verify` it" | Hooks are part of the contract (`AGENTS.md` § Behavior Rules: `--no-verify` is not used). Diagnose, don't bypass. |
+
+# S32
+--- a/.gzkit/skills/git-sync/SKILL.md
++++ b/.gzkit/skills/git-sync/SKILL.md
+@@ -121 +120 @@
+-| "I'll commit and sync separately" | The ritual includes the sync step deliberately. Committing without syncing leaves the branch behind on the remote, which is exactly the divergence trap. |
++| "I committed; the sync can wait" | Commit first with a descriptive subject (§ Commit messages), then run `gz git-sync --apply` in the same session. A commit left unsynced leaves the branch behind the remote, which is the divergence trap. |
+
+# S33
+--- a/.gzkit/skills/ghi-author/SKILL.md
++++ b/.gzkit/skills/ghi-author/SKILL.md
+@@ -330 +330 @@
+-Four worked examples — correction inside an active OBPI, an independent defect
++Five worked examples — correction inside an active OBPI, an independent defect
+
+# S34
+--- a/.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md
++++ b/.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md
+@@ -415 +415 @@
+-- Runbook: `docs/user/operator_runbook.md`
++- Runbook: `docs/user/runbook.md`
+
+# S35
+--- a/.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md
++++ b/.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md
+@@ -397 +397 @@
+-10. **Run `uv run gz git-sync --apply` before `gh release create` (non-Foundation) and after ceremony completion.** An unsynced attestation is a dangling ceremony.
++10. **Run `uv run gz git-sync --apply` at ceremony completion (Step 9).** Publication belongs to `gz-patch-release` (Step 8). An unsynced attestation is a dangling ceremony.
+
+# S36
+--- a/.gzkit/skills/gz-adr-audit/SKILL.md
++++ b/.gzkit/skills/gz-adr-audit/SKILL.md
+@@ -41 +41 @@
+-Personas not dispatched: `implementer` (no code written in this ceremony — if audit reveals a defect requiring code, file a GHI via `/ghi-author` and route to a fresh OBPI brief, never spawn an implementer inside the audit).
++Personas not dispatched: `implementer` (no code written in this ceremony — if audit reveals a defect requiring code, file a GHI via `/ghi-author`, whose repair follows `AGENTS.md` § Defect-fix routing; never spawn an implementer inside the audit).
+
+# S37
+--- a/.gzkit/skills/gz-adr-audit/SKILL.md
++++ b/.gzkit/skills/gz-adr-audit/SKILL.md
+@@ -119,2 +119 @@
+ - Run `uv run gz cli audit` for governance issues
+-- Legacy note: `docs/design/audit/**` remains historical only; new audits live under the ADR folder.
+
+# S38
+--- a/.gzkit/skills/gz-advisor-qc/SKILL.md
++++ b/.gzkit/skills/gz-advisor-qc/SKILL.md
+@@ -80 +80 @@
+-gz content advise-rendition CLAUDE.md --consumer claude --score 0.55 \
++gz content advise-rendition AGENTS.md --consumer codex --score 0.55 \
+
+# S39
+--- a/.gzkit/skills/gz-adr-promote/SKILL.md
++++ b/.gzkit/skills/gz-adr-promote/SKILL.md
+@@ -124,5 +124,4 @@
+-    is therefore the pool's table or bullets. Size it with
+-    `docs/governance/GovZero/obpi-decomposition-matrix.md`: the Rule of Three
+-    baseline (which the doc sets for heavy-lane ADRs), then the Matrix of Four
+-    overlay (Single-Narrative, Testability Ceiling, State Anchor, Surface
+-    Boundary). A unit that violates a principle is split further.
++    is therefore the pool's table or bullets. Size each unit with the Matrix of
++    Four overlay in `docs/governance/GovZero/obpi-decomposition-matrix.md`
++    (Single-Narrative, Testability Ceiling, State Anchor, Surface Boundary). A
++    unit that violates a principle is split further.
+
+# S40
+--- a/.gzkit/skills/gz-adr-create/references/govzero-compliance-rules.md
++++ b/.gzkit/skills/gz-adr-create/references/govzero-compliance-rules.md
+@@ -35 +35 @@
+-| Gate 5 (Attestation) | Heavy only | Human directly observes and attests |
++| Gate 5 (Attestation) | All | The operator attests (universal, ADR-0.0.36) |
+@@ -39 +39 @@
+-- Lite lane (default): Gates 1-2 only (internal changes)
++- Lite lane (default): Gates 1-2, plus the universal Gate 5 (internal changes)
+
+############################  .gzkit/skills — Medium  ############################
+
+# S41
+--- a/.gzkit/skills/gz-obpi-pipeline/SKILL.md
++++ b/.gzkit/skills/gz-obpi-pipeline/SKILL.md
+@@ -53 +53 @@
+-Every stage flows into the next. No "stop and summarize" between stages. If you have not reached the end of Stage 5, you are not done — and violating the spirit of this rule is violating the rule.
++Every stage flows into the next, with no stop to summarize between stages. Two pauses are legitimate: Stage 4's wait for the operator's attestation, and a `gz obpi block` when the next action is a human's (§ Blocked on the Operator). Until Stage 5 finishes, the pipeline is not done.
+
+# S42
+--- a/.gzkit/skills/gz-obpi-lock/SKILL.md
++++ b/.gzkit/skills/gz-obpi-lock/SKILL.md
+@@ -26 +26 @@
+-| "The lock expired, so I'll just re-claim it" | An expired lock may mean another agent started work. Check status before re-claiming. |
++| "The lock expired, so I'll just re-claim it" | An expired lock is still held: claim refuses it. Its holder's completion, or `--force --abandon` on the operator's word, frees it. |
+
+# S43
+--- a/.gzkit/skills/gz-session-handoff/SKILL.md
++++ b/.gzkit/skills/gz-session-handoff/SKILL.md
+@@ -118,6 +118,4 @@
+ | `slug` | Yes | Short descriptor for filename (e.g. `create-workflow`) |
+ | `obpi_id` | No | OBPI identifier if handoff is scoped to a specific brief |
+-| `last_lock_event_timestamp` | When concluding a held lock | Frontmatter key — ts of the matching `obpi_lock_claimed` event (Sub-Invariant 2; read by `gz validate --lock-exchange-coupling`) |
+-| `last_commit_sha` | When concluding a held lock | Frontmatter key — HEAD at handoff creation (`git rev-parse --short HEAD`) |
+ | `session_id` | No | Session identifier for tracing |
+
+# S44
+--- a/.gzkit/skills/gz-session-handoff/SKILL.md
++++ b/.gzkit/skills/gz-session-handoff/SKILL.md
+@@ -330,24 +330,9 @@
+-**Nothing enforces this any more, by operator ruling.** …
+-… (through "What still binds is named in § Trust Model rather than hidden: Gate 5 human
+-attestation, the pre-commit hook, and the pre-push `gz check`.")
++**No hook enforces this, by operator ruling (2026-08-14/15):** *"it is a reminder
++of what we were doing and what to do next, not a nanny"*; *"the handoff should be
++an advisor, not a gate-keeping nanny"*. The obligation rests on the agent and on
++the § Claim Verification Gate below. Entry and exit authorization is transit's
++subject (the airlock, ADR-0.33.0); a handoff is a memory refresh (GHI #574).
++
++What still binds is named in § Trust Model: Gate 5 human attestation, the
++pre-commit hook, and the pre-push `gz check`.
+
+# S45
+--- a/.gzkit/skills/gz-session-handoff/SKILL.md
++++ b/.gzkit/skills/gz-session-handoff/SKILL.md
+@@ -388 +388 @@
+-**Nothing is refused while unruled.** The read allowlist this section once carried has no subject with the gate retired — it needed 13 corrections in 29 days, every one a false refusal of a mandated verification. Run whatever verification the § Claim Verification Gate obliges.
++**Nothing is refused while unruled.** Run whatever verification the § Claim Verification Gate obliges.
+
+# S46
+--- a/.gzkit/skills/gz-obpi-sync/SKILL.md
++++ b/.gzkit/skills/gz-obpi-sync/SKILL.md
+@@ -27,7 +27,2 @@
+-This skill is the unified OBPI verification surface. It consolidates two skills
+-… (through "(GHI #641) and is this skill's reconciliation step.")
++This skill is the unified OBPI verification surface — evidence audit and ADR-table
++sync in one (ADR-0.0.36). The `gz obpi sync` verb (GHI #641) is its reconciliation step.
+
+# S47
+--- a/.gzkit/skills/gz-obpi-specify/SKILL.md
++++ b/.gzkit/skills/gz-obpi-specify/SKILL.md
+@@ -46,8 +46,5 @@
+ Before saving a brief, every path in the `Allowed Paths` and `Denied Paths`
+-sections MUST be verified against on-disk reality. LLM authoring routinely
+-… (through "and the implementer had to rewrite Allowed Paths as a scope amendment.")
++sections MUST be verified against on-disk reality: authoring tends to import a
++convention from an adjacent project as if it were gzkit's (OBPI-0.0.16-03 named
++`config/chores/<slug>.toml`; gzkit authors chores at `.gzkit/chores/<slug>/` with
++a JSON registry at `.gzkit/chores/registry.json`).
+
+# S48a
+--- a/.gzkit/skills/gz-obpi-specify/SKILL.md
++++ b/.gzkit/skills/gz-obpi-specify/SKILL.md
+@@ -117 +117 @@
+-Checklist now pins this order: item #1 instructs the agent to **quote the
++Checklist pins this order: item #1 instructs the agent to **quote the
+
+# S48b
+--- a/.gzkit/skills/gz-obpi-specify/SKILL.md
++++ b/.gzkit/skills/gz-obpi-specify/SKILL.md
+@@ -177 +177 @@
+-2. **Validates the scorecard** — it must parse; its target no longer binds the checklist count (RO-5 ruling 9)
++2. **Validates the scorecard** — it must parse; its target does not bind the checklist count (RO-5 ruling 9)
+
+# S49
+--- a/.gzkit/skills/gz-plan/SKILL.md
++++ b/.gzkit/skills/gz-plan/SKILL.md
+@@ -84,3 +84,3 @@
+-4. **Ask before creating.** Put up to 20 non-obvious questions to the operator
+-   on edge cases, dependencies and possible regressions. Do not create the ADR
+-   until they are answered.
++4. **Ask before creating.** Put non-obvious questions on edge cases, dependencies
++   and possible regressions to the operator one at a time, each with a recommended
++   answer. Do not create the ADR until they are answered.
+
+# S50
+--- a/.gzkit/skills/gz-wp/SKILL.md
++++ b/.gzkit/skills/gz-wp/SKILL.md
+@@ -4 +4 @@
+-description: Use to create, attach issues to, move, change, add evidence to or record an issue close on a work package (WP-<NN>-<slug>) through gz wp.
++description: Use to run a work package (WP-<NN>-<slug>) or one of its orders through gz wp — its record, lifecycle, change ladder, tags, dispatches, maintenance record and Gate-5 close.
+
+# S51
+--- a/.gzkit/skills/gz-airlock/SKILL.md
++++ b/.gzkit/skills/gz-airlock/SKILL.md
+@@ -30,4 +30,3 @@
+ - **Ad-hoc / spurious entry** — `gz permitted-entry` crosses the airlock for
+-  reconnaissance-for-comprehension (light repair at most), so the formerly
+-  membrane-less ad-hoc surface now leaves an accountable `airlock_in` /
+-  `airlock_out` L2 transit record instead of silently bypassing.
++  reconnaissance-for-comprehension (light repair at most) and leaves an
++  accountable `airlock_in` / `airlock_out` L2 transit record.
+
+# S52
+--- a/.gzkit/skills/gz-arb/SKILL.md
++++ b/.gzkit/skills/gz-arb/SKILL.md
+@@ -107,3 +107,2 @@
+ - Deep-dive: `docs/governance/arb-middleware.md` (core concept, command surface, receipt schema, exit codes, rationale)
+-- Command docs: `docs/user/manpages/arb.md`
+ - Manpage: `docs/user/manpages/arb.md`
+
+# S53
+--- a/.gzkit/skills/gz-chore-runner/SKILL.md
++++ b/.gzkit/skills/gz-chore-runner/SKILL.md
+@@ -4,1 +4,1 @@
+-description: Use to run a chore from the registry end to end (show, plan, advise, execute, validate).
++description: Use to run a chore from the registry end to end (show, plan, advise, run, audit).
+
+# S54
+--- a/.gzkit/skills/gz-content-compose/SKILL.md
++++ b/.gzkit/skills/gz-content-compose/SKILL.md
+@@ -59,2 +59,2 @@
+-7. The candidate flows to the advisor-QC loop (OBPI-24) and operator attestation
+-   (OBPI-22) before promotion to a committed rendition.
++7. The candidate goes to advisor QC (`gz-advisor-qc`) and the operator's corpus
++   attestation before `gz content commit` promotes it (§ Before commit).
+
+# S55
+--- a/.gzkit/skills/gz-content-compose/SKILL.md
++++ b/.gzkit/skills/gz-content-compose/SKILL.md
+@@ -49,1 +49,1 @@
+-gz content compose <surface> --consumer <vendor> --candidate /tmp/candidate.md
++uv run gz content compose <surface> --consumer <vendor> --candidate /tmp/candidate.md
+--- a/.gzkit/skills/gz-content-remember/SKILL.md
++++ b/.gzkit/skills/gz-content-remember/SKILL.md
+@@ -40,1 +40,1 @@
+-   gz content remember <surface> --section <id> --text "<prose>" \
++   uv run gz content remember <surface> --section <id> --text "<prose>" \
+@@ -85,1 +85,1 @@
+-gz content remember AGENTS.md --section "Behavior Rules" \
++uv run gz content remember AGENTS.md --section "Behavior Rules" \
+@@ -89,1 +89,1 @@
+-gz content remember AGENTS.md --section operator-doctrine-verbatim-canon \
++uv run gz content remember AGENTS.md --section operator-doctrine-verbatim-canon \
+
+# S56
+--- a/.gzkit/skills/gz-complexity-distill/SKILL.md
++++ b/.gzkit/skills/gz-complexity-distill/SKILL.md
+@@ -147,4 +147,2 @@
+ ```
+-
+-The verb closed the OBPI-0.0.27-06 waiver path tracked by GHI #400.
+
+
+# S57
+--- a/.gzkit/skills/gz-design/SKILL.md
++++ b/.gzkit/skills/gz-design/SKILL.md
+@@ -4,1 +4,1 @@
+-description: Use for "design X", "let's design", "brainstorm X" or "I want to build X"; a dialogue that produces ADR artifacts.
++description: Use when the operator wants to design, brainstorm or start building a new capability; a dialogue that produces ADR artifacts.
+
+# S58
+--- a/.gzkit/skills/gz-design/SKILL.md
++++ b/.gzkit/skills/gz-design/SKILL.md
+@@ -55,5 +55,3 @@
+-- **DO NOT** write to `docs/superpowers/` — that surface is removed from this project.
+-- **DO NOT** invoke `superpowers:writing-plans` or `superpowers:executing-plans`.
+-- **DO NOT** write any implementation code during this skill.
+-- **DO NOT** book an ADR until the design is approved by the user.
+-- All artifacts land in GovZero structures: pool ADRs, canonical ADRs, OBPI briefs.
++- Every artifact lands in a GovZero structure (pool ADR, canonical ADR, OBPI brief), because the design lives in the ADR: nothing goes to `docs/superpowers/` (a removed surface), and `superpowers:writing-plans` / `superpowers:executing-plans` are not used.
++- Write no implementation code here; this skill ends at a booked, evaluated, reviewed ADR.
++- Book an ADR only after the user approves the design.
+
+# S59
+--- a/.gzkit/skills/gz-design/SKILL.md
++++ b/.gzkit/skills/gz-design/SKILL.md
+@@ -126,1 +126,1 @@
+-Scale each section to its complexity. Short sections for obvious choices; 200–300 words for nuanced ones.
++Scale each section to its complexity: brief for obvious choices, fuller where the choice is nuanced.
+
+# S60
+--- a/.gzkit/skills/gz-foundation-triage/SKILL.md
++++ b/.gzkit/skills/gz-foundation-triage/SKILL.md
+@@ -141,8 +141,9 @@
+-After a foundation-triage run, the following MUST hold:
++Record this before the run and compare it after; the run must change neither:
+
+ ```bash
+-git status --porcelain docs/design/adr/foundation/ .gzkit/ledger.jsonl
+-# Expected: empty output
++git diff --numstat -- docs/design/adr/foundation/ .gzkit/ledger.jsonl
+ ```
+
+-If any foundation ADR file or `.gzkit/ledger.jsonl` shows as modified, the
++The ledger is often already modified by other work, so an empty result is not
++the test. If the run itself changed a foundation ADR file or `.gzkit/ledger.jsonl`, the
+
+# S61
+--- a/.gzkit/skills/gz-insights-remember/SKILL.md
++++ b/.gzkit/skills/gz-insights-remember/SKILL.md
+@@ -21,8 +21,5 @@
+-`defect`, `defect-resolution`, `improvement`, `discovery` — and was
+-historically hand-appended, … This verb **replaces**
+-hand-authoring a JSONL line for the insights store.
++`defect`, `defect-resolution`, `improvement`, `discovery`. `remember`
++**constructs** an `InsightRecord` first (validating `type`, `scope`,
++`summary`) and only then serializes and appends — a missing or malformed
++required field fails closed (non-zero exit, no line written). Never
++hand-author a JSONL line for the insights store.
+
+# S62
+--- a/.gzkit/skills/gz-justify/SKILL.md
++++ b/.gzkit/skills/gz-justify/SKILL.md
+@@ -130,1 +130,1 @@
+-The whole loop should take 3-10 minutes on a well-understood anchor and 15-30 minutes on an ambiguous one. If it takes less than 3 minutes, you probably rationalized through step 2 — re-read the scaffold before committing.
++A walkthrough filled without reading the whole scaffold has skipped step 2; re-read it before committing.
+
+# S63
+--- a/.gzkit/skills/gz-justify/SKILL.md
++++ b/.gzkit/skills/gz-justify/SKILL.md
+@@ -167,7 +167,2 @@
+ the walkthrough.
+-
+-**Closed forward reference:** This integration closes the ADR-0.0.19 ↔ ADR-0.0.30
+-cross-reference. Operators no longer need to run `gz justify` and `gz complexity guide`
+-separately and stitch the outputs together — the hints surface inline within the
+-pre-execution reasoning scaffold.
+
+
+# S64
+--- a/.gzkit/skills/gz-health-audit/SKILL.md
++++ b/.gzkit/skills/gz-health-audit/SKILL.md
+@@ -166,17 +166,11 @@
+-**Use existing instruments before ad-hoc measurements.** The 2026-08-15 run
+-… (both paragraphs, through the (6g) verbatim quote)
++**Use existing instruments before ad-hoc measurements.** The chores'
++measurements are reproducible and self-tested; a one-off `rg` pipeline is
++neither, and the 2026-08-15 run's pipeline missed a pre-commit line gating
++three scopes.
++
++**Report the count; read the producer before telling the story.** A correct
++count can carry an invented explanation: read the module that emits an event
++before saying what it means, and name only verbs the parser registers
++(`obpi_parked`, for example, is emitted by an ADR-demotion migration and is
++reversible on re-promotion) — `AGENTS.md` § DO IT RIGHT #8 (6g), verbatim:
++*"Before recommending a command, run it, observe it and paste what it printed."*
+
+# S65
+--- a/.gzkit/skills/gz-adr-audit/SKILL.md
++++ b/.gzkit/skills/gz-adr-audit/SKILL.md
+@@ -39 +39 @@
+-| `narrator` | Frames the Step 4 audit documentation (AUDIT.md) in operator-value terms; the Step 3 fidelity gate is now bound and runs itself — no prose value-demonstration to compose | Step 4 (Document) |
++| `narrator` | Frames the Step 4 audit documentation (AUDIT.md) in operator-value terms; the Step 3 fidelity gate runs itself | Step 4 (Document) |
+@@ -171 +171 @@
+-### 3. Fidelity Gate (MANDATORY — bound, replaces prose Demonstrate Value)
++### 3. Fidelity Gate (bound)
+@@ -185 +185 @@
+-**Absence policy (graceful migration, OBPI-0.0.73-04):** an ADR that carries no `## Fidelity Assertions` block is **flagged with a warning** (the prose 'Demonstrate Value' step is gone — absence is surfaced, not papered over with agent prose) but does not hard-block the in-flight audit. …
++**Absence policy (OBPI-0.0.73-04):** an ADR that carries no `## Fidelity Assertions` block is **flagged with a warning** — absence is surfaced, never filled with agent prose — and does not hard-block the audit. …
+
+# S66
+--- a/.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md
++++ b/.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md
+@@ -176 +176 @@
+-… (GHI #1156). This is the bound replacement for the old prose 'Demonstrate Value' step — you do not narrate value; … does not hard-block in-flight (graceful migration, OBPI-0.0.73-04); …
++… (GHI #1156). You do not narrate value; … does not hard-block (OBPI-0.0.73-04); …
+
+# S67
+--- a/.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md
++++ b/.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md
+@@ -34,4 +34,2 @@
+ Running walkthrough commands is not completion. … then persist that decision to the ledger and sync it.
+
+-**Violating the spirit of this contract is violating it.**
+-
+ ### Rationalization Prevention
+@@ -49 +47 @@
+-| "I can close the issues and sync later" | Later means never. The ceremony runs to completion NOW. |
++| "I can close the issues and sync later" | Issue closure (Step 7) and the two syncs (Step 9) are ceremony steps; the ceremony is not complete until they run. |
+
+# S68
+--- a/.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md
++++ b/.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md
+@@ -313 +313 @@
+-| `uv run behave features` | Pass | …
++| `uv run -m behave features/` | Pass | …
+
+# S69
+--- a/.gzkit/skills/ghi-triage/SKILL.md
++++ b/.gzkit/skills/ghi-triage/SKILL.md
+@@ -32,5 +32,3 @@
+-When this skill is invoked, the agent MUST execute the three steps below
+-in order. There is no Rich table view, no per-GHI panel ceremony, and no
+-recommended-order intermediate table — those views were three redundant
+-restatements of the same data (GHI #324). The deliverable is the
+-rank-ordered list from Step 3, full stop.
++Execute the three steps below in order. The deliverable is the rank-ordered
++list from Step 3; produce no per-GHI panel or intermediate order table, which
++would restate the same data (GHI #324).
+
+# S70
+--- a/.gzkit/skills/ghi-triage/SKILL.md
++++ b/.gzkit/skills/ghi-triage/SKILL.md
+@@ -79 +79 @@
+-remedy is upstream: `ghi-author` § Step 4 no longer writes them.
++remedy is upstream: `ghi-author` § Step 4 forbids writing them.
+
+# S71
+--- a/.gzkit/skills/ghi-triage/SKILL.md
++++ b/.gzkit/skills/ghi-triage/SKILL.md
+@@ -81,10 +81,6 @@
+-`family_signal` is **candidate evidence with a measured error rate, never a
+-count**. … (through "may not be reported as a family size.")
++`family_signal` is **candidate evidence with a measured error rate, never a
++count** (measurement: `docs/governance/f1-family-share-2026-09-20-evidence/`).
++It lists the doctrine-declared-without-mechanism phrases a body uses. **An empty
++list is not evidence of non-membership:** root-cause class is not a surface-word
++property, so a signal built from surface words may not be reported as a family
++size.
+
+# S72
+--- a/.gzkit/skills/git-sync/SKILL.md
++++ b/.gzkit/skills/git-sync/SKILL.md
+@@ -72,3 +72,2 @@
+-> the `gz` level — redundant for the normal ritual and multi-minute pain.
+-> Defaults were flipped to `False` to match this reality (airlineops
+-> parity evolution).
++> the `gz` level; both default to off because they are redundant for the
++> normal ritual and take minutes.
+
+# S73
+--- a/.gzkit/skills/gz-adr-sync/SKILL.md
++++ b/.gzkit/skills/gz-adr-sync/SKILL.md
+@@ -20 +20 @@
+-End-to-end ADR governance sync. Absorbs `gz-adr-autolink` (Layer 1), `gz-adr-recon` (Layer 2), and the original `gz-adr-sync` (Layer 3) into a single operator-facing skill. Run after …
++End-to-end ADR governance sync in three layers: evidence (Layer 1), ledger reconciliation (Layer 2) and registration (Layer 3). Run after …
+@@ -57,14 +57,6 @@
+ ## Notes
+
+-- `gz-adr-recon` and `gz-adr-autolink` are archived; this skill is their successor.
+ - The runbook prescribes full sync before closeout; scoped mode is for targeted investigation.
+ - Apply markdown table updates manually after evidence discovery, then run `uv run gz lint`.
+
+-## Archived predecessors
+-
+-| Archived skill | Absorbed as |
+-|---|---|
+-| `gz-adr-autolink` | Layer 1 phase (evidence gathering) |
+-| `gz-adr-recon` | Layer 2 phase (ledger reconciliation) |
+-| `gz-register-adrs` | Layer 3 phase (registration) |
+-
+ ## References
+
+# S74
+--- a/.gzkit/skills/ghi-author/SKILL.md
++++ b/.gzkit/skills/ghi-author/SKILL.md
+@@ -173 +173 @@
+-   **Canonical sibling-cut regression (the PAIR shape):** GHIs #459 and #460 (2026-05-12) … The recent-by-date skim reaches this class even when keywords disagree.
++   **Sibling-cut regression (GHIs #459/#460):** two issues with one root cause and no shared title keyword were filed minutes apart without a cross-link; the recent-by-date skim is what reaches that class.
+@@ -175 +175 @@
+-   **Canonical FAMILY regression — the skim reaching the sibling is not the defense (measured 2026-09-20):** GHI #1063 … not eleven cross-links.
++   **Family regression (GHI #1063):** the skim returned a sibling (#1017) among ten more family members and the author still recorded no relationship; reaching a title is not recognising its class, which is why the class test and the family row exist.
+
+# S75
+--- a/.gzkit/skills/ghi-close/SKILL.md
++++ b/.gzkit/skills/ghi-close/SKILL.md
+@@ -234,13 +234,4 @@
+-   Observed instance (GHI #677, 2026-07-21): the blocker said … (through
+-   "not merely an obstacle that turned out to be absent.")
++   A recorded precondition can be moot by the time the issue is worked: both of
++   GHI #677's blockers had cleared upstream, and only reading the named surfaces
++   showed it (the same decay #696 names for handoffs). Treat a stale precondition
++   as a finding worth stating, not merely an obstacle that turned out to be absent.
+
+# S76
+--- a/.gzkit/skills/ghi-close/SKILL.md
++++ b/.gzkit/skills/ghi-close/SKILL.md
+@@ -319 +319 @@
+-      **Canonical regression (GHI #771, arm B).** GHI #708's 2026-07-21 close comment enumerated three causes … Evidence was named; the family was wrong.
++      **Regression (GHI #771, arm B):** GHI #708's close named three tests against a three-cause family that omitted the cause which later re-fired; evidence was named, the family was wrong.
+@@ -342 +342 @@
+-      **Canonical regression (GHI #771, arm A).** GHI #708's 2026-07-21 close comment noted … close comments have no such adapter, so the resolution is manual and belongs here.
++      **Regression (GHI #771, arm A):** a re-close carried "#573 remains open" forward after #573 had closed. Handoffs resolve references through `ReferenceChecker` (`src/gzkit/handoff_api.py`); close comments have no such adapter, so the resolution is manual and belongs here.
+
+# S77
+--- a/.gzkit/skills/ghi-close/SKILL.md
++++ b/.gzkit/skills/ghi-close/SKILL.md
+@@ -98,3 +98,2 @@
+-This is agent-facing procedural guidance, not a runtime enforcement claim.
+-Scenario evaluations sample decisions; a filled table, green suite, or passing
+-sample cannot establish complete coverage by itself.
++This is agent-facing procedural guidance, not a runtime enforcement claim. A
++filled table or a green suite does not by itself establish complete coverage.
+
+# S78
+--- a/.gzkit/skills/ghi-close/SKILL.md
++++ b/.gzkit/skills/ghi-close/SKILL.md
+@@ -106 +106 @@
+-This rule is the highest-priority constraint in this skill and overrides every other instinct toward graceful exit. The failure mode it closes — "dead-lettering" — is the pattern where …
++The failure mode this rule closes — "dead-lettering" — is the pattern where …
+
+# S79
+--- a/.gzkit/skills/gz-adr-evaluate/SKILL.md
++++ b/.gzkit/skills/gz-adr-evaluate/SKILL.md
+@@ -73 +73 @@
+-**Dispatch is sometimes genuinely unavailable** — … Until GHI #770 there was no compliant path … An un-compliable mandate gets worked around.
++**Dispatch is sometimes genuinely unavailable** — a session that forbids subagents, a headless or cron run, a harness without the Agent tool. A mandate with no compliant path gets skipped silently (GHI #770).
+
+# S80
+--- a/.gzkit/skills/gz-adr-evaluate/SKILL.md
++++ b/.gzkit/skills/gz-adr-evaluate/SKILL.md
+@@ -153 +153 @@
+-2. List all OBPI briefs in `obpis/` (preferred) or `briefs/` (legacy)
++2. List all OBPI briefs in `obpis/`
+@@ -321 +321 @@
+-| No OBPIs found | `obpis/` and `briefs/` are empty | ADR must have co-created OBPIs before evaluation |
++| No OBPIs found | `obpis/` is empty | ADR must have co-created OBPIs before evaluation |
+
+# S81
+--- a/.gzkit/skills/gz-adr-evaluate/SKILL.md
++++ b/.gzkit/skills/gz-adr-evaluate/SKILL.md
+@@ -227 +227 @@
+-> now survives regeneration.
++> survives regeneration.
+
+# S82
+--- a/.gzkit/skills/airlineops-parity-scan/SKILL.md
++++ b/.gzkit/skills/airlineops-parity-scan/SKILL.md
+@@ -157 +157 @@
+-| "I'll execute the Import Now items next cycle" | Action closure is per-cycle. Deferring is exactly the perpetual-catch-up pattern the constraint was written to prevent. Ship at least one tranche or file a defect now. |
++| "I'll execute the Import Now items next cycle" | Action closure is per-cycle (Step 13): an `Import Now` item deferred without a filed defect is untracked. Ship at least one tranche or file a defect now. |
+@@ -170 +170 @@
+-- Parity classified `Defer (Tracked)` for more than half the findings (perpetual-catch-up signal)
++- Parity classified `Defer (Tracked)` for more than half the findings (passive-tracking signal)
+
+# S83
+--- a/.gzkit/skills/gz-adr-create/SKILL.md
++++ b/.gzkit/skills/gz-adr-create/SKILL.md
+@@ -88,2 +88,2 @@
+-- **ADR Template:** `src/gzkit/templates/adr.md` (canonical in-repo shape; the gold standard recent foundation ADRs use).
+-- **OBPI Brief Template:** `src/gzkit/templates/obpi.md` (canonical; `.gzkit/skills/gz-obpi-specify/assets/OBPI_BRIEF-template.md` is the authoring guide)
++- **ADR Template:** `.gzkit/templates/adr.md` (canonical; `src/gzkit/templates/` is its generated wheel copy).
++- **OBPI Brief Template:** `.gzkit/templates/obpi.md` (canonical; `.gzkit/skills/gz-obpi-specify/assets/OBPI_BRIEF-template.md` is the authoring guide)
+@@ -249 +249 @@
+-1. **Read the canonical template** at `src/gzkit/templates/adr.md` (the in-repo shape recent foundation ADRs use).
++1. **Read the canonical template** at `.gzkit/templates/adr.md`.
+@@ -292 +292 @@
+-The `##` headings of `src/gzkit/templates/adr.md` are the authority — populate every one. …
++The `##` headings of `.gzkit/templates/adr.md` are the authority — populate every one. …
