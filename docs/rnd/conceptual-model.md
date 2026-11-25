@@ -298,6 +298,39 @@ Operator: *"A: Declared intent of record"*.
 So a gzkit discrepancy is a finding that gzkit's behavior, process or life-cycle data does not
 meet its declared intent of record.
 
+## source · the discrepancy line as built
+
+`src/gzkit/mx/discrepancies.py:1-14` · read 2026-11-25
+
+> The list of discrepancies' writer and reducer (RP-12 O4 task 2).
+>
+> `docs/governance/harbor-ro12-contractor-kit.md` § Rulings: the list of discrepancies
+> is ledger events, rendered as a view (ruling 9). A `discrepancy_recorded` event books
+> one line, graded *blocks return to service* or *due by a named event*, the event named
+> in text (ruling 179), always on an order (ruling 178); a `discrepancy_cleared` event
+> clears it with its evidence. [...] The coordinator alone
+> clears a line, citing an entry or a cleared tag of its package, or an open GitHub
+> issue the line was filed as (rulings 172 and 180)
+
+`src/gzkit/events.py:2117-2123` · read 2026-11-25
+
+> DiscrepancyGrade = Literal["blocks-return-to-service", "due-by-event"]
+> [...]
+> DiscrepancySource = Literal["left-broken", "inspector-rejection", "found-in-work"]
+
+## decision · the GHI is the discrepancy's record
+
+Question: what is the GHI to a discrepancy, given its two homes today (the GHI as the squawk's
+write-up, and the `DSC-` line on an order)? Options put: A, every discrepancy however found is
+one GHI, its write-up and its record, its route and grade properties of the GHI, the list of
+discrepancies a view over GHIs, `DSC-` lines retired and a find in the work filing a GHI; B, a
+`DSC-` line while its order can clear it, a GHI once it outlives the order; C, one GHI as
+§ 43.11(b)'s signed list carrying several discrepancies. Recommended A. Operator: *"A: GHI is its
+record"*.
+
+So one discrepancy is one GHI. The list of discrepancies, the `DSC-` record and RP-12 rulings 9,
+172, 178 to 181 meet this ruling on the separated model; their repair is diamond 2.
+
 ---
 
 ## Disposition map
