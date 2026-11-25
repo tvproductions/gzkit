@@ -161,6 +161,18 @@ class, not its census. The agent's reading of the mechanism, unruled: a surface 
 locally or reuses one, and a later ruling builds on it without reconciling. The operator named it
 *"classic LLM drift: a vibe coded variant of whimsy and copycat convenience"*.
 
+## decision · this run asks open questions and takes the operator's words as the model
+
+Operator, verbatim, as the run opened: *"one thing that would help us is when yu favor my input
+over vibes or multiple choice vibings"*. In the walk, the agent's A/B/C options set the answer
+space from its own unvetted framings, and the operator's model reached the page only by
+rejecting them. So in this run a question is open; the operator's answer, in their words, is
+what the record carries; the agent supplies the facts and sources the question needs, and offers
+options only when the operator asks for them or canon already closes the answer space. This
+departs from AGENTS.md § Operator Economy (*"offer A/B/C with tradeoffs and a recommendation"*)
+and from this skill's *"a recommended answer on every question"* for this run, on the operator's
+word. Recorded as an insight the same turn.
+
 ---
 
 ## Disposition map
