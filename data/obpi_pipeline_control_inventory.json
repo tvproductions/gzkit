@@ -360,8 +360,11 @@
       "stage5"
      ],
      "cause": null,
-     "delivered_span": "Every stage flows into the next. No \"stop and summarize\" between stages.",
-     "reworded": null
+     "delivered_span": "Every stage flows into the next. No \"stop and summarize\" between stages; the two legitimate stops are the Stage 4 human attestation and a recorded block, both in the Stage 4 procedure.",
+     "reworded": {
+      "text": "Every stage flows into the next. No \"stop and summarize\" between stages; the two legitimate stops are the Stage 4 human attestation and a recorded block, both in the Stage 4 procedure.",
+      "reason": "A ruled correction (GHI #1364, finding S41; operator 2026-11-25, \"do M6\"): the d47de23c8 cutover delivers the two legitimate stops (I-013, the Stage 4 human attestation; I-016, a recorded block) at Stage 4 only, so the invocation text read as \"never stop\". Naming them here makes the invocation agree with Stage 4."
+     }
     },
     {
      "id": "I-013",
@@ -398,8 +401,11 @@
       "stage5"
      ],
      "cause": null,
-     "delivered_span": "If you have not reached the end of Stage 5, you are not done — and violating the spirit of this rule is violating the rule.",
-     "reworded": null
+     "delivered_span": "If you have not reached the end of Stage 5, you are not done.",
+     "reworded": {
+      "text": "If you have not reached the end of Stage 5, you are not done.",
+      "reason": "A ruled correction (GHI #1364, finding S41, a Medium finding riding in M6 under the Split ruling): the coda \"violating the spirit of this rule is violating the rule\" is anti-loophole pressure the tuning docs retire (.gzkit/rules/skill-authoring.md § Model alignment, clauses 2 and 3); the binding claim stands."
+     }
     },
     {
      "id": "I-016",

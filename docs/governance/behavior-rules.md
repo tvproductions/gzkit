@@ -32,7 +32,7 @@ numbers for the same reason.
 | Never #1, #8 (Gate 5) | § Gate Covenant, second bullet ("Gate 5 is universal") |
 | Never #2 (ledger), #6 (hook blocks) | § Behavior Rules — the ledger-and-hooks rule |
 | Never #3 (artifact linkage) | § Pattern Discovery |
-| Never #5, #9 (pipeline stages, Step 4b) | `gz-obpi-pipeline/SKILL.md`; § OBPI Acceptance Protocol, the operator-only rule |
+| Never #5, #9 (pipeline stages, Step 4b) | `gz-obpi-pipeline/references/stage-*.md` (Step 4b in `stage-4-present-evidence.md`); § OBPI Acceptance Protocol, the operator-only rule |
 | Never #7 (frontmatter is not completion) | § Behavior Rules — the completion-evidence rule |
 | Never #10 (`--no-verify`) | § Behavior Rules — the commit-through-hooks rule |
 

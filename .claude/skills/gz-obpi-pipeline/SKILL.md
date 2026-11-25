@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-24
 metadata:
-  skill-version: "6.69.5"
+  skill-version: "6.69.6"
 model: sonnet
 ---
 
@@ -50,7 +50,7 @@ Persona doctrine reference: ADR-0.0.11-persona-driven-agent-identity-frames (Val
 THE PIPELINE IS NOT COMPLETE UNTIL STAGE 5 FINISHES.
 ```
 
-Every stage flows into the next. No "stop and summarize" between stages. If you have not reached the end of Stage 5, you are not done — and violating the spirit of this rule is violating the rule.
+Every stage flows into the next. No "stop and summarize" between stages; the two legitimate stops are the Stage 4 human attestation and a recorded block, both in the Stage 4 procedure. If you have not reached the end of Stage 5, you are not done.
 
 ### Rationalization Prevention
 

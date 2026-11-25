@@ -28,7 +28,7 @@ automatically creating another work order.
 | Explicit operator request to file an issue | GHI linked to the owning work; no acceptance obligation is discharged by filing |
 
 Use `### Change Log` under `## Evidence`, following the brief template and
-[`gz-obpi-pipeline`](https://github.com/tvproductions/gzkit/blob/main/.gzkit/skills/gz-obpi-pipeline/SKILL.md#corrections-belong-to-the-active-obpi).
+[`gz-obpi-pipeline`](https://github.com/tvproductions/gzkit/blob/main/.gzkit/skills/gz-obpi-pipeline/references/stage-2-implement.md) (its corrections paragraph, served at Stage 2).
 Capture substantive adjustments, affected requirements or contract clauses,
 changes, and verification/closure references. Reuse finding identities and group
 related repairs. The log indexes existing evidence and ledger records; it does

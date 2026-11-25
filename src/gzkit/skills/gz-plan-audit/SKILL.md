@@ -8,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-11-08
 compatibility: Works with GovZero-compliant repositories; in gzkit the receipt is written under .claude/plans/, consumed by gz-obpi-pipeline, and enforced by the registered plan-exit hooks tracked by ADR-0.12.0.
 metadata:
-  skill-version: "6.6.0"
+  skill-version: "6.6.1"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -300,7 +300,7 @@ Active enforcement contract for gzkit:
 - Registered hook: `.claude/hooks/plan-audit-gate.py`
 - Registered router consumer: `.claude/hooks/pipeline-router.py`
 - Active registration surface: `.claude/settings.json`
-- Consumer: `.gzkit/skills/gz-obpi-pipeline/SKILL.md` (Stage 1)
+- Consumer: `.gzkit/skills/gz-obpi-pipeline/references/stage-1-load-context.md` (Stage 1, served by `gz obpi pipeline`)
 
 The operator still invokes `/gz-plan-audit` manually. The gate's logic lives in
 `plan-audit-gate.py`, not here: it finds the newest plan, extracts its OBPI ids,
