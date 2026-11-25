@@ -111,7 +111,7 @@ Mechanically enforce the existing advisory rule that `gz-justify` must be invoke
 - [ ] In OBPI-04
 ### Gate 4: BDD (Heavy)
 - [ ] In OBPI-05
-### Gate 5: Human (Heavy + Foundation)
+### Gate 5: Human (all lanes)
 - [ ] TTY + `ATTEST` required
 
 ## Verification
@@ -138,7 +138,7 @@ uv run gz validate --evaluation-justify-binding ADR-<fixture-id>
 - [ ] **Gate 1:** Intent recorded
 - [ ] **Gate 2:** RGR; tests pass
 - [ ] **Code Quality:** clean
-- [ ] **OBPI Acceptance:** Heavy + foundation = TTY + `ATTEST` required
+- [ ] **OBPI Acceptance:** Gate 5: human attestation required
 
 ## Evidence
 

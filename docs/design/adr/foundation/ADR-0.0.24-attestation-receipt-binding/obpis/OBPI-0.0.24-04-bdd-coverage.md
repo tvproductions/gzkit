@@ -132,7 +132,7 @@ Author behave scenarios that exercise the receipt-binding gate end-to-end agains
 - [ ] All scenarios pass
 - [ ] `gz validate --behave-req-tags` exits 0
 
-### Gate 5: Human (Heavy + Foundation)
+### Gate 5: Human (all lanes)
 
 - [ ] TTY + `ATTEST` required
 
@@ -158,7 +158,7 @@ uv run gz validate --behave-req-tags
 - [ ] **Gate 4 (BDD):** All scenarios pass; req-tags validate exits 0
 - [ ] **Value Narrative:** Documented
 - [ ] **Key Proof:** Behave run output pasted
-- [ ] **OBPI Acceptance:** Heavy + foundation = TTY + `ATTEST` required
+- [ ] **OBPI Acceptance:** Gate 5: human attestation required
 
 ## Evidence
 
