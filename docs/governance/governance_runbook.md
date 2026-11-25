@@ -610,7 +610,7 @@ uv run gz lint
 Pipeline rules:
 
 - verify -> reviewer dispatch -> ceremony -> sync is mandatory
-- Heavy-lane work (any kind) stays fail-closed on human attestation; foundation-kind work (any lane) additionally follows ADR-0.0.18 walkthrough discipline
+- every OBPI completion is fail-closed on human attestation, in every lane and kind (Gate 5, ADR-0.0.36); foundation-kind work (any lane) additionally follows ADR-0.0.18 walkthrough discipline
 - if concurrent execution is needed before lock parity exists, stop with
   `BLOCKERS`
 

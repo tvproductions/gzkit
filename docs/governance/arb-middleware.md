@@ -139,12 +139,14 @@ naming the surface; shrinking the table is forbidden.
 
 ### Lane / kind matrix
 
-The gate evaluates the same three-way OR predicate as the rest of the
-attestation surface (foundation kind OR heavy lane OR security
-sensitivity → fail-closed; otherwise warn). The matrix below is the
-gate-verdict projection of `_requires_human_obpi_attestation` (see
-`AGENTS.md` § Lane & Kind & Sensitivity Attestation Matrix for the
-full predicate):
+The gate keys on lane and kind: `fail_closed_zero` in
+`validate_attestation_receipts`
+(`src/gzkit/governance/trust_audits/attestation_receipts.py`) fails closed
+on a heavy-lane or foundation-kind parent and warns otherwise. It is not
+the Gate 5 predicate: human attestation itself is required for every OBPI
+completion in every lane and kind (`_requires_human_obpi_attestation`,
+ADR-0.0.36; `AGENTS.md` § Gate Covenant). This gate binds the evidence an
+attestation cites. The matrix below is its verdict:
 
 | Lane × Kind | Gate verdict on `missing` / `status_mismatch` / `claim_mismatch` / `no_ids` |
 |---|---|
@@ -167,7 +169,7 @@ mechanical backstop under the narrative discipline.
 ### Cross-references
 
 - `AGENTS.md` § Attestation — binding rules, canonical-invocations table, lane behavior bullets that cite this gate
-- `AGENTS.md` § Lane & Kind & Sensitivity Attestation Matrix — three-axis predicate the gate evaluates
+- `AGENTS.md` § Gate Covenant — Gate 5 is universal; this gate binds the receipts an attestation cites, not whether attestation is required
 - `docs/user/manpages/validate.md` § `--attestation-receipts` — operator-facing CLI surface and EXAMPLES
 - ADR-0.0.24-attestation-receipt-binding — Decision text, non-goals (no `--skip-receipt-binding`, no git pre-receive enforcement, no fail-closed on lite-non-foundation), and consequences
 

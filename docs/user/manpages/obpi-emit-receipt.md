@@ -12,7 +12,7 @@ gz obpi emit-receipt <OBPI-ID> --event {completed,validated} --attestor <text> [
 
 `--attestor-present` is retained for compatibility but is no longer
 load-bearing. The prior TTY `ATTEST` authenticity gate has been removed:
-for a foundation-kind / heavy-lane parent, the Gate-5 attestation is the
+in every lane and kind (ADR-0.0.36), the Gate-5 attestation is the
 operator's verbatim `attestation_text` in `--evidence-json` (recorded as
 `attestation_type: operator-verbatim-conversational`).
 

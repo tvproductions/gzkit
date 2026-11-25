@@ -87,7 +87,7 @@ The runtime model is additive and fail-closed:
 
 - legacy receipts without explicit `req_proof_inputs` are backfilled from substantive brief `Key Proof`
 - missing or placeholder proof/evidence keeps the OBPI in a non-complete runtime state
-- heavy/foundation completion requires human-attestation proof before `attested_completed`
+- completion requires human-attestation proof before `attested_completed`, in every lane and kind (ADR-0.0.36)
 
 ---
 

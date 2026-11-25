@@ -18,7 +18,7 @@ gz adr emit-receipt <ADR-ID> --event {completed,validated,closed} --attestor <te
 |--------|-------------|
 | `--event` | Receipt event type (`completed`, `validated`, or `closed`) |
 | `--attestor` | Identity of the attestor. Defaults to `authorship.attestor_handle` in `.gzkit.json` when set (GHI #1036); required otherwise |
-| `--evidence-json` | JSON payload with `value_narrative`, `key_proof`; Heavy/Foundation adds attestation fields |
+| `--evidence-json` | JSON payload with `value_narrative`, `key_proof`, and the attestation fields every OBPI completion requires (Gate 5, ADR-0.0.36) |
 | `--attestor-present` | Retained for compatibility; no longer load-bearing. Human-attestation receipt events record the operator's verbatim attestation from the `--evidence-json` `attestation_text` (or `scope`) field as `attestation_type: operator-verbatim-conversational`. The prior TTY `ATTEST` authenticity gate has been removed. |
 | `--dry-run` | Show planned actions without executing |
 
