@@ -261,7 +261,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] **Key Proof:** One concrete usage example is included
 - [ ] **OBPI Acceptance:** Evidence recorded below; human attestation recorded (Gate 5)
 
-> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
+> Ceremony steps: `AGENTS.md` § OBPI Acceptance Protocol; Gate 5 is universal (§ Gate Covenant).
 
 ## Evidence
 
@@ -299,7 +299,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+# Record attestation text here (Gate 5, every lane)
 ```
 
 ### Step 4b — Independent Adversarial Validation

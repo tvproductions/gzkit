@@ -336,7 +336,7 @@ The stage-entry command line itself is fixed by OBPI-0.35.0-16. When that brief 
 - [ ] **Key Proof:** One concrete usage example is included
 - [ ] **OBPI Acceptance:** Evidence recorded below
 
-> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
+> Ceremony steps: `AGENTS.md` § OBPI Acceptance Protocol; Gate 5 is universal (§ Gate Covenant).
 
 ## Evidence
 
@@ -378,7 +378,7 @@ The stage-entry command line itself is fixed by OBPI-0.35.0-16. When that brief 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+# Record attestation text here (Gate 5, every lane)
 ```
 
 ### Value Narrative
@@ -408,9 +408,9 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `<name>`
+- Attestation: substantive attestation text
+- Date: YYYY-MM-DD
 
 ---
 

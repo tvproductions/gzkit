@@ -193,7 +193,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] **Key Proof:** One concrete usage example is included
 - [ ] **OBPI Acceptance:** Evidence recorded below
 
-> For ceremony steps and the universal Gate 5 attestation, see `AGENTS.md` sections `Gate Covenant` and `OBPI Acceptance Protocol`.
+> Ceremony steps: `AGENTS.md` § OBPI Acceptance Protocol; Gate 5 is universal (§ Gate Covenant).
 
 ## Evidence
 
@@ -245,7 +245,7 @@ _No substantive adjustments recorded yet._
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here (Gate 5 applies in every lane, ADR-0.0.36)
+# Record attestation text here (Gate 5, every lane)
 ```
 
 ### Value Narrative

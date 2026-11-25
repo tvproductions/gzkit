@@ -331,7 +331,7 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 - [ ] **Key Proof:** One concrete usage example is included
 - [ ] **OBPI Acceptance:** Evidence recorded below
 
-> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
+> Ceremony steps: `AGENTS.md` § OBPI Acceptance Protocol; Gate 5 is universal (§ Gate Covenant).
 
 ## Evidence
 
@@ -369,7 +369,7 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+# Record attestation text here (Gate 5, every lane)
 ```
 
 ### Step 4b — Independent Adversarial Validation

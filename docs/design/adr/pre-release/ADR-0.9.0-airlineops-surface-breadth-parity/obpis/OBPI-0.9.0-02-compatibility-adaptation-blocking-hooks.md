@@ -149,7 +149,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [x] **Key Proof:** One concrete usage example is included
 - [x] **OBPI Acceptance:** Evidence recorded below
 
-> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
+> Ceremony steps: `AGENTS.md` § OBPI Acceptance Protocol; Gate 5 is universal (§ Gate Covenant).
 
 ## Evidence
 
