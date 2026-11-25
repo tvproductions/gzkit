@@ -706,6 +706,23 @@ membership is a *reading*, not a measurement"*. Operator: *"Not stored (Recommen
 So the *what it is* group closes with two stored axes, class and found, and the failure mechanism
 in the body. Family leaves it as a stored axis and stays a reading with a locus.
 
+## decision · a failure mechanism is drawn per source change, its reach every consumer
+
+Applied to the audit, the agent drew 26 mechanisms and the operator asked to revise the groupings
+before filing. Question: when one surface holds stale claims from different source changes
+(`gz-obpi-lock`: lease semantics, agent identity, merge driver, a renamed file), what is one
+mechanism? Options put: A, per source change: one GHI per fact that changed and was not carried
+through, its reach every consumer of that fact repo-wide (skills, rules, docs, code comments),
+found at repair; B, per surface: a surface not re-verified after its sources changed, each fix a
+full re-verification of that surface; C, per source change where a fact is restated on two or
+more surfaces, per surface otherwise. Recommended A, under `AGENTS.md` § DO IT RIGHT 1a (*"When a
+change touches a surface another surface reads or validates [...] update and verify that consumer
+in the same commit"*). Operator: *"Per source change (Recommended)"*.
+
+So a surface can carry several GHIs, and a GHI reaches beyond the surface the audit read: M3, the
+lock lease change, reaches the `obpi_complete.py:1511` *"TTL reaping"* comment RP-7 placement
+finding F14 already lists.
+
 ---
 
 ## Disposition map
