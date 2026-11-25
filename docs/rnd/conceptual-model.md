@@ -723,6 +723,48 @@ So a surface can carry several GHIs, and a GHI reaches beyond the surface the au
 lock lease change, reaches the `obpi_complete.py:1511` *"TTL reaping"* comment RP-7 placement
 finding F14 already lists.
 
+## source · what `last_reviewed` means
+
+Read 2026-11-25. `.gzkit/rules/skill-surface-sync.md:24` (blame 2026-09-17):
+
+> 6. **`skill-version` bumps require `last_reviewed` bumps in the same edit (skills only).** Set
+> `last_reviewed:` to today's date whenever `skill-version` moves — the 90-day staleness audit
+> (`DEFAULT_MAX_REVIEW_AGE_DAYS`, `src/gzkit/skills_audit.py`) reads it
+
+`.gzkit/skills/gz-skill-review/SKILL.md:18-20` (blame 2026-09-26):
+
+> A review re-verifies what a skill says against what its command does, then fixes the skill and
+> every surface that repeats it. Moving `last_reviewed` without that check certifies claims nobody
+> read.
+
+Measured: on `gz-tidy`, `gz-check` and `gz-obpi-lock`, which the audit found carrying claims the
+code contradicts, `last_reviewed` last moved in `170d62a2c` (2026-10-18, RO-1 act c), a
+description rewrite touching 254 files.
+
+## decision · `last_reviewed` records a review, never an edit
+
+One field carried two concepts: *last edited*, which rule 6 moves on every version bump, and
+*claims last verified*, which the staleness audit reads and `gz-skill-review` defines. Edits
+re-certified claims nobody read, which is why the audit's restated-fact family had no working
+witness. Question: how is it resolved? Options put: A, `last_reviewed` moves only on a
+`gz-skill-review` pass that checked every claim, an edit moving `skill-version` alone, rule 6
+rewritten; B, rule 6 kept and every skill edit running a whole-skill review first; C, both left.
+Recommended A. Operator: *"Review-only date (Recommended)"*.
+
+So the audit's repairs bump `skill-version` only, and the staleness audit measures review age.
+
+## decision · the test case, applied
+
+The prompt audit, drawn under the rulings above, comes to 48 failure mechanisms, each one GHI
+(the session's audit report, Revised mechanism map, landed with the GHIs): 35 from its High
+findings, nine Medium findings that state stale facts treated as High (operator: *"Treat as High
+(Recommended)"*), `gz-mx`'s PRIME DIRECTIVE text against the safe-mode ruling of 2026-10-25, the
+lazy-import carve-out (operator: *"Third carve-out (Recommended)"*), `last_reviewed` above, and
+the `gz content` help text calling an ARB receipt *Gate 5*. Family readings, not stored: the
+restated-fact family (a skill restates a fact, its source changes, nothing re-verifies the
+restatement), whose witness is the staleness audit this run re-armed, and RP-7 placement F2's
+ungated-scope family. The wording and narrative findings go to RP-7 as stage input.
+
 ---
 
 ## Disposition map
