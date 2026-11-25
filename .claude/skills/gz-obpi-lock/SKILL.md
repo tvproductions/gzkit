@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-17
 metadata:
-  skill-version: "6.4.3"
+  skill-version: "6.4.4"
 model: haiku
 ---
 
@@ -143,10 +143,11 @@ Agents identify themselves by environment:
 
 | Signal | Agent |
 |--------|-------|
-| `CLAUDE_CODE` env var or Claude Code runtime | `claude-code` |
+| `CLAUDECODE` env var (or `CLAUDE_CODE`) | `claude-code-<first 8 of CLAUDE_CODE_SESSION_ID>`, or `claude-code` with no session id |
 | `CODEX_SANDBOX` env var | `codex` |
-| VS Code Copilot context | `copilot` |
-| Fallback | `unknown-{PID}` |
+| Fallback | `unknown-<pid>` |
+
+`--agent` overrides the resolved name (`lock_manager.resolve_agent`). Because the Claude Code name carries the session id, a new session (after `/clear` or a restart) is a different agent from the one that claimed, while a dispatched subagent inherits the session id and resolves to its orchestrator's name.
 
 ---
 
