@@ -1,6 +1,6 @@
 """Typed exceptions for :mod:`gzkit.content.models.corpus`.
 
-Held apart from the corpus module, which sits at the module-size guidance in
+Held apart from the corpus module, which sat at the 600-line module guidance then in
 ``.gzkit/rules/pythonic.md``. Each names the offending entry id, so an operator
 can find the row in an append log that only ever grows.
 """

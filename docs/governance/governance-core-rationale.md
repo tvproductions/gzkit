@@ -14,9 +14,9 @@ Version history for the same rule lives in
 **The rule.** Execution reads thresholds, limits, budgets, rosters and state from JSON or
 code, never from prose. Cite the authority, not the value.
 
-**Why it exists — the measured instance.** `.gzkit/rules/pythonic.md` carries
-`Modules <=600` while the execution authority is `.gzkit/rules/complexity-thresholds.json`,
-read by `chores/module-sloc-cap-radon/check_module_size.py:56` — whose own docstring calls
+**Why it exists — the measured instance.** `.gzkit/rules/pythonic.md` carried
+`Modules <=600` (until 227ed3386, 2026-11-13) while the execution authority is `.gzkit/rules/complexity-thresholds.json`,
+read by `chores/module-sloc-cap-radon/check_module_size.py:7` — whose own docstring calls
 the 600 *"the drift"*. A 2026-08-16 census against the prose figure counted **51** oversized
 modules that **no gate rejects**, and an agent proposed a census box against an authority the
 codebase does not enforce. The failure is `rg`-shaped: a number in prose is indistinguishable

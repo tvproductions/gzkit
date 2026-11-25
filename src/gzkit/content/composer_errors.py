@@ -1,6 +1,6 @@
 """Typed exceptions for :mod:`gzkit.content.composer`.
 
-Held apart from the composer module, which is over the module-size guidance in
+Held apart from the composer module, which was over the 600-line module guidance then in
 ``.gzkit/rules/pythonic.md``.
 """
 

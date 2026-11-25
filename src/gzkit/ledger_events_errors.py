@@ -1,7 +1,7 @@
 """Typed ledger-event construction failures (RO-9, TRY003).
 
-Kept beside :mod:`gzkit.ledger_events` because that module is over the
-authoring-time module size limit (``.gzkit/rules/pythonic.md``).
+Kept beside :mod:`gzkit.ledger_events` because that module was over the
+600-line module size limit then in ``.gzkit/rules/pythonic.md``.
 """
 
 

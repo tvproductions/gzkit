@@ -1,6 +1,6 @@
 """Typed exceptions for :mod:`gzkit.content.parse.markdown_parser`.
 
-Held apart from the parser module, which is at the module-size guidance in
+Held apart from the parser module, which was at the 600-line module guidance then in
 ``.gzkit/rules/pythonic.md``. Each message leads with the source file path when
 one was supplied.
 """

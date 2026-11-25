@@ -249,7 +249,12 @@ class TestAdvisorConfig(unittest.TestCase):
 
 
 class TestFunctionSize(unittest.TestCase):
-    """Verify function-size discipline (REQ-0.0.29-09-10, structural)."""
+    """Verify function-size discipline (REQ-0.0.29-09-10, structural).
+
+    50 lines is what this attested REQ fixed for ``timeout.py``, under the limit then
+    in ``pythonic.md``. Repo-wide function size is now the ``lizard_nloc`` bands of
+    ``.gzkit/rules/complexity-thresholds.json`` (GHI #1366).
+    """
 
     def test_all_functions_under_50_lines(self) -> None:
         source = Path("src/gzkit/complexity/advisor/timeout.py").read_text(encoding="utf-8")

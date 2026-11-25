@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-23
 metadata:
-  skill-version: "6.1.4"
+  skill-version: "6.1.5"
 model: sonnet
 ---
 
@@ -141,7 +141,7 @@ Look for:
 - Poor naming (unclear abbreviations, misleading names)
 - Overly complex conditionals that should be simplified
 - Missing or incorrect type hints
-- Functions or modules past the `warn` band of `lizard_nloc` / `lizard_file_nloc` in `.gzkit/rules/complexity-thresholds.json` (cite the band, never a number; `pythonic.md` § Size Limits)
+- Functions or modules past the lowest `warn` band (p90) of `lizard_nloc` / `lizard_file_nloc` in `.gzkit/rules/complexity-thresholds.json` (cite the band, never a number; `pythonic.md` § Size Limits)
 - Mutable default arguments
 - Bare except clauses
 

@@ -2,8 +2,8 @@
 
 Each class names one failure ``gzkit.acceptance_store`` refuses and subclasses
 the ``ValueError`` it raised before, so every existing handler and message
-assertion still holds. They live here because the store module is already past
-the module size guidance in ``.gzkit/rules/pythonic.md``.
+assertion still holds. They live here because the store module was already past
+the 600-line module guidance then in ``.gzkit/rules/pythonic.md``.
 """
 
 

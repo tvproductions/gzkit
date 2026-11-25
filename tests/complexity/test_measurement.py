@@ -297,7 +297,13 @@ class TestPyprojectDeclaresDeps(unittest.TestCase):
 
 
 class TestFunctionSizeDiscipline(unittest.TestCase):
-    """REQ-0.0.27-03-10: every function in ``measurement.py`` <= 50 lines."""
+    """REQ-0.0.27-03-10: every function in ``measurement.py`` <= 50 lines.
+
+    The numbers are what this attested REQ fixed for this module, under the 50/600
+    limits then in ``pythonic.md``. Repo-wide function and module size is now the
+    ``lizard_nloc`` / ``lizard_file_nloc`` bands of
+    ``.gzkit/rules/complexity-thresholds.json`` (GHI #1366).
+    """
 
     def test_function_size_discipline(self) -> None:
         """Parse the AST and assert no function exceeds the size limit."""
@@ -317,7 +323,7 @@ class TestFunctionSizeDiscipline(unittest.TestCase):
         )
 
     def test_module_size_discipline(self) -> None:
-        """The module respects the 600-line module ceiling."""
+        """The module respects the 600-line ceiling its attested REQ fixed."""
         line_count = len(_MEASUREMENT_PATH.read_text(encoding="utf-8").splitlines())
         self.assertLessEqual(line_count, 600)
 

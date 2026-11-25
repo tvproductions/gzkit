@@ -61,8 +61,9 @@ close other implementation-time classes:
 `gz plan create --check-paths` (or equivalent flag on `gz obpi specify`) runs
 `wc -l` against every path in the draft Allowed-Paths section and refuses to
 write a plan that places new logic in an over-cap module without naming a
-sibling-module proposal. The 600-line module cap and 50-line function cap
-from `.claude/rules/pythonic.md` are the floor.
+sibling-module proposal. The function and module size bands of
+`.gzkit/rules/complexity-thresholds.json` (`lizard_nloc`, `lizard_file_nloc`;
+`pythonic.md` § Size Limits) are the floor.
 
 ### 2. Pre-author scope-collision check
 

@@ -1,7 +1,7 @@
 """Typed producer-probe contract failures (RO-9, TRY003).
 
-Kept beside :mod:`gzkit.ledger_producer_probe` because that module is over the
-authoring-time module size limit (``.gzkit/rules/pythonic.md``). Each class is
+Kept beside :mod:`gzkit.ledger_producer_probe` because that module was over the
+600-line module size limit then in ``.gzkit/rules/pythonic.md``. Each class is
 one way a producer can break its write contract; all subclass ``ValueError``,
 the type the probes raised before.
 """

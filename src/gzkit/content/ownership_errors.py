@@ -1,6 +1,6 @@
 """Typed exceptions for :mod:`gzkit.content.ownership`.
 
-Held apart from the ownership module, which is over the module-size guidance in
+Held apart from the ownership module, which was over the 600-line module guidance then in
 ``.gzkit/rules/pythonic.md``; ``gzkit.content.ownership`` re-exports each name.
 """
 
