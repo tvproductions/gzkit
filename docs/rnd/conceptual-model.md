@@ -409,6 +409,16 @@ This takes AC 00-71 § 3.1's three objects and departs from its § 3.3 scheme, w
 behavior by effect; gzkit carries effect on severity instead. *Enhancement* and *investigation*
 leave the class axis: the first is no discrepancy, the second is a state.
 
+## decision · the class lives in exactly one namespaced label
+
+Question: where does the class live? Measured: native issue types are organization-wide, and
+`tvproductions` holds about twenty repositories beside gzkit; its types are Task, Bug and
+Feature. Options put: A, exactly one `class:behavior`, `class:process` or
+`class:life-cycle-data` label on a classified GHI, Backplane's exactly-one rule on the class axis
+(zero or two invalid, failing closed), no organization-wide change, and a GHI with no class label
+in the *recorded* state; B, organization issue types; C, a `Class:` line in the body. Recommended
+A. Operator: *"A: One namespaced label"*.
+
 ---
 
 ## Disposition map
