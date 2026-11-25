@@ -381,3 +381,19 @@ Routed, not repaired here: S-F3 (OBPIs as frozen history) → RP-14; S-F6 (neste
 No action: codex `--write` ("No action"); astral ruff "only fix files you're modifying" (project PRIME DIRECTIVE governs).
 
 Total: 48 GHIs.
+
+### Added when partitioning for RP-7 (2026-11-25, under "Treat as High (Recommended)")
+
+| GHI | Source change not carried through | Findings |
+|---|---|---|
+| M49 | the three-subjects ruling's carrier moved from root `AGENTS.md` to `gz-session-handoff` | R18 |
+| M50 | top-level brief sections are not Gate 2 (Gate 2 is Tests) | R20 |
+| M51 | cite the authority, not the value: coverage floor is `.gzkit/manifest.json` `coverage_floor` | A4 |
+
+Total: 51 GHIs.
+
+### Hand-off to RP-7 (stage input, not repaired now)
+
+- GHI #1246 (rules narrative): R7–R17, R19, R21–R24; low flags R-F3, R-F4, R-F7.
+- GHI #1250 (skill bodies): S44–S48, S50–S52, S56–S59, S61–S67, S69–S71, S74–S79, S81; low flags S-F5, S-F7.
+- GHI #1251 (agent and command definitions): A6, A8.
