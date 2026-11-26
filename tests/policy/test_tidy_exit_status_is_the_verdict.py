@@ -15,10 +15,10 @@ is split, so a wrapped phrase is still seen (the gap #1367 found in the size fen
 Known limits: a reworded claim that uses neither shape passes, and so does a claim
 whose "tidy" sits in an earlier sentence. True sentences are admitted by shape: a
 conditional after the zero is refused only when it names a finding or a breach ("exits 0
-even when ADRs pending attestation print" passes), an unconditional qualifier only when
-no comma separates it from the zero, and a sentence stating the contract with "only
-when" or "only if" is never refused. Dated records stay as written:
-`docs/rnd/`, `docs/releases/`, chore proofs and archives are not read.
+even when ADRs pending attestation print" passes), "succeeds" counts only with tidy as
+its subject, and a clause (split at a comma or "and") stating the contract with "only
+when" or "only if" is dropped before the rest of its sentence is judged. Dated records
+stay as written: `docs/rnd/`, `docs/releases/`, chore proofs and archives are not read.
 """
 
 import re
@@ -51,7 +51,7 @@ SKIPPED_PARTS = {"proofs", "archive"}
 _TIDY = re.compile(r"\btidy\b", re.IGNORECASE)
 _ZERO = (
     r"\b(?:(?:exits?|exited|returns?|returned)\s+(?:status\s+|code\s+)?0"
-    r"|succeeds?|succeeded|exits? successfully)\b"
+    r"|tidy\s+(?:\w+\s+)?(?:succeeds?|succeeded|exits? successfully))\b"
 )
 _ANYWAY = r"\b(?:whatever|regardless|no matter|always)\b(?!-)"
 _ON_FINDINGS = (
@@ -60,11 +60,12 @@ _ON_FINDINGS = (
 )
 _FINDINGS_THEN_ZERO = r"\b(?:findings?|breach(?:es)?)\b.*?\b(?:but|yet|still)\s+"
 _STATUS_IGNORES_FINDINGS = re.compile(
-    rf"{_ZERO}[^,]*?{_ANYWAY}|{_ZERO}.*?{_ON_FINDINGS}|{_ANYWAY}.*?{_ZERO}"
+    rf"{_ZERO}.*?{_ANYWAY}|{_ZERO}.*?{_ON_FINDINGS}|{_ANYWAY}.*?{_ZERO}"
     rf"|{_FINDINGS_THEN_ZERO}{_ZERO}",
     re.IGNORECASE,
 )
 _CONTRACT = re.compile(r"\bonly (?:when|if)\b", re.IGNORECASE)
+_CLAUSE = re.compile(r"(,\s|\s+and\s+)")
 _DISTRUST_EXIT_CODE = re.compile(
     r"\bexit (?:code|status)\b.*?\b(?:instead of|means nothing|is meaningless|tells you nothing)\b"
     r"|\b(?:ignore|disregard|never trust|do not trust|don't trust)\b.*?\bexit (?:code|status)\b",
@@ -79,14 +80,20 @@ def stale_tidy_status_claims(text: str) -> list[str]:
     found: list[str] = []
     for block in _BLOCK.split(text):
         flat = re.sub(r"\s+", " ", block.replace("*", "").replace("`", ""))
-        found.extend(
-            sentence.strip()
-            for sentence in _SENTENCE.split(flat)
-            if _TIDY.search(sentence)
-            and not _CONTRACT.search(sentence)
-            and (_STATUS_IGNORES_FINDINGS.search(sentence) or _DISTRUST_EXIT_CODE.search(sentence))
-        )
+        for sentence in _SENTENCE.split(flat):
+            claim = _without_contract_clauses(sentence)
+            if _TIDY.search(sentence) and (
+                _STATUS_IGNORES_FINDINGS.search(claim) or _DISTRUST_EXIT_CODE.search(claim)
+            ):
+                found.append(sentence.strip())
     return found
+
+
+def _without_contract_clauses(sentence: str) -> str:
+    """Drop each clause that states the contract with "only when" or "only if"."""
+    parts = _CLAUSE.split(sentence)
+    kept = [part for part in parts[::2] if not _CONTRACT.search(part)]
+    return ", ".join(kept)
 
 
 def _live_files() -> list[Path]:
@@ -135,6 +142,13 @@ class TestTidyExitStatusIsTheVerdict(unittest.TestCase):
             "The exit status of gz tidy means nothing.",
             "Tidy reports findings but exits 0.",
             "gz tidy exits successfully whatever it reports.",
+            "Tidy exits 0, whatever it reports.",
+            "gz tidy exits 0, regardless of findings.",
+            "gz tidy exits 0 when the report ran, whatever it found.",
+            (
+                "Tidy exits 0 whatever it finds and exits 1 only when the project is "
+                "not initialized."
+            ),
         )
         contract = (
             (
