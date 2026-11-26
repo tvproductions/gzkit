@@ -717,6 +717,7 @@
       "eadd860d031a3c7d014e12c0bb989ec9100523e74581d09e0e072dfde1727076"
     ],
     "chores/owasp-top10-2025-scan/mapping.json": [
+      "093b28e2e6a71a9c8d43ec21357567c9f17f28295311e2e0579d7f6a5789f00c",
       "3feb77c14d0e53e5e0785c82450e80bfd91563a3d799776a25587204b560d630"
     ],
     "chores/owasp-top10-2025-scan/mapping.schema.json": [
@@ -2210,6 +2211,7 @@
     ],
     "skills/gz-intent-trace/SKILL.md": [
       "39cb0a5f3ca58b25a8e7346ef2b9d133558774a5efe9f2c5decc27f82127a2fd",
+      "4c86790e6b496e5d49141b638ec7bac46dc8ab38bc725c2a99b4b9bb852c02a3",
       "59c2ac7b8b760189d3ccd4947d807c35e67e5423c8e66550396b8e8e872ad9b1",
       "65915f80fda779bbf312504fe71d01d8add8cd74aa02a980af4350ae15100771",
       "71941a37987f140c7c55afcbdcdd449646d480e03a46c50e66630d8b358a04a5",

@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-26
 metadata:
-  skill-version: "1.0.4"
+  skill-version: "1.0.5"
 model: sonnet
 ---
 
@@ -135,7 +135,8 @@ unfinished work gets relabelled as satisfactory.
 ## Sequencing caution
 
 A trace run is deliverable-bearing work and will compete with the active
-campaign, which is Magna Carta (`AGENTS.md` § Operator Doctrine). The sample's
+campaign plan, which governs work selection (`gz-obpi-pipeline` carries that
+ruling, per `AGENTS.md` § Operator Doctrine). The sample's
 top entries are frequently the ADRs the campaign is already sequenced around.
 **Surface the collision to the operator and get a ruling before running** — do
 not resolve it unilaterally (`AGENTS.md` § Behavior Rules: "stop and name the
