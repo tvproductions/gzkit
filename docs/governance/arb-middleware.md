@@ -5,10 +5,12 @@ QA middleware layer that wraps real verification steps (lint, type check,
 tests, coverage, docs build) and emits structured JSON receipts used as
 attestation evidence.
 
-The **binding rules** — the em-dash enrichment pattern, the canonical-invocations
-table, lane behavior (Lite warn / Heavy fail-closed), and the worked example —
-live in `AGENTS.md` § Attestation. Read that section first; this file expands
-the middleware surface the rules depend on.
+The **binding rules** — the operator's words verbatim, then concrete evidence;
+lane behavior (Lite warn / Heavy fail-closed); and receipt-ID discipline — live
+in `AGENTS.md` § Attestation. The canonical-invocations table is the `gz-arb`
+skill's (its step 1), and the worked example is
+[`agent-contract-rationale.md` § Attestation — worked example](agent-contract-rationale.md#attestation--worked-example).
+Read those first; this file expands the middleware surface the rules depend on.
 
 Consolidation lineage: `.gzkit/rules/attestation-enrichment.md` (retired
 2026-04-23, ADR-0.0.20 OBPI-03) → AGENTS.md § Attestation (binding) + this

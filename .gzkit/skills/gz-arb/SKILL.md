@@ -5,11 +5,11 @@ description: Use to wrap QA commands in ARB receipts for attestation evidence or
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-24
+last_reviewed: 2026-11-26
 model: haiku
 gz_command: arb advise
 metadata:
-  skill-version: "1.4.3"
+  skill-version: "1.4.4"
 revived_on: "2026-04-14"
 revived_under: OBPI-0.25.0-33
 revival_note: "ARB surface absorbed from airlineops/opsdev/arb under OBPI-0.25.0-33. The earlier retirement (2026-04-03, 'consolidated into gz-check') was itself drift — gz check never implemented ARB receipt emission, so the rule contract in .gzkit/rules/arb.md was referencing a nonexistent surface. Revival restores parity with the rule."
@@ -103,8 +103,7 @@ uv run gz arb advise --limit 10
 
 ## References
 
-- Binding rule: `AGENTS.md` § Attestation (em-dash pattern + canonical invocations + lane behavior + receipt-ID discipline)
+- Binding rule: `AGENTS.md` § Attestation (the operator's words verbatim, then concrete evidence; lane behavior; receipt-ID discipline). It points here for the canonical invocations, which step 1 lists.
 - Deep-dive: `docs/governance/arb-middleware.md` (core concept, command surface, receipt schema, exit codes, rationale)
-- Command docs: `docs/user/manpages/arb.md`
 - Manpage: `docs/user/manpages/arb.md`
 - Absorption record: OBPI-0.25.0-33 under ADR-0.25.0
