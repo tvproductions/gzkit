@@ -8,6 +8,8 @@ inspired_by: https://github.com/obra/superpowers
 amendments:
   - date: 2026-04-19
     scope: Added cross-cutting "Skill-intent scope invariant" anti-rationalization pattern under Target Scope, with consumer linkage to MODE events in ADR-pool.tdd-receipt-stream. Existing 4 enriched skills, 3 new skills, all Non-Goals, all Promotion Criteria, and superpowers Inspired By preserved verbatim. No new CLI/events/infra introduced by the amendment (skill-layer SKILL.md only, consistent with original Non-Goals).
+  - date: 2026-11-26
+    scope: Re-targeted the RED-GREEN-REFACTOR enrichment from the `test` skill, retired into `gz-check` on 2026-04-03 (9b5c283d2), to `gz-check`, in Target Scope and Notes (GHI #1381; operator ruling "Re-target gz-check"). The enrichment's intent is unchanged.
 ---
 
 # ADR-pool.skill-behavioral-hardening: Skill Behavioral Hardening
@@ -40,7 +42,7 @@ This ADR does not create new governance infrastructure. It strengthens the skill
 
 Add rationalization tables and circuit breaker patterns to governance skills where agents most commonly take shortcuts:
 
-- **`test`** — Rewrite from skeleton stub to enforce strict RED-GREEN-REFACTOR with anti-rationalization table. TDD is already a gzkit feature (Gate 2); this makes enforcement stricter at the skill level.
+- **`gz-check`** — Enforce strict RED-GREEN-REFACTOR with an anti-rationalization table. (The `test` skill this entry first targeted was retired into `gz-check` on 2026-04-03.) TDD is already a gzkit feature (Gate 2); this makes enforcement stricter at the skill level.
 - **`gz-obpi-pipeline`** — Add rationalization defense for skipping verification, claiming completion without evidence, and bypassing ceremony. Add explicit circuit breakers.
 - **`gz-plan`** — Add defense against rushing decomposition, skipping discovery questions, and premature ADR generation. Add dialogue discipline (one question at a time, YAGNI enforcement).
 - **`git-sync`** — Add defense against bypassing lint/test gates and direct push.
@@ -123,7 +125,7 @@ This pool ADR can be promoted when all are true:
 
 - Superpowers (github.com/obra/superpowers) demonstrates that treating agent rationalization as the primary failure mode and defending against it explicitly with tables of excuses and rebuttals is highly effective.
 - gzkit's hooks already enforce governance mechanically (pipeline-gate blocks writes, plan-audit-gate blocks plan exit). This ADR adds rhetorical defense at the skill layer to catch drift BEFORE hooks need to block.
-- TDD is already Gate 2 in gzkit. The `test` skill rewrite makes RED-GREEN-REFACTOR enforcement stricter, not adding a new capability.
+- TDD is already Gate 2 in gzkit. The `gz-check` enrichment makes RED-GREEN-REFACTOR enforcement stricter, not adding a new capability.
 - The three new skills (gz-debug, gz-verify, gz-review-response) have no superpowers equivalent that integrates with gzkit's governance model (ledger, pipeline, OBPI scope).
 
 ## See Also
