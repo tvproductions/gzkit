@@ -5,10 +5,10 @@ description: Use for repository hygiene; reports governance maintenance findings
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-11-26
 model: haiku
 metadata:
-  skill-version: "1.3.1"
+  skill-version: "1.3.2"
 ---
 
 # gz tidy
@@ -120,7 +120,7 @@ These thoughts mean STOP — you are about to leave drift in place:
 
 | Thought | Reality |
 |---------|---------|
-| "Tidy exited 0, so the project is tidy" | Tidy exits 0 whatever it reports. Only the printed sections say what it found. |
+| "Tidy exited 0, so there is nothing to report" | Exit 0 says only that no breach section has a finding. The ADRs pending attestation still print, never gate, and are the operator's queue to hear about. |
 | "`--check` is the safe mode" | `--check` does nothing a bare run does not; both are read-only. The choice is between reporting and `--fix`. |
 | "`--fix` fixed everything tidy reported" | `--fix` only regenerates control surfaces. Document, orphan, vault and attestation findings stay until someone acts on them. |
 | "The mirrors look fine — sync isn't needed" | A `[surface]` issue is the sync-parity check saying they are not. "Looks fine" is not a verification. |
@@ -129,7 +129,7 @@ These thoughts mean STOP — you are about to leave drift in place:
 
 ## Red Flags
 
-- Reading tidy's exit code instead of its output
+- Treating exit 3 as a failed run instead of reading which section breached
 - Hand-editing a file under `.claude/hooks/` or `.claude/settings.json` instead of its generator
 - Acting on a `[header]` line from tidy without the file-named `gz validate` finding behind it
 - An instructions file over its budget (`gz validate --instructions-files-budget`) with no relocation plan
