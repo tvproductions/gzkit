@@ -183,6 +183,10 @@ def _cli_alignment_sources(project_root: Path) -> list[Path]:
     return sources
 
 
+# An R&D run's dated sources: ``docs/rnd/<run>/sources/...``.
+_RND_SOURCE_RE = re.compile(r"(?:^|/)docs/rnd/[^/]+/sources/")
+
+
 def _is_exempt_source(path: Path, text: str) -> bool:
     """Return ``True`` for artifacts whose unresolvable verbs are not defects.
 
@@ -192,7 +196,9 @@ def _is_exempt_source(path: Path, text: str) -> bool:
       surface is what a pool ADR is FOR, so its verbs are unregistered by
       definition rather than by mistake. 530 sites across 79 files.
     * **Sealed records** — terminal briefs, ADR-package ``audit/`` artifacts,
-      evaluation scorecards, and closeout forms. These are evidence of what was
+      evaluation scorecards, closeout forms, and an R&D run's dated sources
+      (``docs/rnd/<run>/sources/``; operator ruling 2026-11-25, verbatim
+      *"Exempt docs/rnd sources (Recommended)"*). These are evidence of what was
       true at a moment. Marking them speculative would mean *editing* them, and
       a later hand reaching into a sealed record is the defect the terminal-brief
       exemption already exists to prevent (GHI #532 precedent).
@@ -205,12 +211,14 @@ def _is_exempt_source(path: Path, text: str) -> bool:
     explicit, greppable, and removed by whoever lands the verb.
 
     Returns:
-        True for pool ADRs, audit and sealed ADR-package artifacts, and terminal-status briefs;
-        False otherwise.
+        True for pool ADRs, audit and sealed ADR-package artifacts, terminal-status briefs and
+        R&D source records; False otherwise.
 
     """
     posix = path.as_posix()
     if "design/adr/pool/" in posix:
+        return True
+    if _RND_SOURCE_RE.search(posix):
         return True
     if _ADR_PACKAGE_MARKER not in posix:
         return False

@@ -203,6 +203,25 @@ class TestStructuralExemptions(_Tree):
         )
         self.assertEqual(audit_cli_alignment(self.root), [])
 
+    def test_rnd_source_records_are_exempt(self) -> None:
+        """An R&D run's dated sources are sealed records (operator, 2026-11-25).
+
+        Verbatim: "Exempt docs/rnd sources (Recommended)". The prompt audit quotes
+        a verb that "does not exist" as its finding; the skip marker would split
+        the table it sits in, and the record stays as written.
+        """
+        self.write(
+            "docs/rnd/conceptual-model/sources/prompt-audit.md",
+            "| S64 | `gz obpi park` verb **that does not exist** | rewrite |\n",
+        )
+        self.assertEqual(audit_cli_alignment(self.root), [])
+
+    def test_an_rnd_run_record_outside_sources_is_still_scanned(self) -> None:
+        """Only the dated sources are sealed; a run's live record is not."""
+        self.write("docs/rnd/conceptual-model.md", "Run `gz nosuchverb` next.\n")
+        self.write("docs/rnd/sourcesish/notes.md", "Run `gz othernosuchverb` next.\n")
+        self.assertEqual(len(audit_cli_alignment(self.root)), 2)
+
     def test_evaluation_scorecards_are_exempt(self) -> None:
         self.write(
             "docs/design/adr/foundation/ADR-0.0.4-x/EVALUATION_SCORECARD.md",
