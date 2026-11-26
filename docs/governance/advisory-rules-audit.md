@@ -79,7 +79,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `mode-contract.md` | `0.1.2` |
 | `pythonic.md` | `0.7.1` |
 | `tool-skill-runbook-alignment.md` | `0.5.4` |
-| `tests.md` | `0.29.1` |
+| `tests.md` | `0.29.2` |
 | `task-discovery.md` | `0.11.0` |
 | `token-block-discipline.md` | `0.10.4` |
 
@@ -213,6 +213,8 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | 97 | A skill step never instructs what the root contract forbids (OBPI initiation, `gh issue create` / bare `gh issue close`, a real-name attestor, lane-dependent Gate 5, a retired command or dead path) | **Judgment** | **Scored 2026-09-19.** Mechanical neighbours cover two narrow arms: `gz validate --cli-alignment` resolves every `gz <verb>` a skill names, and `gz validate --skill-alignment` holds every verb to a wielding skill. Neither reads whether a step crosses an authority line; that was found only by reading each skill end to end. `source=.gzkit/rules/skill-authoring.md` |
 
 ### Tests Policy (`.gzkit/rules/tests.md`)
+
+**Re-scored 2026-11-26 at rule `0.29.2`** (GHI #1374): § TASK-Driven Workflow's direct-fix steps route per `AGENTS.md` § Defect-fix routing instead of opening with the fix() precedent check the operator dropped on 2026-09-17. The steps carry no row of their own; row 68 (the `Task:` trailer) is unchanged, and no row's class moves.
 
 **Re-scored 2026-11-12 at rule `0.28.0`**, on the operator's *"tests.md"* (R&D run `docs/rnd/hexagonal-specification.md`, disposition row 4): § Hexagon tests added and scored as rows 91 to 91d; `behave` narrowed to outward-facing contracts and scored as row 37c. No existing score moves.
 

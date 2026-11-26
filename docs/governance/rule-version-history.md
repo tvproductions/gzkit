@@ -1033,6 +1033,10 @@ Lifted 2026-08-29 at version `0.11.0` (rule now at `0.12.0`).
 
 ## `tests.md`
 
+### Changed 2026-11-26 at version `0.29.2` (GHI #1374)
+
+Prior `0.29.1` banner, verbatim: *"the mutation engine and the cognitive scorer are now the `gz-mutation-witness` and `gz-mindload` libraries (operator, 2026-11-21: "they need to migrate as libraries")"*. Superseded when § TASK-Driven Workflow's direct-fix steps dropped their opening precedent check (`git log --since='60 days ago' --oneline --grep='^fix('`): the operator dropped that criterion from defect-fix routing on 2026-09-17, because a GHI always authorizes direct repair (`defect-fix-routing.md`), and the steps now route per `AGENTS.md` § Defect-fix routing. Binding rules otherwise unchanged.
+
 ### Changed 2026-11-21 at version `0.29.1` (the tool extraction)
 
 Prior `0.29.0` banner, verbatim: *"three § Hexagon tests clauses are gated by `gz validate --hexagon-tests` (RP-7, rulings of 2026-11-13)"*. Superseded when the mutation engine and the cognitive scorer are now the `gz-mutation-witness` and `gz-mindload` libraries (operator, 2026-11-21: "they need to migrate as libraries").
