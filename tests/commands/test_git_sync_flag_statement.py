@@ -108,7 +108,10 @@ class TestGitSyncHelpStatesWhatEachFlagRunsOutputContract(unittest.TestCase):
         auto_add = actions["--auto-add"].help or ""
         self.assertIn("git add -A", auto_add)
         self.assertIn("src/", auto_add)
-        self.assertIn("already staged", actions["--no-auto-add"].help or "")
+        # --no-auto-add skips the sweep guard too, so whatever is staged is committed.
+        no_auto_add = actions["--no-auto-add"].help or ""
+        self.assertIn("already staged", no_auto_add)
+        self.assertIn("no src/ or tests/ refusal", no_auto_add)
         # _pull_if_needed takes no allow_push, so --no-push still rebases.
         self.assertIn("rebase", actions["--no-push"].help or "")
 
@@ -116,6 +119,8 @@ class TestGitSyncHelpStatesWhatEachFlagRunsOutputContract(unittest.TestCase):
         parser = _build_parser()
         commands = next(a for a in parser._actions if isinstance(a, argparse._SubParsersAction))
         description = commands.choices["git-sync"].description or ""
+        # _plan_git_sync fetches before _execute_git_sync stages or commits.
+        self.assertTrue(description.startswith("Fetch, stage, commit, rebase and push"))
         self.assertIn("pre-commit", description)
         self.assertIn("pre-push", description)
         self.assertIn("full unit suite", description)
