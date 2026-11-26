@@ -1189,7 +1189,7 @@
     {
       "slug": "test-consolidation-subtest-sweep",
       "title": "Test Consolidation — subTest Sweep & Slow-Tier Quarantine (GHI #644)",
-      "version": "1.1.1",
+      "version": "1.1.2",
       "path": ".gzkit/chores/test-consolidation-subtest-sweep",
       "lane": "lite",
       "timeoutSeconds": 900,

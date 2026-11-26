@@ -8,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-11-26
 gz_command: chores show instructions-files-diet
 metadata:
-  skill-version: "1.1.6"
+  skill-version: "1.1.7"
 model: sonnet
 ---
 
@@ -59,6 +59,7 @@ Procedure prescribes):
 uv run gz chores plan instructions-files-diet
 uv run gz chores advise instructions-files-diet
 # ... apply edits per CHORE.md § Workflow ...
+# ... validate for the chore's lane (gz-chore-runner § Procedure step 6) ...
 uv run gz chores run instructions-files-diet
 uv run gz chores audit --slug instructions-files-diet
 ```

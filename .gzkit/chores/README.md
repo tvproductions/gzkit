@@ -62,11 +62,12 @@ Before executing or modifying any chore, read:
 
 ## Chore Execution Protocol
 
-### Step 1: Discover and read the CHORE.md
+### Step 1: Discover, read the CHORE.md and the plan
 
 ```bash
 uv run gz chores list --explain
 uv run gz chores show <chore_slug>
+uv run gz chores plan <chore_slug>
 ```
 
 The `--explain` flag tells you whether each slug resolves from `project`,

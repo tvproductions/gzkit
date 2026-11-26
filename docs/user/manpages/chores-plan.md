@@ -17,7 +17,7 @@ gz chores plan <slug>
 - Loads and validates `registry.json` via the project-first → package-fallback
   resolver (ADR-0.0.21): `<project_root>/.gzkit/chores/registry.json` first,
   then `importlib.resources.files("gzkit.chores")` as the package fallback.
-- Resolves `<slug>` and prints lane, steps, evidence commands, acceptance checks, and log path.
+- Resolves `<slug>` and prints its title, lane, version, path, log path and acceptance criteria.
 - Does not execute any command.
 
 ---

@@ -83,10 +83,10 @@ conclusions.
 
 ## Workflow
 
-### 1. Refresh the plan and advise — observe
+### 1. Read the plan and advise — observe
 
 ```bash
-uv run gz chores plan test-consolidation-subtest-sweep --replace
+uv run gz chores plan test-consolidation-subtest-sweep
 uv run gz chores advise test-consolidation-subtest-sweep
 ```
 
