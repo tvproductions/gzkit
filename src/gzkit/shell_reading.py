@@ -13,10 +13,10 @@ was established by probing the real ``shlex`` rather than by reasoning about it,
 and it is load-bearing in three ways:
 
 * ``posix=True`` is REQUIRED. In non-posix mode a quote that opens mid-token
-  raises ``No closing quotation`` — which would fail closed on
-  ``git log --since='60 days ago' --grep='^fix('``, the precedent-check command
-  AGENTS.md § Defect-fix routing *mandates*, leaving an agent stuck between two
-  binding rules.
+  raises ``No closing quotation`` — which would fail closed on an ordinary
+  quoted argument such as ``git log --since='60 days ago' --grep='^fix('``, the
+  command defect-fix routing required until its fix() criterion was dropped on
+  2026-09-17.
 * ``punctuation_chars=True`` emits real control operators as standalone tokens,
   so a metacharacter *inside a quoted argument* is never mistaken for one. A
   regex over the raw string cannot tell ``a | b`` from ``grep "a\\|b"``, and the

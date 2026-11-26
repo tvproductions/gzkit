@@ -3,9 +3,10 @@
 ARB wraps QA commands (ruff, ty, unittest, coverage, etc.) and emits
 schema-validated JSON receipts to `artifacts/receipts/`. These receipts are
 the canonical evidence cited in Heavy-lane attestation claims —
-see `AGENTS.md` § Attestation (binding: em-dash pattern, canonical
-invocations, lane behavior) and `docs/governance/arb-middleware.md` (the
-middleware deep-dive: command surface, receipt schema, exit codes, rationale).
+see `AGENTS.md` § Attestation (binding: the operator's words, then evidence;
+lane behavior), the `gz-arb` skill for the canonical invocations, and
+`docs/governance/arb-middleware.md` (the middleware deep-dive: command
+surface, receipt schema, exit codes, rationale).
 
 Absorbed from airlineops/src/opsdev/arb/ under OBPI-0.25.0-33.
 """

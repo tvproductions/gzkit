@@ -164,7 +164,7 @@ Plan approved (`gz-plan-audit` confirmed alignment). You run
 distributes the work to subagents (implementer, narrator, reviewers).
 Each stage emits ledger events. Each quality command runs through
 `gz arb` (ADR-0.0.24 binds attestation to receipts), which wraps the
-canonical invocations from `AGENTS.md § Attestation` and writes
+canonical invocations the `gz-arb` skill lists and writes
 receipt IDs into `.gzkit/receipts/`. "Tests pass" is no longer a
 narrative claim; it is `arb-step-unittest-<hash>`.
 

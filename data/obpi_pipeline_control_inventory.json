@@ -7608,8 +7608,11 @@
       "stage4"
      ],
      "cause": null,
-     "delivered_span": "**When attestation arrives, immediately invoke `gz obpi complete` (Stage 5 Step 2) with the operator's phrase in `--attestation-text`.** The operator's short phrase is the attestation; the pipeline must not pause to ask for longer text and must not print runbook-style instructions for the operator to execute. Enrich the attestation text per `AGENTS.md` § Attestation (em-dash + concrete session evidence + receipt IDs) before passing it through.",
-     "reworded": null
+     "delivered_span": "**When attestation arrives, immediately invoke `gz obpi complete` (Stage 5 Step 2) with the operator's phrase in `--attestation-text`.** The operator's short phrase is the attestation; the pipeline must not pause to ask for longer text and must not print runbook-style instructions for the operator to execute. Enrich the attestation text per `AGENTS.md` § Attestation (the operator's words verbatim, then concrete evidence: receipt IDs from the canonical invocations `gz-arb` lists, test counts, file paths) before passing it through.",
+     "reworded": {
+      "text": "**When attestation arrives, immediately invoke `gz obpi complete` (Stage 5 Step 2) with the operator's phrase in `--attestation-text`.** The operator's short phrase is the attestation; the pipeline must not pause to ask for longer text and must not print runbook-style instructions for the operator to execute. Enrich the attestation text per `AGENTS.md` § Attestation (the operator's words verbatim, then concrete evidence: receipt IDs from the canonical invocations `gz-arb` lists, test counts, file paths) before passing it through.",
+      "reason": "A ruled correction (GHI #1374; operator 2026-11-26, \"A\"): the 2026-09-17 AGENTS.md rewrite moved the canonical invocations to gz-arb and carried the em-dash pattern nowhere; § Attestation now reads \"pass user words verbatim, then append concrete evidence — receipt IDs, test counts, file paths\". Same correction as S5-016."
+     }
     }
    ],
    "non_control": []

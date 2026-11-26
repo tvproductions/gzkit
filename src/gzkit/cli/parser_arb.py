@@ -3,9 +3,10 @@
 Registers the `gz arb` subcommand group with 10 verbs: ruff, step, red, ty,
 typecheck, coverage, validate, advise, patterns, archive.
 
-See `AGENTS.md` § Attestation for the binding rule contract
-(em-dash pattern, canonical invocations, lane behavior) and
-`docs/governance/arb-middleware.md` for the middleware deep-dive.
+See `AGENTS.md` § Attestation for the binding rule contract (the
+operator's words, then evidence; lane behavior), the `gz-arb` skill for the
+canonical invocations, and `docs/governance/arb-middleware.md` for the
+middleware deep-dive.
 """
 
 import argparse

@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-26
 metadata:
-  skill-version: "6.69.9"
+  skill-version: "6.69.10"
 model: sonnet
 ---
 

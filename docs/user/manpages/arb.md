@@ -127,9 +127,9 @@ Each receipt is a JSON file named by `run_id`. Schemas live under `data/schemas/
 
 - `gz check` — full quality pass (lint, typecheck, test, drift)
 - `gz drift` — spec-test-code drift scanner
-- `AGENTS.md` § Attestation — binding rule contract (em-dash pattern, canonical invocations, lane behavior, receipt-ID discipline)
+- `AGENTS.md` § Attestation — binding rule contract (the operator's words, then evidence; lane behavior; receipt-ID discipline); it points to the `gz-arb` skill for the canonical invocations
 - `docs/governance/arb-middleware.md` — ARB middleware deep-dive (core concept, command surface, receipt schema, exit codes, rationale)
 
 ## HISTORY
 
-Absorbed from `airlineops/src/opsdev/arb/` under OBPI-0.25.0-33 (2026-04-14), which closed a governance vacuum where the former `.gzkit/rules/arb.md` documented a fully-working `gz arb` surface that did not exist in gzkit. See the ADR-0.25.0 closeout record for the forensic trace. The `.gzkit/rules/arb.md` file was merged into `.gzkit/rules/attestation-enrichment.md` on 2026-04-21 under Phase 1 of the control-surface consolidation. On 2026-04-23, `attestation-enrichment.md` itself was folded under ADR-0.0.20 OBPI-03: binding content (em-dash pattern, canonical invocations, lane behavior) moved to `AGENTS.md` § Attestation, and middleware deep-dive moved to `docs/governance/arb-middleware.md`.
+Absorbed from `airlineops/src/opsdev/arb/` under OBPI-0.25.0-33 (2026-04-14), which closed a governance vacuum where the former `.gzkit/rules/arb.md` documented a fully-working `gz arb` surface that did not exist in gzkit. See the ADR-0.25.0 closeout record for the forensic trace. The `.gzkit/rules/arb.md` file was merged into `.gzkit/rules/attestation-enrichment.md` on 2026-04-21 under Phase 1 of the control-surface consolidation. On 2026-04-23, `attestation-enrichment.md` itself was folded under ADR-0.0.20 OBPI-03: binding content (em-dash pattern, canonical invocations, lane behavior) moved to `AGENTS.md` § Attestation, and middleware deep-dive moved to `docs/governance/arb-middleware.md`. On 2026-09-17 the rewrite of `AGENTS.md` (GHI #921) moved the canonical invocations on to the `gz-arb` skill and did not carry the em-dash pattern (GHI #1374).

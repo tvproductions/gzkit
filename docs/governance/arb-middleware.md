@@ -40,7 +40,7 @@ This lets agents and humans:
 
 ## Available commands
 
-The canonical invocations (binding) live in `AGENTS.md` § Attestation. The
+The canonical invocations (binding) are listed in the `gz-arb` skill. The
 commands below are the practical surface for producing and consuming receipts.
 
 ### Wrap a QA tool
@@ -170,7 +170,7 @@ mechanical backstop under the narrative discipline.
 
 ### Cross-references
 
-- `AGENTS.md` § Attestation — binding rules, canonical-invocations table, lane behavior bullets that cite this gate
+- `AGENTS.md` § Attestation — binding rules and the lane behavior bullets that cite this gate; the canonical-invocations table is the `gz-arb` skill's
 - `AGENTS.md` § Gate Covenant — Gate 5 is universal; this gate binds the receipts an attestation cites, not whether attestation is required
 - `docs/user/manpages/validate.md` § `--attestation-receipts` — operator-facing CLI surface and EXAMPLES
 - ADR-0.0.24-attestation-receipt-binding — Decision text, non-goals (no `--skip-receipt-binding`, no git pre-receive enforcement, no fail-closed on lite-non-foundation), and consequences
