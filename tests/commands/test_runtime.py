@@ -30,7 +30,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         # tests/commands/test_obpi_complete.py and test_adr_emit_receipt.py;
         # patch it to no-op here so end-to-end CliRunner flows that author
         # narrative attestations (without inline receipt IDs) continue to
-        # exercise the prior contract. Behavior Rule 1a (coupled-surface
+        # exercise the prior contract. DO IT RIGHT #1a (coupled-surface
         # coherence): the new gate's contract is covered by the new tests.
         receipt_gate_patcher = patch(
             "gzkit.commands.obpi_complete._enforce_attestation_receipt_gate",

@@ -28,7 +28,7 @@ This doctrine derives from existing canon, not adjacent to it:
 - **PRIME DIRECTIVE #5 (FLAG DEFECTS, NEVER EXCUSE THEM):** drift in the agent control surface is itself a defect class; the doctrine names that class and the validators surface its instances.
 - **DO IT RIGHT #1 (fix the class of failure, not the instance):** "blind reduction" of the per-turn surface during a diet pass, or silent rule loss during sync, is a class of failure; the doctrine closes the class with bullet-retention, weight-regression, and pointer-integrity validators.
 - **DO IT RIGHT #4 (verify observed behavior, not assumed behavior):** today, we assume the per-turn surface preserves its rules; this doctrine makes that observable, not assumed.
-- **MAKE LLM STOCHASTIC VIBES INERT operative claim 3 ("doctrine drift is invariant drift"):** silent loss of a binding rule from the per-turn surface is doctrine drift; mechanical detection is the structural defense.
+- **MAKE LLM STOCHASTIC VIBES INERT ("A silent change to a rule or threshold is doctrine drift"):** silent loss of a binding rule from the per-turn surface is doctrine drift; mechanical detection is the structural defense.
 - **OPERATOR ECONOMY pillar:** the rendered Agent Control Surface is the operator's primary review surface for governance authoring; fidelity is what makes that review trustworthy.
 
 The doctrine does not introduce a new philosophical claim. It names what the upstream pillars already imply and gives that implication mechanical teeth.

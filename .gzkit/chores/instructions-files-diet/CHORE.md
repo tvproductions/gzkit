@@ -562,7 +562,7 @@ exists to move.
 ## Anti-patterns
 
 - Removing a Mechanical or Promotable bullet to hit a line-count target
-  ("lighter ceremony is not a tradeoff axis")
+  ("Maintenance burden, speed and lighter ceremony are not reasons to choose")
 - Lifting binding bullets to `docs/governance/` and replacing them with a
   pointer — only narrative rationale lifts; bullets stay
 - Treating the line-count delta as the headline metric — bullet retention

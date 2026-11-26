@@ -1530,7 +1530,8 @@ class TestSectionNumbersAreNotIssueCitations(unittest.TestCase):
     The bare form is deliberately honored — handoff authors write "#696" far more
     often than "GHI #696", and the bare form is the one that decayed unchecked
     (GHI #696). But unbounded, it also claims this repo's own contract numbering:
-    `AGENTS.md` § Behavior Rules is numbered and routinely cited as `Always #13`.
+    `AGENTS.md` § Behavior Rules was numbered until 2026-09, and the handoff corpus
+    still cites it as `Always #13`.
 
     Measured across `.gzkit/handoffs/**` on 2026-08-18 — the exact corpus the
     annotator scans — the section-numbering forms occur 168 times: Always 73,

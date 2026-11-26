@@ -117,8 +117,8 @@ This doctrine derives from existing canon, not adjacent to it:
 
 - **PRIME DIRECTIVE #5 (FLAG DEFECTS, NEVER EXCUSE THEM):** drift in the rendered control surface is a defect; the substrate makes drift detectable at compile time rather than at audit time.
 - **DO IT RIGHT #1 (fix the class of failure, not the instance):** hand-editing derived outputs bypasses their canonical source; source-aware delivery closes that failure class.
-- **MAKE LLM STOCHASTIC VIBES INERT operative claim 2 ("lighter ceremony is not a tradeoff axis"):** the substrate is heavier than direct hand-authoring; that weight is the product, not overhead.
-- **OPERATOR ECONOMY OF EFFORT operative claim 1 ("agent drafts; operator reviews"):** the substrate is the form constraint the agent drafts against; the operator reviews the rendered output and the canonical model interchangeably; both are valid review surfaces, but the rendered output is human-readable prose (the canonical model is agent-input only per OPERATOR ECONOMY anti-patterns).
+- **MAKE LLM STOCHASTIC VIBES INERT ("Maintenance burden, speed and lighter ceremony are not reasons to choose"):** the substrate is heavier than direct hand-authoring; that weight is the product, not overhead.
+- **OPERATOR ECONOMY OF EFFORT (draft so "the operator reviews and rules instead of typing"):** the substrate is the form constraint the agent drafts against; the operator reviews the rendered output and the canonical model interchangeably; both are valid review surfaces, but the rendered output is human-readable prose (the canonical model is agent-input only per OPERATOR ECONOMY anti-patterns).
 - **STDLIB-FIRST DOCTRINE:** Pydantic is the explicit named departure from stdlib (validation semantics stdlib does not supply); Jinja2 is a named departure for template-engine semantics; both inherit the named-rationale-required rule.
 
 The doctrine does not introduce a new philosophical claim. It names what the upstream pillars already imply and gives that implication mechanical teeth.

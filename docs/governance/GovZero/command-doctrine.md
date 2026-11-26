@@ -198,7 +198,7 @@ Seed of the Article 10 coherence audit. Each row traces an article to the gzkit 
 | 5 — Model identity is an attestable fact | (none — no served-model field in attestation or receipt schemas under `src/gzkit/schemas/`) | Gap |
 | 6 — Autonomy span is set by attestation capacity | [OBPI Decomposition Matrix](obpi-decomposition-matrix.md) sizes by intrinsic complexity, not attestation capacity | Gap, with a named tension — the matrix must reconcile to this article |
 | 7 — Evidence is artifacts, not narration | ARB receipts (the canonical invocations the `gz-arb` skill lists); ledger Layer-2 truth ([state-doctrine](../state-doctrine.md), [trust-doctrine](../trust-doctrine.md)); `@covers` test discipline | Implemented — strongest alignment |
-| 8 — Efficiency is a constraint, not the objective | Anti-vibing mantra (`AGENTS.md` § MAKE LLM STOCHASTIC VIBES INERT, operative claim 1: "lighter ceremony" is never the tradeoff axis) | Implemented |
+| 8 — Efficiency is a constraint, not the objective | Anti-vibing mantra (`AGENTS.md` § MAKE LLM STOCHASTIC VIBES INERT: "Maintenance burden, speed and lighter ceremony are not reasons to choose") | Implemented |
 | 9 — Proficiency is maintained deliberately | (none — no proficiency log, no scheduled drift sessions) | Gap |
 | 10 — Procedures earn compliance through coherence | Advisory-rules scorecard ([advisory-rules-audit](../advisory-rules-audit.md); `gz validate --advisory-scorecard`); [model-regression taxonomy](../model-regression-taxonomy.md) F1–F10 | Partial — no trace-to-article column, no model-transition trigger |
 

@@ -2,7 +2,8 @@
 
 The miner reads Claude Code session transcripts (ground truth) and emits
 proposal records for operator-correction patterns that recur across
-sessions — the corrections Behavior Rule 11 self-reporting misses. Tests
+sessions — the corrections that self-reporting under the course-correction rule
+(`AGENTS.md` § Behavior Rules) misses. Tests
 pin the REQ semantics: clustering threshold, fail-soft parsing, PII
 scrubbing, content-hash idempotency, and the read-only/--dry-run fences.
 

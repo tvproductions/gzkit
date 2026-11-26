@@ -33,11 +33,11 @@ human or producing artifacts that need to be redone.
 The Operator Economy claims are downstream of the anti-vibing mantra and
 upstream of the Attestation discipline:
 
-- **Upstream (anti-vibing):** *"every option is framed by which choice
-  leaves the smallest surface for vibing to leak through"* — the design-
+- **Upstream (anti-vibing):** *"Between two options, choose the one that
+  leaves less to unverified guesswork"* — the design-
   dialogue mode is the interaction-layer instantiation of that frame
 - **Downstream (attestation):** the operator's verbatim phrasing
-  preservation rule (operative claim 3) is the same rule as the
+  preservation rule ("Pass operator-supplied wording through unchanged") is the same rule as the
   attestation-text pattern (`<user verbatim words> — <session-grounded
   enrichment>`). One originates the operator's words; the other preserves
   them through to the receipt.

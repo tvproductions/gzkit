@@ -25,8 +25,9 @@ A piece holding a date (YYYY-MM or YYYY-MM-DD) is a dated record and is admitted
 
 It reads the `.md`, `.py`, `.json`, `.toml`, `.yaml` and `.yml` files under
 `.gzkit/skills`, `.gzkit/rules`, `.gzkit/agents`, `.gzkit/personas`, `.gzkit/chores`,
-`src/gzkit` and `docs/user`, and the root contracts and `.gitattributes`, skipping any
-path through a `proofs` or `archive` directory or a `templates` directory: the adopter
+`src/gzkit` and `docs/user`, and `AGENTS.md`, `CLAUDE.md`, `README.md` and
+`.gitattributes`, skipping any path through a `proofs`, `archive` or `templates`
+directory: the adopter
 template carries its own numbered Behavior Rules. `src/gzkit/handoff_api.py` is skipped by
 name: its parser comments name `Always #13` as a text form the handoff corpus still holds.
 It does not read `docs/governance`,
