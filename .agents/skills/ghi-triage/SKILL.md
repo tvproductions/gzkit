@@ -5,9 +5,9 @@ description: Use to triage the open GHI queue before planning or choosing what t
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-06
+last_reviewed: 2026-11-26
 metadata:
-  skill-version: "5.4.3"
+  skill-version: "5.4.4"
 model: sonnet
 ---
 
@@ -109,7 +109,7 @@ pool ADR or a live OBPI brief. `design`: an open question with no remedy chosen.
 Pick the one that gates first. Re-derive every stated blocker against the tree,
 as `ghi-close` Phase 1 step 1a does, because a blocker describes the day it was
 written. The script's `route` is authority, not readiness: it reads `direct-fix`
-for almost every issue.
+for every issue that is not a duplicate, since a GHI authorizes direct repair.
 
 **Parallel read (optional, for a large queue).** Split the fetched set into
 disjoint chunks and dispatch read-only subagents with this rubric and a JSON

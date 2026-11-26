@@ -52,10 +52,9 @@ def render_markdown(
     *,
     blocker_resolver=None,
 ) -> str:
-    precedent_ok = precedent >= 3
     triaged: list[tuple[Issue, str, str]] = []
     for issue in issues:
-        r = route(issue, precedent_ok, duplicates)
+        r = route(issue, duplicates)
         u = urgency(issue, r)
         triaged.append((issue, r, u))
     triaged.sort(key=lambda x: (URGENCY_RANK[x[2]], x[0].number))
@@ -615,7 +614,7 @@ def detect_duplicates(issues: list[Issue]) -> dict[int, int]:
 # --- Routing logic -----------------------------------------------------------
 
 
-def route(issue: Issue, precedent_ok: bool, duplicates: dict[int, int]) -> str:
+def route(issue: Issue, duplicates: dict[int, int]) -> str:
     """Triage routing for an open GHI.
 
     GHIs are repair vessels for defects; the receipts left on the GHI itself
@@ -625,15 +624,16 @@ def route(issue: Issue, precedent_ok: bool, duplicates: dict[int, int]) -> str:
     Feature-shape signals on a GHI are surfaced through `rationale()` as
     escalation hints for operator judgment, not as a routing flip.
 
+    The fix() precedent count does not route: a GHI always authorizes direct
+    repair, which made the precedent criterion moot and dropped it from
+    defect-fix routing (operator ruling 2026-09-17; GHI #1374).
+
     Returns:
-        "close-dup" when the issue is a known duplicate, "ambiguous" when the fix() precedent is too
-        thin, otherwise "direct-fix".
+        "close-dup" when the issue is a known duplicate, otherwise "direct-fix".
 
     """
     if issue.number in duplicates:
         return "close-dup"
-    if not precedent_ok:
-        return "ambiguous"
     return "direct-fix"
 
 
@@ -685,7 +685,6 @@ def rationale(
 URGENCY_RANK = {"now": 0, "soon": 1, "later": 2}
 ROUTE_LABEL = {
     "direct-fix": "direct-fix",
-    "ambiguous": "ambiguous",
     "close-dup": "close",
 }
 
@@ -693,7 +692,6 @@ ROUTE_LABEL = {
 URGENCY_STYLE = {"now": "bold red", "soon": "yellow", "later": "dim"}
 ROUTE_STYLE = {
     "direct-fix": "green",
-    "ambiguous": "yellow",
     "close": "dim",
 }
 CLASS_STYLE = {
@@ -1040,11 +1038,10 @@ def render(
     from rich.text import Text  # noqa: PLC0415
 
     console = _make_console(width)
-    precedent_ok = precedent >= 3
 
     triaged: list[tuple[Issue, str, str]] = []
     for issue in issues:
-        r = route(issue, precedent_ok, duplicates)
+        r = route(issue, duplicates)
         u = urgency(issue, r)
         triaged.append((issue, r, u))
     triaged.sort(key=lambda x: (URGENCY_RANK[x[2]], x[0].number))
@@ -1119,10 +1116,9 @@ def render_json(
         records sorted by urgency and then issue number.
 
     """
-    precedent_ok = precedent >= 3
     records: list[dict[str, Any]] = []
     for issue in issues:
-        r = route(issue, precedent_ok, duplicates)
+        r = route(issue, duplicates)
         u = urgency(issue, r)
         records.append(
             {
@@ -1271,11 +1267,8 @@ def main() -> int:
         except (RankInputError, json.JSONDecodeError, FileNotFoundError, OSError) as exc:
             sys.stderr.write(f"ghi-triage: --rank-input invalid: {exc}\n")
             return 1
-        precedent_ok = precedent >= 3
         issue_index = {issue.number: issue for issue in issues}
-        routes = {
-            issue.number: ROUTE_LABEL[route(issue, precedent_ok, duplicates)] for issue in issues
-        }
+        routes = {issue.number: ROUTE_LABEL[route(issue, duplicates)] for issue in issues}
         sys.stdout.write(render_rank(items, issue_index, routes, precedent, len(issues)))
         return 0
     resolver = gh_reference_resolver({issue.number for issue in issues})

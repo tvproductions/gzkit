@@ -16,10 +16,11 @@ operator wants to plan the next patch window or sweep the open queue.
 
 Reach for `/ghi-triage` when reviewing the open-issue queue, before a
 planning session, or when deciding which GHIs to pull into the next patch
-window. The output orders issues by urgency and routing, surfacing
-direct-fix candidates that meet the precedent thresholds in `AGENTS.md`
-§ Defect-fix routing alongside the OBPI-ceremony candidates that need
-brief authoring.
+window. The output orders issues by urgency and routing: every issue that is
+not a duplicate routes `direct-fix`, because a GHI authorizes direct repair
+(`AGENTS.md` § Defect-fix routing), and a duplicate routes `close`. Triage
+never routes to an OBPI; it surfaces architectural work as a hint for the
+operator.
 
 ## What to Expect
 
