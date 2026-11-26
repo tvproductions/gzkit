@@ -80,7 +80,7 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 |-------|-------------|
 | [`/gz-arb`](gz-arb.md) | Wrap QA steps in ARB receipts for attestation evidence |
 | [`/gz-check`](gz-check.md) | Run full quality checks in one pass |
-| [`/gz-chore-runner`](gz-chore-runner.md) | Run a gzkit chore end-to-end (show, plan, advise, execute, validate) |
+| [`/gz-chore-runner`](gz-chore-runner.md) | Run a gzkit chore end-to-end (show, plan, advise, fix, validate, run, audit) |
 | [`/gz-cli-audit`](gz-cli-audit.md) | Audit CLI documentation coverage and headings |
 | [`/gz-complexity-advisor`](gz-complexity-advisor.md) | Preview complexity advisor diagnosis, understand auto-chain context, or check intrinsic complexity attestation guidance |
 | [`/gz-complexity-guide`](gz-complexity-guide.md) | Preview authoring-time complexity hints before committing |

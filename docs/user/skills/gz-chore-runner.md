@@ -36,24 +36,25 @@ depth required.
 
 The skill runs through 6 steps:
 
-1. **Discover** — `gz chores list` shows all registered chores and their status.
+1. **Discover** — `gz chores status` shows which chores are due or overdue, and
+   `gz chores list` lists every registered chore.
 2. **Inspect** — `gz chores show <slug>` displays the chore details, lane, and
    acceptance criteria.
-3. **Plan** — `gz chores plan <slug>` generates or refreshes the chore execution
-   plan.
+3. **Plan** — `gz chores plan <slug>` displays the chore's execution plan.
 4. **Advise** — `gz chores advise <slug>` dry-runs the acceptance criteria to
    assess current state and identify what needs fixing.
 5. **Execute** — implements the fixes surgically (minimal diffs, preserve
    behavior), validates locally with lint/typecheck/tests, then runs
-   `gz chores run <slug>` to log the result.
-6. **Audit** — `gz chores audit --slug <slug>` verifies the logged result.
+   `gz chores run <slug>`, which writes the result to the chore's log.
+6. **Audit** — `gz chores audit --slug <slug>` reports whether that log is
+   present. It exits 0 either way, so read its table.
 
 Evidence is saved to `.gzkit/chores/{slug}/proofs/` (project-local; never canonical). Typical runtime varies by
 chore complexity — simple lint chores take minutes, larger refactoring chores
 may take longer.
 
-**Success** looks like: all acceptance criteria pass, chore run logged, audit
-clean.
+**Success** looks like: all acceptance criteria pass, the chore run is logged,
+and the audit shows the log present.
 
 **Failure** looks like: acceptance criteria fail after fixes (re-read
 `CHORE.md` for the remediation procedure), or lane mismatch (chore expects

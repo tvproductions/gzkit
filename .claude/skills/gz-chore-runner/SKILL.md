@@ -1,13 +1,13 @@
 ---
 name: gz-chore-runner
 persona: main-session
-description: Use to run a chore from the registry end to end (show, plan, advise, execute, validate).
+description: Use to run a chore from the registry end to end (show, plan, advise, fix, validate, run, audit).
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-26
 metadata:
-  skill-version: "1.6.1"
+  skill-version: "1.6.2"
 model: sonnet
 ---
 
@@ -120,18 +120,18 @@ These thoughts mean STOP — you are about to ship a chore that broke its own di
 
 | Thought | Reality |
 |---------|---------|
-| "advise looks fine, I'll skip plan and run directly" | The 5-step sequence (show → plan → advise → execute → audit) exists because chores accumulate scope creep when steps merge. Each step is a fail-closed gate. |
+| "advise looks fine, I'll skip plan and run directly" | The Procedure's order exists because chores accumulate scope creep when steps merge. `show` and `plan` are where the lane and the criteria are read; `advise` and `run` fail closed on a failing criterion. |
 | "I'll add a new dependency — it'll make the fix cleaner" | Acceptance rule: chores do not introduce dependencies. A "cleaner" fix that bloats the dependency surface is a worse fix. |
 | "The chore is lite lane but I need to touch heavy-lane gates" | Lane is set in the chore config, not in the moment. If the work is heavier, fix the chore definition first; do not silently escalate. |
 | "I'll run the chore without reading CHORE.md" | The remediation procedure lives in CHORE.md. Running blind produces ad-hoc fixes that don't match the chore's contract. |
-| "advise passed, no need to run audit" | `gz chores audit` is what records the proof. Skipping it leaves the chore unverified in the registry. |
+| "advise passed, no need to run it" | `advise` is a dry run and writes nothing; `gz chores run` is what writes the proof to `CHORE-LOG.md`. `gz chores audit` then reports whether that log is present; it exits 0 either way, so read its table. |
 | "The diff is bigger than the chore says — that's fine, I'm fixing adjacent rot" | Adjacent rot is its own chore. Large diffs in a small chore mean two chores are colliding; split them. |
 | "Validation failed but the change is minor — ship it" | Lane validation is the chore's stop-light. Failed lint/typecheck/tests means the chore violated its acceptance rule. Fix or revert. |
 | "A `# noqa` gets this criterion green" | Suppression turns the exit code green and repairs nothing (`.gzkit/rules/chores.md` § Suppression is not a repair). Fix the cause, or report the finding open with its recommended repair. |
 
 ## Red Flags
 
-- Skipping any of the 5 steps (show, plan, advise, execute, audit)
+- Skipping a Procedure step that applies to the chore
 - Modifying files outside the chore's declared scope
 - Adding dependencies, scripts, or config keys not part of the chore contract
 - Running `gz chores run` before validation passes

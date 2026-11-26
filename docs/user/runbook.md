@@ -1804,7 +1804,7 @@ for the "Edit `.gzkit/` first" editing invariant.
 
 ## Chores Commands
 
-Use [`/gz-chore-runner`](skills/gz-chore-runner.md) to run a chore end-to-end (show, plan, advise, execute, validate) through a guided workflow.
+Use [`/gz-chore-runner`](skills/gz-chore-runner.md) to run a chore end-to-end (show, plan, advise, fix, validate, run, audit) through a guided workflow.
 
 Chores resolve project-first → package-fallback (ADR-0.0.21): each slug is
 sought under `<project_root>/.gzkit/chores/<slug>/` first, then falls back to
