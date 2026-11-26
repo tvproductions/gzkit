@@ -8,17 +8,29 @@ stated the old behavior as the corrective "reality": "Tidy exits 0 whatever it
 reports" and the red flag "Reading tidy's exit code instead of its output". This
 fence refuses either shape on any live surface.
 
-A sentence (within a paragraph, list item or table cell) is refused when it names
-tidy and either says it exits 0 or succeeds whatever it finds or on a finding, or tells
-the reader to distrust the exit code. Whitespace inside a block is collapsed before it
-is split, so a wrapped phrase is still seen (the gap #1367 found in the size fence).
-Known limits: a reworded claim that uses neither shape passes, and so does a claim
-whose "tidy" sits in an earlier sentence. True sentences are admitted by shape: a
-conditional after the zero is refused only when it names a finding or a breach ("exits 0
-even when ADRs pending attestation print" passes), "succeeds" counts only with tidy as
-its subject, and a clause (split at a comma or "and") stating the contract with "only
-when" or "only if" is dropped before the rest of its sentence is judged. Dated records
-stay as written: `docs/rnd/`, `docs/releases/`, chore proofs and archives are not read.
+This is a phrasing fence over prose, narrowed by operator ruling (2026-11-26, "a") to
+the shapes it judges reliably; its form is open under #1370. It reads each sentence (a
+paragraph, list item or table cell, split at sentence ends, with whitespace collapsed so
+a wrapped phrase is still seen) that names tidy, and refuses one that:
+
+- says it exits or returns 0 (any tense) together with "whatever", "regardless", "no
+  matter" or "always", in either order;
+- says it exits or returns 0, then "with", "when", "on", "despite" or "if" a finding
+  or breach;
+- names a finding or breach, then "but", "yet" or "still" before the zero; or
+- says its exit code or status is read "instead of" something, "means nothing", "is
+  meaningless" or "tells you nothing", or is to be ignored or not trusted.
+
+Before judging, it drops each clause (split at a comma or "and") that holds "only
+when" or "only if", so the contract stated that way is admitted.
+
+What it does not judge: "succeeds", "passes" or any wording without a literal 0; a
+claim whose "tidy" sits in an earlier sentence; a stale claim inside a clause that
+also holds "only when" or "only if". It refuses some true sentences that pair a zero
+with "regardless" or "whatever" about something other than findings ("exits 0
+regardless of how many ADRs are pending attestation"); reword such a sentence rather
+than widen the fence. Dated records stay as written: `docs/rnd/`, `docs/releases/`,
+chore proofs and archives are not read.
 """
 
 import re
@@ -49,10 +61,7 @@ DATED_RECORDS = (REPO / "docs" / "rnd", REPO / "docs" / "releases")
 SKIPPED_PARTS = {"proofs", "archive"}
 
 _TIDY = re.compile(r"\btidy\b", re.IGNORECASE)
-_ZERO = (
-    r"\b(?:(?:exits?|exited|returns?|returned)\s+(?:status\s+|code\s+)?0"
-    r"|tidy\s+(?:\w+\s+)?(?:succeeds?|succeeded|exits? successfully))\b"
-)
+_ZERO = r"\b(?:exits?|exited|returns?|returned)\s+(?:status\s+|code\s+)?0\b"
 _ANYWAY = r"\b(?:whatever|regardless|no matter|always)\b(?!-)"
 _ON_FINDINGS = (
     r"\b(?:even\s+)?(?:with|when|on|despite|if)\s+(?:it has\s+|there are\s+)?"
@@ -138,10 +147,8 @@ class TestTidyExitStatusIsTheVerdict(unittest.TestCase):
             "Ignore the exit code of gz tidy and read the sections.",
             "gz tidy exits 0 even with findings.",
             "gz tidy exits 0 when it has findings.",
-            "gz tidy always succeeds, even with findings.",
             "The exit status of gz tidy means nothing.",
             "Tidy reports findings but exits 0.",
-            "gz tidy exits successfully whatever it reports.",
             "Tidy exits 0, whatever it reports.",
             "gz tidy exits 0, regardless of findings.",
             "gz tidy exits 0 when the report ran, whatever it found.",
