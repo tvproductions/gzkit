@@ -9,10 +9,13 @@ reports" and the red flag "Reading tidy's exit code instead of its output". This
 fence refuses either shape on any live surface.
 
 A sentence (within a paragraph, list item or table cell) is refused when it names
-tidy and either says its exit status holds whatever it finds, or tells the reader to distrust the
-exit code. Whitespace inside a block is collapsed before it is split, so a wrapped phrase is still
-seen (the gap #1367 found in the size fence). A reworded claim that uses neither
-shape passes, which is this fence's known limit. Dated records stay as written:
+tidy and either says it exits 0 or succeeds whatever it finds or on a finding, or tells
+the reader to distrust the exit code. Whitespace inside a block is collapsed before it
+is split, so a wrapped phrase is still seen (the gap #1367 found in the size fence).
+Known limits: a reworded claim that uses neither shape passes, and so does a claim
+whose "tidy" sits in an earlier sentence. "Exits 0 even when ADRs pending attestation
+print" is true and passes: only a finding or a breach after the zero is refused. Dated
+records stay as written:
 `docs/rnd/`, `docs/releases/`, chore proofs and archives are not read.
 """
 
@@ -44,11 +47,20 @@ DATED_RECORDS = (REPO / "docs" / "rnd", REPO / "docs" / "releases")
 SKIPPED_PARTS = {"proofs", "archive"}
 
 _TIDY = re.compile(r"\btidy\b", re.IGNORECASE)
-_ZERO = r"\b(?:exits?|exited|returns?|returned)\s+(?:status\s+|code\s+)?0\b"
-_ANYWAY = r"\b(?:whatever|regardless|no matter|always|even (?:with|when|on|if))\b(?!-)"
-_STATUS_IGNORES_FINDINGS = re.compile(rf"{_ZERO}.*?{_ANYWAY}|{_ANYWAY}.*?{_ZERO}", re.IGNORECASE)
+_ZERO = (
+    r"\b(?:(?:exits?|exited|returns?|returned)\s+(?:status\s+|code\s+)?0"
+    r"|succeeds?|succeeded|exits? successfully)\b"
+)
+_ANYWAY = r"\b(?:whatever|regardless|no matter|always)\b(?!-)"
+_ON_FINDINGS = (
+    r"\b(?:even\s+)?(?:with|when|on|despite|if)\s+(?:it has\s+|there are\s+)?"
+    r"(?:a\s+|any\s+|its\s+)?(?:findings?|breach(?:es)?)\b"
+)
+_STATUS_IGNORES_FINDINGS = re.compile(
+    rf"{_ZERO}.*?(?:{_ANYWAY}|{_ON_FINDINGS})|{_ANYWAY}.*?{_ZERO}", re.IGNORECASE
+)
 _DISTRUST_EXIT_CODE = re.compile(
-    r"\bexit (?:code|status)\b.*?\binstead of\b"
+    r"\bexit (?:code|status)\b.*?\b(?:instead of|means nothing|is meaningless|tells you nothing)\b"
     r"|\b(?:ignore|disregard|never trust|do not trust|don't trust)\b.*?\bexit (?:code|status)\b",
     re.IGNORECASE,
 )
@@ -111,6 +123,9 @@ class TestTidyExitStatusIsTheVerdict(unittest.TestCase):
             "Tidy returns 0 regardless of what it finds.",
             "Ignore the exit code of gz tidy and read the sections.",
             "gz tidy exits 0 even with findings.",
+            "gz tidy exits 0 when it has findings.",
+            "gz tidy always succeeds, even with findings.",
+            "The exit status of gz tidy means nothing.",
         )
         contract = (
             (
@@ -127,6 +142,8 @@ class TestTidyExitStatusIsTheVerdict(unittest.TestCase):
             "- Treating exit 3 as a failed run instead of reading which section breached",
             '``tidy.tidy`` once exited 0 with 456 findings and printed "Project is tidy"',
             "`gz check` always exits 0 whatever it reports.",
+            "Tidy exits 0 even when ADRs pending attestation print.",
+            "gz tidy exits 0 only when no breach section has a finding.",
         )
         for text in stale:
             with self.subTest(stale=text):
