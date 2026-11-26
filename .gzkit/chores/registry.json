@@ -393,7 +393,7 @@
     {
       "slug": "dependency-currency",
       "title": "Dependency Currency (Daily Check and Upgrade)",
-      "version": "2.1.0",
+      "version": "2.1.1",
       "path": ".gzkit/chores/dependency-currency",
       "lane": "lite",
       "timeoutSeconds": 180,

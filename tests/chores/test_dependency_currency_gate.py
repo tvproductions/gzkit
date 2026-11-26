@@ -82,6 +82,27 @@ WORKFLOW = """jobs:
 """
 
 
+DOWNLOADS = json.dumps(
+    [
+        {"version": "3.16.0a2", "implementation": "cpython", "variant": "default"},
+        {"version": "3.15.2", "implementation": "cpython", "variant": "default"},
+        {"version": "3.14.11", "implementation": "cpython", "variant": "freethreaded"},
+        {"version": "3.14.10", "implementation": "cpython", "variant": "default"},
+        {"version": "3.14.9", "implementation": "cpython", "variant": "default"},
+        {"version": "3.14.12", "implementation": "pypy", "variant": "default"},
+    ]
+)
+
+BUILD = """[build-system]
+requires = ["uv_build>=0.13.1,<0.14"]
+
+[tool.uv]
+# held: GHI #77, 0.14 cannot resolve on the floor
+required-version = ">=0.13.1"
+build-constraint-dependencies = ["setuptools==84.2.1"]
+"""
+
+
 def _pin(**fields: object) -> object:
     base = {"surface": "python", "name": "pkg", "current": "1.0.0", "location": "x:1"}
     return GATE.Pin(**(base | fields))
@@ -222,6 +243,7 @@ class _FakeUpstream:
 
 def _tree(root: Path, *, behind: bool) -> None:
     (root / "pyproject.toml").write_text(PYPROJECT, encoding="utf-8")
+    (root / ".python-version").write_text("3.14.10\n", encoding="utf-8")
     (root / ".pre-commit-config.yaml").write_text(
         "repos:\n  - repo: https://github.com/gitleaks/gitleaks\n    rev: v8.30.1\n",
         encoding="utf-8",
@@ -239,6 +261,7 @@ def _upstream(*, uv_tree: str = "py-gzkit v1.0.0\n") -> _FakeUpstream:
         {
             ("uv", "tree"): uv_tree,
             ("uv", "self"): "0.13.10\n",
+            ("uv", "python", "list"): DOWNLOADS,
             ("gh", "api", "repos/astral-sh/uv/releases/latest"): "0.13.10\n",
             ("gh", "api", "repos/gitleaks/gitleaks/releases/latest"): "v8.30.1\n",
             ("gh", "api", "repos/actions/checkout/releases/latest"): "v7.0.1\n",
@@ -252,7 +275,9 @@ class TestCurrencyGateReadsEverySurface(unittest.TestCase):
             root = Path(tmp)
             _tree(root, behind=True)
             pins = GATE.collect_pins(root, _upstream(uv_tree=UV_TREE))
-        self.assertEqual(sorted({p.surface for p in pins}), ["action", "hook", "python", "uv"])
+        self.assertEqual(
+            sorted({p.surface for p in pins}), ["action", "hook", "python", "python-version", "uv"]
+        )
         self.assertIn(("uv", "0.13.10"), [(p.name, p.current) for p in pins])
         self.assertIn(".github/workflows/ci.yml:1", [p.location for p in pins])
 
@@ -414,6 +439,98 @@ class TestTheCommandLineNamesOneGate(unittest.TestCase):
         )
         self.assertEqual(completed.returncode, 2)
         self.assertIn("--scan-record", completed.stderr)
+
+
+class TestTheReviewsParsingCasesAreRead(unittest.TestCase):
+    """Forms the #1369 review found the first parser missed or misread."""
+
+    def test_a_dependency_with_extras_is_read(self) -> None:
+        pins = GATE.python_pins("├── httpx[http2] v0.27.0 (latest: v0.28.1)\n", PYPROJECT)
+        self.assertEqual(
+            [(p.name, p.current, p.latest) for p in pins], [("httpx", "0.27.0", "0.28.1")]
+        )
+
+    def test_build_constraints_and_the_build_system_floor_are_read(self) -> None:
+        pins = GATE.build_pins(BUILD)
+        self.assertEqual(
+            [(p.surface, p.name, p.current) for p in pins],
+            [("build", "uv_build", "0.13.1"), ("build", "setuptools", "84.2.1")],
+        )
+
+    def test_the_uv_binary_is_held_on_its_required_version_line(self) -> None:
+        self.assertEqual(GATE.uv_binary_pin(BUILD, "0.13.9").hold_ghi, 77)
+        self.assertIsNone(GATE.uv_binary_pin(PYPROJECT, "0.13.9").hold_ghi)
+
+    def test_python_version_compares_with_the_newest_stable_download_of_its_minor(self) -> None:
+        pin = GATE.python_version_pin("3.14.10\n", DOWNLOADS)
+        self.assertEqual((pin.current, pin.latest), ("3.14.10", "3.14.10"))
+        behind = GATE.python_version_pin("3.14.9\n", DOWNLOADS)
+        self.assertEqual(behind.latest, "3.14.10")
+
+    def test_commented_uses_and_hook_lines_are_not_pins(self) -> None:
+        workflow = "      # - uses: actions/checkout@v4\n      - uses: actions/checkout@v7\n"
+        self.assertEqual([p.current for p in GATE.action_pins(workflow, "w.yml")], ["v7"])
+        hooks = (
+            "  # - repo: https://github.com/old/hooks\n  #   rev: v1.0.0\n"
+            "  - repo: https://github.com/new/hooks\n    rev: v2.0.0\n"
+        )
+        self.assertEqual([p.name for p in GATE.hook_pins(hooks)], ["new/hooks"])
+
+    def test_a_frozen_sha_hook_rev_reads_its_frozen_version(self) -> None:
+        sha = "0123456789abcdef0123456789abcdef01234567"
+        hooks = f"  - repo: https://github.com/a/b\n    rev: {sha}  # frozen: v3.1.0\n"
+        hooks += f"  - repo: https://github.com/c/d\n    rev: {sha}\n"
+        self.assertEqual([p.current for p in GATE.hook_pins(hooks)], ["v3.1.0", None])
+
+    def test_an_upstream_tag_naming_no_version_is_a_finding_not_a_crash(self) -> None:
+        findings = GATE.judge([_pin(current="v6")], lambda _pin: "nightly", lambda _n: True)
+        self.assertEqual(
+            [f.reason for f in findings], ["upstream latest 'nightly' names no version"]
+        )
+
+    def test_build_pins_are_compared_with_pypi_once_per_package(self) -> None:
+        asked: list[str] = []
+
+        def pypi(name: str) -> str:
+            asked.append(name)
+            return "84.3.0"
+
+        latest = GATE.github_latest(_FakeUpstream({}), pypi)
+        pin = _pin(surface="build", name="setuptools", current="84.2.1")
+        self.assertEqual(latest(pin), "84.3.0")
+        latest(pin)
+        self.assertEqual(asked, ["setuptools"])
+
+    def test_an_unreachable_pypi_raises_rather_than_passing(self) -> None:
+        with (
+            mock.patch.object(GATE.urllib.request, "urlopen", side_effect=OSError("offline")),
+            self.assertRaises(GATE.UpstreamUnavailableError),
+        ):
+            GATE.pypi_latest("setuptools")
+
+
+class TestTheGateReadsPyPIForBuildPins(unittest.TestCase):
+    def test_pypi_latest_reads_the_info_version(self) -> None:
+        body = io.BytesIO(json.dumps({"info": {"version": "84.3.0"}}).encode())
+        with mock.patch.object(GATE.urllib.request, "urlopen", return_value=body) as opened:
+            self.assertEqual(GATE.pypi_latest("setuptools"), "84.3.0")
+        self.assertIn("pypi.org/pypi/setuptools/json", opened.call_args.args[0])
+
+    def test_the_currency_gate_judges_build_pins_and_the_uv_binary(self) -> None:
+        err = io.StringIO()
+        with tempfile.TemporaryDirectory() as tmp, contextlib.redirect_stderr(err):
+            root = Path(tmp)
+            _tree(root, behind=False)
+            (root / "pyproject.toml").write_text(PYPROJECT + BUILD, encoding="utf-8")
+            upstream = _upstream()
+            upstream.answers["uv", "self"] = "0.13.9\n"
+            upstream.answers["gh", "issue", "view", "77"] = "CLOSED\n"
+            code = GATE.check_currency(root, upstream, lambda _name: "99.0.0")
+        self.assertEqual(code, 3)
+        text = err.getvalue()
+        self.assertIn("build uv_build 0.13.1 (latest 99.0.0)", text)
+        self.assertIn("build setuptools 84.2.1 (latest 99.0.0)", text)
+        self.assertIn("uv uv 0.13.9 (latest 0.13.10): held by GHI #77, which is closed", text)
 
 
 if __name__ == "__main__":

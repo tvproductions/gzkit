@@ -183,11 +183,12 @@ class TestGitSurfaceHistory(unittest.TestCase):
             self.assertEqual(first_after(("other",), base), base + timedelta(days=2))
 
     def test_scan_record_change_reads_its_commit_or_its_uncommitted_edit(self) -> None:
-        """A record being written reads as now; a removed one never does (GHI #935).
+        """A record being written reads as now; a removed one is no record (GHI #935, #1369).
 
         The gate's recovery is: write the scan record, then run. Requiring a commit
         in between would make that a two-step dance, so an uncommitted edit counts.
-        Deleting the record must not, or removing it would pass for writing it.
+        Deleting the record must not, or removing it would pass for writing it, and
+        a committed deletion must not date a scan by its own commit.
         """
         base = datetime(2026, 8, 1, tzinfo=UTC)
         now = datetime(2026, 9, 14, tzinfo=UTC)
@@ -205,7 +206,14 @@ class TestGitSurfaceHistory(unittest.TestCase):
             self.assertIsNone(changed(("proofs/never-written.md",)))
 
             (root / "proofs" / "removed.md").unlink()
-            self.assertEqual(changed(("proofs/removed.md",)), base + timedelta(days=3))
+            self.assertIsNone(changed(("proofs/removed.md",)))
+            subprocess.run(
+                ["git", "rm", "-q", "--cached", "proofs/removed.md"], cwd=root, env=env, check=True
+            )
+            subprocess.run(
+                ["git", "commit", "-q", "-m", "drop the record"], cwd=root, env=env, check=True
+            )
+            self.assertIsNone(changed(("proofs/removed.md",)))
 
             (root / "proofs" / "scan-record.md").write_text("rescanned\n", encoding="utf-8")
             self.assertEqual(changed(("proofs/scan-record.md",)), now)

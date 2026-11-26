@@ -10,7 +10,7 @@
             "type": "exitCodeEquals",
             "command": "uv run python .gzkit/chores/dependency-currency/check_currency.py --currency",
             "expected": 0,
-            "description": "Every Python dependency, the uv binary, each pre-commit hook rev and each Actions pin is at upstream latest, or held by an open GHI (GHI #1369)"
+            "description": "Every Python dependency, build pin, the .python-version interpreter, the uv binary, each pre-commit hook rev and each Actions pin is at upstream latest, or held by an open GHI (GHI #1369)"
         },
         {
             "type": "exitCodeEquals",

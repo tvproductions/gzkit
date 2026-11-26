@@ -201,6 +201,7 @@
       "dependency-currency/CHORE.md",
       "dependency-currency/README.md",
       "dependency-currency/acceptance.json",
+      "dependency-currency/check_currency.py",
       "doc-coverage/CHORE.md",
       "doc-coverage/README.md",
       "doc-coverage/acceptance.json",

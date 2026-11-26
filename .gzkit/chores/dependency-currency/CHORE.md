@@ -3,6 +3,10 @@
 **Lane:** Lite
 **Slug:** `dependency-currency`
 
+> **Version 2.1.1 (2026-11-25, GHI #1369 review):** the currency criterion also
+> reads the build pins, `.python-version` and a hold on the uv binary, and the
+> guardrails let a forward repair touch the code the new release breaks.
+>
 > **Version 2.1.0 (2026-11-25, GHI #1369):** the criteria now witness currency.
 > Two gates come first: the drift report, now one fixed-name file, must have
 > changed within the period, and every inventoried pin must be at upstream
@@ -72,12 +76,13 @@ applies what it finds.
 
 ## Policy and Guardrails
 
-- **Lane:** Lite — edits `pyproject.toml` dependency entries, `uv.lock`,
-  `.python-version`, `.pre-commit-config.yaml` revs and `.github/workflows/`
-  `uses:` pins only; `uv run gz check --full` gates the result
+- **Lane:** Lite — edits `pyproject.toml` dependency and build entries,
+  `uv.lock`, `.python-version`, `.pre-commit-config.yaml` revs and
+  `.github/workflows/` `uses:` pins, plus whatever code a forward repair needs
+  to meet a new release (§ 4); `uv run gz check --full` gates the result
 - **Network:** Required (queries GitHub releases API and PyPI)
-- **Stays out of:** `src/gzkit/`, `tests/`, `docs/`, gzkit's own version
-  surfaces, the `requires-python` floor, and the `[tool.uv] required-version`
+- **Stays out of:** everything a forward repair does not need, gzkit's own
+  version surfaces, the `requires-python` floor, and the `[tool.uv] required-version`
   floor (a floor by GHI #1283; raised only when the repo needs a newer uv
   feature)
 - **One commit per run:** `chore(deps): daily upgrade YYYY-MM-DD`, carrying the
@@ -169,10 +174,14 @@ that it is current (GHI #1369):
 1. `check_currency.py --scan-record`: the drift report changed within the
    declared period, so a run that did not look cannot pass or move the chore's
    band (#935's rule).
-2. `check_currency.py --currency`: every Python dependency, the uv binary, every
-   pre-commit hook rev and every Actions `uses:` pin is at its upstream latest,
-   or held by an open GHI as § 4 describes. A major-tag pin (`@v6`) compares by
-   major; a commit-SHA pin compares by the version its trailing comment names.
+2. `check_currency.py --currency`: every Python dependency, the build pins
+   (`[tool.uv] build-constraint-dependencies` and the `[build-system] requires`
+   floor, against PyPI), `.python-version` (against uv's newest stable download
+   of its minor), the uv binary, every pre-commit hook rev and every Actions
+   `uses:` pin is at its upstream latest, or held by an open GHI as § 4
+   describes. A major-tag pin (`@v6`) compares by major; a commit-SHA pin, or a
+   `--freeze` hook rev, compares by the version its trailing comment names. The
+   uv binary's hold is written on `pyproject.toml`'s `required-version` line.
 3. The lock agrees with `pyproject.toml`, the Python version is declared once
    and passes the discipline check, and lint and typecheck hold on the upgraded
    toolchain (the gzkit-wrapped commands honor configured exclusions).
@@ -202,6 +211,10 @@ gh api repos/astral-sh/uv/releases/latest --jq .tag_name > .gzkit/chores/depende
   GitHub, and a versioned image is read in § 2 by hand.
 - The analyzers' health (§ 2a) is graded in the drift report, not by a
   criterion: *abandoned* needs evidence no command reads.
+- Versions compare by their numeric parts, so a pre-release orders as its
+  release; the upstream readers return stable releases.
+- The scan period counts whole days, as `scripts/check_proof_freshness.py`
+  does, so a record up to two days old passes a one-day period.
 
 ---
 

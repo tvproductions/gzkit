@@ -8,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-11-19
 model: haiku
 metadata:
-  skill-version: "1.8.0"
+  skill-version: "1.8.1"
 ---
 
 # gz deps-upgrade
@@ -103,7 +103,9 @@ order, not skipping the floor-bump or the verification step.
     A major-tag pin (`@v6`) moves to the latest major; a commit-SHA pin moves to
     the latest release's commit, with its `# vX.Y.Z` comment rewritten to match.
     Read each major bump's changelog before moving it. CI is the action pins'
-    verification, so push and watch the run.
+    verification, so push and watch the run. Raise the `[build-system] requires`
+    floor to the latest `uv_build` its upper bound admits; when a release lands
+    outside the bound, move the bound with it.
 
 5. **Refresh the lock to latest within `>=` constraints.**
 

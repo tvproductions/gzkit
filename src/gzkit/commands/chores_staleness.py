@@ -295,37 +295,38 @@ def git_artifact_changed(
     An artifact present on disk with uncommitted changes reads as *now*: the
     procedure is writing it, and requiring a commit before ``gz chores run``
     would make the gate's own recovery a two-step dance. Otherwise the newest
-    committer date wins. A deleted artifact never reads as now, so removing the
-    record cannot pass for writing it; one git has never seen reads None.
+    committer date wins. Only a record present on disk is dated: a deleted one
+    reads None whether or not the deletion is committed, so removing the record
+    can never pass for writing it, and a committed deletion cannot date a scan
+    by its own commit (GHI #1369). One git has never seen reads None too.
 
     Returns:
         A function mapping artifact paths to *now* when one has uncommitted changes, otherwise the
-        newest commit time, or None when every path is a directory or git has no record.
+        newest commit time, or None when no path is a file on disk or git has no record.
 
     """
 
     def changed(artifacts: tuple[str, ...]) -> datetime | None:
-        # Literal pathspecs, and never a directory: a record is one file, and a
-        # pattern or directory would be dated by its neighbours, the run log among
-        # them, whose commits move on a FAIL run (GHI #935).
-        files = [path for path in artifacts if not (project_root / path).is_dir()]
-        if not files:
+        # Literal pathspecs over files on disk only: a record is one file, so a
+        # directory or pattern would be dated by its neighbours, the run log among
+        # them, whose commits move on a FAIL run (GHI #935); and a deleted record
+        # is no record (GHI #1369).
+        on_disk = [path for path in artifacts if (project_root / path).is_file()]
+        if not on_disk:
             return None
-        present = [f":(literal){path}" for path in files if (project_root / path).is_file()]
-        if present:
-            status = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
-                [resolve_executable("git"), "status", "--porcelain", "--", *present],
-                cwd=project_root,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                check=False,
-            )
-            if status.returncode == 0 and status.stdout.strip():
-                return now
-        literal = [f":(literal){path}" for path in files]
-        times = _git_commit_times(project_root, ["-1", "--", *literal])
+        present = [f":(literal){path}" for path in on_disk]
+        status = subprocess.run(  # noqa: S603 — git with a fixed subcommand; executable resolved
+            [resolve_executable("git"), "status", "--porcelain", "--", *present],
+            cwd=project_root,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=False,
+        )
+        if status.returncode == 0 and status.stdout.strip():
+            return now
+        times = _git_commit_times(project_root, ["-1", "--", *present])
         return times[0] if times else None
 
     return changed

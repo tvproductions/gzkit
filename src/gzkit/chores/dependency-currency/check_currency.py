@@ -16,7 +16,13 @@ that did no scan cannot clear the gate, and the record is never ``CHORE-LOG.md``
 chore inventories:
 
 * Python dependencies, read from ``uv tree --locked --outdated --depth 1``;
-* the uv binary the run used, against astral-sh/uv's latest release;
+* the build pins ``uv tree`` never reads: ``[tool.uv]
+  build-constraint-dependencies`` and the ``[build-system] requires`` floor,
+  against PyPI;
+* the interpreter in ``.python-version``, against uv's newest download of the
+  same minor;
+* the uv binary the run used, against astral-sh/uv's latest release; its hold
+  is written on ``pyproject.toml``'s ``required-version`` line;
 * pre-commit hook revisions in ``.pre-commit-config.yaml``;
 * GitHub Actions ``uses:`` pins under ``.github/workflows/``. A major tag
   (``@v6``) compares by major version; a commit-SHA pin compares by the version
@@ -45,6 +51,7 @@ import json
 import re
 import subprocess
 import sys
+import urllib.request
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Literal
 
@@ -63,18 +70,27 @@ UV_REPOSITORY = "astral-sh/uv"
 _HOLD = re.compile(r"\b(?:held|hold)\b[^\n]*?GHI #(\d+)", re.IGNORECASE)
 _SHA = re.compile(r"^[0-9a-f]{40}$")
 _UV_TREE_OUTDATED = re.compile(
-    r"(?P<name>[A-Za-z0-9][A-Za-z0-9._-]*) v(?P<current>\S+)"
+    r"(?P<name>[A-Za-z0-9][A-Za-z0-9._-]*)(?:\[[^\]]*\])? v(?P<current>\S+)"
     r"(?: \([^)]*\))*? \(latest: v(?P<latest>[^)]+)\)"
 )
 _HOOK_REPO = re.compile(r"^\s*-\s*repo:\s*(?P<url>\S+)")
-_HOOK_REV = re.compile(r"^\s*rev:\s*['\"]?(?P<rev>[^'\"\s#]+)")
+_HOOK_REV = re.compile(
+    r"^\s*rev:\s*['\"]?(?P<rev>[^'\"\s#]+)['\"]?(?:\s*#\s*frozen:\s*(?P<frozen>\S+))?"
+)
 _GITHUB_URL = re.compile(r"^https://github\.com/(?P<repo>[\w.-]+/[\w.-]+?)(?:\.git)?/?$")
 _ACTION_USES = re.compile(
     r"uses:\s*['\"]?(?P<repo>[\w.-]+/[\w.-]+)(?:/[^@\s'\"]*)?@(?P<ref>[^\s'\"#]+)['\"]?"
     r"(?:\s*#\s*(?P<comment>\S+))?"
 )
 
-Surface = Literal["python", "uv", "hook", "action"]
+_BUILD_PIN = re.compile(
+    r"[\"'](?P<name>[A-Za-z0-9][A-Za-z0-9._-]*)\s*(?:==|>=)\s*(?P<version>[^,\"';\s]+)"
+)
+_REQUIRED_VERSION = re.compile(r"^\s*required-version\s*=")
+_PRERELEASE = re.compile(r"[a-zA-Z]")
+PYPI_URL = "https://pypi.org/pypi/{name}/json"
+
+Surface = Literal["python", "build", "python-version", "uv", "hook", "action"]
 
 
 class UpstreamUnavailableError(RuntimeError):
@@ -178,6 +194,8 @@ def hook_pins(config_text: str, path: str = ".pre-commit-config.yaml") -> list[P
     pins: list[Pin] = []
     repo: str | None = None
     for index, line in enumerate(lines):
+        # Both patterns anchor at the line start, so a commented `# - repo:` or
+        # `#   rev:` line never matches.
         repo_match = _HOOK_REPO.match(line)
         if repo_match:
             github = _GITHUB_URL.match(repo_match.group("url"))
@@ -185,11 +203,12 @@ def hook_pins(config_text: str, path: str = ".pre-commit-config.yaml") -> list[P
             continue
         rev_match = _HOOK_REV.match(line)
         if rev_match and repo is not None:
+            rev = rev_match.group("rev")
             pins.append(
                 Pin(
                     surface="hook",
                     name=repo,
-                    current=rev_match.group("rev"),
+                    current=rev_match.group("frozen") if _SHA.match(rev) else rev,
                     location=f"{path}:{index + 1}",
                     hold_ghi=hold_ghi(lines, index),
                 )
@@ -204,7 +223,7 @@ def action_pins(workflow_text: str, path: str) -> list[Pin]:
     pins: list[Pin] = []
     for index, line in enumerate(lines):
         match = _ACTION_USES.search(line)
-        if not match:
+        if not match or line.lstrip().startswith("#"):
             continue
         ref, comment = match.group("ref"), match.group("comment")
         current: str | None = ref
@@ -222,6 +241,79 @@ def action_pins(workflow_text: str, path: str) -> list[Pin]:
     return pins
 
 
+def build_pins(pyproject_text: str) -> list[Pin]:
+    """Return the build constraint pins and ``[build-system]`` floors ``uv tree`` never reads."""
+    lines = pyproject_text.splitlines()
+    pins: list[Pin] = []
+    for index, line in enumerate(lines):
+        stripped = line.lstrip()
+        if not stripped.startswith(("build-constraint-dependencies", "requires")):
+            continue
+        pins.extend(
+            Pin(
+                surface="build",
+                name=match.group("name"),
+                current=match.group("version"),
+                location=f"pyproject.toml:{index + 1}",
+                hold_ghi=hold_ghi(lines, index),
+            )
+            for match in _BUILD_PIN.finditer(line)
+        )
+    return pins
+
+
+def python_version_pin(pinned_text: str, downloads_json: str) -> Pin:
+    """Return ``.python-version``'s pin, with the newest stable download of its minor."""
+    lines = pinned_text.splitlines()
+    index = next(i for i, line in enumerate(lines) if line.strip() and not line.startswith("#"))
+    current = lines[index].strip()
+    minor = version_key(current)[:2]
+    stable = [
+        str(entry.get("version", ""))
+        for entry in json.loads(downloads_json)
+        if entry.get("implementation") == "cpython"
+        and entry.get("variant", "default") == "default"
+        and not _PRERELEASE.search(str(entry.get("version", "")))
+        and version_key(str(entry.get("version", "")))[:2] == minor
+    ]
+    newest = max(stable, key=version_key, default=current)
+    return Pin(
+        surface="python-version",
+        name="cpython",
+        current=current,
+        latest=newest,
+        location=f".python-version:{index + 1}",
+        hold_ghi=hold_ghi(lines, index),
+    )
+
+
+def uv_binary_pin(pyproject_text: str, version: str) -> Pin:
+    """Return the running uv binary's pin; its hold sits on ``required-version``."""
+    lines = pyproject_text.splitlines()
+    index = next((i for i, line in enumerate(lines) if _REQUIRED_VERSION.match(line)), None)
+    return Pin(
+        surface="uv",
+        name="uv",
+        current=version,
+        location="uv self version",
+        hold_ghi=hold_ghi(lines, index) if index is not None else None,
+    )
+
+
+def _refusal(pin: Pin, latest: str, issue_is_open: Callable[[int], bool]) -> str | None:
+    if pin.current is None or not version_key(pin.current):
+        return "pin names no version"
+    if not version_key(latest):
+        return f"upstream latest {latest!r} names no version"
+    if not is_behind(pin.current, latest):
+        return None
+    if pin.hold_ghi is None:
+        return "behind upstream, no hold"
+    if not issue_is_open(pin.hold_ghi):
+        return f"held by GHI #{pin.hold_ghi}, which is closed"
+    return None
+
+
 def judge(
     pins: Iterable[Pin],
     latest_release: Callable[[Pin], str],
@@ -231,15 +323,8 @@ def judge(
     findings: list[Finding] = []
     for pin in pins:
         latest = pin.latest or latest_release(pin)
-        if pin.current is None:
-            findings.append(Finding(pin=pin, latest=latest, reason="pin names no version"))
-            continue
-        if not is_behind(pin.current, latest):
-            continue
-        if pin.hold_ghi is None:
-            findings.append(Finding(pin=pin, latest=latest, reason="behind upstream, no hold"))
-        elif not issue_is_open(pin.hold_ghi):
-            reason = f"held by GHI #{pin.hold_ghi}, which is closed"
+        reason = _refusal(pin, latest, issue_is_open)
+        if reason is not None:
             findings.append(Finding(pin=pin, latest=latest, reason=reason))
     return findings
 
@@ -286,11 +371,29 @@ def subprocess_runner(root: Path) -> Callable[[list[str]], str]:
     return lambda argv: _run(argv, root)
 
 
-def github_latest(run: Callable[[list[str]], str]) -> Callable[[Pin], str]:
-    """Return a reader of each pin's latest GitHub release, one query per repository."""
+def pypi_latest(name: str) -> str:
+    """Return *name*'s latest release on PyPI."""
+    url = PYPI_URL.format(name=name)
+    try:
+        with urllib.request.urlopen(url, timeout=30) as response:  # noqa: S310 — fixed https URL
+            return str(json.load(response)["info"]["version"])
+    except (OSError, ValueError, KeyError) as exc:
+        msg = f"PyPI could not answer for {name}: {exc}"
+        raise UpstreamUnavailableError(msg) from exc
+
+
+def github_latest(
+    run: Callable[[list[str]], str], pypi: Callable[[str], str] = pypi_latest
+) -> Callable[[Pin], str]:
+    """Return a reader of each pin's latest release, one query per repository or package."""
     cache: dict[str, str] = {}
 
     def latest(pin: Pin) -> str:
+        if pin.surface == "build":
+            key = f"pypi:{pin.name}"
+            if key not in cache:
+                cache[key] = pypi(pin.name)
+            return cache[key]
         repo = UV_REPOSITORY if pin.surface == "uv" else pin.name
         if repo not in cache:
             cache[repo] = run(["gh", "api", f"repos/{repo}/releases/latest", "--jq", ".tag_name"])
@@ -314,9 +417,13 @@ def collect_pins(root: Path, run: Callable[[list[str]], str]) -> list[Pin]:
     """Read every inventoried surface of the tree at *root*."""
     pyproject = (root / "pyproject.toml").read_text(encoding="utf-8")
     uv_tree = run(["uv", "tree", "--locked", "--outdated", "--depth", "1"])
-    pins = python_pins(uv_tree, pyproject)
+    pins = [*python_pins(uv_tree, pyproject), *build_pins(pyproject)]
+    pinned = root / ".python-version"
+    if pinned.is_file():
+        downloads = run(["uv", "python", "list", "--only-downloads", "--output-format", "json"])
+        pins.append(python_version_pin(pinned.read_text(encoding="utf-8"), downloads))
     uv_version = run(["uv", "self", "version", "--short"]).strip()
-    pins.append(Pin(surface="uv", name="uv", current=uv_version, location="uv self version"))
+    pins.append(uv_binary_pin(pyproject, uv_version))
     hooks = root / ".pre-commit-config.yaml"
     if hooks.is_file():
         pins.extend(hook_pins(hooks.read_text(encoding="utf-8")))
@@ -373,11 +480,17 @@ def check_scan_record(
     return 3
 
 
-def check_currency(root: Path, run: Callable[[list[str]], str] | None = None) -> int:
+def check_currency(
+    root: Path,
+    run: Callable[[list[str]], str] | None = None,
+    pypi: Callable[[str], str] = pypi_latest,
+) -> int:
     """Gate: every inventoried pin is current, or held by an open GHI."""
     runner = run if run is not None else subprocess_runner(root)
     try:
-        findings = judge(collect_pins(root, runner), github_latest(runner), issue_is_open(runner))
+        findings = judge(
+            collect_pins(root, runner), github_latest(runner, pypi), issue_is_open(runner)
+        )
     except UpstreamUnavailableError as exc:
         _say(f"BLOCKERS:\n- currency cannot be judged: {exc}", err=True)
         return 2
