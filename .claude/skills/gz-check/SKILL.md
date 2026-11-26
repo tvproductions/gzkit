@@ -5,18 +5,17 @@ description: Use for pre-merge or pre-attestation verification; runs the per-cha
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-11-26
 model: haiku
 metadata:
-  skill-version: "1.7.2"
+  skill-version: "1.7.3"
 ---
 
 # gz check
 
 ## Overview
 
-Unified quality gate for all code verification. Replaces the individual
-`/lint`, `/test`, `/format`, `/gz-typecheck`, and `/gz-arb` skills.
+Unified quality gate for all code verification.
 
 ## Individual Commands
 
@@ -74,16 +73,11 @@ following — each item is a concrete tool invocation, not a prose claim:
    over budget, trim before attestation (200-line ceiling for optimal
    adherence).
 
-## Full Quality Evidence Sequence
+## Receipt Evidence
 
-When deterministic receipts are needed (e.g., for audit evidence):
-
-```bash
-uv run gz lint
-uv run gz typecheck
-uv run gz test --bdd    # full suite including behave — pre-attestation
-uv run gz check
-```
+These commands emit no receipt. When attestation or audit evidence needs
+receipt IDs, run the canonical ARB invocations listed in `gz-arb`
+(`AGENTS.md` § Attestation).
 
 ## Validation
 
