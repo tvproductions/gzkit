@@ -8,7 +8,7 @@ validation when running in Claude Code.
 ## Purpose
 
 `/gz-check` runs the `gz check` command and then validates Claude-specific
-surfaces (hooks, generated mirrors, CLAUDE.md budget) to ensure the full
+surfaces (hooks, generated mirrors) to ensure the full
 operator environment is healthy. It is the single command you run when you need
 comprehensive quality and configuration assurance before a merge or attestation.
 
@@ -42,7 +42,10 @@ validations in a single composite pass. Output shows each check's result.
 1. Verifies no hook errors appeared at session start.
 2. Confirms generated surfaces (`.claude/skills/`, `.claude/rules/`) match their
    canonical sources in `.gzkit/`.
-3. Checks that `CLAUDE.md` is under 200 lines for optimal adherence.
+
+Instruction-file budgets (`CLAUDE.md`, `AGENTS.md`, rules) are measured by
+`gz check` itself against `data/instructions_files_budget.json`, in chars and
+bytes; they are advisory until 1.0.
 
 If surface issues are found, the skill invokes `@claude-code-guide` to diagnose
 against current Anthropic documentation.
@@ -51,7 +54,7 @@ Typical runtime is 30-90 seconds for quality checks plus a few seconds for
 surface validation.
 
 **Success** looks like: all quality checks pass, no hook errors, surfaces in
-sync, CLAUDE.md under budget.
+sync.
 
 **Failure** looks like: quality check failures (fix code), hook errors (fix
 `.claude/settings.json`), or surface drift (run `gz agent sync control-surfaces`).
@@ -73,7 +76,6 @@ sync, CLAUDE.md under budget.
 | `.claude/skills/gz-check/SKILL.md` | Agent execution instructions | Read |
 | `.claude/skills/gz-check/agents/openai.yaml` | OpenAI agent definition for cross-vendor use | Read |
 | `.claude/settings.json` | Hook configuration validated during surface checks | Read |
-| `CLAUDE.md` | Checked for line budget compliance | Read |
 
 ## Related Skills and Commands
 

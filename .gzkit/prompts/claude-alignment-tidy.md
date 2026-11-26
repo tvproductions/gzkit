@@ -17,9 +17,11 @@ addresses four tidy items from `ADR-pool.vendor-alignment-claude-code`.
 
 ## Tasks
 
-### 1. Prune CLAUDE.md to < 200 lines
+### 1. Bring CLAUDE.md within its budget
 
-Claude Code docs recommend < 500 lines, < 200 for best adherence. The
+The budget is `files."CLAUDE.md"` in `data/instructions_files_budget.json`, in
+chars, measured by `uv run gz validate --instructions-files-budget` (advisory
+until 1.0). The
 skills index is the biggest bloat — Claude discovers skills via the Skill
 tool natively, so the full list is redundant in CLAUDE.md.
 
@@ -28,10 +30,10 @@ tool natively, so the full list is redundant in CLAUDE.md.
   with a one-line reference: `Run \`/gz-status\` or check \`.gzkit/skills/\` for the full inventory.`
 - Keep the skills mirror paths (canonical, claude, codex, copilot) — those
   are structural, not inventory.
-- If CLAUDE.md is still over 200 lines after skill removal, extract the
+- If CLAUDE.md is still over budget after skill removal, extract the
   Gate Covenant and Governance Workflow sections into a file that CLAUDE.md
   references via `@docs/governance-workflow.md` import.
-- Verify final line count < 200.
+- Verify with `uv run gz validate --instructions-files-budget`.
 
 ### 2. Add `disable-model-invocation: true` to ceremony skills
 
@@ -81,7 +83,7 @@ existing hooks in `.claude/hooks/`.
 ## Verification
 
 After completing all four tasks:
-1. Count CLAUDE.md lines — must be < 200
+1. Run `uv run gz validate --instructions-files-budget` — CLAUDE.md within its budget
 2. Verify the disabled skills have `disable-model-invocation: true` in
    frontmatter
 3. Run `uv run gz lint` to verify no formatting regressions

@@ -8,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-11-26
 model: haiku
 metadata:
-  skill-version: "1.7.4"
+  skill-version: "1.7.5"
 ---
 
 # gz check
@@ -67,11 +67,11 @@ following — each item is a concrete tool invocation, not a prose claim:
    mirrors `.gzkit/skills/` and `.claude/rules/` mirrors `.gzkit/rules/`.
    Non-zero exit means run `uv run gz agent sync control-surfaces` and
    re-validate.
-3. **CLAUDE.md is under budget** — read `CLAUDE.md` with the Read tool and
-   check that the final line number reported is ≤ 200. Read returns
-   numbered lines so the count is observable without invoking `wc`. If
-   over budget, trim before attestation (200-line ceiling for optimal
-   adherence).
+
+Instruction-file budgets need no step here: `gz check`'s Instructions files
+budget step measures `CLAUDE.md`, `AGENTS.md` and the rules against
+`data/instructions_files_budget.json` in chars and bytes. They are advisory
+until 1.0, and trimming an overrun is the `instructions-files-diet` chore's job.
 
 ## Receipt Evidence
 
@@ -127,7 +127,6 @@ These thoughts mean STOP — you are about to skip the gate that catches drift:
 - Citing a plain `gz check` pass as evidence that the whole unit tier passed
 - Hook errors in session-start output that were never resolved
 - `.claude/skills/` divergent from `.gzkit/skills/` (sync not run)
-- CLAUDE.md over 200 lines (budget exceeded, adherence drops)
 - Coverage dropped below 40% but the brief was marked complete
 - Releasing or closing out an ADR without `gz check --full`
 
