@@ -114,12 +114,12 @@ repos:
   # that touches either (RO-9 tranche 2). Its rev is the uv release it runs; move
   # it to the current uv in each `gz-deps-upgrade` pass (step 4a).
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.13.9
+    rev: 0.13.10
     hooks:
       - id: uv-lock
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       # ADR appendices are evidentiary primary sources (transcripts, adversary
       # verdicts, operator exhibits). A formatter that rewrites them makes the
