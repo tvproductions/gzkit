@@ -25,6 +25,7 @@ gz git-sync [OPTIONS]
 | `--auto-add/--no-auto-add` | flag | `--auto-add` (default) stages every change with `git add -A`, refused when it would stage `src/` or `tests/`; `--no-auto-add` stages nothing and commits whatever is already staged, with no `src/`/`tests/` refusal |
 | `--push/--no-push` | flag | `--push` (default) pushes when the branch is ahead; `--no-push` commits and rebases but does not push, so no pre-push hook runs |
 | `--json` | flag | Output JSON summary |
+| `--skill` | flag | Print the paired skill file's path and exit, before any check |
 
 ---
 
@@ -41,8 +42,8 @@ order:
 3. **Stage:** `git add -A` on a dirty tree (skipped by `--no-auto-add`).
 4. **Hook check:** refuses when a gating hook type the config installs is not
    installed or is not the pre-commit shim; a missing recording hook only warns.
-   A missing or unreadable config, or one with no pre-push `gz check` hook, is
-   not checked here.
+   A missing or unreadable config, one with no pre-push `gz check` hook, and a
+   linked worktree are not checked here.
 5. **Pre-check:** `--lint` runs whole-tree `gz lint`; `--test` runs the full unit
    suite. Neither runs by default.
 6. **Commit:** when something is staged, refuses on a stranded

@@ -5,7 +5,7 @@ description: Use to run a GHI-driven patch release, or to publish a minor releas
 category: adr-audit
 compatibility: GovZero v6 framework; provides ceremony walkthrough for GHI-driven patch releases
 metadata:
-  skill-version: "1.14.3"
+  skill-version: "1.14.4"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/releases/patch-release.md, docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md"
@@ -382,7 +382,7 @@ git commit -m "release: vX.Y.Z" -m "<what the release carries>" -m "Task: TASK-p
 uv run gz git-sync --apply
 ```
 
-The full sweep is the release's QC (GHI #1191); a failure stops the release. Commit the release yourself: the bump stages `src/gzkit/__init__.py`, which `gz git-sync` will not sweep (git-sync skill, § What each flag runs, step 3).
+The full sweep is the release's QC (GHI #1191); a failure stops the release. Commit the release yourself: the bump changes `src/gzkit/__init__.py`, which `gz git-sync` will not sweep (git-sync skill, § What each flag runs, step 3).
 Sync MUST run immediately before `gh release create`, as in the closeout ceremony.
 
 #### 4d. GitHub Release (non-Foundation only)
@@ -416,7 +416,7 @@ Patch release vX.Y.Z complete.
   Manifest: docs/releases/PATCH-vX.Y.Z.md
   RELEASE_NOTES.md: updated
   CHANGELOG.md: [Unreleased] stamped vX.Y.Z
-  Git-sync: committed and pushed
+  Release commit: release: vX.Y.Z, pushed by git-sync
   GitHub release: created / skipped (Foundation)
 ```
 

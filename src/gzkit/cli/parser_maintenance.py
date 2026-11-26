@@ -1878,8 +1878,7 @@ def _add_git_sync_options(parser: argparse.ArgumentParser) -> None:
         dest="run_lint_gate",
         action="store_true",
         default=False,
-        help="Run whole-tree gz lint before the commit and again at the end "
-        "(the pre-push hook also runs it)",
+        help="Run whole-tree gz lint before the commit and again at the end",
     )
     parser.add_argument(
         "--no-lint",
@@ -1892,13 +1891,13 @@ def _add_git_sync_options(parser: argparse.ArgumentParser) -> None:
         dest="run_test_gate",
         action="store_true",
         default=False,
-        help="Run the full unit suite before the commit; no hook runs it, CI does after the push",
+        help="Run the full unit suite before the commit; a failure blocks",
     )
     parser.add_argument(
         "--no-test",
         dest="run_test_gate",
         action="store_false",
-        help="Skip the full unit suite (default; CI runs it after the push)",
+        help="Skip the full unit suite (default)",
     )
     parser.add_argument(
         "--auto-add",

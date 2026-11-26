@@ -93,6 +93,15 @@ class TestGitSyncHelpStatesWhatEachFlagRunsOutputContract(unittest.TestCase):
                 self.assertIn("full unit suite", help_text)
                 self.assertNotIn("pre-commit", help_text)
 
+    def test_gate_flag_help_states_no_hook_roster(self) -> None:
+        """The help ships to adopters, whose hook roster gzkit cannot state (template § flags)."""
+        actions = _git_sync_actions()
+        for flag in ("--lint", "--no-lint", "--test", "--no-test"):
+            with self.subTest(flag=flag):
+                help_text = actions[flag].help or ""
+                self.assertNotIn("hook", help_text)
+                self.assertNotIn("CI", help_text)
+
     def test_each_flag_says_what_sync_py_runs_for_it(self) -> None:
         """Each help line names the step `_execute_git_sync` runs or skips for that flag.
 
