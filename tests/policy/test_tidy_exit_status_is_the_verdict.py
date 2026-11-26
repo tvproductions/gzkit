@@ -13,9 +13,11 @@ tidy and either says it exits 0 or succeeds whatever it finds or on a finding, o
 the reader to distrust the exit code. Whitespace inside a block is collapsed before it
 is split, so a wrapped phrase is still seen (the gap #1367 found in the size fence).
 Known limits: a reworded claim that uses neither shape passes, and so does a claim
-whose "tidy" sits in an earlier sentence. "Exits 0 even when ADRs pending attestation
-print" is true and passes: only a finding or a breach after the zero is refused. Dated
-records stay as written:
+whose "tidy" sits in an earlier sentence. True sentences are admitted by shape: a
+conditional after the zero is refused only when it names a finding or a breach ("exits 0
+even when ADRs pending attestation print" passes), an unconditional qualifier only when
+no comma separates it from the zero, and a sentence stating the contract with "only
+when" or "only if" is never refused. Dated records stay as written:
 `docs/rnd/`, `docs/releases/`, chore proofs and archives are not read.
 """
 
@@ -56,9 +58,13 @@ _ON_FINDINGS = (
     r"\b(?:even\s+)?(?:with|when|on|despite|if)\s+(?:it has\s+|there are\s+)?"
     r"(?:a\s+|any\s+|its\s+)?(?:findings?|breach(?:es)?)\b"
 )
+_FINDINGS_THEN_ZERO = r"\b(?:findings?|breach(?:es)?)\b.*?\b(?:but|yet|still)\s+"
 _STATUS_IGNORES_FINDINGS = re.compile(
-    rf"{_ZERO}.*?(?:{_ANYWAY}|{_ON_FINDINGS})|{_ANYWAY}.*?{_ZERO}", re.IGNORECASE
+    rf"{_ZERO}[^,]*?{_ANYWAY}|{_ZERO}.*?{_ON_FINDINGS}|{_ANYWAY}.*?{_ZERO}"
+    rf"|{_FINDINGS_THEN_ZERO}{_ZERO}",
+    re.IGNORECASE,
 )
+_CONTRACT = re.compile(r"\bonly (?:when|if)\b", re.IGNORECASE)
 _DISTRUST_EXIT_CODE = re.compile(
     r"\bexit (?:code|status)\b.*?\b(?:instead of|means nothing|is meaningless|tells you nothing)\b"
     r"|\b(?:ignore|disregard|never trust|do not trust|don't trust)\b.*?\bexit (?:code|status)\b",
@@ -77,6 +83,7 @@ def stale_tidy_status_claims(text: str) -> list[str]:
             sentence.strip()
             for sentence in _SENTENCE.split(flat)
             if _TIDY.search(sentence)
+            and not _CONTRACT.search(sentence)
             and (_STATUS_IGNORES_FINDINGS.search(sentence) or _DISTRUST_EXIT_CODE.search(sentence))
         )
     return found
@@ -126,6 +133,8 @@ class TestTidyExitStatusIsTheVerdict(unittest.TestCase):
             "gz tidy exits 0 when it has findings.",
             "gz tidy always succeeds, even with findings.",
             "The exit status of gz tidy means nothing.",
+            "Tidy reports findings but exits 0.",
+            "gz tidy exits successfully whatever it reports.",
         )
         contract = (
             (
@@ -144,6 +153,11 @@ class TestTidyExitStatusIsTheVerdict(unittest.TestCase):
             "`gz check` always exits 0 whatever it reports.",
             "Tidy exits 0 even when ADRs pending attestation print.",
             "gz tidy exits 0 only when no breach section has a finding.",
+            "If the --fix sync succeeds, tidy re-validates whatever tree the sync left.",
+            (
+                "Tidy always prints the pending queue and exits 0 only when no breach "
+                "section has a finding."
+            ),
         )
         for text in stale:
             with self.subTest(stale=text):
