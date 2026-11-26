@@ -1653,7 +1653,7 @@ def _register_chores_parsers(commands: argparse._SubParsersAction[StableArgument
     p_chores_audit = chores_commands.add_parser(
         "audit",
         help="Audit chore log presence",
-        description="Verify chore execution logs are present.",
+        description="Report whether chore execution logs are present.",
         epilog=build_epilog(["gz chores audit --all", "gz chores audit --slug my-chore"]),
     )
     chores_audit_target = p_chores_audit.add_mutually_exclusive_group(required=True)

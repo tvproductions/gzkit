@@ -10,7 +10,7 @@ gz chores advise <slug>
 
 ## Description
 
-Displays the acceptance criteria and actionable advice for a single chore without applying any changes. Use this to understand what a chore will do and gather evidence before running it.
+Runs every acceptance criterion of a single chore, as `gz chores run` does, and reports `PASS` or `FAIL` for each without writing the chore's log. Use it to see what a run would find before running it; `gz chores plan` lists the criteria without running them.
 
 The verdict reaches the exit status, so a scripted caller can branch on it without parsing the rendered output (GHI #781).
 

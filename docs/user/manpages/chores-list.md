@@ -19,7 +19,7 @@ gz chores list [--explain]
   first, then `importlib.resources.files("gzkit.chores")` as the package
   fallback.
 - Fails closed if the registry is missing or malformed in both surfaces.
-- Prints one row per chore with `slug`, `lane`, step count, and title.
+- Prints one row per chore with its slug, lane, version, vendor, criteria count and title.
 - `--explain` adds a resolution-source column labeling each row `project`,
   `package`, or `missing`.
 - Validates each chore's class declaration (`class`, `rung`, `idempotent`,

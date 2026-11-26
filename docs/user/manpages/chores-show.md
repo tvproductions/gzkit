@@ -10,7 +10,7 @@ gz chores show <slug>
 
 ## Description
 
-Outputs the full CHORE.md specification for a single chore, including scope, acceptance criteria, and governance annotations.
+Outputs the full CHORE.md specification for a single chore: its scope, workflow and governance annotations. Acceptance criteria live in `acceptance.json`; `gz chores plan` prints them.
 
 ## Exit Codes
 
