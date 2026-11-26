@@ -9,8 +9,9 @@ of § Operator Doctrine; campaign work selection is now carried verbatim by
 This is a phrasing fence over prose in the form ruled for M9 (operator, 2026-11-26, "a"):
 it claims only the shape below, and its form is open under #1370. It drops backticks and
 splits text into pieces at a ".", ";", "!" or "?" followed by whitespace, at a blank line,
-before a list item ("-", "*" or "+" then whitespace, or a number, "." and whitespace)
-and before a table row ("|"); a wrapped line opening with emphasis does not. It collapses
+and before a line that, after any leading whitespace, opens a list item ("-", "*" or "+"
+then whitespace, or a number, "." and whitespace) or a table row ("|"); a wrapped line
+opening with emphasis does not start a piece. It collapses
 whitespace and refuses a piece that holds "Magna Carta" or "rules every session" together
 with "AGENTS.md" or "Operator Doctrine". A piece holding an ISO date (YYYY-MM-DD) is
 admitted as a dated record, which also admits a live credit that carries a date.
@@ -18,11 +19,11 @@ admitted as a dated record, which also admits a live credit that carries a date.
 It reads the `.md`, `.py`, `.json`, `.toml`, `.yaml` and `.yml` files under
 `.gzkit/skills`, `.gzkit/rules`, `.gzkit/templates`, `.gzkit/agents`, `.gzkit/personas`,
 `.gzkit/chores`, `src/gzkit`, `scripts`, `data`, `docs/user` and `docs/governance`, and the
-root contracts. It skips any path through a `proofs` or `archive` directory, any path whose
-name holds an ISO date (dated plans, audits and snapshots), and
-`docs/governance/rule-version-history.md`, which is version history. It does not judge a
-credit in other words, a credit split across pieces, or a negation ("not in AGENTS.md"),
-which it refuses.
+root contracts. It skips any path through a `proofs` or `archive` directory, any path with
+a directory or file name holding an ISO date (dated plans, audits and snapshots), and
+`docs/governance/rule-version-history.md`, which is version history. It misses a credit in
+other words or one split across pieces, and it cannot tell a negation ("not in AGENTS.md")
+from a credit, so it refuses one.
 """
 
 import re
