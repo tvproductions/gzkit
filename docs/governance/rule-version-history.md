@@ -171,6 +171,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `chores.md`
 
+### Changed 2026-11-26 at version `0.6.6` (receipt pointer)
+
+Prior `0.6.5` banner: *"§ Evidence & Attestation's behave example names a tag the features carry, not the absent `@schema`"*. The independent review of GHI #1383 (prompt audit M16) found § Correct Evidence offering bare `gz check --full` and `behave` under an Attestation heading with no receipt caveat; it now says those commands emit no receipt and points attestation evidence to `gz-arb`'s canonical invocations, per `AGENTS.md` § Attestation. Binding rules unchanged.
+
 ### Changed 2026-11-08 at version `0.6.5` (stale clauses corrected)
 
 Prior `0.6.4` banner: *"§ Apply Advice typechecks the whole tree, `features/` included (RO-9 tranche 4)"*. The rules validity review (`.gzkit/chores/instructions-files-diet/proofs/rules-validity-D-2026-11-08.md`, clause C19) found § Evidence & Attestation's `uv run behave features/<feature>.feature --tags=@schema` naming a tag no file under `features/` carries; the example now reads `uv run -m behave features/<feature>.feature --tags=@REQ-<X.Y.Z-NN-MM>`, the REQ scenario tag `tests.md` defines (operator, 2026-11-08: *"fix what is stale"*). Binding rules unchanged.

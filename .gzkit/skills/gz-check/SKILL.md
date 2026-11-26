@@ -8,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-11-26
 model: haiku
 metadata:
-  skill-version: "1.7.3"
+  skill-version: "1.7.4"
 ---
 
 # gz check
@@ -75,8 +75,8 @@ following — each item is a concrete tool invocation, not a prose claim:
 
 ## Receipt Evidence
 
-These commands emit no receipt. When attestation or audit evidence needs
-receipt IDs, run the canonical ARB invocations listed in `gz-arb`
+The commands in § Individual Commands emit no ARB receipt. When attestation
+or audit evidence needs receipt IDs, run the canonical ARB invocations listed in `gz-arb`
 (`AGENTS.md` § Attestation).
 
 ## Validation
