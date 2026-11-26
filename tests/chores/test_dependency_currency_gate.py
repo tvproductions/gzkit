@@ -533,5 +533,62 @@ class TestTheGateReadsPyPIForBuildPins(unittest.TestCase):
         self.assertIn("uv uv 0.13.9 (latest 0.13.10): held by GHI #77, which is closed", text)
 
 
+class TestBuildPinsAreReadByTable(unittest.TestCase):
+    """The #1369 re-review: a line scan missed arrays and misread other tables."""
+
+    def test_multi_line_arrays_are_read_with_their_holds(self) -> None:
+        text = (
+            '[build-system]\nrequires = [\n    "uv_build>=0.13.1,<0.14",\n]\n\n'
+            "[tool.uv]\nbuild-constraint-dependencies = [\n"
+            '    # held: GHI #41, 85.0 cannot build watchdog\n    "setuptools==84.2.1",\n]\n'
+        )
+        pins = GATE.build_pins(text)
+        self.assertEqual(
+            [(p.name, p.current, p.location, p.hold_ghi) for p in pins],
+            [
+                ("uv_build", "0.13.1", "pyproject.toml:3", None),
+                ("setuptools", "84.2.1", "pyproject.toml:9", 41),
+            ],
+        )
+
+    def test_a_requires_key_in_another_table_is_not_a_build_pin(self) -> None:
+        text = '[tool.some-plugin]\nrequires = ["foo>=1.0"]\n'
+        self.assertEqual(GATE.build_pins(text), [])
+
+    def test_a_requirement_whose_source_text_differs_is_located_by_file(self) -> None:
+        """A TOML escape decodes to text no source line holds; the pin is still read."""
+        pins = GATE.build_pins('[build-system]\nrequires = ["uv_build\\u003e=0.13.1"]\n')
+        self.assertEqual(
+            [(p.name, p.current, p.location, p.hold_ghi) for p in pins],
+            [("uv_build", "0.13.1", "pyproject.toml", None)],
+        )
+
+    def test_an_unbounded_requirement_has_no_version_to_compare(self) -> None:
+        self.assertEqual(GATE.build_pins('[build-system]\nrequires = ["hatchling"]\n'), [])
+
+
+class TestTheReReviewsEdgeCases(unittest.TestCase):
+    def test_a_uses_string_inside_a_run_step_is_not_a_pin(self) -> None:
+        workflow = (
+            '      - run: echo "uses: actions/checkout@v4"\n      - uses: actions/checkout@v7\n'
+        )
+        self.assertEqual([p.current for p in GATE.action_pins(workflow, "w.yml")], ["v7"])
+
+    def test_a_pyproject_that_does_not_parse_is_a_config_error(self) -> None:
+        err = io.StringIO()
+        with tempfile.TemporaryDirectory() as tmp, contextlib.redirect_stderr(err):
+            root = Path(tmp)
+            _tree(root, behind=False)
+            (root / "pyproject.toml").write_text("[build-system\n", encoding="utf-8")
+            code = GATE.check_currency(root, _upstream(), lambda _name: "1.0")
+        self.assertEqual(code, 1)
+        self.assertIn("pyproject.toml does not parse", err.getvalue())
+
+    def test_an_empty_python_version_is_a_finding_not_a_crash(self) -> None:
+        pin = GATE.python_version_pin("\n", DOWNLOADS)
+        findings = GATE.judge([pin], lambda _pin: "unused", lambda _n: True)
+        self.assertEqual([f.reason for f in findings], ["pin names no version"])
+
+
 if __name__ == "__main__":
     unittest.main()

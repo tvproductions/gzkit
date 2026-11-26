@@ -51,6 +51,7 @@ import json
 import re
 import subprocess
 import sys
+import tomllib
 import urllib.request
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Literal
@@ -79,12 +80,13 @@ _HOOK_REV = re.compile(
 )
 _GITHUB_URL = re.compile(r"^https://github\.com/(?P<repo>[\w.-]+/[\w.-]+?)(?:\.git)?/?$")
 _ACTION_USES = re.compile(
-    r"uses:\s*['\"]?(?P<repo>[\w.-]+/[\w.-]+)(?:/[^@\s'\"]*)?@(?P<ref>[^\s'\"#]+)['\"]?"
+    r"^\s*(?:-\s+)?uses:\s*['\"]?(?P<repo>[\w.-]+/[\w.-]+)(?:/[^@\s'\"]*)?@(?P<ref>[^\s'\"#]+)['\"]?"
     r"(?:\s*#\s*(?P<comment>\S+))?"
 )
 
-_BUILD_PIN = re.compile(
-    r"[\"'](?P<name>[A-Za-z0-9][A-Za-z0-9._-]*)\s*(?:==|>=)\s*(?P<version>[^,\"';\s]+)"
+_REQUIREMENT = re.compile(
+    r"^\s*(?P<name>[A-Za-z0-9][A-Za-z0-9._-]*)\s*(?:\[[^\]]*\])?\s*"
+    r"(?:==|>=)\s*(?P<version>[^,;\s]+)"
 )
 _REQUIRED_VERSION = re.compile(r"^\s*required-version\s*=")
 _PRERELEASE = re.compile(r"[a-zA-Z]")
@@ -222,8 +224,10 @@ def action_pins(workflow_text: str, path: str) -> list[Pin]:
     lines = workflow_text.splitlines()
     pins: list[Pin] = []
     for index, line in enumerate(lines):
-        match = _ACTION_USES.search(line)
-        if not match or line.lstrip().startswith("#"):
+        # Anchored to the YAML key, so a commented line or a `uses:` inside a
+        # `run:` string is not a pin.
+        match = _ACTION_USES.match(line)
+        if not match:
             continue
         ref, comment = match.group("ref"), match.group("comment")
         current: str | None = ref
@@ -242,22 +246,38 @@ def action_pins(workflow_text: str, path: str) -> list[Pin]:
 
 
 def build_pins(pyproject_text: str) -> list[Pin]:
-    """Return the build constraint pins and ``[build-system]`` floors ``uv tree`` never reads."""
+    """Return the build pins ``uv tree`` never reads.
+
+    Read by table through ``tomllib``, so a multi-line array is read and a
+    ``requires`` key in another table is not. A requirement with no ``==`` or
+    ``>=`` version names nothing to compare and is skipped.
+
+    Returns:
+        One pin per ``[build-system] requires`` floor and ``[tool.uv]
+        build-constraint-dependencies`` pin that names a version.
+
+    """
+    data = tomllib.loads(pyproject_text)
+    tool_uv = data.get("tool", {}).get("uv", {})
+    declared = [
+        *data.get("build-system", {}).get("requires", []),
+        *tool_uv.get("build-constraint-dependencies", []),
+    ]
     lines = pyproject_text.splitlines()
     pins: list[Pin] = []
-    for index, line in enumerate(lines):
-        stripped = line.lstrip()
-        if not stripped.startswith(("build-constraint-dependencies", "requires")):
+    for requirement in map(str, declared):
+        match = _REQUIREMENT.match(requirement)
+        if match is None:
             continue
-        pins.extend(
+        index = next((i for i, line in enumerate(lines) if requirement in line), None)
+        pins.append(
             Pin(
                 surface="build",
                 name=match.group("name"),
                 current=match.group("version"),
-                location=f"pyproject.toml:{index + 1}",
-                hold_ghi=hold_ghi(lines, index),
+                location=f"pyproject.toml:{index + 1}" if index is not None else "pyproject.toml",
+                hold_ghi=hold_ghi(lines, index) if index is not None else None,
             )
-            for match in _BUILD_PIN.finditer(line)
         )
     return pins
 
@@ -265,7 +285,17 @@ def build_pins(pyproject_text: str) -> list[Pin]:
 def python_version_pin(pinned_text: str, downloads_json: str) -> Pin:
     """Return ``.python-version``'s pin, with the newest stable download of its minor."""
     lines = pinned_text.splitlines()
-    index = next(i for i, line in enumerate(lines) if line.strip() and not line.startswith("#"))
+    index = next(
+        (i for i, line in enumerate(lines) if line.strip() and not line.startswith("#")), None
+    )
+    if index is None:
+        return Pin(
+            surface="python-version",
+            name="cpython",
+            current=None,
+            latest="none",
+            location=".python-version",
+        )
     current = lines[index].strip()
     minor = version_key(current)[:2]
     stable = [
@@ -494,6 +524,13 @@ def check_currency(
     except UpstreamUnavailableError as exc:
         _say(f"BLOCKERS:\n- currency cannot be judged: {exc}", err=True)
         return 2
+    except tomllib.TOMLDecodeError as exc:
+        _say(
+            f"BLOCKERS:\n- pyproject.toml does not parse ({exc}), so its build pins cannot be "
+            "read. Fix the file, then re-run this gate.",
+            err=True,
+        )
+        return 1
     if not findings:
         _say("every inventoried dependency is current or held by an open GHI")
         return 0
