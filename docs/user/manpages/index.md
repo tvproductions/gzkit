@@ -174,7 +174,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz covers`](covers.md) | Report requirement coverage from @covers annotations |
 | [`gz test-shape`](test-shape.md) | Advisory inventory of test-shape debt (tautological + output assertions) |
 | [`gz preflight`](preflight.md) | Detect and clean stale markers and orphan receipts; report expired locks |
-| [`gz tidy`](tidy.md) | Run maintenance checks and cleanup |
+| [`gz tidy`](tidy.md) | Report maintenance findings (exit 3 on a breach); `--fix` regenerates control surfaces |
 | [`gz interview`](interview.md) | Run interactive governance interviews |
 | [`gz chores advise`](chores-advise.md) | Dry-run acceptance criteria for one chore |
 | [`gz chores show`](chores-show.md) | Display CHORE.md content for one chore |
