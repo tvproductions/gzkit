@@ -1122,6 +1122,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `token-block-discipline.md`
 
+### `0.10.4` (2026-11-25)
+
+Prior `0.10.3` banner: *"the register entry is an exchange record under `.gzkit/locks/exchange/`, never a session handoff, the 50 % warning names a surrender that works, and § Sub-Invariants 1 and 5 cite only the release code that exists (GHI #1359)."* The quoted 50 % warning drops "surrender with" to match the SessionStart line, which a compress-and-merge pass shortened when the heavy-state orientation fixture rendered 4042 B against its 4000 B budget (`tests/scripts/test_session_orientation.py`, found by the GHI #1369 full sweep; the overrun entered with `f7371db2a`). Binding rules unchanged.
+
 ### `0.10.3` (2026-11-25)
 
 § Sub-Invariants 1 and 5 named `lock_manager.release_lock()`, a function that does not exist; release lives in `obpi_lock_release_cmd` alone (independent review of GHI #1359, finding N1). Binding rules unchanged.

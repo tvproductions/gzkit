@@ -81,7 +81,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `tool-skill-runbook-alignment.md` | `0.5.4` |
 | `tests.md` | `0.29.1` |
 | `task-discovery.md` | `0.11.0` |
-| `token-block-discipline.md` | `0.10.3` |
+| `token-block-discipline.md` | `0.10.4` |
 
 **Re-read 2026-09-19 (GHIs #1040–#1043).** Model selection, release notes, tests, chores, CLI and tool/skill alignment were read against their existing authorities. Corrections concern nested version metadata, release approval terminology, test-tier selectors and same-patch/direct-repair routing. Their binding obligations and scores are unchanged; the release-note curation note below now uses the correct approval subject. No mechanical promotion or new witness is claimed.
 
@@ -433,6 +433,8 @@ The Claude-specific invariant 10a is scored as a row rather than in prose:
 | 59 | OBPI brief reconciles against current project shape before Stage 2 and before completion | **Mechanical** | Enforced by `gz validate --brief-reconcile` (OBPI-0.0.37-05, `src/gzkit/governance/trust_audits/brief_reconcile.py`) — walks all OBPI briefs under `docs/design/adr/**/{obpis,briefs}/`, computes per-dimension delta across five drift classes (allowlist coherence, Discovery Checklist path existence, Verification verb resolution against parser registry, REQ-count parity against Acceptance Criteria, citation-tuple file existence); reports ERROR severity per dimension with drift; routed to exit 3 via `_POLICY_BREACH_ERROR_TYPES`. Enforcement scope: drift is escalated only for briefs that parse as a structured `BriefStructure` — legacy briefs are walked and reconciled but not escalated, honoring OBPI-0.0.37-04's permissive-mode deprecation window; the validator scope widens automatically as briefs migrate to structured frontmatter. Scorecard citation: ADR-0.0.37 (parent), OBPI-0.0.37-05 (engine), OBPI-0.0.37-06 (CLI verb, pending). `source=AGENTS.md#governance-doctrine-surfaces entry=corpus-governance-doctrine-surfaces-2026-09-18T01:52:11.232560+00:00` |
 
 ### Token Block Discipline (`.gzkit/rules/token-block-discipline.md`)
+
+**Re-scored 2026-11-26 at rule `0.10.4`:** only § Sub-Invariant 4's quoted warning changed, to match the compressed SessionStart line (`5a7b2f91f`); no row's class moves.
 
 **Re-scored 2026-11-25 at rule `0.10.3`** (GHI #1359): the Doctrine Foundation and § Sub-Invariants 2, 5 and 6 now name the register entry an exchange record under `.gzkit/locks/exchange/`, never a session handoff; the § Sub-Invariant 4 warning text matches `session_orientation.py`; § Sub-Invariants 1 and 5 cite `obpi_lock_release_cmd` alone, `lock_manager.release_lock()` not existing. Binding rules unchanged. No row quotes the changed text; no score moves.
 

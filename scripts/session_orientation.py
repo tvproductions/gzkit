@@ -100,8 +100,7 @@ CAMPAIGN_AUTHORITY_NOTE = (
 )
 
 POST_COMPACTION_NOTE = (
-    "Below 50% context, re-read AGENTS.md § Behavior Rules and the active OBPI "
-    "brief before continuing."
+    "Below 50% context, re-read AGENTS.md § Behavior Rules and the active OBPI brief."
 )
 
 # The agent picks skills on its own; the flow guide helps only if it is named at
@@ -785,7 +784,7 @@ def _render_handoff_account(lines: list[str], payload: object) -> None:
 
     if payload.get("current"):
         lines.append(
-            "- VERDICT: the anchor is still a current account; nothing has landed, "
+            "- VERDICT: the anchor is still current; nothing has landed, "
             "run, or been left uncommitted since."
         )
     else:
@@ -1587,7 +1586,7 @@ def render(state: dict[str, Any], now: datetime) -> str:
                     )
                 elif lock.get("ttl_warning"):
                     lines.append(
-                        "  - WARNING: past 50% TTL; complete the OBPI, or surrender with "
+                        "  - WARNING: past 50% TTL; complete the OBPI or "
                         "`gz obpi lock release <obpi> --abandon <category>:<reason>`."
                     )
     else:
