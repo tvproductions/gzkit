@@ -202,9 +202,9 @@ if __name__ == "__main__":
 class SyncPrechecksVerifyGateDelivery(unittest.TestCase):
     """git-sync must not defer to a pre-commit gate that is not installed.
 
-    `_run_sync_prechecks` skips lint/test by default on the stated grounds that
-    "pre-commit enforces unittest/lint/type checks". That deferral is only sound
-    if the hook is actually delivered. In this repo it was not — `.git/hooks/`
+    `_run_sync_prechecks` skips lint/test by default because the commit and push
+    run the repository's hooks instead. That deferral is only sound if the hooks
+    are actually delivered. In this repo it was not — `.git/hooks/`
     held stock samples while the config declared the gate — so `gz git-sync
     --apply` pushed a red tree with nothing in the chain objecting.
     """

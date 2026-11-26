@@ -94,7 +94,10 @@ class TestGitSyncHelpStatesWhatEachFlagRunsOutputContract(unittest.TestCase):
                 self.assertNotIn("pre-commit", help_text)
 
     def test_each_flag_says_what_sync_py_runs_for_it(self) -> None:
-        """Each line names the step `_execute_git_sync` runs or skips for that flag."""
+        """Each help line names the step `_execute_git_sync` runs or skips for that flag.
+
+        This holds the help text to the statement; it does not exercise sync.py.
+        """
         actions = _git_sync_actions()
         # _run_sync_prechecks and _run_post_sync_lint: whole-tree gz lint, before and after.
         lint = actions["--lint"].help or ""

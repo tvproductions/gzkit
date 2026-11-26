@@ -202,8 +202,9 @@ def _run_sync_prechecks(
             executed.append("gz test (pre-sync)")
         else:
             blockers.append("Tests failed before sync.")
-        # Behave no longer runs as a sync pre-gate — pre-commit enforces
-        # unittest/lint/type checks, and behave is Heavy-lane / closeout-scope.
+        # Behave no longer runs as a sync pre-gate: behave is Heavy-lane /
+        # closeout-scope. The pre-commit hooks run lint and type checks; no hook
+        # runs the full unit suite, which --test runs here and CI runs after push.
         # For explicit pre-sync BDD coverage, run `gz test --bdd` beforehand.
 
 

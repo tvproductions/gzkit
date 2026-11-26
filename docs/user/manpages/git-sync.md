@@ -30,25 +30,32 @@ gz git-sync [OPTIONS]
 
 ## What It Does
 
-Without `--apply`, it fetches (`git fetch --prune <remote>`), prints the plan,
-and changes nothing. With `--apply` it runs, in order:
+Without `--apply`, it runs the refusals and the fetch, prints the plan, and
+changes nothing; `--lint` and `--test` run nothing. With `--apply` it runs, in
+order:
 
-1. **Stage:** `git add -A` on a dirty tree (skipped by `--no-auto-add`).
-2. **Hook check:** refuses when a hook `.pre-commit-config.yaml` declares is not
-   installed.
-3. **Pre-check:** `--lint` runs whole-tree `gz lint`; `--test` runs the full unit
+0. **Refusals:** `SKIP` that would bypass the complexity gates, a current branch
+   other than `--branch`, a merge commit at HEAD, or a failing `git status`.
+1. **Fetch:** `git fetch --prune <remote>`; under `--apply` a failure blocks.
+2. **Merge driver:** registers the append-only JSONL merge driver.
+3. **Stage:** `git add -A` on a dirty tree (skipped by `--no-auto-add`).
+4. **Hook check:** refuses when a gating hook type the config installs is
+   missing from `.git/hooks`; a missing recording hook only warns.
+5. **Pre-check:** `--lint` runs whole-tree `gz lint`; `--test` runs the full unit
    suite. Neither runs by default.
-4. **Commit:** commits what is staged; the pre-commit hooks run.
-5. **Rebase:** `git pull --ff-only` when behind, `git pull --rebase` when
+6. **Commit:** refuses on a stranded `.git/COMMIT_EDITMSG`; otherwise commits
+   what is staged, and the pre-commit hooks run.
+7. **Rebase:** `git pull --ff-only` when behind, `git pull --rebase` when
    diverged.
-6. **Push:** `git push` when ahead (skipped by `--no-push`); the pre-push hooks
+8. **Push:** `git push` when ahead (skipped by `--no-push`); the pre-push hooks
    run.
-7. **Post-check:** `--lint` runs whole-tree `gz lint` again; a failure warns.
+9. **Post-check:** `--lint` runs whole-tree `gz lint` again; a failure warns.
 
+A blocker stops every later step and exits `1`; nothing already done is undone.
 The flags are independent, so any combination runs the union of their steps.
-The git-sync skill (`.gzkit/skills/git-sync/SKILL.md`) states what each hook
-stage runs and which command each moment (routine, OBPI Stage 5, ADR closeout,
-release) uses.
+The git-sync skill (`.gzkit/skills/git-sync/SKILL.md`) states each step in full,
+what each hook stage runs, and which command each moment (routine, OBPI Stage 5,
+ADR closeout, release) uses.
 
 The pull and push steps read `ahead`/`behind` **after** the ceremony's own
 auto-commit, not from the plan computed before it. A dirty tree that is behind

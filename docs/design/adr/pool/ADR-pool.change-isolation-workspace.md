@@ -118,7 +118,7 @@ In addition to the original document-isolation scope:
   runtime asserts the prefix invariant before each stage; out-of-prefix
   writes are a fail-closed pipeline error, not a warning.
 - **Stage 5 sync = `gz git-sync` flushes worktree → main, then prunes.**
-  The existing `gz git-sync --apply --lint --test` pipeline becomes the
+  The existing Stage 5 `gz git-sync --apply` becomes the
   worktree-merge surface. Atomic-commit metadata from
   [`atomic-obpi-commits`](ADR-pool.atomic-obpi-commits.md) is produced inside
   the worktree; the merge to main carries the structured trailer through.
