@@ -598,8 +598,9 @@ The doctrine's literal format example, `<path>#<anchor>`, is excluded
 exactly; any other declaration naming a missing origin is a finding. A
 reverse-arm finding is reported against the declaring page and carries the
 recovery step: restore the pointer at the origin's canonical source (for
-`AGENTS.md`, the corpus, via `gz content remember` then `gz content land`), or
-retire the declaration if the lift was undone.
+`AGENTS.md`, the corpus, via `gz content remember`, `gz content land`, then
+`gz agent sync control-surfaces`, because this audit reads the played-back file),
+or retire the declaration if the lift was undone.
 
 ```bash
 # Check pointer integrity across the per-turn surface
@@ -2197,6 +2198,7 @@ gz validate --rendition-freshness
 |------|---------|----------|
 | 0 | Renditions agree with the corpus fingerprint (or drift, while the MX hangar is open) | — |
 | 3 | Corpus drifted from the committed fingerprint | Land the corpus into every routed consumer: `gz content land <surface> --attestor … --attestation-text …`, then `gz agent sync control-surfaces` |
+| 3 | Integrity: the committed rendition's bytes are not the bytes attested, or the sidecar carries no rendition fingerprint | The rendition was written outside the promotion seam. Recompose the intended content with `gz content compose <surface> --consumer <c> --candidate <file>`, then `gz content commit <surface> --consumer <c> --attestor … --attestation-text …` |
 
 **When to use:** After `gz content remember` appends a corpus entry, before `gz agent sync
 control-surfaces`, or to diagnose a `gz check` Rendition freshness warning.
@@ -2228,7 +2230,7 @@ gz validate --rendition-floor-coherence
 | Code | Meaning | Recovery |
 |------|---------|----------|
 | 0 | Every committed rendition carries its corpus invariant floor verbatim | — |
-| 3 | A rendition omits one or more invariant-tier corpus entries | Land the corpus, which regenerates every corpus-owned section: `gz content land <surface> --attestor … --attestation-text …`, then `gz agent sync control-surfaces`. A hand-composed candidate (`gz content compose <surface> --consumer <c> --candidate <file>`, then `gz content commit`) must carry every invariant entry verbatim |
+| 3 | A rendition omits one or more invariant-tier corpus entries | Entry in a corpus-owned section: `gz content land <surface> --attestor … --attestation-text …`, then `gz agent sync control-surfaces`. Entry in an unowned section (carried forward from the prior rendition, so land refuses): `gz content compose <surface> --consumer <c> --candidate <file>` with the entry verbatim, then `gz content commit` |
 
 **When to use:** Before attesting an ADR-0.0.37 closeout, or to prove a committed rendition
 genuinely derives canon's invariants rather than passing a timestamp-only freshness check.
@@ -2287,7 +2289,8 @@ gz validate --rendition-lineage
 | Code | Meaning | Recovery |
 |------|---------|----------|
 | 0 | Every graded owned section derives from the effective corpus (or no surface declares ownership yet, or every declared section is disclosed UNGRADED for want of a committed lineage sidecar) | — |
-| 3 | A committed owned section's bytes differ from the corpus regeneration, or the corpus refuses to materialize a candidate for a declared surface | Capture the wording in canon (`gz content remember <surface> ...`), then land it: `gz content land <surface> --attestor … --attestation-text …`, then `gz agent sync control-surfaces` |
+| 3 | A committed owned section's bytes differ from the corpus regeneration | Capture the wording in canon (`gz content remember <surface> ...`), then land it: `gz content land <surface> --attestor … --attestation-text …`, then `gz agent sync control-surfaces` |
+| 3 | The corpus refuses to materialize a candidate for a declared surface | Repair the refusal the generator names (for example retire a duplicate live invariant with `gz content retire`). `land` runs the same generator and refuses the same way until then. Then land and sync as above |
 
 **When to use:** After editing corpus entries for a surface that declares `corpus-owned`
 sections, before attesting an ADR-0.35.0 closeout, or to diagnose a `gz check` Rendition

@@ -68,14 +68,24 @@ class TestFloorViolation(_TempProject):
         self.assertIn("corpus-tty", errors[0].message)
 
     def test_recovery_names_the_attested_land(self) -> None:
-        """The next step lands the corpus, which regenerates owned sections (GHI #1389)."""
+        """Each route is named for the case it repairs (GHI #1389).
+
+        Land regenerates corpus-owned sections only; an unowned section is carried
+        forward from the prior rendition, so land refuses there and the hand-composed
+        compose -> commit route is the repair.
+        """
         append_entry(self.root, "AGENTS.md", _entry(_INV, entry_id="corpus-tty"))
         save_rendition(self.root, "AGENTS.md", "root", b"# AGENTS.md\n\nUnrelated body.\n")
 
         message = validate_rendition_floor_coherence(self.root, fail_closed=True)[0].message
 
-        self.assertIn("gz content land AGENTS.md", message)
-        self.assertIn("--attestation-text", message)
+        owned, _, unowned = message.partition("If it addresses an unowned section")
+        self.assertIn("corpus-owned", owned)
+        self.assertIn("gz content land AGENTS.md", owned)
+        self.assertIn("--attestation-text", owned)
+        self.assertIn("land refuses", unowned)
+        self.assertIn("gz content compose AGENTS.md --consumer root --candidate", unowned)
+        self.assertIn("gz content commit", unowned)
 
     @covers("REQ-0.35.0-09-05")
     def test_the_graded_consumer_is_the_routed_one(self) -> None:

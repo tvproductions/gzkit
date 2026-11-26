@@ -1405,9 +1405,9 @@ def run_rendition_floor_coherence_audit(project_root: Path) -> QualityResult:
     Fails closed (exit 3) when a committed rendition omits an invariant-tier
     corpus entry — the content witness `--rendition-freshness` (a timestamp
     comparison) does not perform.
-    Recovery: `uv run gz content land <surface>`, which regenerates every
-    corpus-owned section; a hand-composed candidate carries every invariant
-    entry verbatim.
+    Recovery: `uv run gz content land <surface>` when the entry addresses a
+    corpus-owned section; for an unowned section, land refuses, so compose a
+    candidate carrying the entry verbatim and commit it.
 
     Returns:
         QualityResult of running ``uv run gz validate --rendition-floor-coherence``.
