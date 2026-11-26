@@ -23,10 +23,9 @@ Invoke `/gz-check` at these workflow decision points:
 - **After hook or surface changes** — if you modified `.claude/settings.json`,
   skill mirrors, or rules files, run `/gz-check` to confirm nothing broke.
 
-This skill extends `/gz-arb` by adding Claude surface checks. Use `/gz-arb`
-when you only need code quality evidence; use `/gz-check` when you also need
-configuration health assurance. See [Runbook: Quality Loop](../runbook.md) for
-the full verification workflow.
+`/gz-check` emits no ARB receipt. When attestation evidence needs receipt IDs,
+use [`/gz-arb`](gz-arb.md), which wraps the same QA tools in receipts. See
+[Runbook: Quality Loop](../runbook.md) for the full verification workflow.
 
 ## What to Expect
 
@@ -82,6 +81,6 @@ sync.
 | Related | Relationship |
 |---------|-------------|
 | [`gz check`](../manpages/check.md) | The CLI command this skill wraps |
-| [`/gz-arb`](gz-arb.md) | Quality-only workflow (no Claude surface checks) |
+| [`/gz-arb`](gz-arb.md) | Wraps QA steps in ARB receipts for attestation evidence |
 | [`/gz-agent-sync`](gz-agent-sync.md) | Regenerates surfaces when drift is detected |
 | [`/git-sync`](git-sync.md) | Typically follows after checks pass |

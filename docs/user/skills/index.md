@@ -78,7 +78,7 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 
 | Skill | Description |
 |-------|-------------|
-| [`/gz-arb`](gz-arb.md) | Quality evidence workflow using native gz lint/typecheck/test/check |
+| [`/gz-arb`](gz-arb.md) | Wrap QA steps in ARB receipts for attestation evidence |
 | [`/gz-check`](gz-check.md) | Run full quality checks in one pass |
 | [`/gz-chore-runner`](gz-chore-runner.md) | Run a gzkit chore end-to-end (show, plan, advise, execute, validate) |
 | [`/gz-cli-audit`](gz-cli-audit.md) | Audit CLI documentation coverage and headings |

@@ -1,53 +1,53 @@
 # /gz-arb
 
-Run the quality evidence workflow using native `gz` lint, typecheck, test, and
-check commands.
+Wrap QA commands in ARB receipts for attestation evidence, or audit lint
+patterns from the receipts.
 
 ---
 
 ## Purpose
 
-`/gz-arb` is the quality evidence workflow for gzkit. It runs the four canonical
-quality checks — lint, typecheck, test, and check — in sequence, producing
-deterministic evidence that gates and attestation workflows depend on. Think of
-it as the pre-flight checklist you run before any governance action that requires
-proof of code quality.
+`/gz-arb` runs gzkit's QA steps (ruff, ty, unittest, coverage, the docs build)
+through the ARB middleware, which writes a schema-validated JSON receipt for each
+run to `artifacts/receipts/`. Those receipt IDs are the attestation evidence
+`AGENTS.md` § Attestation requires: the bare `gz lint`, `gz test` and `gz check`
+commands produce no receipt.
 
 ## When to Use
 
-Invoke `/gz-arb` at these workflow decision points:
+- **Before attestation or closeout** — produce the receipt IDs that
+  `gz obpi complete`, `gz adr emit-receipt` and Heavy-lane closeout claims cite.
+- **Debugging a failing QA step** — keep a receipt of the failing run.
+- **Tuning guardrails** — summarize recurring advice from recent lint receipts.
+- **Auditing QA compliance** across an ADR or a release cycle.
 
-- **Before git-sync** — run quality checks before
-  `gz git-sync --apply --lint --test` to catch issues locally first.
-- **Before Gate 2 / Gate 3 verification** — produce the lint, typecheck, and
-  test evidence that gates require.
-- **Before closeout and attestation** — ensure all quality surfaces are green
-  before starting the closeout ceremony.
-- **After implementation** — verify that new code passes all quality checks
-  before presenting evidence.
-
-This skill sits in the quality verification phase of the
-[daily workflow](../concepts/workflow.md). It is the manual equivalent of the
-automated checks that `gz git-sync` runs during sync.
+For the per-change quality gate without receipts, use
+[`/gz-check`](gz-check.md).
 
 ## What to Expect
 
-The skill runs four commands sequentially:
+The skill runs the canonical invocations, one per claim category; they are locked
+by `CANONICAL_STEP_COMMANDS`, and `gz arb validate` flags a divergent command as
+non-canonical provenance:
 
-1. **`uv run gz lint`** — Ruff linting and formatting checks.
-2. **`uv run gz typecheck`** — Static type checking via ty.
-3. **`uv run gz test`** — Unit test suite via unittest.
-4. **`uv run gz check`** — Composite quality check (runs all of the above plus
-   additional governance validations).
+```bash
+uv run gz arb ruff src tests
+uv run gz arb typecheck
+uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
+uv run gz arb coverage
+uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
+```
 
-Each command's output is displayed as it runs. If any step fails, the remaining
-steps still execute so you see the full picture. Typical runtime is 30-90
-seconds depending on test suite size.
+It then validates the receipts (`uv run gz arb validate`), summarizes them
+(`uv run gz arb advise`) and, optionally, extracts recurring patterns
+(`uv run gz arb patterns`).
 
-**Success** looks like: all four commands exit 0 with clean output.
+**Success** looks like: each wrapped step exits 0 and `gz arb validate` reports
+`invalid=0`, so the receipt IDs can be cited.
 
-**Failure** looks like: lint violations, type errors, or test failures reported
-with specific file and line references. Fix the reported issues and rerun.
+**Failure** looks like: a wrapped step exits 1 (the command failed; its receipt
+is still written) or 2 (an ARB internal error). Fix the reported findings and
+rerun.
 
 ## Invocation
 
@@ -57,24 +57,19 @@ with specific file and line references. Fix the reported issues and rerun.
 
 | Argument / Flag | Required | Description |
 |-----------------|----------|-------------|
-| *(none)* | — | Runs the full quality workflow with no arguments |
+| *(none)* | — | Runs the receipt workflow with no arguments |
 
 ## Supporting Files
 
 | File | Role | Read/Write |
 |------|------|------------|
 | `.claude/skills/gz-arb/SKILL.md` | Agent execution instructions | Read |
-
-This skill has no additional assets. It wraps the `gz` CLI quality commands
-directly.
+| `artifacts/receipts/` | Receipts written by each wrapped run | Write |
 
 ## Related Skills and Commands
 
 | Related | Relationship |
 |---------|-------------|
-| [`gz lint`](../manpages/lint.md) | Individual lint command (run separately by this skill) |
-| [`gz typecheck`](../manpages/typecheck.md) | Individual typecheck command |
-| [`gz test`](../manpages/test.md) | Individual test command |
-| [`gz check`](../manpages/check.md) | Composite quality check command |
-| [`/gz-check`](gz-check.md) | Similar skill with additional Claude surface validation |
+| [`gz arb`](../manpages/arb.md) | The CLI command group this skill wields |
+| [`/gz-check`](gz-check.md) | The per-change quality gate; emits no ARB receipt |
 | [`/git-sync`](git-sync.md) | Typically follows after quality checks pass |
