@@ -5,9 +5,9 @@ description: Use to do the work a GHI describes, verify it and close the issue w
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-26
 metadata:
-  skill-version: "2.15.0"
+  skill-version: "2.15.1"
 model: opus
 ---
 
@@ -173,9 +173,8 @@ shapes the commit body and verification evidence, not a trigger to
 ceremonialize a defect remedy as new feature work.
 
 When the fix scope feels too large for a direct fix, the right move is
-**operator escalation with routing facts** — diff estimate, surfaces
-touched, precedent count from `git log --since='60 days ago' --oneline
---grep='^fix('`. The right move is **never** "author a new OBPI to make
+**operator escalation with routing facts** — the ones `AGENTS.md`
+§ Defect-fix routing names: size, surface, trigger, coverage. The right move is **never** "author a new OBPI to make
 the ceremony fit." Authoring an OBPI to close a defect inverts AGENTS.md
 § Defect-fix routing: it routes ceremony work back onto defect-fix where
 direct-fix already provides the right audit trail (`fix(...)` trailer,
@@ -278,8 +277,8 @@ Four-phase protocol: **read**, **execute**, **verify**, **close**.
      surface heat go in the commit body and the verification evidence.
    - **Operator escalation (only when scope is genuinely uncertain AND
      the operator has not already chosen a route)**: surface the routing
-     facts — estimated diff, surfaces touched, precedent count from
-     `git log --since='60 days ago' --oneline --grep='^fix('` — and ask.
+     facts `AGENTS.md` § Defect-fix routing names — size, surface,
+     trigger, coverage — and ask.
      The choices are "direct fix now", "split into smaller direct fixes",
      or "wait for an unlanded upstream"; "author an OBPI" is never one of
      them. Unmet ADR intent is the operator's to route: [`references/repair-assignment.md`](references/repair-assignment.md).
@@ -300,7 +299,7 @@ Four-phase protocol: **read**, **execute**, **verify**, **close**.
    | GHI is mis-labeled feature work and its destination cannot be authored in this session | Leave open with a blocker comment naming the next concrete operator action (see route-correction bullet above) |
    | A live OBPI brief owns the surface (`AGENTS.md` § Defect-fix routing) | Surface the brief, its status and its parent ADR; wait for the operator's ruling |
 
-   "The precedent count is low so I'm unsure" is not a blocker — surface it with the routing facts and proceed on the operator's choice. "The fix is boring" is not a blocker. **"The fix is large enough that an OBPI feels safer" is not a blocker — it is the doctrine alarm.**
+   "The routing facts are borderline so I'm unsure" is not a blocker — surface it with the routing facts and proceed on the operator's choice. "The fix is boring" is not a blocker. **"The fix is large enough that an OBPI feels safer" is not a blocker — it is the doctrine alarm.**
 
 5. **Apply the fix** in the chosen route. TDD discipline per `.gzkit/rules/tests.md` § Red-Green-Refactor applies to any code change; doc/brief/WBS edits skip the test cycle but still record observed output per `AGENTS.md` § DO IT RIGHT #4.
 

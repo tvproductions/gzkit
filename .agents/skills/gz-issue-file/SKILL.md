@@ -5,9 +5,9 @@ description: Use from a consuming repository to file a gzkit defect or enhanceme
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-11-26
 metadata:
-  skill-version: "1.0.4"
+  skill-version: "1.0.5"
   govzero-framework-version: "v6"
 model: sonnet
 ---
@@ -44,11 +44,10 @@ For enhancements to any of the above, file with `--enhancement` instead of
 
 - Defects in **consumer-repo** code, content, or governance — file at the
   consumer's tracker via plain `gh issue create`.
-- In-flight defects against gzkit that meet the direct-fix thresholds in
-  `AGENTS.md` § Defect-fix routing (diff size ≤10 source lines **OR** ≤2
-  source files; single named surface; ≥3 recent `fix(` precedents) — fix
-  in place with `fix(<scope>): … (GHI #N)` rather
-  than filing.
+- In-flight defects against gzkit that meet the direct-fix conditions in
+  `AGENTS.md` § Defect-fix routing — fix in place with a `fix(<scope>): …`
+  commit carrying a `Task: TASK-<slug>` trailer (`.gzkit/rules/tests.md`
+  § TASK-Driven Workflow) rather than filing.
 
 ## Procedure
 

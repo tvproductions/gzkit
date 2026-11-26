@@ -284,8 +284,8 @@ mechanical backstops; one is **deliberately inverted**:
   Karpathy requires the *narrow* one. The inversion is intentional: a
   corrupted artifact graph cannot be unwound by a downstream surgical
   patch, so the contract pays the coupled-surface tax up-front.
-  § Defect-fix routing's 60-day precedent gate and Invariant 6c are the
-  structural defenses that keep "fix the class" from sliding into
+  § Defect-fix routing's direct-fix conditions and DO IT RIGHT #7 (6c)
+  are the structural defenses that keep "fix the class" from sliding into
   ceremony-for-ceremony's-sake on small in-flight fixes.
 - **#4 Goal-Driven Execution** (transform "fix X" into "write failing
   test, make it pass") — adopted; the upstream *authoring habit* is a

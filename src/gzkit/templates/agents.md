@@ -56,7 +56,7 @@ Behavioral framing via `.gzkit/personas/` (YAML-frontmatter markdown). Every age
 4. **Verify observed behavior, not assumed behavior.** Run the command, paste actual output.
 5. **Read the code before you change it.** Read exports, immediate callers, shared utilities. If unsure why existing code is structured a certain way, ask. (Sharpened by Rule 6, 2026-05-24.)
 6. **Tests assert semantics, not strings.** Assertions derive from the REQ, not from a run of the code. Tests must encode WHY behavior matters, not just WHAT it does — a test that can't fail when business logic changes is wrong. (Sharpened by Rule 7, 2026-05-24.)
-7. **Invariant 6c — choose fix scope per § Defect-fix routing thresholds, not intuition.** Run `git log --since='60 days ago' --oneline --grep='^fix('` before deciding.
+7. **Invariant 6c — choose fix scope per § Defect-fix routing thresholds, not intuition.**
 8. **Invariant 6g — verify the runtime surface before recommending an incantation.** Run, observe, paste, recommend.
 9. **Invariant 6h — quote the rule and the conflicting directive verbatim.** No unquoted "competing directives" narrative.
 10. **Simplicity first.** Minimum code that solves the problem. Nothing speculative. No abstractions for single-use code. (Rule 2, 2026-05-24.)
@@ -294,7 +294,6 @@ Route by thresholds, not judgment. Default failure mode = over-applying ceremony
 |---|---|
 | Diff size | ≤10 source lines OR ≤2 source files |
 | Scope | Single named module or surface |
-| Precedent | `git log --since='60 days ago' --oneline --grep='^fix('` ≥3 commits |
 | Trigger | Defect surfaced in flight, not new feature work |
 | Coverage | Unit test validates without new BDD scenario |
 
@@ -308,7 +307,7 @@ Route by thresholds, not judgment. Default failure mode = over-applying ceremony
 
 ### Decision protocol
 
-1. **Compute the routing facts** (diff size, scope, precedent, trigger, coverage).
+1. **Compute the routing facts** (diff size, scope, trigger, coverage).
 2. **Apply the criteria** mechanically.
 3. **If direct fix**: `fix(<scope>): <summary> (GHI #N)` with TDD evidence.
 4. **If OBPI ceremony**: open the brief and follow `gz-obpi-pipeline`.
