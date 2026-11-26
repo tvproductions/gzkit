@@ -70,7 +70,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `security-sensitivity.md` | `0.7.0` |
 | `skill-surface-sync.md` | `0.15.0` |
 | `skill-authoring.md` | `0.2.1` |
-| `chores.md` | `0.6.5` |
+| `chores.md` | `0.6.6` |
 | `cli.md` | `0.9.3` |
 | `cross-platform.md` | `0.8.1` |
 | `gate5-runbook-code-covenant.md` | `0.3.2` |
@@ -251,6 +251,8 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 
 ### Chores Workflow (`.gzkit/rules/chores.md`)
 
+**Re-scored 2026-11-26 at rule `0.6.6`** — § Correct Evidence now says its commands emit no receipt and points attestation evidence to `gz-arb` (GHI #1383, found by its independent review); row 56e scores the added clause. No other row moves.
+
 **Re-scored 2026-11-08 at rule `0.6.5`** — stale clauses corrected (operator, *"fix what is stale"*): § Evidence & Attestation's `behave … --tags=@schema` example named a tag no feature carries; it now names the `@REQ-<X.Y.Z-NN-MM>` scenario tag (`tests.md`). No row scored that example, so no score moves. Coupled fix: `.gzkit/chores/README.md` § Consult Before Acting named the package `registry.json` canonical; it now names `.gzkit/chores/registry.json`, as row 56c and `skill-surface-sync.md` rule 1 do.
 
 | # | Rule | Score | Notes |
@@ -262,6 +264,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | 56b | A suppression marker hand-written during a chore run | **Judgment** | **Added 2026-09-13 (rule `0.4.0`), GHI #999 step 6; advisory in the rule's own text.** gzkit models no binding from a chore run to the diff it leaves, so attributing a new `# noqa` to a run is a reading of the diff. A repo-wide suppression ratchet was considered and not chosen at the same ruling: it would gate every commit rather than chore runs. Reclassify on a named run that discharged a finding by a hand-written marker and was caught late. `source=.gzkit/rules/chores.md` |
 | 56c | Author every chore in `.gzkit/chores/<slug>/` | **Promotable** | **Added 2026-09-28 (rule `0.6.0`), GHI #1044**, which found the rule naming the package copy canonical while `skill-surface-sync.md` rule 1 named `.gzkit/`; operator ruling 2026-09-28, verbatim *".gzkit/chores/ canonical (Recommended)"*. The consequence arm exists: `gz validate --distribution` byte-compares canonical-class chore files between the two trees, so an edit made only in the package copy fails it, and the next `gz agent sync control-surfaces` overwrites it. Promotable rather than Mechanical because no registered `NC:<claim-id>` plants a package-only chore edit and asserts the distribution check fires. Promotion path: author that control. `source=.gzkit/rules/chores.md` |
 | 56d | `gz chores doctor` rewrites every differing definition file of a `DAMAGED` slug; dry-run and sync before repairing | **Judgment** | **Added 2026-09-28 (rule `0.6.0`), GHI #1044.** The replacement semantics are code (`_repair_damaged_doctor_slug`, `src/gzkit/commands/chores.py`), described rather than changed, as the issue required. Whether an operator dry-runs and syncs first is procedure with no artifact recording it. `source=.gzkit/rules/chores.md` |
+| 56e | These commands emit no receipt. When attestation evidence needs receipt IDs, run the canonical ARB invocations listed in `gz-arb` (`AGENTS.md` § Attestation). | **Promotable** | **Added 2026-11-26 (rule `0.6.6`), GHI #1383.** Scored as row 40a scores the same consequence: no registered property-level witness holds this row, so it is not Mechanical. The invocations are locked by `CANONICAL_STEP_COMMANDS`, `gz arb validate` flags drift, and on Heavy lane / `foundation` kind a missing receipt ID is fail-closed (`gz adr emit-receipt` exits 3 before the attestation is recorded). On Lite a missing receipt warns. `source=.gzkit/rules/chores.md` |
 
 ### ADR Audit (`.gzkit/rules/adr-audit.md`)
 
@@ -640,7 +643,7 @@ decays in whichever direction the next reader's grep happens to point.
 | Score | Rows | % of scored rows |
 |-------|-------|---|
 | **Mechanical** | 70 | 32% |
-| **Promotable** | 65 | 30% |
+| **Promotable** | 66 | 30% |
 | **Judgment** | 83 | 38% |
 | **Ambiguous** | 0 | 0% |
 
