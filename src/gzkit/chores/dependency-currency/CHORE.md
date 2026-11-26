@@ -3,6 +3,14 @@
 **Lane:** Lite
 **Slug:** `dependency-currency`
 
+> **Version 2.1.0 (2026-11-25, GHI #1369):** the criteria now witness currency.
+> Two gates come first: the drift report, now one fixed-name file, must have
+> changed within the period, and every inventoried pin must be at upstream
+> latest or held. The upgrade step moves hook revs and Actions pins, and a
+> gate-red bump is repaired forward, never pinned back. Operator, verbatim: *"do
+> both - we need 'full monty' deps check, not 'lite'"*; *"Only uninstallable
+> (Recommended)"*.
+>
 > **Version 2.0.1 (2026-11-25, GHI #1368):** § 2a names the fence that keeps
 > its grading in this file.
 >
@@ -35,12 +43,15 @@ against upstream latest releases, record the drift, and bring every
 dependency up to date in the same run.
 
 **Mode: check and upgrade.** Each run writes the drift report, then applies
-the `gz-deps-upgrade` procedure: `uv lock --upgrade`, `==` pins moved to
-latest, `>=` floors raised to what locked, `.python-version` moved to the
-newest patch of the floor's minor, verified by `uv run gz check --full`. A
-bump that turns the gate red is pinned at its last-known-good version and
-filed as a GHI for the migration; the rest of the upgrade still lands. A floor
-is never lowered to make the gate pass.
+the `gz-deps-upgrade` procedure: the uv binary refreshed, `uv lock --upgrade`,
+`==` pins moved to latest, `>=` floors raised to what locked, `.python-version`
+moved to the newest patch of the floor's minor, pre-commit hook revs and
+GitHub Actions pins moved to their latest releases, verified by
+`uv run gz check --full`. A bump that turns the gate red is repaired forward:
+the code moves to the new release, and a repair that outgrows the run is filed
+as a GHI while the upgrade still lands. Nothing is pinned back and no floor is
+lowered to make the gate pass (operator ruling 2026-11-19, in `gz-deps-upgrade`
+step 9a).
 
 **Out of scope (hard rules):** Never touches gzkit's own `version` line in
 `pyproject.toml`, `src/gzkit/__init__.py`, or the README badge — those are
@@ -61,8 +72,9 @@ applies what it finds.
 
 ## Policy and Guardrails
 
-- **Lane:** Lite — edits `pyproject.toml` dependency entries, `uv.lock` and
-  `.python-version` only; `uv run gz check --full` gates the result
+- **Lane:** Lite — edits `pyproject.toml` dependency entries, `uv.lock`,
+  `.python-version`, `.pre-commit-config.yaml` revs and `.github/workflows/`
+  `uses:` pins only; `uv run gz check --full` gates the result
 - **Network:** Required (queries GitHub releases API and PyPI)
 - **Stays out of:** `src/gzkit/`, `tests/`, `docs/`, gzkit's own version
   surfaces, the `requires-python` floor, and the `[tool.uv] required-version`
@@ -77,13 +89,13 @@ applies what it finds.
 
 ```bash
 uv self version
-uv tree --outdated --depth 1
+uv tree --locked --outdated --depth 1
 grep -E '^\s*-\s*repo:|^\s*rev:' .pre-commit-config.yaml
 grep -rE 'runs-on:|uses: ' .github/workflows/
 grep '^requires-python' pyproject.toml
 ```
 
-`uv tree --outdated --depth 1` lists every runtime, `dev` and `docs`
+`uv tree --locked --outdated --depth 1` lists every runtime, `dev` and `docs`
 dependency once, from the same declaration the lock reads, with
 `(latest: …)` beside each one that has moved. No list in this chore restates
 them.
@@ -120,7 +132,10 @@ curl -s https://pypi.org/pypi/<name>/json | uv run python -c "import json,sys; d
 ### 3. Build drift report — observe
 
 Markdown table written to
-`.gzkit/chores/dependency-currency/proofs/drift-report-YYYY-MM-DD.md`:
+`.gzkit/chores/dependency-currency/proofs/drift-report.md`, replaced each run
+with the date in its first line; git keeps every earlier report. It is the
+chore's declared scan record (`staleness.artifacts`), so writing it is what lets
+a run pass, and the dated reports before 2026-11-25 stay as history:
 
 | Surface | Current | Latest | Delta | Notes |
 |---------|---------|--------|-------|-------|
@@ -130,30 +145,47 @@ Markdown table written to
 
 ### 4. Upgrade — repair
 
-Apply `.gzkit/skills/gz-deps-upgrade/SKILL.md` steps 3–10 (the uv binary and
-global tools are kept current outside the repository). Note each major bump in
-the drift report's Notes column with its changelog link.
+Apply `.gzkit/skills/gz-deps-upgrade/SKILL.md` steps 1–10, step 4a included
+(hook revs and Actions pins). Step 1 refreshes the uv binary the run uses, which
+the currency criterion reads; step 2's global tools stay outside the repository.
+Note each major bump in the drift report's Notes column with its changelog link.
 
-- **Gate red:** find the offending package, pin it at last-known-good with a
-  comment naming the GHI, file the GHI through `ghi-author`, and re-run the
-  gate. Never lower a floor to make it pass.
-- **Upstream not yet installable** (a release uv cannot resolve, a yanked
-  version): hold it, and say why in the Notes column.
+- **Gate red:** repair the code to the new release (`gz-deps-upgrade` step 9a).
+  A repair that outgrows the run is filed as a GHI through `ghi-author`, and the
+  upgrade still lands. Never pin back or lower a floor to make it pass.
+- **Upstream not installable** (a release uv cannot resolve, a yanked version,
+  an action release that fails to run): hold the pin where it is, write
+  `held: GHI #N` on the pinning line or the comment directly above it, file
+  that GHI saying why it cannot be installed, and note it in the Notes column.
+  The hold passes the currency criterion while the GHI is open.
 
 ## Acceptance Criteria
 
 Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan dependency-currency`. This section explains them and does not restate them (GHI #1002).
 
-The acceptance criteria witness the repaired state: the lock agrees with
-`pyproject.toml`, the Python version is declared once and passes the
-discipline check, and lint and typecheck hold on the upgraded toolchain (the
-gzkit-wrapped commands honor configured exclusions).
+The acceptance criteria witness the repaired state, and the first two witness
+that it is current (GHI #1369):
+
+1. `check_currency.py --scan-record`: the drift report changed within the
+   declared period, so a run that did not look cannot pass or move the chore's
+   band (#935's rule).
+2. `check_currency.py --currency`: every Python dependency, the uv binary, every
+   pre-commit hook rev and every Actions `uses:` pin is at its upstream latest,
+   or held by an open GHI as § 4 describes. A major-tag pin (`@v6`) compares by
+   major; a commit-SHA pin compares by the version its trailing comment names.
+3. The lock agrees with `pyproject.toml`, the Python version is declared once
+   and passes the discipline check, and lint and typecheck hold on the upgraded
+   toolchain (the gzkit-wrapped commands honor configured exclusions).
+
+Both gates need the network (`gh`, PyPI through uv); an unreachable upstream
+exits 2, never passes. They run only inside `gz chores run`, never from
+`gz check`, so they behave the same in operation, the hangar and the drydock.
 
 ## Evidence Commands
 
 ```bash
 uv self version > .gzkit/chores/dependency-currency/proofs/uv-version.txt
-uv tree --outdated --depth 1 > .gzkit/chores/dependency-currency/proofs/outdated-YYYY-MM-DD.txt
+uv tree --locked --outdated --depth 1 > .gzkit/chores/dependency-currency/proofs/outdated-YYYY-MM-DD.txt
 gh api repos/astral-sh/uv/releases/latest --jq .tag_name > .gzkit/chores/dependency-currency/proofs/uv-latest.txt
 ```
 
@@ -164,6 +196,12 @@ gh api repos/astral-sh/uv/releases/latest --jq .tag_name > .gzkit/chores/depende
   instruction above, not a scheduled signal.
 - Chores announce, never gate: the daily cadence makes the chore due on the
   chores board each day; something still has to run it.
+- The currency criterion checks a hold's marker and that its GHI is open, not
+  that the release truly cannot be installed; the GHI states that.
+- Runner images are not compared: `runs-on` labels ending `-latest` move with
+  GitHub, and a versioned image is read in § 2 by hand.
+- The analyzers' health (§ 2a) is graded in the drift report, not by a
+  criterion: *abandoned* needs evidence no command reads.
 
 ---
 

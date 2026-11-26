@@ -112,7 +112,7 @@ repos:
 
   # Astral's own hook keeps uv.lock in step with pyproject.toml on every commit
   # that touches either (RO-9 tranche 2). Its rev is the uv release it runs; move
-  # it to the current uv in each `gz-deps-upgrade` pass (step 1).
+  # it to the current uv in each `gz-deps-upgrade` pass (step 4a).
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.13.9
     hooks:

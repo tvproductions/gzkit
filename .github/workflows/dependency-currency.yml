@@ -1,0 +1,53 @@
+name: Dependency currency
+
+# The automatic caller for the `dependency-currency` chore's two gates
+# (GHI #1369; a gate with no automatic caller can be red indefinitely while
+# every other gate reports green, GHI #785).
+#
+# It lives here and NOT in `gz check` or `.pre-commit-config.yaml` because both
+# gates read upstream over the network (GitHub releases, PyPI through uv), so a
+# local gate would fail on a plane. The chore's declared cadence is
+# elapsed-time/1d, and a daily schedule is what makes that declaration true.
+# Red here means the tree is behind upstream, or nobody wrote today's drift
+# report: run the chore (`gz-chore-runner dependency-currency`).
+on:
+  schedule:
+    - cron: "0 6 * * *" # 06:00 UTC daily, matching staleness.periodDays
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
+
+# uv refuses to install a package OSV names as malware (MAL- advisories) before
+# syncing; CI and release are where a new locked version is first installed
+# (RO-9 tranche 5, operator ruling 2026-10-28; `gz validate --astral-discipline`).
+env:
+  UV_MALWARE_CHECK: "1"
+
+jobs:
+  dependency-currency:
+    runs-on: ubuntu-latest
+    steps:
+      # Full history: the scan-record gate dates the drift report by its last
+      # commit, and a shallow clone dates every file to HEAD.
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          enable-cache: true
+
+      - name: Sync dependencies
+        run: uv sync --locked
+
+      - name: Scan record is fresh
+        run: uv run python .gzkit/chores/dependency-currency/check_currency.py --scan-record
+
+      - name: Every pin is current or held
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: uv run python .gzkit/chores/dependency-currency/check_currency.py --currency

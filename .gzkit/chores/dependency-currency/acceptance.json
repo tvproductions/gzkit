@@ -2,6 +2,18 @@
     "criteria": [
         {
             "type": "exitCodeEquals",
+            "command": "uv run python .gzkit/chores/dependency-currency/check_currency.py --scan-record",
+            "expected": 0,
+            "description": "The drift report was written within the chore's period: a run that did not look cannot pass (GHI #935, #1369)"
+        },
+        {
+            "type": "exitCodeEquals",
+            "command": "uv run python .gzkit/chores/dependency-currency/check_currency.py --currency",
+            "expected": 0,
+            "description": "Every Python dependency, the uv binary, each pre-commit hook rev and each Actions pin is at upstream latest, or held by an open GHI (GHI #1369)"
+        },
+        {
+            "type": "exitCodeEquals",
             "command": "uv lock --check",
             "expected": 0,
             "description": "uv.lock agrees with pyproject.toml after the upgrade"

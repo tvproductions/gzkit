@@ -8,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-11-19
 model: haiku
 metadata:
-  skill-version: "1.7.0"
+  skill-version: "1.8.0"
 ---
 
 # gz deps-upgrade
@@ -17,7 +17,8 @@ metadata:
 
 A disciplined upgrade pass for the project's Python toolchain and dependency
 surface: the `uv` binary itself, global uv tools, the Python runtime at the `requires-python` floor's minor,
-`pyproject.toml` pins (`==`), `>=` floors, and `uv.lock`. Verifies with
+`pyproject.toml` pins (`==`), `>=` floors, `uv.lock`, pre-commit hook revs and
+GitHub Actions `uses:` pins. Verifies with
 `gz check --full` and emits a canonical ARB unittest receipt as evidence.
 
 The procedure is mechanical — its value is doing the *full* sequence in
@@ -88,6 +89,21 @@ order, not skipping the floor-bump or the verification step.
 
    Edit `pyproject.toml` to replace each `<pkg>==X.Y.Z` with the latest
    version. Skip if the pin already matches latest.
+
+4a. **Move pre-commit hook revs and Actions pins to their latest releases.**
+    The `dependency-currency` chore's currency criterion reads both (GHI #1333,
+    #1369).
+
+    ```bash
+    uv run pre-commit autoupdate
+    gh api repos/<owner>/<repo>/releases/latest --jq .tag_name   # per `uses:` repo
+    gh api repos/<owner>/<repo>/commits/<tag> --jq .sha          # for a SHA pin
+    ```
+
+    A major-tag pin (`@v6`) moves to the latest major; a commit-SHA pin moves to
+    the latest release's commit, with its `# vX.Y.Z` comment rewritten to match.
+    Read each major bump's changelog before moving it. CI is the action pins'
+    verification, so push and watch the run.
 
 5. **Refresh the lock to latest within `>=` constraints.**
 
@@ -201,6 +217,7 @@ upgrade anyway, never holding a package at last-known-good.
 - `.python-version` names the newest patch of the floor's minor, and
   `uv run gz validate --astral-discipline` exits 0
 - `uv --version` satisfies the `[tool.uv] required-version` floor in `pyproject.toml`
+- `uv run python .gzkit/chores/dependency-currency/check_currency.py --currency` exits 0
 - ARB unittest receipt at `exit_status=0` exists in
   `artifacts/receipts/`
 

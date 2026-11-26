@@ -393,7 +393,7 @@
     {
       "slug": "dependency-currency",
       "title": "Dependency Currency (Daily Check and Upgrade)",
-      "version": "2.0.1",
+      "version": "2.1.0",
       "path": ".gzkit/chores/dependency-currency",
       "lane": "lite",
       "timeoutSeconds": 180,
@@ -403,11 +403,14 @@
       "staleness": {
         "signal": "elapsed-time",
         "periodDays": 1,
+        "artifacts": [
+          ".gzkit/chores/dependency-currency/proofs/drift-report.md"
+        ],
         "graceDays": 1
       },
       "remediation": {
         "category": "vendor_fix",
-        "details": "Each run applies the gz-deps-upgrade procedure: lock, pins and floors to latest, .python-version to the newest floor-minor patch, gated by gz check --full; a bump that turns the gate red is pinned at last-known-good and filed as a GHI (operator ruling 2026-10-27)."
+        "details": "Each run applies the gz-deps-upgrade procedure: lock, pins and floors to latest, .python-version to the newest floor-minor patch, gated by gz check --full; pre-commit hook revs and Actions pins move with them; a bump that turns the gate red is repaired forward, never pinned back, and only a release that cannot be installed is held with an open GHI (operator rulings 2026-10-27, 2026-11-19, 2026-11-25)."
       },
       "nonAuthority": "Never touches gzkit's own version surfaces, the requires-python floor or the [tool.uv] required-version floor; never lowers a floor to pass the gate.",
       "governingRule": "none",
