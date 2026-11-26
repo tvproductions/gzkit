@@ -25,7 +25,7 @@ repos:
       - id: task-trailer-stamp
         name: "stamp Task: trailers from active TASKs"
         entry: .gzkit/hooks/prepare-commit-msg-task-trailers
-        language: system
+        language: unsupported
         stages: [prepare-commit-msg]
         always_run: true
       - id: ruff-check
@@ -36,7 +36,7 @@ repos:
         # evidence included (operator, 2026-10-24: "do 1"). Fixes run when
         # asked for, through `gz lint --fix` or `gz format`.
         entry: uv run gz lint
-        language: system
+        language: unsupported
         pass_filenames: true
         types: [python]
         exclude: ^site/
@@ -44,7 +44,7 @@ repos:
       - id: ruff-format
         name: ruff format
         entry: uv run ruff format
-        language: system
+        language: unsupported
         pass_filenames: true
         types: [python]
         exclude: ^site/
@@ -55,7 +55,7 @@ repos:
         # src/gzkit/canonical_steps.py — pinned by
         # tests/arb/test_typecheck_scope_lockstep.py, which reads this file.
         entry: uv run ty check .
-        language: system
+        language: unsupported
         pass_filenames: false
         types: [python]
         exclude: ^site/
@@ -65,7 +65,7 @@ repos:
         # Never switched off (operator, 2026-10-25): it carries the pytest ban and the
         # ledger and Gate-5 guards, and resolves each through the MX checkpoint itself.
         entry: uv run -m gzkit.hooks.guards
-        language: system
+        language: unsupported
         pass_filenames: false
         stages: [pre-commit]
 
@@ -75,7 +75,7 @@ repos:
       - id: complexity-ceiling
         name: complexity ceiling (Lizard C/C/C at Ruff's max-complexity, cognitive at .gzkit.json's)
         entry: uv run gz validate --complexity-ceiling
-        language: system
+        language: unsupported
         pass_filenames: false
         types: [python]
         stages: [pre-commit]
@@ -83,28 +83,28 @@ repos:
       - id: surface-fidelity-cheap
         name: surface-fidelity cheap subset (invariants 1, 2, 3)
         entry: uv run gz validate --bullet-retention --surface-weight --pointer-anchors
-        language: system
+        language: unsupported
         pass_filenames: false
         stages: [pre-commit]
 
       - id: validator-reachability-ratchet
         name: validator reachability (ungated scopes may only shrink)
         entry: uv run python -m gzkit.mx.alarms validator-reachability-ratchet -- python .gzkit/chores/control-surface-validator-reachability/check_reachability.py
-        language: system
+        language: unsupported
         pass_filenames: false
         stages: [pre-commit]
 
       - id: ledger-vocabulary-inertness
         name: ledger vocabulary (never-fired types must stay disclosed)
         entry: uv run python -m gzkit.mx.alarms ledger-vocabulary-inertness -- python .gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py
-        language: system
+        language: unsupported
         pass_filenames: false
         stages: [pre-commit]
 
       - id: check-todos-fixmes
         name: check TODO/FIXME (flagged, informational)
         entry: bash -c 'grep -r "TODO\|FIXME" src/ tests/ --include="*.py" 2>/dev/null || true'
-        language: system
+        language: unsupported
         pass_filenames: false
         types: [python]
         stages: [pre-commit]
@@ -160,7 +160,7 @@ repos:
         # of gzkit's. A commit made without this hook (cherry-pick, rebase, a
         # hand-pushed ref) is not judged (GHI #1340).
         entry: uv run gz validate --authorship
-        language: system
+        language: unsupported
         pass_filenames: false
         stages: [pre-commit]
 
@@ -170,7 +170,7 @@ repos:
         # every push and never routes through the alarm switch, so a safe-mode
         # push cannot carry lint debt (operator, 2026-10-27).
         entry: uv run gz lint
-        language: system
+        language: unsupported
         pass_filenames: false
         stages: [pre-push]
 
@@ -180,7 +180,7 @@ repos:
         # review (GHI #1327). Reads only the commits being pushed, and never routes
         # through the alarm switch: a wrongly closed issue is outside the repository.
         entry: uv run python -m gzkit.hooks.closing_keywords
-        language: system
+        language: unsupported
         pass_filenames: false
         always_run: true
         stages: [pre-push]
@@ -200,7 +200,7 @@ repos:
         # so the intervening commit does not defeat it and any edit does; and
         # fail-open, so an unreadable repo runs the gate rather than skipping.
         entry: uv run python -m gzkit.mx.alarms gz-check-pre-push -- gz check --reuse-verified
-        language: system
+        language: unsupported
         pass_filenames: false
         stages: [pre-push]
 
@@ -232,7 +232,7 @@ repos:
         # PASSING negative-path test no longer prints convincing fail-closed
         # prose into the log (GHI #723). Failures still show their own stderr.
         entry: uv run python -m gzkit.mx.alarms unittest -- unittest-parallel -t . -s tests --buffer
-        language: system
+        language: unsupported
         pass_filenames: false
         types: [python]
         # CI-only by default: the full suite runs in CI (gz check --full) and in
