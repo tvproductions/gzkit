@@ -34,9 +34,10 @@ Design notes that are load-bearing:
 
 * **The verifier set is READ from the ARB registry, not restated.**
   ``CANONICAL_STEP_COMMANDS`` is the locked authority for what "an ARB-wrapped
-  verifier" means (AGENTS.md § Attestation), so a canonical step added there is
-  covered here by construction. A hand-copied list would silently stop matching
-  the clause it enforces — the drift class GHI #754 found one file over.
+  verifier" means (the canonical invocations the ``gz-arb`` skill lists), so a
+  canonical step added there is covered here by construction. A hand-copied list
+  would silently stop matching the clause it enforces — the drift class GHI #754
+  found one file over.
 
 * **Two escapes are honored because they genuinely work.** ``pipefail`` makes the
   shell report the first failing stage, and ``PIPESTATUS[0]`` is the clause's own

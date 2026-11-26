@@ -53,7 +53,7 @@ gz arb ruff --soft-fail src
 
 - Schema: `gzkit.arb.lint_receipt.v1` (`data/schemas/arb_lint_receipt.schema.json`)
 - Prefix: `arb-ruff-<timestamp>`
-- Canonical for attestation claim "Lint clean" per `AGENTS.md` § Attestation.
+- Canonical for attestation claim "Lint clean", per the canonical invocations the `gz-arb` skill lists (`AGENTS.md` § Attestation points there).
 
 ---
 

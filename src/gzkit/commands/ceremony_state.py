@@ -221,7 +221,8 @@ def _classify_attestation_verdict(text: str) -> tuple[str, str | None]:
     The ceremony's ``--attest "..."`` argument is freeform but conventionally
     leads with one of the canonical tokens prescribed by Step 6
     (``Completed`` / ``Completed - Partial: <reason>`` / ``Dropped - <reason>``)
-    or the AGENTS.md § Attestation pattern (``attest <token> - <enrichment>``).
+    or an ``attest <token> - <enrichment>`` phrase (the operator's words, then
+    evidence, per AGENTS.md § Attestation).
     The ``partial`` and ``dropped`` keywords are matched case-insensitively in
     the leading 120-char window; the full stripped text is returned as the
     reason for non-completed verdicts so the operator's verbatim attestation

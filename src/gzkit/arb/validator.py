@@ -139,8 +139,9 @@ def _load_schema(schema_path: Path) -> dict[str, Any]:
 def _iter_receipt_paths(root: Path, *, limit: int) -> list[Path]:
     """Return the most-recent ARB receipts under *root*, newest first.
 
-    Scoped to the ``arb-`` filename prefix (``AGENTS.md`` § Attestation pins
-    ``arb-ruff-`` / ``arb-step-`` / ``arb-red-``). The receipts directory is shared
+    Scoped to the ``arb-`` filename prefix shared by every ARB receipt
+    (``arb-ruff-`` and ``arb-step-`` from the canonical invocations the
+    ``gz-arb`` skill lists, ``arb-red-`` from ``gz arb red``). The receipts directory is shared
     with other artifact kinds — ``foundation-sunset-migration-*.json`` among them —
     and a bare ``*.json`` glob reported those as invalid ARB receipts, which is a
     false positive about a file that was never claiming to be one.

@@ -39,8 +39,8 @@ gz arb typecheck
 
 - Schema: `gzkit.arb.step_receipt.v1`
 - Prefix: `arb-step-typecheck-<timestamp>`
-- Canonical for attestation claim "Type check clean" per
-  `AGENTS.md` § Attestation.
+- Canonical for attestation claim "Type check clean", per the canonical
+  invocations the `gz-arb` skill lists (`AGENTS.md` § Attestation points there).
 
 ---
 

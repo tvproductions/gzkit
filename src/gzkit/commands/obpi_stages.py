@@ -34,7 +34,7 @@ from gzkit.quality import QualityResult
 
 # Canonical ARB-wrapped baseline (GHI #317).
 # The pipeline's Stage 3 verification must produce receipts at parity with the
-# canonical attestation invocations enumerated in AGENTS.md § Attestation, so a
+# canonical attestation invocations the gz-arb skill lists, so a
 # green Stage 3 result entitles the agent to cite ARB receipt IDs in the
 # Stage 4 evidence package without re-running the same checks under ARB.
 #

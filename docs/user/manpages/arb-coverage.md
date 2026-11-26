@@ -49,8 +49,8 @@ gz arb coverage report --fail-under=40
 
 - Schema: `gzkit.arb.step_receipt.v1`
 - Prefix: `arb-step-coverage-<timestamp>`
-- Canonical for attestation claim "Coverage floor" per
-  `AGENTS.md` § Attestation.
+- Canonical for attestation claim "Coverage floor", per the canonical
+  invocations the `gz-arb` skill lists (`AGENTS.md` § Attestation points there).
 
 ---
 

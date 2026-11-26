@@ -8,9 +8,10 @@ precedent criterion from defect-fix routing by operator ruling (S14,
 routing among them; that behavior is witnessed by `tests/skills/test_ghi_triage_routing.py`.
 
 This is a phrasing fence over prose in the form ruled for M9 (operator, 2026-11-26, "a"):
-it claims only the shapes below, and its form is open under #1370. It reads each sentence
-(split at sentence ends, blank lines and the start of a list item or table row, so a table
-row is judged whole; whitespace collapsed) and refuses one that:
+it claims only the shapes below, and its form is open under #1370. It splits text at ". ",
+"; ", "! ", "? ", blank lines and the start of a list item or table row, collapses
+whitespace, and judges each piece. A table row is judged whole unless a cell holds one of
+those sentence ends. It refuses a piece that:
 
 - holds "precedent" and either "≥3", "≥ 3", ">=3", ">= 3" or "60 days"; or
 - holds "§ Attestation" and either "em-dash", "em dash", "canonical invocation" or
@@ -20,8 +21,11 @@ A sentence holding an ISO date (YYYY-MM-DD) is a dated record and is admitted, s
 lineage line such as "On 2026-04-23 … moved to `AGENTS.md` § Attestation" stays true as
 written.
 
-It reads `.gzkit/skills`, `.gzkit/rules`, `.gzkit/templates`, `.gzkit/agents`,
-`.gzkit/personas`, `src/gzkit`, `docs/user` and the root contracts. It does not read
+It reads the `.md`, `.py`, `.json`, `.toml`, `.yaml` and `.yml` files under
+`.gzkit/skills`, `.gzkit/rules`, `.gzkit/templates`, `.gzkit/agents`, `.gzkit/personas`,
+`src/gzkit` and `docs/user`, and the root contracts, skipping any path through a `proofs`
+or `archive` directory; other suffixes (the `.j2` templates among them) are not read. It
+does not read
 `docs/governance`, which mixes live doctrine with dated records (the routing doc keeps the
 replaced criterion as a record), so the consumers repaired there are held by review only.
 Nor does it judge a restatement in other words, or one split across sentences.

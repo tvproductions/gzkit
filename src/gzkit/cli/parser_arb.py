@@ -44,7 +44,7 @@ def _arb(name: str) -> Any:
 
     Every ``arb_*_cmd`` returns a meaningful status and ``cli.main`` carries it to
     the shell, so ``gz arb step --name unittest -- <failing suite>``, the canonical
-    "tests pass" invocation of AGENTS.md § Attestation, exits non-zero (GHI #642,
+    "tests pass" invocation the ``gz-arb`` skill lists, exits non-zero (GHI #642,
     GHI #1198).
 
     Returns:

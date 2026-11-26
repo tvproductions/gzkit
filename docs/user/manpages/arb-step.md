@@ -52,8 +52,8 @@ gz arb step --name review --max-output-chars -1 -- claude --print "Review the su
 - Schema: `gzkit.arb.step_receipt.v1` (`data/schemas/arb_step_receipt.schema.json`)
 - Prefix: `arb-step-<name>-<timestamp>`
 - Canonical for attestation claim "Tests pass" / "Docs build clean" via
-  `arb-step-unittest-*` and `arb-step-mkdocs-*` per
-  `AGENTS.md` § Attestation.
+  `arb-step-unittest-*` and `arb-step-mkdocs-*`, per the canonical
+  invocations the `gz-arb` skill lists (`AGENTS.md` § Attestation points there).
 
 ---
 
