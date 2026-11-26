@@ -10,11 +10,16 @@ build skills.
 
 The test reads every `.md` file under `.gzkit/skills`, `.gzkit/rules`, `.gzkit/chores`,
 `.gzkit/personas` and `.gzkit/agents`, skipping any path through a `proofs` or `archive`
-directory and every `AGENTS.md`, which is generated and checked under #922. It drops fenced
-code blocks and inline code spans, then resolves each `[text](target)` whose target has no
-URL scheme and does not start with `#` or `<`. The part before any `#` is resolved against
-the linking file's directory, as a Markdown viewer would. A target that does not exist on
-disk is refused. Anchors are not checked.
+directory (dated evidence, often copies written for another path) and every `AGENTS.md`,
+which is generated; its links are tracked under #1380. It drops fenced code blocks and, per
+line, single-backtick inline code spans, then resolves each inline `[text](target)` whose
+target holds no whitespace or parenthesis, has no URL scheme and does not start with `#` or
+`<`. The part before any `#` is resolved against the linking file's directory, as a
+Markdown viewer would, and a target that does not exist on disk is refused. It does not
+check anchors, titled links (`[x](path "t")`), angle-bracket targets, reference-style links
+(`[x]: path`) or HTML links; none occurs outside a fence in these roots today. A link that
+resolves here may still break from the package copy under `src/gzkit/skills/<name>/`, one
+level deeper; that copy is a byte-identical payload, not a place a reader opens.
 """
 
 import re
