@@ -54,7 +54,6 @@ _NO_SKILL_VERBS: dict[str, str] = {
     "flag": "Feature-flag inspection; internal developer affordance.",
     "flags": "Feature-flag inspection; internal developer affordance.",
     "parity": "Cross-repo parity inspector; consumed by airlineops-parity-scan skill.",
-    "format": "Formatting verb; gz-check wields it, and gz check runs it.",
     "lint": "Direct lint verb; wrapped by ARB workflow.",
     "typecheck": "Direct typecheck verb; wrapped by ARB workflow.",
     "test": "Direct test verb; wrapped by ARB workflow.",
@@ -63,8 +62,8 @@ _NO_SKILL_VERBS: dict[str, str] = {
         "TASK-trailer discipline in TDD workflow."
     ),
     "frontmatter": (
-        "Subcommand group (`gz frontmatter reconcile/check`); consumed "
-        "inside gz-adr-recon and state-doctrine skills."
+        "Subcommand group (`gz frontmatter reconcile`); the operator and "
+        "governance runbooks prescribe it, and no skill wraps it."
     ),
     "canary": (
         "Subcommand group (`gz canary review`, GHI #1161); relays an operator ruling, "

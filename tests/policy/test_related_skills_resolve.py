@@ -9,12 +9,16 @@ resolved a related-skill name, so a retirement left every consumer pointing at n
 
 The test reads the `## Related Skills` section of every canonical skill
 (`.gzkit/skills/*/SKILL.md`) and every packaged template skill
-(`src/gzkit/templates/skills/*/SKILL.md`), from its heading to the next `## ` heading,
-and takes each single-backtick span shaped like a skill name (lowercase letters, digits
-and hyphens, an optional leading `/`). Each must name a directory under `.gzkit/skills/`
-holding a `SKILL.md` whose `lifecycle_state` is not `retired`. Backticked text of any
-other shape (a command, a path) is not read, and neither is a skill named outside that
-section. The vendor mirrors and `src/gzkit/skills/` copy canon and are not read again.
+(`src/gzkit/templates/skills/*/SKILL.md`), matching the heading in any letter case, from
+the heading to the next `## ` heading. The entries it reads are the skill-shaped names
+(lowercase letters, digits and hyphens, an optional leading `/`, backticked or bare,
+bold or not) that
+open a list item, and the names in a table row's first cell, where `/` may join several.
+A list item's description and a table's later cells are not read, since they name other
+things too (a debt class, a command). Each name must be a directory under `.gzkit/skills/`
+holding a `SKILL.md` whose `lifecycle_state` is not `retired`. A skill named outside that
+section, and any other `## Related …` heading, is not read. The vendor mirrors and
+`src/gzkit/skills/` copy canon and are not read again.
 """
 
 import re
@@ -27,8 +31,26 @@ REPO = Path(__file__).resolve().parents[2]
 CANON = REPO / ".gzkit" / "skills"
 ROOTS = (CANON, REPO / "src" / "gzkit" / "templates" / "skills")
 
-_SECTION = re.compile(r"^## Related Skills[ \t]*\n(.*?)(?=^## |\Z)", re.MULTILINE | re.DOTALL)
-_SKILL_NAME = re.compile(r"`/?([a-z][a-z0-9-]*)`")
+_SECTION = re.compile(r"^## (?i:related skills)[ \t]*\n(.*?)(?=^## |\Z)", re.MULTILINE | re.DOTALL)
+_NAME = r"(?:\*\*)?`?/?([a-z][a-z0-9-]*)`?(?:\*\*)?"
+_LIST_ENTRY = re.compile(rf"^\s*[-*]\s+{_NAME}(?=[\s,;:.]|$)")
+_TABLE_NAME = re.compile(rf"^\s*{_NAME}\s*$")
+
+
+def _entry_names(section: str) -> list[str]:
+    names: list[str] = []
+    for line in section.splitlines():
+        if line.lstrip().startswith("|"):
+            first_cell = line.strip().strip("|").split("|", 1)[0].replace("`/", "`")
+            for part in first_cell.split("/"):
+                match = _TABLE_NAME.match(part)
+                if match:
+                    names.append(match.group(1))
+        else:
+            match = _LIST_ENTRY.match(line)
+            if match:
+                names.append(match.group(1))
+    return names
 
 
 def live_skills(canon: Path) -> set[str]:
@@ -46,7 +68,7 @@ def unresolved_related_skills(text: str, live: set[str]) -> list[str]:
     match = _SECTION.search(text)
     if match is None:
         return []
-    return [name for name in _SKILL_NAME.findall(match.group(1)) if name not in live]
+    return [name for name in _entry_names(match.group(1)) if name not in live]
 
 
 class TestRelatedSkillsResolve(unittest.TestCase):
@@ -70,8 +92,25 @@ class TestRelatedSkillsResolve(unittest.TestCase):
         )
 
     def test_a_retired_or_absent_name_is_refused(self):
-        text = "## Related Skills\n\n- `gz-check`\n- `/lint`\n- `format` wraps it\n"
-        self.assertEqual(unresolved_related_skills(text, {"gz-check"}), ["lint", "format"])
+        text = (
+            "## Related Skills\n\n- `gz-check`\n- `/lint`\n- `format` wraps it\n- test\n"
+            "- **`gz-gates`** — retired\n"
+        )
+        self.assertEqual(
+            unresolved_related_skills(text, {"gz-check"}), ["lint", "format", "test", "gz-gates"]
+        )
+
+    def test_the_heading_is_read_in_any_case(self):
+        text = "## Related skills\n\n- lint\n"
+        self.assertEqual(unresolved_related_skills(text, {"gz-check"}), ["lint"])
+
+    def test_a_table_is_read_by_its_first_cell(self):
+        text = (
+            "## Related skills\n\n| Skill | Relationship |\n|---|---|\n"
+            "| `gz-check` | Probes the `pythonic` class. |\n"
+            "| `gz-plan` / `/lint` | Opens an ADR. |\n"
+        )
+        self.assertEqual(unresolved_related_skills(text, {"gz-check", "gz-plan"}), ["lint"])
 
     def test_only_the_related_skills_section_is_read(self):
         text = (
