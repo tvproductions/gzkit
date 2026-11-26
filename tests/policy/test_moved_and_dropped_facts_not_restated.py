@@ -9,7 +9,7 @@ routing among them; that behavior is witnessed by `tests/skills/test_ghi_triage_
 
 This is a phrasing fence over prose in the form ruled for M9 (operator, 2026-11-26, "a"):
 it claims only the shapes below, and its form is open under #1370. It splits text at ". ",
-"; ", "! ", "? ", blank lines and the start of a list item or table row, collapses
+"; ", "! ", "? ", blank lines and the start of a list item or table row, drops backticks, collapses
 whitespace, and judges each piece. A table row is judged whole unless a cell holds one of
 those sentence ends. It refuses a piece that:
 
