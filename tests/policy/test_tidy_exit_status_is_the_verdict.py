@@ -13,13 +13,18 @@ the shapes it judges reliably; its form is open under #1370. It reads each sente
 paragraph, list item or table cell, split at sentence ends, with whitespace collapsed so
 a wrapped phrase is still seen) that names tidy, and refuses one that:
 
-- says it exits or returns 0 (any tense) together with "whatever", "regardless", "no
-  matter" or "always", in either order;
-- says it exits or returns 0, then "with", "when", "on", "despite" or "if" a finding
-  or breach;
-- names a finding or breach, then "but", "yet" or "still" before the zero; or
-- says its exit code or status is read "instead of" something, "means nothing", "is
-  meaningless" or "tells you nothing", or is to be ignored or not trusted.
+- holds a zero phrase ("exits", "exit", "exited", "returns", "return" or "returned",
+  an optional "status" or "code", then 0) and "whatever", "regardless", "no matter"
+  or "always", in either order;
+- holds a zero phrase followed later by "with", "when", "on", "despite" or "if"
+  (optionally after "even"), then "finding(s)" or "breach(es)" with nothing between
+  but an optional "it has" or "there are" and an optional "a", "any" or "its";
+- names a finding or breach, then "but", "yet" or "still" immediately before a zero
+  phrase; or
+- holds "exit code" or "exit status" followed later by "instead of", "means nothing",
+  "is meaningless" or "tells you nothing", or holds "ignore", "disregard", "never
+  trust", "do not trust" or "don't trust" followed later by "exit code" or "exit
+  status".
 
 Before judging, it drops each clause (split at a comma or "and") that holds "only
 when" or "only if", so the contract stated that way is admitted.
