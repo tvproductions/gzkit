@@ -2588,3 +2588,6 @@
 {"ts": "2026-11-26T14:23:32Z", "source": "20261126T142332Z-prompt-audit-m16-m17.md", "text": "M17 now (verbatim: \"do m17\")."}
 {"ts": "2026-11-26T14:23:32Z", "source": "20261126T142332Z-prompt-audit-m16-m17.md", "text": "File a GHI on whether to rewrite or retire the alignment prompt (verbatim: \"file ghi on whether to rewrite or retire that prompt\")."}
 {"ts": "2026-11-26T14:23:32Z", "source": "20261126T142332Z-prompt-audit-m16-m17.md", "text": "Fresh handoff and git sync (verbatim: \"update handoff and git sync\")."}
+{"ts": "2026-11-26T15:33:00Z", "source": "20261126T153300Z-prompt-audit-m18-m19.md", "text": "Continue the M walk before drafting the RP-7 compression-routine design (verbatim: \"yes, don't we want to complete these \\\"M\\\" findings first?\")."}
+{"ts": "2026-11-26T15:33:00Z", "source": "20261126T153300Z-prompt-audit-m18-m19.md", "text": "Close #1386 once review confirms, then do M19 (verbatim: \"once review confirms, close it and do m19\")."}
+{"ts": "2026-11-26T15:33:00Z", "source": "20261126T153300Z-prompt-audit-m18-m19.md", "text": "Successor handoff and git-sync (verbatim: \"write the successor handoff and run git-sync to push those six commits\")."}
