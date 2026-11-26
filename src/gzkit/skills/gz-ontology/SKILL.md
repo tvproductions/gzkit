@@ -4,9 +4,9 @@ description: Use to sweep the governance shape, trace a node's lineage, diff aga
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-11-26
 metadata:
-  skill-version: "0.1.2"
+  skill-version: "0.1.3"
 model: haiku
 ---
 
@@ -70,5 +70,5 @@ for a graphviz rendering.
 
 ## Reference
 
-- Manpage: [`gz ontology`](../../docs/user/manpages/ontology.md)
+- Manpage: [`gz ontology`](../../../docs/user/manpages/ontology.md)
 - Parent ADR: `ADR-0.32.0-gzkit-ontology`

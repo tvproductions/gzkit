@@ -5,11 +5,11 @@ description: Use to read a target's seam map before touching it (gz airlock in),
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-01
+last_reviewed: 2026-11-26
 model: haiku
 gz_command: airlock
 metadata:
-  skill-version: "1.3.0"
+  skill-version: "1.3.1"
 ---
 
 # gz airlock
@@ -130,8 +130,8 @@ previews the membrane WITHOUT booking an L2 transit.
 
 ## Reference
 
-- Manpage: [`gz airlock`](../../docs/user/manpages/airlock.md),
-  [`gz permitted-entry`](../../docs/user/manpages/permitted-entry.md)
+- Manpage: [`gz airlock`](../../../docs/user/manpages/airlock.md),
+  [`gz permitted-entry`](../../../docs/user/manpages/permitted-entry.md)
 - Parent ADR: `ADR-0.33.0-airlock-membrane`
 - Sibling: `gz-ontology` (the hull sonar the PING beat queries),
   `gz-mx` (the mx door), `gz-obpi-pipeline` (the pipeline door)
