@@ -25,6 +25,9 @@ LIVE_ROOTS = tuple(
         ".gzkit/skills",
         ".gzkit/agents",
         ".gzkit/templates",
+        ".gzkit/rules",
+        ".gzkit/chores",
+        ".github",
         "src/gzkit",
         "docs/user",
         "docs/developer",
@@ -34,6 +37,7 @@ LIVE_ROOTS = tuple(
         "features",
     )
 )
+LIVE_FILES = tuple(REPO / name for name in ("AGENTS.md", "CLAUDE.md", "README.md"))
 THE_STATEMENT = frozenset(
     {
         ".gzkit/skills/git-sync/SKILL.md",
@@ -50,10 +54,12 @@ OMISSION_SURFACES = (
     "src/gzkit/templates/skills/git-sync/SKILL.md",
     ".gzkit/agents/git-sync-repo.md",
 )
-_RITUAL = re.compile(r"git-sync --apply --lint --test")
+#: `git-sync` followed, anywhere later on the line, by both `--lint` and `--test`,
+#: in either order (`--apply --lint --test`, `--lint --test`, `--test --lint`).
+_RITUAL = re.compile(r"git-sync\b(?=[^\n]*--lint\b)(?=[^\n]*--test\b)")
 _OMISSION_AS_FAILURE = re.compile(r"\bskip\w*\s+`--(?:lint|test)\b", re.IGNORECASE)
 _DATED = re.compile(r"\d{4}-\d{2}-\d{2}")
-_SUFFIXES = frozenset({".md", ".py", ".feature", ".json", ".toml"})
+_SUFFIXES = frozenset({".md", ".py", ".feature", ".json", ".toml", ".yml", ".yaml"})
 
 
 def ritual_lines(text: str) -> list[int]:
@@ -67,7 +73,7 @@ def omission_lines(text: str) -> list[int]:
 
 
 def _live_files() -> list[Path]:
-    files: list[Path] = []
+    files: list[Path] = list(LIVE_FILES)
     for root in LIVE_ROOTS:
         for path in sorted(root.rglob("*")):
             rel = path.relative_to(REPO).as_posix()
@@ -95,7 +101,9 @@ def _omission_claims() -> list[str]:
 
 
 def _missing_roots() -> list[str]:
-    return [root.relative_to(REPO).as_posix() for root in LIVE_ROOTS if not root.is_dir()]
+    missing = [root for root in LIVE_ROOTS if not root.is_dir()]
+    missing += [path for path in LIVE_FILES if not path.is_file()]
+    return [path.relative_to(REPO).as_posix() for path in missing]
 
 
 class TestGitSyncFlagsStatedOnce(unittest.TestCase):
@@ -127,6 +135,16 @@ class TestTheFenceCanFail(unittest.TestCase):
     def test_ritual_detector_fires_on_the_retired_runbook_step(self) -> None:
         shipped = "# 6) Run guarded sync\nuv run gz git-sync --apply --lint --test\n"
         self.assertEqual(ritual_lines(shipped), [2])
+
+    def test_ritual_detector_fires_on_every_word_order_that_shipped(self) -> None:
+        shipped = (
+            "`gz check` / `gz git-sync --lint --test` run before push\n"
+            "uv run gz git-sync --apply --test --lint\n"
+        )
+        self.assertEqual(ritual_lines(shipped), [1, 2])
+
+    def test_ritual_detector_ignores_the_negated_flags(self) -> None:
+        self.assertEqual(ritual_lines("uv run gz git-sync --apply --no-lint --no-test\n"), [])
 
     def test_ritual_detector_passes_the_routine_command(self) -> None:
         self.assertEqual(ritual_lines("uv run gz git-sync --apply\n"), [])

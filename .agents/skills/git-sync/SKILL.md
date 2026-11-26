@@ -8,7 +8,7 @@ disable-model-invocation: true
 owner: gzkit-governance
 last_reviewed: 2026-11-26
 metadata:
-  skill-version: "1.6.0"
+  skill-version: "1.6.1"
 model: haiku
 ---
 
@@ -16,7 +16,7 @@ model: haiku
 
 ## Git Sync
 
-Run the repository sync ritual: stage, commit, fetch, rebase and push, with the
+Run the repository sync ritual: fetch, stage, commit, rebase and push, with the
 repository's hooks as the gates.
 
 ## Trigger
@@ -66,18 +66,24 @@ combination.
 | 0. Refusals | refuses when `SKIP` would bypass the complexity gates (before any other step), or when the current branch is not `--branch`, HEAD is a merge commit, or `git status` fails (then only step 2, a local git-config write, still runs) | — | — | — | — |
 | 1. Fetch | `git fetch --prune <remote>`; a failure blocks | — | — | — | — |
 | 2. Merge driver | registers the append-only JSONL merge driver (§ Append-only JSONL conflicts) | — | — | — | — |
-| 3. Stage | on a dirty tree, `git add -A`; refused when it would stage a path under `src/` or `tests/`, which you commit yourself first | — | — | stages nothing | — |
-| 4. Hook check | refuses when a gating hook type `.pre-commit-config.yaml` installs (such as `pre-commit` or `pre-push`) is missing from `.git/hooks`; a missing recording hook (`prepare-commit-msg`, `post-commit`) only warns, and the config file itself is not checked here | — | — | — | — |
+| 3. Stage | on a dirty tree, `git add -A`; refused when it would stage a path under `src/` or `tests/`, which you commit yourself first | — | — | stages nothing, and the `src/`/`tests/` refusal does not run: whatever is already staged, governed work included, is committed at step 6 under the generic subject | — |
+| 4. Hook check | refuses when a gating hook type `.pre-commit-config.yaml` installs (such as `pre-commit` or `pre-push`) is not installed in the hooks directory (`core.hooksPath` is honoured) or is not the pre-commit shim; a missing recording hook (`prepare-commit-msg`, `post-commit`) only warns. When the config is missing, unreadable or declares no pre-push `gz check` hook, nothing is checked and nothing refuses here | — | — | — | — |
 | 5. Pre-check | nothing | whole-tree `gz lint`; a failure blocks | the full unit suite (`gz test`); a failure blocks | — | — |
-| 6. Commit | refuses when `.git/COMMIT_EDITMSG` holds a stranded commit attempt; otherwise commits what is staged, under `chore: update <areas> (gz git-sync)`, and the pre-commit-stage hooks run | — | — | — | — |
+| 6. Commit | when something is staged: refuses when `.git/COMMIT_EDITMSG` holds a stranded commit attempt; otherwise commits it, under `chore: update <areas> (gz git-sync)`, and the pre-commit-stage hooks run | — | — | — | — |
 | 7. Rebase | when behind, `git pull --ff-only`; when diverged, `git pull --rebase` | — | — | — | — |
 | 8. Push | when ahead, `git push`; the pre-push-stage hooks run | — | — | — | skipped, so no pre-push hook runs |
-| 9. Post-check | nothing | whole-tree `gz lint` again; a failure warns and does not block | — | — | — |
+| 9. Post-check | nothing | whole-tree `gz lint` again, after the push or, under `--no-push`, after the rebase; a failure warns and does not block | — | — | — |
 
-A blocker at any step stops every later step and exits 1; nothing already done
-is undone, so a tree step 3 staged stays staged. `--lint` and `--test` call
+A blocker at any step stops every later step and exits 1, except step 2, which
+runs under `--apply` whatever blocked. Nothing already done is undone, so a tree
+step 3 staged stays staged. `--lint` and `--test` call
 `gz lint` and `gz test` directly rather than through a hook, so safe mode never
 turns them off.
+
+The other flags change no step: `--branch` names the branch to sync (default:
+the current one, and step 0 refuses any other); `--remote` names the remote
+(default `origin`); `--json` prints the same result as JSON; `--skill` prints
+this skill's path and exits before step 0.
 
 What the hooks run (the roster is `.pre-commit-config.yaml`; read it, not this list):
 
@@ -87,8 +93,10 @@ What the hooks run (the roster is `.pre-commit-config.yaml`; read it, not this l
 - **At the push (step 8):** whole-tree `gz lint`, the closing-keyword check, and
   `gz check --reuse-verified`, which runs every validator and the tests the
   change touches.
-- **In safe mode at the drydock level,** every hook the config routes through
-  `gzkit.mx.alarms` does not run: at the commit `validator-reachability-ratchet`
+- **In safe mode** (`.gzkit/mx.json` open, either level), most guards report an
+  `[MX advisory]` line instead of blocking (`.gzkit/rules/mx-mode.md`);
+  `gate5_invariants` still block. **At the drydock level,** in addition, every
+  hook the config routes through `gzkit.mx.alarms` does not run: at the commit `validator-reachability-ratchet`
   and `ledger-vocabulary-inertness`, at the push `gz check`. The rest run,
   `gz lint` and the closing-keyword check at the push included.
 - **After the push:** CI runs `gz check --full` on the pushed commit: the full
@@ -104,10 +112,10 @@ full unit suite runs before the push; without it, CI runs it after.
 | Routine sync | `uv run gz git-sync --apply` | this skill |
 | OBPI pipeline Stage 5, both syncs | `uv run gz git-sync --apply` | `gz-obpi-pipeline`, `references/stage-5-sync-and-account.md` |
 | ADR closeout, both syncs | `uv run gz git-sync --apply` | `gz-adr-closeout-ceremony` |
-| Release | `git add -A`, `uv run gz check --full`, then `uv run gz git-sync --apply`, then, for a non-Foundation release, `gh release create` | `gz-patch-release` Step 4c |
+| Release | `git add -A`, `uv run gz check --full`, commit the release yourself (`release: vX.Y.Z` with its `Task:` trailer: the bump stages `src/`), then `uv run gz git-sync --apply`, then, for a non-Foundation release, `gh release create` | `gz-patch-release` Step 4c |
 | The full suite must pass before the push (CI unavailable, or checking that the hooks still cover the gates) | `uv run gz git-sync --apply --lint --test` | this skill |
 | Commit and rebase now, push later | `uv run gz git-sync --apply --no-push` | this skill |
-| Commit only what you staged yourself | `uv run gz git-sync --apply --no-auto-add` | this skill |
+| Commit only what you staged yourself, when it is not `src/` or `tests/` work | `uv run gz git-sync --apply --no-auto-add` | this skill |
 
 No moment requires `--lint` or `--test`, and leaving them off is not a skipped
 gate. Bypassing a hook with `--no-verify` is (§ Red Flags).

@@ -5,7 +5,7 @@ description: Use to run a GHI-driven patch release, or to publish a minor releas
 category: adr-audit
 compatibility: GovZero v6 framework; provides ceremony walkthrough for GHI-driven patch releases
 metadata:
-  skill-version: "1.14.2"
+  skill-version: "1.14.3"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/releases/patch-release.md, docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md"
@@ -373,15 +373,16 @@ before publish. A discovered GHI with no changelog entry blocks the release — 
 is the networked half of the enforcement the hermetic `gz validate --changelog`
 structural check cannot perform.
 
-#### 4c. Full quality sweep, then git-sync
+#### 4c. Full quality sweep, release commit, then git-sync
 
 ```bash
 git add -A
 uv run gz check --full
+git commit -m "release: vX.Y.Z" -m "<what the release carries>" -m "Task: TASK-patch-release-vX-Y-Z"
 uv run gz git-sync --apply
 ```
 
-The full sweep is the release's QC (GHI #1191); a failure stops the release.
+The full sweep is the release's QC (GHI #1191); a failure stops the release. Commit the release yourself: the bump stages `src/gzkit/__init__.py`, which `gz git-sync` will not sweep (git-sync skill, § What each flag runs, step 3).
 Sync MUST run immediately before `gh release create`, as in the closeout ceremony.
 
 #### 4d. GitHub Release (non-Foundation only)
@@ -390,9 +391,7 @@ Sync MUST run immediately before `gh release create`, as in the closeout ceremon
 
 For non-Foundation releases, publish ONLY the newest version block as the
 release body — `RELEASE_NOTES.md` is cumulative, so `--notes-file` on the whole
-file would dump every historical version into the release (GHI #710). Slice the
-top block (a new release is always prepended, so the newest entry is the first
-`## v…` block):
+file would dump every historical version into the release (GHI #710). Slice it:
 
 ```bash
 BODY="$(mktemp)"

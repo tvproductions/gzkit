@@ -102,7 +102,7 @@ class TestGitSyncHelpStatesWhatEachFlagRunsOutputContract(unittest.TestCase):
         # _run_sync_prechecks and _run_post_sync_lint: whole-tree gz lint, before and after.
         lint = actions["--lint"].help or ""
         self.assertIn("whole-tree", lint)
-        self.assertIn("after the push", lint)
+        self.assertIn("at the end", lint)
         self.assertIn("whole-tree", actions["--no-lint"].help or "")
         # _execute_git_sync: `git add -A`, refused by the src/ and tests/ sweep guard.
         auto_add = actions["--auto-add"].help or ""

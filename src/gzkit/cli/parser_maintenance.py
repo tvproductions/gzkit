@@ -1509,7 +1509,7 @@ def _register_tooling_parsers(
         "git-sync",
         help="Sync branch with guarded ritual",
         description=(
-            "Stage, commit, fetch, rebase and push; the commit runs the pre-commit\n"
+            "Fetch, stage, commit, rebase and push; the commit runs the pre-commit\n"
             "hooks and the push runs the pre-push hooks. --lint and --test add\n"
             "whole-tree lint and the full unit suite before the commit."
         ),
@@ -1878,7 +1878,7 @@ def _add_git_sync_options(parser: argparse.ArgumentParser) -> None:
         dest="run_lint_gate",
         action="store_true",
         default=False,
-        help="Run whole-tree gz lint before the commit and again after the push "
+        help="Run whole-tree gz lint before the commit and again at the end "
         "(the pre-push hook also runs it)",
     )
     parser.add_argument(
@@ -1912,7 +1912,7 @@ def _add_git_sync_options(parser: argparse.ArgumentParser) -> None:
         "--no-auto-add",
         dest="auto_add",
         action="store_false",
-        help="Stage nothing; commit only what is already staged",
+        help="Stage nothing; commit whatever is already staged, with no src/ or tests/ refusal",
     )
     parser.add_argument(
         "--push",

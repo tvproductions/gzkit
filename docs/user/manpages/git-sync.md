@@ -1,6 +1,6 @@
 # gz git-sync
 
-Sync ritual for gzkit repositories: stage, commit, fetch, rebase and push, with
+Sync ritual for gzkit repositories: fetch, stage, commit, rebase and push, with
 the repository's hooks as the gates.
 
 ---
@@ -20,9 +20,9 @@ gz git-sync [OPTIONS]
 | `--branch` | string | Branch to sync (defaults to current branch) |
 | `--remote` | string | Remote name (default: `origin`) |
 | `--apply` | flag | Execute actions (dry-run by default) |
-| `--lint/--no-lint` | flag | `--lint` runs whole-tree `gz lint` before the commit (a failure blocks) and again after the push (a failure warns). Default `--no-lint` |
+| `--lint/--no-lint` | flag | `--lint` runs whole-tree `gz lint` before the commit (a failure blocks) and again at the end (a failure warns). Default `--no-lint` |
 | `--test/--no-test` | flag | `--test` runs the full unit suite (`gz test`) before the commit; a failure blocks. No hook runs the full suite; without it, CI runs it after the push. Default `--no-test` |
-| `--auto-add/--no-auto-add` | flag | `--auto-add` (default) stages every change with `git add -A`, refused when it would stage `src/` or `tests/`; `--no-auto-add` stages nothing and commits only what is already staged |
+| `--auto-add/--no-auto-add` | flag | `--auto-add` (default) stages every change with `git add -A`, refused when it would stage `src/` or `tests/`; `--no-auto-add` stages nothing and commits whatever is already staged, with no `src/`/`tests/` refusal |
 | `--push/--no-push` | flag | `--push` (default) pushes when the branch is ahead; `--no-push` commits and rebases but does not push, so no pre-push hook runs |
 | `--json` | flag | Output JSON summary |
 
@@ -39,19 +39,22 @@ order:
 1. **Fetch:** `git fetch --prune <remote>`; under `--apply` a failure blocks.
 2. **Merge driver:** registers the append-only JSONL merge driver.
 3. **Stage:** `git add -A` on a dirty tree (skipped by `--no-auto-add`).
-4. **Hook check:** refuses when a gating hook type the config installs is
-   missing from `.git/hooks`; a missing recording hook only warns.
+4. **Hook check:** refuses when a gating hook type the config installs is not
+   installed or is not the pre-commit shim; a missing recording hook only warns.
+   A missing or unreadable config, or one with no pre-push `gz check` hook, is
+   not checked here.
 5. **Pre-check:** `--lint` runs whole-tree `gz lint`; `--test` runs the full unit
    suite. Neither runs by default.
-6. **Commit:** refuses on a stranded `.git/COMMIT_EDITMSG`; otherwise commits
-   what is staged, and the pre-commit hooks run.
+6. **Commit:** when something is staged, refuses on a stranded
+   `.git/COMMIT_EDITMSG`; otherwise commits it, and the pre-commit hooks run.
 7. **Rebase:** `git pull --ff-only` when behind, `git pull --rebase` when
    diverged.
 8. **Push:** `git push` when ahead (skipped by `--no-push`); the pre-push hooks
    run.
 9. **Post-check:** `--lint` runs whole-tree `gz lint` again; a failure warns.
 
-A blocker stops every later step and exits `1`; nothing already done is undone.
+A blocker stops every later step and exits `1`, except step 2, which runs under
+`--apply` whatever blocked. Nothing already done is undone.
 The flags are independent, so any combination runs the union of their steps.
 The git-sync skill (`.gzkit/skills/git-sync/SKILL.md`) states each step in full,
 what each hook stage runs, and which command each moment (routine, OBPI Stage 5,
