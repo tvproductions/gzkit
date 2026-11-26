@@ -2583,3 +2583,8 @@
 {"ts": "2026-11-26T08:29:18Z", "source": "20261126T082917Z-prompt-audit-m15-related-skills.md", "text": "The pool ADR's test-skill target moves to gz-check (verbatim: \"Re-target gz-check\")."}
 {"ts": "2026-11-26T08:29:18Z", "source": "20261126T082917Z-prompt-audit-m15-related-skills.md", "text": "#1381 closes with its two undriven reason-string hunks disclosed and the dead-waiver check routed separately (verbatim: \"Close, disclose, file (Rec.)\")."}
 {"ts": "2026-11-26T08:29:18Z", "source": "20261126T082917Z-prompt-audit-m15-related-skills.md", "text": "File the CORE_SKILLS finding, then a fresh handoff and git sync (verbatim: \"yes, then frsh handoff + git sync\")."}
+{"ts": "2026-11-26T14:23:32Z", "source": "20261126T142332Z-prompt-audit-m16-m17.md", "text": "Fix the two CI failures before M16 (verbatim: \"fix two ci failures first\")."}
+{"ts": "2026-11-26T14:23:32Z", "source": "20261126T142332Z-prompt-audit-m16-m17.md", "text": "M16 now (verbatim: \"do m16\")."}
+{"ts": "2026-11-26T14:23:32Z", "source": "20261126T142332Z-prompt-audit-m16-m17.md", "text": "M17 now (verbatim: \"do m17\")."}
+{"ts": "2026-11-26T14:23:32Z", "source": "20261126T142332Z-prompt-audit-m16-m17.md", "text": "File a GHI on whether to rewrite or retire the alignment prompt (verbatim: \"file ghi on whether to rewrite or retire that prompt\")."}
+{"ts": "2026-11-26T14:23:32Z", "source": "20261126T142332Z-prompt-audit-m16-m17.md", "text": "Fresh handoff and git sync (verbatim: \"update handoff and git sync\")."}
