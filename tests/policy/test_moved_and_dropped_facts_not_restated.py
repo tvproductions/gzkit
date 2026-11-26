@@ -129,7 +129,7 @@ class TestMovedAndDroppedFactsNotRestated(unittest.TestCase):
                 "the canonical invocations `gz-arb` lists, test counts, file paths."
             ),
             (
-                "On 2026-04-23, `attestation-enrichment.md` itself was folded: binding content "
+                "On 2026-04-23, the retired attestation rule itself was folded: binding content "
                 "(em-dash pattern, canonical invocations) moved to `AGENTS.md` § Attestation."
             ),
         )
