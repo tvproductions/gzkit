@@ -520,7 +520,9 @@ class SealedRecordsTest(unittest.TestCase):
             # --check reports each file the formatter would rewrite and rewrites none.
             checked = self._ruff(["format", "--check", *sealed, plain], root)
             self.assertEqual(checked.returncode, 1, checked.stderr)
-            report = checked.stdout + checked.stderr
+            # Ruff prints native separators (`src\\module.py` on Windows), so compare
+            # POSIX forms; unnormalized, the sealed paths' assertNotIn passes blind there.
+            report = (checked.stdout + checked.stderr).replace("\\", "/")
             self.assertIn(plain, report)
             for path in sealed:
                 with self.subTest(sealed=path):
