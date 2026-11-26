@@ -479,8 +479,8 @@ class RecoveryProseCarriesThreePartsTest(_LineageFixtureMixin, unittest.TestCase
         parts = message.split("Next step:", 1)
         self.assertEqual(len(parts), 2, f"message carries no 'Next step:' part: {message!r}")
         next_step = parts[1]
-        self.assertIn("gz content compose", next_step)
-        self.assertIn("gz content commit", next_step)
+        self.assertIn("gz content land", next_step)
+        self.assertNotIn("gz content compose", next_step)
         self.assertNotIn("unowned", next_step)
 
         lowered = message.lower()
@@ -603,8 +603,7 @@ class RecoveryProseReachesStderrTest(_LineageFixtureMixin, unittest.TestCase):
         self.assertIn("ADR-0.35.0", stderr_text)
         self.assertIn("Decision item 4", stderr_text)
         # Part 3 — NEXT step, runnable.
-        self.assertIn("gz content compose", stderr_text)
-        self.assertIn("gz content commit", stderr_text)
+        self.assertIn("gz content land", stderr_text)
 
 
 class UncitedEntryFindingCarriesRecoveryTest(_LineageFixtureMixin, unittest.TestCase):
@@ -638,8 +637,8 @@ class UncitedEntryFindingCarriesRecoveryTest(_LineageFixtureMixin, unittest.Test
         # Part 3 — NEXT step, runnable, and never the un-owning escape.
         parts = message.split("Next step:", 1)
         self.assertEqual(len(parts), 2, f"message carries no 'Next step:' part: {message!r}")
-        self.assertIn("gz content compose", parts[1])
-        self.assertIn("gz content commit", parts[1])
+        self.assertIn("gz content land", parts[1])
+        self.assertNotIn("gz content compose", parts[1])
         lowered = message.lower()
         for escape in _UNOWNING_ESCAPES:
             self.assertNotIn(escape, lowered, f"recovery prose offers the escape {escape!r}")

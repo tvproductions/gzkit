@@ -67,6 +67,16 @@ class TestFloorViolation(_TempProject):
         self.assertEqual(errors[0].type, "rendition_floor_coherence")
         self.assertIn("corpus-tty", errors[0].message)
 
+    def test_recovery_names_the_attested_land(self) -> None:
+        """The next step lands the corpus, which regenerates owned sections (GHI #1389)."""
+        append_entry(self.root, "AGENTS.md", _entry(_INV, entry_id="corpus-tty"))
+        save_rendition(self.root, "AGENTS.md", "root", b"# AGENTS.md\n\nUnrelated body.\n")
+
+        message = validate_rendition_floor_coherence(self.root, fail_closed=True)[0].message
+
+        self.assertIn("gz content land AGENTS.md", message)
+        self.assertIn("--attestation-text", message)
+
     @covers("REQ-0.35.0-09-05")
     def test_the_graded_consumer_is_the_routed_one(self) -> None:
         """The floor gate grades the rendition the playback path actually delivers.

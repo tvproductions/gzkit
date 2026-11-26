@@ -31,7 +31,7 @@ carry — the same defect GHI #817 found in `instructions-files-diet`.
 
 | Correction kind | Edit this source | Then |
 |---|---|---|
-| Operator canon / durable behavioral rule | the corpus, via `uv run gz content remember` | `gz content compose` → operator attests at Gate 5 |
+| Operator canon / durable behavioral rule | the corpus, via `uv run gz content remember` | `uv run gz content land <surface>` with the operator's corpus attestation, then `uv run gz agent sync control-surfaces` |
 | Project-local agent-contract prose | `.gzkit/agents.local.md` | `uv run gz agent sync control-surfaces` |
 | Scoped rule | `.gzkit/rules/<name>.md` (canonical) — **never** `.claude/rules/` | `uv run gz agent sync control-surfaces` |
 | Skill procedure | `.gzkit/skills/<name>/SKILL.md` (canonical) — **never** `.claude/skills/` | `uv run gz agent sync control-surfaces` |

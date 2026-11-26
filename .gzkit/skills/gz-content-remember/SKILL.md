@@ -4,9 +4,9 @@ description: Use when the operator says "remember X" for a control surface; capt
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-11-26
 metadata:
-  skill-version: "0.2.1"
+  skill-version: "0.3.0"
 model: haiku
 gz_command: gz content remember
 ---
@@ -52,17 +52,21 @@ terminal ADR, when routing work.
 `remember` moves the corpus and nothing else. The committed rendition now no longer derives
 from the corpus, so **`gz check` goes RED immediately** on `gz validate
 --rendition-freshness` and, for an `invariant`-tier entry, `--rendition-floor-coherence`.
-That is expected, not a defect: the tool prints the drift warning itself. Landing the entry
-is the rest of the chain, and an ordinary session runs it rather than leaving the tree red:
+That is expected, not a defect: the tool prints the drift warning itself, ending with the
+next step. Landing the entry is the rest of the chain, and an ordinary session runs it
+rather than leaving the tree red:
 
 ```bash
-gz content compose <surface> --consumer <vendor> --candidate <file>   # /gz-content-compose
-gz content advise-rendition <surface> --consumer <vendor> --score N --explanation "..."
-gz content commit <surface> --consumer <vendor> --attestor <who> --attestation-text "<verbatim>"
-gz agent sync control-surfaces                                        # playback writes the surface
+uv run gz content land <surface> --attestor <who> --attestation-text "<verbatim>" --dry-run
+uv run gz content land <surface> --attestor <who> --attestation-text "<verbatim>"
+uv run gz agent sync control-surfaces    # playback writes the surface
 ```
 
-**Adding a corpus entry is ATTESTED** (operator ruling 2026-08-17): `gz content commit`
+`land` regenerates every consumer routed for the surface from the corpus and publishes them
+under one attestation (ADR-0.35.0 § Decision 6). Its refusals name their recovery; one that
+names a consumer with no committed rendition sends you to `gz-content-compose` to bootstrap it.
+
+**Adding a corpus entry is ATTESTED** (operator ruling 2026-08-17): `gz content land`
 fail-closes without `--attestor` and `--attestation-text` when canon moved. Attestation
 attaches to the canon change, never to the Layer-3 rendition, and it is **corpus
 attestation — never call it Gate 5** (that name is reserved for OBPI/ADR completion,
@@ -93,7 +97,7 @@ gz content remember AGENTS.md --section operator-doctrine-verbatim-canon \
 
 ## Related Skills
 
-- `gz-content-compose` — the next step; stages and validates the candidate rendition
-- `gz-advisor-qc` — records the information-retained-per-byte verdict the operator cites
+- `gz-content-compose` — hand compression toward a setpoint, or bootstrapping a consumer `land` refuses
+- `gz-advisor-qc` — records the information-retained-per-byte verdict on a hand-composed candidate
 - `gz-agent-sync` — playback; the sole writer of rendered surfaces and their mirrors
 - `gz-insights-remember` — for a session-local course-correction that is NOT canon

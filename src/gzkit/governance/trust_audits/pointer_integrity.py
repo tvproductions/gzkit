@@ -58,8 +58,8 @@ _REVERSE_SCOPE = Path("docs") / "governance"
 _REVERSE_RECOVERY = (
     " Invariant 3 (docs/governance/agent-control-surface-fidelity-doctrine.md) requires the"
     " origin to carry the forward pointer for every lift it declares. Restore the pointer at"
-    " the origin's canonical source (for AGENTS.md: the committed rendition via"
-    " `gz content compose` -> `gz content commit`), or retire the declaration if the lift"
+    " the origin's canonical source (for AGENTS.md: the corpus, via"
+    " `gz content remember` -> `gz content land`), or retire the declaration if the lift"
     " was undone, then re-run `uv run gz validate --pointer-anchors`."
 )
 

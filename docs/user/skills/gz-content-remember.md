@@ -36,6 +36,19 @@ gz content remember <surface> --section <id> --text "<prose>" \
 - The rendered surface is byte-unchanged.
 - A `corpus_entry_appended` ledger event carries `surface`, `section`, `entry_id`, `tier`.
 
+## After capture
+
+The append moves the corpus, so every committed rendition of the surface stops
+deriving from it and `remember` prints the next step. Land the entry under the
+operator's corpus attestation, then play it back:
+
+```bash
+uv run gz content land AGENTS.md --attestor <who> --attestation-text "<verbatim>"
+uv run gz agent sync control-surfaces
+```
+
+See [`gz content`](../manpages/content.md) § land.
+
 ## Example
 
 ```bash

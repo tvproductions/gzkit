@@ -475,6 +475,8 @@ class TestReverseArmOrphanedBackPointer(unittest.TestCase):
             self.assertIn("docs/governance/r.md:3", errors[0].message)
             self.assertIn("AGENTS.md", errors[0].message)
             self.assertIn("#h", errors[0].message)
+            # AGENTS.md's canonical source is the corpus, landed by `land` (GHI #1389).
+            self.assertIn("`gz content remember` -> `gz content land`", errors[0].message)
 
     def test_missing_origin_file_is_a_finding(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

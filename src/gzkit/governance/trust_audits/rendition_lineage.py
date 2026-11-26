@@ -185,10 +185,20 @@ def measure_coverage(committed_text: str, sections: Mapping[str, str]) -> Lineag
 
 
 def _round_trip(surface: str, consumer: str) -> str:
-    """Return the runnable corpus round-trip for *(surface, consumer)*."""
+    """Return the runnable corpus round-trip for *(surface, consumer)*.
+
+    ``gz content land`` regenerates every routed consumer from the corpus and
+    publishes its rendition and lineage together (ADR-0.35.0 § Decision 6), so it
+    is the round-trip for one consumer too: it never lands a consumer alone (GHI #1389).
+
+    Returns:
+        The runnable land-then-playback next step naming *consumer*.
+
+    """
     return (
-        f"`gz content compose {surface} --consumer {consumer}`, then "
-        f"`gz content commit {surface} --consumer {consumer}`"
+        f"`gz content land {surface} --attestor <you> --attestation-text <verbatim>`, "
+        f"which lands {consumer!r} with every other routed consumer (attestation is "
+        f"required only if the corpus moved), then `gz agent sync control-surfaces`"
     )
 
 
@@ -246,8 +256,8 @@ def _drift_message(surface: str, consumer: str, section_id: str) -> str:
         "bytes are DERIVED from canon, never hand-authored into the rendition, so "
         "prose written straight into an owned section is canon drift that no other "
         f"gate observes. {_NEVER_UNOWN}\n"
-        f"Next step: land the wording in canon (`gz content remember {surface} ...`), "
-        f"then regenerate and recommit — {_round_trip(surface, consumer)}."
+        f"Next step: capture the wording in canon (`gz content remember {surface} ...`), "
+        f"then land it — {_round_trip(surface, consumer)}."
     )
 
 
@@ -313,7 +323,7 @@ def _regeneration_refused_message(surface: str, consumer: str, reason: str) -> s
         "refusal means the gate has no derivation to compare, and reporting that as "
         f"a pass is the undeclared-scope theater this gate exists to remove. {_NEVER_UNOWN}\n"
         f"Next step: repair the refusal the generator names above, then regenerate "
-        f"and recommit — {_round_trip(surface, consumer)}."
+        f"and land — {_round_trip(surface, consumer)}."
     )
 
 

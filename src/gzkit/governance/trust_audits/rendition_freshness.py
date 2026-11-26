@@ -57,10 +57,10 @@ def _recovery_prose(surface: str, consumer: str, what: str) -> str:
     return (
         f"{what} for {surface!r}/{consumer!r}: the committed rendition can no longer be "
         f"proven to derive from the current corpus (ADR-0.0.37 § Re-Alignment; "
-        f"rendition-freshness gate, OBPI-0.0.37-22 REQ-03). Recompose and re-attest: "
-        f"`gz content compose {surface} --consumer {consumer}` then "
-        f"`gz content commit {surface} --consumer {consumer} "
-        f"--attestor <you> --attestation-text <verbatim>`."
+        f"rendition-freshness gate, OBPI-0.0.37-22 REQ-03). Land the corpus into every "
+        f"routed consumer under your attestation of the corpus change (ADR-0.35.0 "
+        f"§ Decision 6): `gz content land {surface} --attestor <you> "
+        f"--attestation-text <verbatim>`, then `gz agent sync control-surfaces`."
     )
 
 

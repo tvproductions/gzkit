@@ -140,6 +140,18 @@ class TestMismatchDrift(_TempProjectMixin):
         self.assertEqual(len(errors), 1)
         self.assertIn("Diff (first 50 lines)", errors[0].message)
 
+    def test_error_message_names_playback_then_canon_capture_and_land(self) -> None:
+        """Playback repairs the drift; a wanted edit goes to canon and lands (GHI #1389)."""
+        _setup_project(self.root)
+        _write_agents_md(self.root, b"# AGENTS.md\n\nDifferent content.\n")
+
+        message = validate_invariant_coherence(self.root)[0].message
+
+        self.assertIn("gz agent sync control-surfaces", message)
+        self.assertIn("gz content remember AGENTS.md", message)
+        self.assertIn("gz content land AGENTS.md", message)
+        self.assertNotIn("gz content compose", message)
+
     @covers("REQ-0.0.37-03-02")
     def test_error_message_contains_diff_hunk_marker(self) -> None:
         _setup_project(self.root)

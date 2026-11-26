@@ -322,8 +322,8 @@ In every era, the agent reads a static document. What changes is *how the docume
 | BDD scenarios | `Scenario` | `.gzkit/rules/tests.md` | `behave` |
 
 **Authoring vs orientation — two distinct verbs.** To change agents/claude or
-rules, author the corpus entry (`gz content remember`) and recompose
-(`gz content compose`). To change a skill, edit its canonical `.gzkit/skills/`
+rules, author the corpus entry (`gz content remember`) and land it
+(`gz content land`). To change a skill, edit its canonical `.gzkit/skills/`
 file, update its version/date, and run `gz agent sync control-surfaces`.
 Never edit a delivered mirror. To orient, read this index for the governing
 source and delivery command.

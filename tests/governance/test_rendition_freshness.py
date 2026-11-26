@@ -188,14 +188,21 @@ class TestRenditionFreshnessDriftClosed(_TempProjectMixin):
 
     @covers("REQ-0.0.37-22-03")
     def test_drift_message_is_three_part_recovery(self) -> None:
-        """Drift message names the corpus (what/why) and the compose+commit recovery (next step)."""
+        """Drift message names the corpus (what/why) and the attested land (next step).
+
+        A moved corpus lands through `gz content land`, which takes the corpus
+        attestation (ADR-0.35.0 § Decision 6); per-consumer compose then commit is the
+        route `land` replaced for this moment (GHI #1389).
+        """
         corpus = self._seed_corpus("AGENTS.md", "original")
         self._commit("AGENTS.md", "root", corpus)
         self._seed_corpus("AGENTS.md", "mutated")
-        message = validate_rendition_freshness(self.root, fail_closed=True)[0].message.lower()
-        self.assertIn("corpus", message)
-        self.assertIn("compose", message)
-        self.assertIn("commit", message)
+        message = validate_rendition_freshness(self.root, fail_closed=True)[0].message
+        self.assertIn("corpus", message.lower())
+        self.assertIn("gz content land AGENTS.md", message)
+        self.assertIn("--attestation-text", message)
+        self.assertIn("gz agent sync control-surfaces", message)
+        self.assertNotIn("gz content compose", message)
 
     @covers("REQ-0.0.37-22-03")
     @covers("REQ-0.0.74-09-02")

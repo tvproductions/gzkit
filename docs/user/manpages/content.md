@@ -217,10 +217,11 @@ prevent: a `compressible` tombstone over an invariant target GROWS the floor,
 and an ordinary `compressible` row moves it not at all.
 
 The command reports which way the floor actually moved, and raises the
-floor-coherence warning when it grew. Read that line before deciding whether a
-recompose is needed — the older guarantee that retirement "only ever shrinks
-the floor" was false for the tombstone case. `retire` never touches a rendered
-surface either way.
+floor-coherence warning when it grew. Every retirement moves the corpus
+fingerprint, so `gz content land <surface>` is due either way; read that line to
+know whether the landed renditions must also carry a revived entry — the older
+guarantee that retirement "only ever shrinks the floor" was false for the
+tombstone case. `retire` never touches a rendered surface either way.
 
 Retiring a tombstone requires an `--attestor` **only when the entry it revives is
 invariant-tier** — then floor-tier liveness moves, even though the tombstone
@@ -934,7 +935,8 @@ canon is unchanged. The operator's verbatim `--attestation-text` IS the corpus
 attestation (mirrors `gz obpi repudiate`). The frozen fingerprint is exactly what
 `gz validate --rendition-freshness` compares the live corpus against: when the
 corpus drifts from the committed rendition, the freshness gate flags it and the
-recovery is to recompose and re-commit.
+recovery is [`land`](#land), which regenerates and publishes every routed consumer
+under one corpus attestation.
 
 **`commit` is not the last step.** It writes the *rendition* — playback is the
 sole writer of the rendered surface itself, so a canon change is only applied

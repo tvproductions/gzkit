@@ -598,8 +598,8 @@ The doctrine's literal format example, `<path>#<anchor>`, is excluded
 exactly; any other declaration naming a missing origin is a finding. A
 reverse-arm finding is reported against the declaring page and carries the
 recovery step: restore the pointer at the origin's canonical source (for
-`AGENTS.md`, the committed rendition via `gz content compose` then
-`gz content commit`), or retire the declaration if the lift was undone.
+`AGENTS.md`, the corpus, via `gz content remember` then `gz content land`), or
+retire the declaration if the lift was undone.
 
 ```bash
 # Check pointer integrity across the per-turn surface
@@ -2180,11 +2180,10 @@ serialization). Drift is a mutated corpus **or** a rendition with no provenance 
 (derivation unproven). This replaces the prior file-modification-timestamp comparison
 (repudiated 2026-06-16: a `touch` passed, a content change could pass).
 
-**Staging (OBPI-0.0.41 warn→fail precedent).** The gate currently runs in **warn mode**:
-drift prints a recompose WARNING to stderr and the gate exits 0, so `gz check` stays green
-while the corpus is enriched and the renditions are re-seeded under attestation. It flips
-fail-closed (exit 3, emitting `composition_drift_detected`) in a later increment. Runs in
-the default `gz check` build (OBPI-0.0.37-22).
+**Strength.** The gate fails closed (exit 3, emitting `composition_drift_detected`) at full
+strength. While the MX hangar is open it is advisory: drift prints a WARNING to stderr and
+the gate exits 0 (OBPI-0.0.74-09 retired the warn-mode staging flag). Runs in the default
+`gz check` build (OBPI-0.0.37-22).
 
 **Usage:**
 
@@ -2196,8 +2195,8 @@ gz validate --rendition-freshness
 
 | Code | Meaning | Recovery |
 |------|---------|----------|
-| 0 | Renditions agree with the corpus fingerprint (or drift, while staged in warn mode) | — |
-| 3 | Corpus drifted from the committed fingerprint (after the fail-closed flip) | Recompose: `gz content compose <surface>` then `gz content commit <surface> --consumer <c> --attestor … --attestation-text …` |
+| 0 | Renditions agree with the corpus fingerprint (or drift, while the MX hangar is open) | — |
+| 3 | Corpus drifted from the committed fingerprint | Land the corpus into every routed consumer: `gz content land <surface> --attestor … --attestation-text …`, then `gz agent sync control-surfaces` |
 
 **When to use:** After `gz content remember` appends a corpus entry, before `gz agent sync
 control-surfaces`, or to diagnose a `gz check` Rendition freshness warning.
@@ -2229,7 +2228,7 @@ gz validate --rendition-floor-coherence
 | Code | Meaning | Recovery |
 |------|---------|----------|
 | 0 | Every committed rendition carries its corpus invariant floor verbatim | — |
-| 3 | A rendition omits one or more invariant-tier corpus entries | Run `gz content compose <surface>` with a candidate that includes every invariant entry verbatim, attest, and recommit the rendition |
+| 3 | A rendition omits one or more invariant-tier corpus entries | Land the corpus, which regenerates every corpus-owned section: `gz content land <surface> --attestor … --attestation-text …`, then `gz agent sync control-surfaces`. A hand-composed candidate (`gz content compose <surface> --consumer <c> --candidate <file>`, then `gz content commit`) must carry every invariant entry verbatim |
 
 **When to use:** Before attesting an ADR-0.0.37 closeout, or to prove a committed rendition
 genuinely derives canon's invariants rather than passing a timestamp-only freshness check.
@@ -2288,7 +2287,7 @@ gz validate --rendition-lineage
 | Code | Meaning | Recovery |
 |------|---------|----------|
 | 0 | Every graded owned section derives from the effective corpus (or no surface declares ownership yet, or every declared section is disclosed UNGRADED for want of a committed lineage sidecar) | — |
-| 3 | A committed owned section's bytes differ from the corpus regeneration, or the corpus refuses to materialize a candidate for a declared surface | Land the wording in canon (`gz content remember <surface> ...`), then regenerate and recommit: `gz content compose <surface> --consumer <consumer>`, then `gz content commit <surface> --consumer <consumer>` |
+| 3 | A committed owned section's bytes differ from the corpus regeneration, or the corpus refuses to materialize a candidate for a declared surface | Capture the wording in canon (`gz content remember <surface> ...`), then land it: `gz content land <surface> --attestor … --attestation-text …`, then `gz agent sync control-surfaces` |
 
 **When to use:** After editing corpus entries for a surface that declares `corpus-owned`
 sections, before attesting an ADR-0.35.0 closeout, or to diagnose a `gz check` Rendition
@@ -2368,7 +2367,7 @@ gz validate --invariant-coherence
 | Code | Meaning | Recovery |
 |------|---------|----------|
 | 0 | Committed rendition matches AGENTS.md (or no rendition yet) | — |
-| 3 | Playback of committed rendition differs from committed AGENTS.md | Run `gz content compose AGENTS.md` and attest, or `gz agent sync control-surfaces` to replay |
+| 3 | Playback of committed rendition differs from committed AGENTS.md | `gz agent sync control-surfaces` to replay; to keep the edit, capture it in canon (`gz content remember AGENTS.md …`) and land it (`gz content land AGENTS.md --attestor … --attestation-text …`) before the sync |
 
 **Related:** ADR-0.0.37 (constitutional invariant composition), OBPI-0.0.37-22
 (rendition playback gate), `--rendition-freshness`.

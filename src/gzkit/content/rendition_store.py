@@ -36,7 +36,8 @@ class RenditionMissingError(FileNotFoundError):
         self.path = path
         super().__init__(
             f"No committed rendition for ({surface!r}, {consumer!r}) at {path}. "
-            f"Run `gz content compose {surface}` to compose and commit a rendition."
+            f"Bootstrap one with `gz content compose {surface} --consumer {consumer}`, "
+            f"then `gz content commit {surface} --consumer {consumer}`."
         )
 
 
@@ -229,7 +230,7 @@ def load_fingerprint(root: Path, surface: str, consumer: str) -> RenditionProven
     """Load the provenance sidecar for *(surface, consumer)*, or ``None`` when absent.
 
     A missing sidecar is NOT an error here: the freshness gate interprets ``None`` as
-    drift (the rendition's derivation from the corpus is unproven), with a recompose hint.
+    drift (the rendition's derivation from the corpus is unproven), with a land hint.
 
     Returns:
         The parsed RenditionProvenance, or None when the sidecar is absent.

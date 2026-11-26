@@ -1390,7 +1390,7 @@ def run_rendition_freshness_audit(project_root: Path) -> QualityResult:
 
     Fails closed (exit 3) when the corpus has mutated after the committed
     rendition for any (surface, consumer) pair.
-    Recovery: `uv run gz content compose <surface>` and attest.
+    Recovery: `uv run gz content land <surface>` with the corpus attestation.
 
     Returns:
         QualityResult of running ``uv run gz validate --rendition-freshness``.
@@ -1405,8 +1405,9 @@ def run_rendition_floor_coherence_audit(project_root: Path) -> QualityResult:
     Fails closed (exit 3) when a committed rendition omits an invariant-tier
     corpus entry — the content witness `--rendition-freshness` (a timestamp
     comparison) does not perform.
-    Recovery: `uv run gz content compose <surface>` with a candidate carrying
-    every invariant entry verbatim, then recommit the rendition.
+    Recovery: `uv run gz content land <surface>`, which regenerates every
+    corpus-owned section; a hand-composed candidate carries every invariant
+    entry verbatim.
 
     Returns:
         QualityResult of running ``uv run gz validate --rendition-floor-coherence``.
@@ -1424,8 +1425,8 @@ def run_rendition_lineage_audit(project_root: Path) -> QualityResult:
     cannot see, because the invariant text it looks for is still present
     somewhere. Unowned bytes, and owned sections no committed lineage witnesses,
     are reported as measured debt and never fail.
-    Recovery: land the wording in canon, then
-    `uv run gz content compose <surface> --consumer <consumer>` and recommit.
+    Recovery: capture the wording in canon, then
+    `uv run gz content land <surface>`.
 
     Returns:
         QualityResult of running ``uv run gz validate --rendition-lineage``.

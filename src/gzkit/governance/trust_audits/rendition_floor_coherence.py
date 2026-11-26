@@ -116,9 +116,12 @@ def validate_rendition_floor_coherence(
                 f"Committed rendition {target!r} omits {len(missing)} invariant-tier "
                 f"corpus entr{'y' if len(missing) == 1 else 'ies'} ({missing_ids}); the "
                 "rendition does not satisfy canon's invariant floor (the canon->rendition "
-                "seam ADR-0.0.37 requires). Recompose with a candidate that includes "
-                f"every invariant-tier entry verbatim: `gz content compose {surface}`, "
-                "attest the candidate, then recommit the rendition."
+                "seam ADR-0.0.37 requires). Land the corpus, which regenerates every "
+                "corpus-owned section from canon: `gz content land "
+                f"{surface} --attestor <you> --attestation-text <verbatim>`, then "
+                "`gz agent sync control-surfaces`. A hand-composed candidate must carry "
+                f"every invariant-tier entry verbatim (`gz content compose {surface} "
+                f"--consumer {consumer} --candidate <file>`, then `gz content commit`)."
             )
             if not closed:
                 emit_advisory(f"WARNING [rendition-floor-coherence, staged warn]: {message}")

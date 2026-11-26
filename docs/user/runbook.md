@@ -1604,9 +1604,11 @@ uv run gz content retire AGENTS.md --entry corpus-prime-directive-2026-06-13T12:
   --reason "superseded by the 2026-06-19 canon entry"
 ```
 The retired row stays on disk with its provenance; it simply stops binding the invariant
-floor. Retirement only ever **shrinks** the floor, so committed renditions stay valid and
-no recomposition is implied. Fails closed on an unknown or already-retired id. Emits a
-`corpus_entry_retired` ledger event. See [`gz content`](manpages/content.md) § retire.
+floor. The tombstone row moves the corpus fingerprint, so land the retirement like any
+other corpus change (below). Retiring a tombstone can also GROW the floor by reviving the
+entry it retired; the command reports which way the floor moved. Fails closed on an
+unknown or already-retired id. Emits a `corpus_entry_retired` ledger event. See
+[`gz content`](manpages/content.md) § retire.
 
 **To compose a candidate rendition (compress stage — OBPI-0.0.37-21):**
 After the corpus is seeded, the agent wielding the `gz-content-compose` skill reads the
@@ -1685,10 +1687,8 @@ an absent candidate, or an absent corpus. It emits a `rendition_committed` ledge
 # Identify the drift (the committed fingerprint no longer matches the corpus)
 uv run gz validate --rendition-freshness
 
-# Recompose, attest, and re-commit so the committed rendition + fingerprint reflect the corpus
-cat /tmp/new-candidate.md | uv run gz content compose AGENTS.md --consumer root
-uv run gz content commit AGENTS.md --consumer root \
-  --attestor "g0" --attestation-text "recompose attested"
+# Land the corpus into every routed consumer under the corpus attestation
+uv run gz content land AGENTS.md --attestor "g0" --attestation-text "<verbatim words>"
 
 # Confirm drift cleared, then play back
 uv run gz validate --rendition-freshness
@@ -1697,12 +1697,10 @@ uv run gz agent sync control-surfaces
 
 The freshness gate is a **content** comparison: it flags drift when the corpus for a
 surface no longer matches the fingerprint frozen at commit time (a mutated corpus, or a
-rendition with no provenance sidecar) — not a timestamp comparison. It is currently
-**staged in warn mode** (OBPI-0.0.41 warn→fail precedent): drift prints a recompose
-WARNING and the gate still exits 0, so `gz check` stays green while the corpus is enriched
-and the renditions are re-seeded under attestation. It flips fail-closed (`exit 3`) in a
-later increment. Recovery is always recompose + attest + commit, never editing a rendered
-surface directly.
+rendition with no provenance sidecar) — not a timestamp comparison. It fails closed
+(`exit 3`) at full strength; while the MX hangar is open it prints a WARNING and exits 0
+(OBPI-0.0.74-09 retired the warn-mode staging flag). Recovery is an attested
+`gz content land`, never editing a rendered surface directly.
 
 **To land a corpus change on every consumer at once (OBPI-0.35.0-07):**
 `gz content land <surface>` generates every routed consumer's candidate from the corpus and
@@ -1750,7 +1748,7 @@ it does NOT delete a lineage or retention sidecar a landing added since, leaving
 mixed set; `git restore --staged --worktree` stages those deletions too. Review the
 staged restore before committing, then check the revision against the
 current corpus -- restoring old files cannot roll back append-only canon. Inside the MX
-hangar, or whenever the freshness gate is staged in warn mode, drift prints a
+hangar, where the freshness gate is advisory, drift prints a
 `WARNING [rendition-freshness ...]` line and still exits 0, so read the printed output,
 never only the exit code:
 

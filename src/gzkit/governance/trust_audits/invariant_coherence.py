@@ -88,8 +88,10 @@ def validate_invariant_coherence(root: Path) -> list[ValidationError]:
             artifact=_AGENTS_MD_PATH,
             message=(
                 "AGENTS.md drifted from committed rendition playback. "
-                "Run `gz content compose AGENTS.md` and attest to recompose,\n"
-                "or `gz agent sync control-surfaces` to play back the current rendition.\n\n"
+                "Run `gz agent sync control-surfaces` to play back the committed rendition;\n"
+                "to keep the edit, capture it in canon (`gz content remember AGENTS.md ...`)\n"
+                "and land it (`gz content land AGENTS.md --attestor <you> "
+                "--attestation-text <verbatim>`) before the sync.\n\n"
                 f"Diff (first 50 lines):\n{diff_text}"
             ),
         )

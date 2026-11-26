@@ -24,8 +24,8 @@ at all), or CHANGED (both at once). A rendition that satisfied the old floor
 still SATISFIES a shrunk one but may FAIL a GREW or CHANGED one. Either way the
 retraction row moves the
 corpus fingerprint, so a committed rendition's derivation proof no longer
-holds and ``gz validate --rendition-freshness`` requires a recompose and
-re-attest before the next push (GHI #863). This command never touches a
+holds and ``gz validate --rendition-freshness`` requires an attested
+``gz content land`` before the next push (GHI #863, #1389). This command never touches a
 rendered surface itself, and it fails closed — nothing written — on an
 unknown or already-retired id.
 
@@ -82,13 +82,13 @@ def _floor_direction_prose(added: set[str], removed: set[str]) -> str:
             f"The invariant floor CHANGED: {len(added)} entr"
             f"{'y' if len(added) == 1 else 'ies'} revived "
             f"({', '.join(sorted(added))}) and {len(removed)} retired. A committed "
-            "rendition may no longer SATISFY it — recompose and re-attest."
+            "rendition may no longer SATISFY it — land it with `gz content land`."
         )
     if added:
         return (
             f"The invariant floor GREW — retiring this row revived "
             f"{', '.join(sorted(added))}. A committed rendition that satisfied the "
-            "old floor may FAIL the new one; recompose and re-attest."
+            "old floor may FAIL the new one; land it with `gz content land`."
         )
     if removed:
         return "The invariant floor shrank, so every committed rendition still SATISFIES it."

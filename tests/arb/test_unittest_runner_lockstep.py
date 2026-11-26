@@ -223,7 +223,8 @@ class TestAgentContractMatchesCanon(unittest.TestCase):
                 "emit a receipt that `gz arb validate` rejects as non-canonical "
                 "provenance — the contract itself carrying the drift (GHI #856). "
                 "AGENTS.md is played back from a committed rendition, so the repair "
-                "is `gz content compose`/`commit` then `gz agent sync "
+                "is a corpus change (`gz content remember`/`retire`), "
+                "`gz content land AGENTS.md`, then `gz agent sync "
                 "control-surfaces`, never a hand edit."
             ),
         )

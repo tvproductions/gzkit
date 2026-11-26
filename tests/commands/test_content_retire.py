@@ -342,7 +342,7 @@ class TestContentRetireDriftWarning(unittest.TestCase):
         self.assertNotIn("committed renditions stay valid", output)
         self.assertEqual(output.count("shrinks the floor"), 1, "spliced description")
         self.assertIn("rendition-freshness", output)
-        self.assertIn("recompose", output.lower())
+        self.assertIn("gz content land", output)
 
     def test_help_does_not_claim_shrink_only_while_also_claiming_growth(self) -> None:
         """The description must not assert a fixed direction and then contradict it.
@@ -1218,6 +1218,8 @@ class TestContentRetireAttestation(unittest.TestCase):
             with_attestor = self._retire(tombstone, args=["--reason", "undo", "--attestor", "g0"])
             self.assertEqual(with_attestor.exit_code, 0, msg=with_attestor.output)
             self.assertIn("The invariant floor GREW", with_attestor.output)
+            # A grown floor is repaired by landing the corpus (GHI #1389).
+            self.assertIn("gz content land", with_attestor.output)
 
     @covers("REQ-0.35.0-02-03")
     def test_unchanged_via_tombstone_needs_no_attestor_and_says_so(self) -> None:

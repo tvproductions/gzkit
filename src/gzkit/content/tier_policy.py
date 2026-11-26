@@ -33,7 +33,7 @@ def invariant_entries(corpus: Corpus) -> list[CorpusEntry]:
     (Algebra 6, a later tombstone retiring an earlier one) can GROW it back,
     which the old flat form could never express. Scope that to the FLOOR:
     retiring OR un-retiring an entry still moves the corpus fingerprint, so
-    the freshness gate's derivation proof breaks and a recompose IS required
+    the freshness gate's derivation proof breaks and a landing IS required
     before the next push. This sentence was lifted into the `gz content
     retire` help, where it read as a claim about the whole operation and told
     operators no recomposition was due (GHI #863).

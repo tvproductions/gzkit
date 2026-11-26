@@ -42,7 +42,7 @@ _Classification = Literal["Mechanical", "Promotable", "Judgment", "Ambiguous"]
 # `rendition_store.corpus_fingerprint` hashes `Corpus.dumps()`, so that string
 # IS the corpus derivation identity: the committed renditions' provenance is
 # proven against it, and any change red-flags every surface and demands a
-# corpus-attested recompose (`gz content compose` + `gz content commit --attestor ...`).
+# corpus-attested landing (`gz content land <surface> --attestor ...`).
 #
 # That makes the *field set* part of the identity, not just the values. Adding
 # `retires` alone changed every surface's fingerprint while the .jsonl on disk

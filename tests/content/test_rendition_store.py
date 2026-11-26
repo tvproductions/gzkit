@@ -108,8 +108,12 @@ class TestRenditionStoreLoadSave(unittest.TestCase):
     @covers("REQ-0.0.37-22-01")
     def test_load_raises_when_artifact_absent(self) -> None:
         """load_rendition fails closed with FileNotFoundError when artifact is absent."""
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(FileNotFoundError) as caught:
             load_rendition(self._root, "AGENTS.md", "claude")
+        # The bootstrap route names both verbs, as `land`'s own refusal does (GHI #1389).
+        message = str(caught.exception)
+        self.assertIn("gz content compose AGENTS.md --consumer claude", message)
+        self.assertIn("gz content commit AGENTS.md --consumer claude", message)
 
     @covers("REQ-0.0.37-22-01")
     def test_save_creates_parent_dirs_on_first_use(self) -> None:
