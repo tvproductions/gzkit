@@ -11,13 +11,16 @@ runtime here).
 """
 
 import argparse
+import tempfile
 import unittest
 from datetime import UTC, datetime
+from pathlib import Path
 
 from gzkit.cli.main import _build_parser
 from gzkit.commands.ceremony_state import CeremonyState
 from gzkit.commands.ceremony_steps import render_step_11_complete
 from gzkit.commands.obpi_stages import _build_sync_stage_steps
+from gzkit.commands.version_sync import write_in_flight_release_manifest
 from gzkit.pipeline_markers import pipeline_stage_output
 
 _SYNC = "uv run gz git-sync --apply"
@@ -28,6 +31,14 @@ def _git_sync_actions() -> dict[str, argparse.Action]:
     commands = next(a for a in parser._actions if isinstance(a, argparse._SubParsersAction))
     git_sync = commands.choices["git-sync"]
     return {opt: action for action in git_sync._actions for opt in action.option_strings}
+
+
+def _written_manifest() -> str:
+    """Return the manifest text `gz closeout` files at bump time, written to a temp root."""
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        rel = write_in_flight_release_manifest(root, "9.9.0", "ADR-9.9.0")
+        return (root / rel).read_text(encoding="utf-8")
 
 
 class TestPipelineSyncIsTheSkillsRitual(unittest.TestCase):
@@ -81,6 +92,39 @@ class TestGitSyncHelpStatesWhatEachFlagRunsOutputContract(unittest.TestCase):
                 help_text = actions[flag].help or ""
                 self.assertIn("full unit suite", help_text)
                 self.assertNotIn("pre-commit", help_text)
+
+    def test_each_flag_says_what_sync_py_runs_for_it(self) -> None:
+        """Each line names the step `_execute_git_sync` runs or skips for that flag."""
+        actions = _git_sync_actions()
+        # _run_sync_prechecks and _run_post_sync_lint: whole-tree gz lint, before and after.
+        lint = actions["--lint"].help or ""
+        self.assertIn("whole-tree", lint)
+        self.assertIn("after the push", lint)
+        self.assertIn("whole-tree", actions["--no-lint"].help or "")
+        # _execute_git_sync: `git add -A`, refused by the src/ and tests/ sweep guard.
+        auto_add = actions["--auto-add"].help or ""
+        self.assertIn("git add -A", auto_add)
+        self.assertIn("src/", auto_add)
+        self.assertIn("already staged", actions["--no-auto-add"].help or "")
+        # _pull_if_needed takes no allow_push, so --no-push still rebases.
+        self.assertIn("rebase", actions["--no-push"].help or "")
+
+    def test_description_names_both_hook_stages_and_the_full_suite(self) -> None:
+        parser = _build_parser()
+        commands = next(a for a in parser._actions if isinstance(a, argparse._SubParsersAction))
+        description = commands.choices["git-sync"].description or ""
+        self.assertIn("pre-commit", description)
+        self.assertIn("pre-push", description)
+        self.assertIn("full unit suite", description)
+
+
+class TestReleaseManifestNamesTheReleaseSweep(unittest.TestCase):
+    """The in-flight manifest keeps `gz check --full` runnable (gz-patch-release Step 4c)."""
+
+    def test_manifest_names_the_full_sweep_not_the_sync_flags(self) -> None:
+        text = _written_manifest()
+        self.assertIn("`gz check --full`", text)
+        self.assertNotIn("--lint --test", text)
 
 
 if __name__ == "__main__":
