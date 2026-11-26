@@ -481,6 +481,8 @@ class RecoveryProseCarriesThreePartsTest(_LineageFixtureMixin, unittest.TestCase
         next_step = parts[1]
         self.assertIn("gz content land", next_step)
         self.assertNotIn("gz content compose", next_step)
+        # `land` replaced the per-consumer recommit as the post-drift step (GHI #1389).
+        self.assertNotIn("recommit", next_step)
         self.assertNotIn("unowned", next_step)
 
         lowered = message.lower()
@@ -604,6 +606,31 @@ class RecoveryProseReachesStderrTest(_LineageFixtureMixin, unittest.TestCase):
         self.assertIn("Decision item 4", stderr_text)
         # Part 3 — NEXT step, runnable.
         self.assertIn("gz content land", stderr_text)
+
+
+class GeneratorRefusalCarriesRecoveryTest(_LineageFixtureMixin, unittest.TestCase):
+    """A generator refusal names its repair, then the land round-trip (GHI #1389).
+
+    `land` runs the same generator, so the next step must send the operator to the
+    refusal first; it must never prescribe the per-consumer recommit `land` replaced.
+    """
+
+    def test_generator_refusal_next_step_repairs_then_lands(self) -> None:
+        self._seed()
+        # Two live invariant entries with byte-identical text: the generator refuses.
+        for entry_id in ("e-dup-1", "e-dup-2"):
+            self._append_canon_entry(
+                entry_id, "Duplicate invariant.", tier="invariant", classification="Mechanical"
+            )
+
+        errors = self._validate(fail_closed=True)
+
+        messages = [e.message for e in errors if "generator refused" in e.message]
+        self.assertEqual(len(messages), 1, f"expected one generator refusal, got {errors!r}")
+        next_step = messages[0].split("Next step:", 1)[1]
+        self.assertIn("repair the refusal the generator names", next_step)
+        self.assertIn("gz content land", next_step)
+        self.assertNotIn("recommit", next_step)
 
 
 class UncitedEntryFindingCarriesRecoveryTest(_LineageFixtureMixin, unittest.TestCase):

@@ -18,6 +18,7 @@ from typing import Any, override
 # cycle, recorded 2026-10-03 via gz insights); this module must load when run alone.
 import gzkit.ledger  # noqa: F401
 from gzkit.cli.main import main
+from gzkit.commands.content.retire import _floor_direction_prose
 from gzkit.content.models import Corpus
 from gzkit.content.models.corpus import effective_corpus
 from gzkit.content.rendition_store import (
@@ -1476,6 +1477,15 @@ class TestContentRetireAttestation(unittest.TestCase):
         for label, (added, removed, expected) in cases.items():
             with self.subTest(combination=label):
                 self.assertEqual(floor_direction_for(added, removed), expected)
+
+    def test_a_floor_that_may_fail_names_the_land(self) -> None:
+        """GREW and CHANGED name `gz content land` as the repair (GHI #1389).
+
+        CHANGED is CLI-unreachable (see above), so its prose is read at the helper.
+        """
+        for label, (added, removed) in {"grew": ({"a"}, set()), "changed": ({"a"}, {"b"})}.items():
+            with self.subTest(direction=label):
+                self.assertIn("gz content land", _floor_direction_prose(added, removed))
 
     @covers("REQ-0.35.0-02-07")
     def test_a_shrinking_retirement_is_witnessed_as_shrank(self) -> None:
