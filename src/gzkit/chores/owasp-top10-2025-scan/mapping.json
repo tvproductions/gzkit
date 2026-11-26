@@ -81,7 +81,7 @@
       "ast_visitors": [],
       "reused_chores": [],
       "coverage_baseline": "not-mechanical",
-      "notes": "Synthesizer-skill territory. Chore MUST NOT grade. The honest move is the not-mechanical coverage marker (anti-vibing binding claim 4)."
+      "notes": "Synthesizer-skill territory. Chore MUST NOT grade. The honest move is the not-mechanical coverage marker (AGENTS.md § MAKE LLM STOCHASTIC VIBES INERT)."
     },
     "A07": {
       "category_name": "Authentication Failures",
