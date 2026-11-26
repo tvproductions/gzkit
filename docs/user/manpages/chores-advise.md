@@ -10,7 +10,7 @@ gz chores advise <slug>
 
 ## Description
 
-Runs every acceptance criterion of a single chore, as `gz chores run` does, and reports `PASS` or `FAIL` for each without writing the chore's log. Use it to see what a run would find before running it; `gz chores plan` lists the criteria without running them.
+Runs every acceptance criterion of a single chore and reports `PASS` or `FAIL` for each, without writing the chore's log. Unlike `gz chores run`, it does not stop at the first failing criterion. Use it to see what a run would find before running it; `gz chores plan` lists the criteria without running them.
 
 The verdict reaches the exit status, so a scripted caller can branch on it without parsing the rendered output (GHI #781).
 
