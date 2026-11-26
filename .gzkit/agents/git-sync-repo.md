@@ -6,7 +6,7 @@ Target end state:
 
 - Changes are committed with a clear message
 - Local branch is synced with remote
-- Guardrails (`gz lint`, `gz test`) pass
+- The pre-commit and pre-push hooks passed on the way
 - Working tree is clean
 
 ## Commands
@@ -15,9 +15,10 @@ Target end state:
 # Plan first (dry-run)
 uv run gz git-sync
 
-# Apply guarded sync ritual
-uv run gz git-sync --apply --lint --test
+# Apply the sync ritual
+uv run gz git-sync --apply
 ```
 
-For detailed workflow, situational responses, and fallback procedures, read the
-canonical skill: `.gzkit/skills/git-sync/SKILL.md`.
+Pass `--lint --test` only where the skill's § Which command each moment uses
+names them. What every flag runs, and which command each moment uses, is
+stated in the canonical skill: `.gzkit/skills/git-sync/SKILL.md`.

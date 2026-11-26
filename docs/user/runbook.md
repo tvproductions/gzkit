@@ -359,11 +359,11 @@ uv run gz arb patterns --compact      # optional: scan for recurring anti-patter
 #    from step 4b in --attestation-text per `AGENTS.md` § Attestation.
 uv run gz obpi complete OBPI-<X.Y.Z-NN-slug>-<slug> --attestor "<name>" --attestation-text "<attestation>"
 
-# 6) Run guarded sync, then reconcile and confirm
-uv run gz git-sync --apply --lint --test
+# 6) Sync, then reconcile and confirm (the git-sync skill states what each flag runs)
+uv run gz git-sync --apply
 uv run gz obpi sync OBPI-<X.Y.Z-NN-slug>-<slug>
 uv run gz adr status ADR-<X.Y.Z> --json
-uv run gz git-sync --apply --lint --test
+uv run gz git-sync --apply
 ```
 
 > **Ledger conflicts during sync.** The runtime appends to
@@ -788,8 +788,10 @@ uv run gz patch release
 
 # 4) Add the RELEASE_NOTES.md entry as the gz-patch-release skill prescribes (Step 4b)
 
-# 5) Sync the staged release manifest and version bumps
-uv run gz git-sync --apply --lint --test
+# 5) Full sweep, then sync the staged release manifest and version bumps
+git add -A
+uv run gz check --full
+uv run gz git-sync --apply
 
 # 6) Tag and publish the GitHub release with the newest version block only;
 #    RELEASE_NOTES.md is cumulative (GHI #710)
@@ -896,9 +898,9 @@ surrenders any held lock mechanically and writes its completion exchange record 
 
 ```bash
 uv run gz obpi complete OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity --attestor "g0" --attestation-text "I attest I understand the completion of OBPI-0.5.0-05."
-uv run gz git-sync --apply --lint --test
+uv run gz git-sync --apply
 uv run gz obpi sync OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity
-uv run gz git-sync --apply --lint --test
+uv run gz git-sync --apply
 ```
 
 Session handoffs (the register entries that preserve intent across sessions) are

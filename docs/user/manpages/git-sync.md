@@ -1,6 +1,7 @@
 # gz git-sync
 
-Guarded git sync ritual for gzkit repositories.
+Sync ritual for gzkit repositories: stage, commit, fetch, rebase and push, with
+the repository's hooks as the gates.
 
 ---
 
@@ -19,21 +20,35 @@ gz git-sync [OPTIONS]
 | `--branch` | string | Branch to sync (defaults to current branch) |
 | `--remote` | string | Remote name (default: `origin`) |
 | `--apply` | flag | Execute actions (dry-run by default) |
-| `--lint/--no-lint` | flag | Run `gz lint` before and after sync |
-| `--test/--no-test` | flag | Run `gz test` before sync |
-| `--auto-add/--no-auto-add` | flag | Auto stage changed files with `git add -A` |
-| `--push/--no-push` | flag | Push if branch is ahead |
+| `--lint/--no-lint` | flag | `--lint` runs whole-tree `gz lint` before the commit (a failure blocks) and again after the push (a failure warns). Default `--no-lint` |
+| `--test/--no-test` | flag | `--test` runs the full unit suite (`gz test`) before the commit; a failure blocks. No hook runs the full suite; without it, CI runs it after the push. Default `--no-test` |
+| `--auto-add/--no-auto-add` | flag | `--auto-add` (default) stages every change with `git add -A`, refused when it would stage `src/` or `tests/`; `--no-auto-add` stages nothing and commits only what is already staged |
+| `--push/--no-push` | flag | `--push` (default) pushes when the branch is ahead; `--no-push` commits and rebases but does not push, so no pre-push hook runs |
 | `--json` | flag | Output JSON summary |
 
 ---
 
 ## What It Does
 
-1. Validates git repo + branch state.
-2. Plans sync actions (fetch, pull/rebase, push).
-3. Optionally stages/commits local changes.
-4. Runs lint/test guardrails when requested.
-5. Executes sync operations when `--apply` is set.
+Without `--apply`, it fetches (`git fetch --prune <remote>`), prints the plan,
+and changes nothing. With `--apply` it runs, in order:
+
+1. **Stage:** `git add -A` on a dirty tree (skipped by `--no-auto-add`).
+2. **Hook check:** refuses when a hook `.pre-commit-config.yaml` declares is not
+   installed.
+3. **Pre-check:** `--lint` runs whole-tree `gz lint`; `--test` runs the full unit
+   suite. Neither runs by default.
+4. **Commit:** commits what is staged; the pre-commit hooks run.
+5. **Rebase:** `git pull --ff-only` when behind, `git pull --rebase` when
+   diverged.
+6. **Push:** `git push` when ahead (skipped by `--no-push`); the pre-push hooks
+   run.
+7. **Post-check:** `--lint` runs whole-tree `gz lint` again; a failure warns.
+
+The flags are independent, so any combination runs the union of their steps.
+The git-sync skill (`.gzkit/skills/git-sync/SKILL.md`) states what each hook
+stage runs and which command each moment (routine, OBPI Stage 5, ADR closeout,
+release) uses.
 
 The pull and push steps read `ahead`/`behind` **after** the ceremony's own
 auto-commit, not from the plan computed before it. A dirty tree that is behind
@@ -42,9 +57,9 @@ rebases rather than attempting a fast-forward that cannot succeed. The dry-run
 plan projects the same post-commit shape, so the preview matches what `--apply`
 runs (GHI #720).
 
-For OBPI pipeline closeout in gzkit, this is the canonical guarded sync step:
+For OBPI pipeline closeout in gzkit, this is the canonical sync step:
 
-- run `uv run gz git-sync --apply --lint --test` after attestation
+- run `uv run gz git-sync --apply` after attestation
 - then emit the final completed OBPI receipt/accounting
 - then update brief/ADR reconciliation artifacts
 
@@ -102,10 +117,16 @@ Exit code `1`; nothing is staged, committed, or pushed.
 # Dry-run plan
 gz git-sync
 
-# Full ritual with guardrails
+# Routine sync, OBPI Stage 5 and ADR closeout
+gz git-sync --apply
+
+# Full unit suite and lint before the push, as well as the hooks
 gz git-sync --apply --lint --test
+
+# Commit and rebase now, push later
+gz git-sync --apply --no-push
 
 # Governed work present — commit it first, then sync the ceremony surfaces
 git commit -m 'fix(sync): <summary> (GHI #N)'
-gz git-sync --apply --lint --test
+gz git-sync --apply
 ```

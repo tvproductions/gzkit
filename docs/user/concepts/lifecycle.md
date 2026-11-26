@@ -57,8 +57,8 @@ CLI attestation tokens remain stable, but presentations map to canonical terms:
 1. Load OBPI transaction context (brief, ADR, handoff context, and plan receipt
    when present) before implementation begins
 2. Run OBPI increments repeatedly through the transaction contract
-3. After required ceremony/attestation, run guarded repo sync with
-   `uv run gz git-sync --apply --lint --test`
+3. After required ceremony/attestation, sync the repository with
+   `uv run gz git-sync --apply`
 4. Record OBPI-scoped receipts using `gz obpi emit-receipt`
    Completed receipts are fail-closed when required value narrative/key proof evidence is missing.
    Every completion also requires explicit human-attestation evidence, whatever the parent ADR's lane or kind (Gate 5, ADR-0.0.36). Foundation-kind ADRs follow the attestation walkthrough discipline in [ADR-0.0.18](../../design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md) regardless of lane.

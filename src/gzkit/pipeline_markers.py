@@ -92,8 +92,8 @@ def pipeline_command(obpi_id: str, start_from: str | None = None) -> str:
 
 
 def pipeline_git_sync_command() -> str:
-    """Return the guarded sync command used after ceremony."""
-    return "uv run gz git-sync --apply --lint --test"
+    """Return the sync command Stage 5 runs, as the git-sync skill states it (GHI #1390)."""
+    return "uv run gz git-sync --apply"
 
 
 def pipeline_plans_dir(project_root: Path) -> Path:

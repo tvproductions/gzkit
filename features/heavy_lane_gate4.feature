@@ -26,7 +26,7 @@ Feature: Heavy lane Gate 4 governance
   Scenario: Pipeline guidance requires guarded git sync before completion accounting
     Given the workspace is initialized with agent surfaces in heavy mode
     Then the file "AGENTS.md" contains "guarded git sync -> completion"
-    And the file "AGENTS.md" contains "uv run gz git-sync --apply --lint --test"
+    And the file "AGENTS.md" contains "uv run gz git-sync --apply` before final accounting"
 
   Scenario: Canonical lane doctrine narrows Heavy to runtime-contract changes
     Given the workspace is initialized with agent surfaces in heavy mode

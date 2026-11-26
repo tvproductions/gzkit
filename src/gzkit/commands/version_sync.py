@@ -127,10 +127,10 @@ def write_in_flight_release_manifest(project_root: Path, version: str, adr_id: s
     (or a hand-authored one) outranks this minimum record.
 
     Why this exists (GHI #739): the audit fails a declared version that has no
-    matching git tag, and it runs inside ``gz test``. The ADR-closeout ceremony
-    prescribes ``gz git-sync --apply --lint --test`` *before* ``gh release
+    matching git tag, and it runs inside ``gz test``. The release runs the full
+    suite (``gz check --full``, gz-patch-release Step 4c) *before* ``gh release
     create``, which is what creates the tag — so a bump with no manifest makes
-    the ceremony's next mandated step unrunnable. ``gz patch release`` already
+    the release's next mandated step unrunnable. ``gz patch release`` already
     filed one at bump time; ``gz closeout`` bumped the same field and filed
     nothing, so every minor release deadlocked.
 
@@ -158,7 +158,7 @@ def write_in_flight_release_manifest(project_root: Path, version: str, adr_id: s
                 "This manifest is the evidence `audit_version_release` accepts during",
                 f"the window between the version-bump commit and `gh release create v{version}`,",
                 "which creates the tag. It is written by `gz closeout` at bump time so the",
-                "ceremony's mandated `gz git-sync --apply --lint --test` step stays runnable",
+                "release's mandated `gz check --full` step stays runnable",
                 "(GHI #217 established the escape; GHI #739 extended it to closeout bumps).",
                 "",
                 "## Release Notes",

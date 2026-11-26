@@ -42,8 +42,8 @@ When a skill exists for your current workflow step, prefer it.
    - `uv run gz gates --gate 3 --adr ADR-<X.Y.Z>` when docs changed
 4. **Present evidence**
    - value narrative, key proof, verification outputs
-5. **Run guarded sync**
-   - CLI: `uv run gz git-sync --apply --lint --test`
+5. **Sync**
+   - CLI: `uv run gz git-sync --apply`
    - Skill: `/git-sync`
 6. **Record OBPI completion from the synced state**
    - `uv run gz obpi emit-receipt OBPI-<X.Y.Z-NN>-<slug> --event completed ...`

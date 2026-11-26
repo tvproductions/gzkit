@@ -206,7 +206,7 @@ Primary daily loop (OBPI-first, pipeline-governed):
 1. Orientation and ADR/OBPI context (`gz status`, `gz adr status`, `gz obpi status`)
 2. Plan the OBPI, then execute it through `uv run gz obpi pipeline` (wrapper skill `/gz-obpi-pipeline` remains available and defers to the same shared runtime)
 3. Present the Heavy-lane acceptance ceremony when required
-4. Run guarded sync (`gz git-sync --apply --lint --test`)
+4. Sync (`gz git-sync --apply`)
 5. Emit final OBPI completion accounting from the synced state (`gz obpi emit-receipt`)
 6. Reconcile/update brief and ADR state (`gz obpi sync`, `gz adr status`)
 

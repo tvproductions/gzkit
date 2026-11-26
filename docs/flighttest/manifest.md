@@ -37,7 +37,7 @@ whole chain recorded to Layer-2.
 | 14 | gz-adr-emit-receipt | `obpi_receipt_emitted` / `audit_receipt_emitted` with scoped payload |
 | 15 | gz-obpi-lock (release) | `obpi_lock_released` event |
 | 16 | `gz register-adrs` + `gz validate --adr-status-fresh` | Layer-3 index regenerated from canon; freshness passes |
-| 17 | gz-git-sync (`--apply --lint --test`) | Clean tree, gates green, branch synced |
+| 17 | git-sync (`--apply`) | Clean tree, pre-commit and pre-push hooks green, branch synced |
 
 **Pass signature:** an unbroken ledger chain from `artifact_edited` (PRD) →
 Gate-5 attestation → receipt, with all ARB receipts present and

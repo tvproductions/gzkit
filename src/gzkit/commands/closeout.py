@@ -577,9 +577,9 @@ def _complete_closeout_pipeline(
     if needs_bump and adr_ver is not None:
         version_updated = sync_project_version(project_root, adr_ver)
         # GHI #739: the bump owes `audit_version_release` in-flight evidence, and
-        # that audit runs inside `gz test` — which the ceremony's own Step 10 runs
-        # (`gz git-sync --apply --lint --test`) BEFORE `gh release create` makes
-        # the tag. Filing the manifest with the bump keeps the prescribed order
+        # that audit runs inside `gz test` — which the release runs, as
+        # `gz check --full` in gz-patch-release Step 4c, BEFORE `gh release create`
+        # makes the tag. Filing the manifest with the bump keeps the prescribed order
         # executable; `gz patch release` has always done this at its bump site.
         version_updated.append(write_in_flight_release_manifest(project_root, adr_ver, adr_id))
 

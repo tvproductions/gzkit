@@ -55,8 +55,7 @@ operator's verbatim `attestation_text` in `--evidence-json` (recorded as
   `gz obpi sync`, and ADR status/lifecycle surfaces.
 
 For the OBPI execution pipeline closeout path, emit the final `completed`
-receipt immediately after a successful guarded `uv run gz git-sync --apply
---lint --test` run. That sequence captures anchor evidence from the synced
+receipt immediately after a successful `uv run gz git-sync --apply` run. That sequence captures anchor evidence from the synced
 repository state before downstream brief/ADR accounting edits occur.
 
 ---

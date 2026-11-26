@@ -125,7 +125,7 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 | [`/gz-foundation-triage`](gz-foundation-triage.md) | Rank the in-flight foundation backlog by priority — diagnosis only, ephemeral ranked report |
 | [`/gz-health-audit`](gz-health-audit.md) | Namespace router → the four-axis health and integrity audit; owns the ordering and the net-surface-reduction budget rule |
 | [`/gz-intent-trace`](gz-intent-trace.md) | Trace sampled ADRs from declared intent to shipped surface; routes every gap as a correction under its owning ADR |
-| [`/git-sync`](git-sync.md) | Run the guarded repository sync ritual with lint/test gates |
+| [`/git-sync`](git-sync.md) | Run the repository sync ritual; the hooks are the gates, and the skill states what every flag runs |
 | [`/gz-agent-sync`](gz-agent-sync.md) | Synchronize generated control surfaces and skill mirrors |
 | [`/gz-check-config-paths`](gz-check-config-paths.md) | Validate configured and manifest path coherence |
 | [`/gz-competitor-radar`](gz-competitor-radar.md) | Track competitor status, trajectory, and gzkit improvement opportunities |

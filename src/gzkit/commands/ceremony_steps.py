@@ -450,5 +450,5 @@ def render_step_11_complete(state: CeremonyState) -> str:
         lines.append(f"\n  Attestation: {state.attestation}")
 
     lines.append("")
-    lines.append("Value landed. Run `gz git-sync --apply --lint --test` to sync.")
+    lines.append("Value landed. Run `gz git-sync --apply` to sync.")
     return "\n".join(lines)

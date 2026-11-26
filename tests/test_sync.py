@@ -534,7 +534,8 @@ class TestSyncControlSurfaces(unittest.TestCase):
 
             self.assertIn("guarded git sync -> completion", agents)
             self.assertIn("uv run gz obpi pipeline <OBPI-ID>", agents)
-            self.assertIn("uv run gz git-sync --apply --lint --test", agents)
+            self.assertIn("uv run gz git-sync --apply` before final accounting", agents)
+            self.assertNotIn("--lint --test", agents)
             self.assertIn("uv run gz check", agents)
             self.assertIn("Documentation/process/template-only changes stay", agents)
             self.assertNotIn("uv run -m unittest discover tests", agents)

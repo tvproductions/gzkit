@@ -975,11 +975,11 @@ when multiple Draft/Proposed foundations compete for the next sprint.
 
 ## Workflow: Git Sync Ritual
 
-Use [`/git-sync`](../user/skills/git-sync.md) for the guarded repository sync ritual with lint/test gates.
+Use [`/git-sync`](../user/skills/git-sync.md) for the repository sync ritual. The skill states what every flag runs and which command each moment uses; the routine sync is:
 
 ```bash
 uv run gz git-sync
-uv run gz git-sync --apply --lint --test
+uv run gz git-sync --apply
 ```
 
 ### Append-only JSONL conflicts

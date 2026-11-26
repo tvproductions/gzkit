@@ -8,7 +8,7 @@ disable-model-invocation: true
 owner: gzkit-governance
 last_reviewed: 2026-11-26
 metadata:
-  skill-version: "1.5.1"
+  skill-version: "1.6.0"
 model: haiku
 ---
 
@@ -16,7 +16,8 @@ model: haiku
 
 ## Git Sync
 
-Run the guarded repository sync ritual with lint/test gates.
+Run the repository sync ritual: stage, commit, fetch, rebase and push, with the
+repository's hooks as the gates.
 
 ## Trigger
 
@@ -46,32 +47,59 @@ GHI #1313 tracks changing the generic default.
 
 ## Steps
 
-1. Preview planned actions:
-   `uv run gz git-sync`
-2. Execute the standard ritual:
-   `uv run gz git-sync --apply`
-3. Explicit redundant-gate invocation (edge cases only, e.g. verifying
-   pre-commit config drift):
-   `uv run gz git-sync --apply --lint --test`
+1. Preview: `uv run gz git-sync`. It runs `git fetch --prune <remote>`, so the
+   ahead/behind numbers are current (GHI #343), prints the plan, and changes
+   nothing and runs no gate. When the network is unreachable it warns and
+   plans from cached refs; `--apply` treats an unreachable network as a blocker.
+2. Execute the command § Which command each moment uses names for your moment.
 
-> Both dry-run and apply mode run `git fetch --prune <remote>` before
-> reading `ahead`/`behind`, so divergence numbers always reflect current
-> remote state — no separate pre-fetch needed (GHI #343). When the
-> network is unreachable the dry-run reports the fetch failure as a
-> warning and proceeds with cached refs; apply-mode treats it as a
-> blocker.
+## What each flag runs
 
-> The pre-commit hook runs the CHEAP gates on every commit — ruff, ty,
-> the complexity ceiling (cyclomatic and cognitive), gitleaks, authorship. It does NOT run the unit
-> suite: `unittest` is declared `stages: [manual]` in
-> `.pre-commit-config.yaml` and fires only on demand
-> (`pre-commit run unittest --hook-stage manual`). The tests a change
-> touches reach a push through the separate `gz-check-pre-push` hook, which
-> runs `gz check --reuse-verified`; the whole unit tier runs in CI
-> (GHI #1191). `--lint` and `--test` re-run those gates at
-> the `gz` level — redundant for the normal ritual and multi-minute pain.
-> Defaults were flipped to `False` to match this reality (airlineops
-> parity evolution).
+`gz git-sync --apply` runs these steps in order. The defaults are `--no-lint
+--no-test --auto-add --push`, so `--apply` alone is the first column. Each other
+column changes only the cells it fills; a dash means "as `--apply`". Flags
+combine: `--apply --lint --test` runs both columns' cells, and so on for any
+combination.
+
+| Step | `--apply` | `--lint` | `--test` | `--no-auto-add` | `--no-push` |
+|---|---|---|---|---|---|
+| 1. Stage | on a dirty tree, `git add -A`; refused when it would stage a path under `src/` or `tests/`, which you commit yourself first | — | — | stages nothing | — |
+| 2. Hook check | refuses when a hook `.pre-commit-config.yaml` declares is not installed | — | — | — | — |
+| 3. Pre-check | nothing | whole-tree `gz lint`; a failure blocks | the full unit suite (`gz test`); a failure blocks | — | — |
+| 4. Commit | commits what is staged, under `chore: update <areas> (gz git-sync)`; the pre-commit hooks run | — | — | — | — |
+| 5. Rebase | when behind, `git pull --ff-only`; when diverged, `git pull --rebase` | — | — | — | — |
+| 6. Push | when ahead, `git push`; the pre-push hooks run | — | — | — | skipped, so no pre-push hook runs |
+| 7. Post-check | nothing | whole-tree `gz lint` again; a failure warns and does not block | — | — | — |
+
+What the hooks run (the roster is `.pre-commit-config.yaml`; read it, not this list):
+
+- **At the commit (step 4):** the cheap gates: ruff, ty, the complexity ceiling,
+  the guards, gitleaks and authorship. No unit test runs: `unittest` is
+  `stages: [manual]`.
+- **At the push (step 6):** whole-tree `gz lint`, the closing-keyword check, and
+  `gz check --reuse-verified`, which runs every validator and the tests the
+  change touches. In safe mode at the drydock level `gz check` is an alarm and
+  does not run; `gz lint` and the closing-keyword check still do.
+- **After the push:** CI runs `gz check --full` on the pushed commit: the full
+  unit suite, Behave and the docs build.
+
+So `--lint` repeats the pre-push `gz lint`, earlier. `--test` is the only way the
+full unit suite runs before the push; without it, CI runs it after.
+
+## Which command each moment uses
+
+| Moment | Command | Prescribed by |
+|---|---|---|
+| Routine sync | `uv run gz git-sync --apply` | this skill |
+| OBPI pipeline Stage 5, both syncs | `uv run gz git-sync --apply` | `gz-obpi-pipeline`, `references/stage-5-sync-and-account.md` |
+| ADR closeout, both syncs | `uv run gz git-sync --apply` | `gz-adr-closeout-ceremony` |
+| Release | `git add -A`, `uv run gz check --full`, then `uv run gz git-sync --apply`, then `gh release create` | `gz-patch-release` Step 4c |
+| The full suite must pass before the push (CI unavailable, or checking that the hooks still cover the gates) | `uv run gz git-sync --apply --lint --test` | this skill |
+| Commit and rebase now, push later | `uv run gz git-sync --apply --no-push` | this skill |
+| Commit only what you staged yourself | `uv run gz git-sync --apply --no-auto-add` | this skill |
+
+No moment requires `--lint` or `--test`, and leaving them off is not a skipped
+gate. Bypassing a hook with `--no-verify` is (§ Red Flags).
 
 ## Examples
 
@@ -79,7 +107,7 @@ GHI #1313 tracks changing the generic default.
 
 **Input**: "git sync"
 
-**Output**: Runs `uv run gz git-sync --apply` (or dry-run first if safety confirmation is needed). Pre-commit hook handles lint/test automatically.
+**Output**: Runs `uv run gz git-sync` to preview, then `uv run gz git-sync --apply`. The pre-commit hooks run at the commit and the pre-push hooks at the push (§ What each flag runs).
 
 ## Append-only JSONL conflicts
 
@@ -113,11 +141,10 @@ These thoughts mean STOP — you are about to push without the guards:
 | Thought | Reality |
 |---------|---------|
 | "Force push, it's just my branch" | The constraint is explicit: never use force push in this routine. "Just my branch" still rewrites history and can desync local clones. Resolve divergence the long way. |
-| "Lint is failing on something cosmetic — ship it" | The lint/test gates exist because cosmetic failures often hide real ones. The whole point of the ritual is that you don't get to triage at sync time. Fix or revert. |
-| "I'll skip `--lint --test` to be quick" | The bare `--apply` exists for git-only operations. Skipping the quality gates on a code change is the failure mode the ritual was designed to prevent. |
+| "Lint is failing on something cosmetic — ship it" | The hooks' gates exist because cosmetic failures often hide real ones. The whole point of the ritual is that you don't get to triage at sync time. Fix or revert. |
 | "Divergence with remote — just rebase and force" | Investigate first. Divergence may mean another agent or another machine pushed work you don't have. Force-pushing destroys it. |
 | "Dry-run looks fine, no need to actually run --apply" | Dry-run shows the plan; apply executes it. Walking away after dry-run leaves the local tree out of sync, which the next session inherits. |
-| "Pre-commit hook failed — `--no-verify` it" | Hooks are part of the contract. Skipping them with `--no-verify` is the same anti-pattern as skipping `--lint --test`. Diagnose, don't bypass. |
+| "Pre-commit hook failed — `--no-verify` it" | Hooks are part of the contract. Skipping them with `--no-verify` removes the only gates a sync runs (§ What each flag runs). Diagnose, don't bypass. |
 | "I'll commit and sync separately" | The ritual includes the sync step deliberately. Committing without syncing leaves the branch behind on the remote, which is exactly the divergence trap. |
 
 ## Red Flags
@@ -129,12 +156,8 @@ These thoughts mean STOP — you are about to push without the guards:
 - Dry-run run without follow-through apply
 - Sync run on a tree with uncommitted control-surface drift
 
-> Two hooks are the mandatory gate: the commit-time cheap gates
-> (ruff + ty + the complexity gates + guards) and the pre-push `gz check`, which runs every
-> validator and the tests the change touches. The whole unit suite runs in
-> CI on every code push. Explicit `--lint --test` flags are
-> redundant for the normal ritual (see Steps § 3). Omitting them is not a
-> red flag — skipping either hook via `--no-verify` is.
+> The hooks are the mandatory gate (§ What each flag runs). Omitting `--lint`
+> or `--test` is not a red flag; bypassing a hook with `--no-verify` is.
 
 ## Related Skills
 

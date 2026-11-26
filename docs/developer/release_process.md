@@ -53,13 +53,17 @@ uv run --isolated --no-project --with dist/*.whl gz --help
 uv run --isolated --no-project --with dist/*.tar.gz gz --help
 ```
 
-6. Mandatory final git sync (must be immediately before publish/tag commands)
+6. Mandatory full sweep, then final git sync (immediately before publish/tag commands)
 
 ```zsh
-uv run gz git-sync --apply --lint --test
+git add -A
+uv run gz check --full
+uv run gz git-sync --apply
 ```
 
-No intervening command is allowed between this full sync and release/tag commands.
+This is the release row of the git-sync skill's § Which command each moment
+uses, as `gz-patch-release` Step 4c runs it. No intervening command is allowed
+between this sync and release/tag commands.
 If HEAD or the worktree changes after sync, rerun this step.
 
 7. Tag and publish (manual)
@@ -90,7 +94,7 @@ gh workflow run release.yml --ref main -f tag=vX.Y.Z
 
 ## Notes
 
-- Full sync is mandatory immediately before release/tag commands: `uv run gz git-sync --apply --lint --test`.
+- `uv run gz check --full`, then `uv run gz git-sync --apply`, is mandatory immediately before release/tag commands.
 - Do not create release tags until all gates and human attestation evidence are complete.
 - Create the release *before* the tag reaches the remote, not after. A bare
   `git push origin vX.Y.Z` fires the release workflow with no release present,

@@ -11,7 +11,5 @@
 - `src/gzkit/pipeline_runtime.py` is the canonical shared runtime used
   by the CLI and generated pipeline hooks.
 - In gzkit, `uv run gz git-sync --apply` is the canonical Stage 5 sync
-  ritual. Pre-commit hooks (ruff, ty, the complexity gates) enforce the cheap gates
-  on every commit and the pre-push `gz check` runs the tests a change touches, so `--lint` / `--test` flags are redundant for the normal
-  ritual and are retained only for explicit edge-case verification
-  (airlineops parity, 2026-04-17). Do not substitute ad-hoc git commands.
+  ritual; the git-sync skill's § What each flag runs states what it and each
+  flag run. Do not substitute ad-hoc git commands.

@@ -105,7 +105,7 @@ warning in `recorder_warnings` and keeps the completion decision intact rather
 than retroactively rewriting the brief state.
 
 Operationally, gzkit expects the final completed OBPI receipt to be emitted only
-after the guarded `uv run gz git-sync --apply --lint --test` ritual has
+after the `uv run gz git-sync --apply` ritual has
 succeeded. Later brief/ADR sync edits may still occur, but the completion
 receipt itself should anchor the already-synced implementation state.
 

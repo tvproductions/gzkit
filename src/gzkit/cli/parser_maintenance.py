@@ -1509,8 +1509,9 @@ def _register_tooling_parsers(
         "git-sync",
         help="Sync branch with guarded ritual",
         description=(
-            "Commit, fetch, rebase, push — pre-commit hooks enforce lint/test "
-            "automatically. Use --lint/--test only for explicit edge-case gates."
+            "Stage, commit, fetch, rebase and push; the commit runs the pre-commit\n"
+            "hooks and the push runs the pre-push hooks. --lint and --test add\n"
+            "whole-tree lint and the full unit suite before the commit."
         ),
         epilog=build_epilog(
             [
@@ -1877,39 +1878,41 @@ def _add_git_sync_options(parser: argparse.ArgumentParser) -> None:
         dest="run_lint_gate",
         action="store_true",
         default=False,
-        help="Run lint gate before sync (redundant with pre-commit hook; opt-in)",
+        help="Run whole-tree gz lint before the commit and again after the push "
+        "(the pre-push hook also runs it)",
     )
     parser.add_argument(
         "--no-lint",
         dest="run_lint_gate",
         action="store_false",
-        help="Skip lint gate (default; pre-commit hook handles lint)",
+        help="Skip the extra whole-tree lint (default)",
     )
     parser.add_argument(
         "--test",
         dest="run_test_gate",
         action="store_true",
         default=False,
-        help="Run test gate before sync (redundant with pre-commit hook; opt-in)",
+        help="Run the full unit suite before the commit; no hook runs it, CI does after the push",
     )
     parser.add_argument(
         "--no-test",
         dest="run_test_gate",
         action="store_false",
-        help="Skip test gate (default; pre-commit hook handles tests)",
+        help="Skip the full unit suite (default; CI runs it after the push)",
     )
     parser.add_argument(
         "--auto-add",
         dest="auto_add",
         action="store_true",
         default=True,
-        help="Auto-add tracked files before commit (default)",
+        help="Stage every change with git add -A before the commit (default); "
+        "refused when it would stage src/ or tests/",
     )
     parser.add_argument(
         "--no-auto-add",
         dest="auto_add",
         action="store_false",
-        help="Skip auto-add of tracked files",
+        help="Stage nothing; commit only what is already staged",
     )
     parser.add_argument(
         "--push",
@@ -1919,7 +1922,10 @@ def _add_git_sync_options(parser: argparse.ArgumentParser) -> None:
         help="Push after commit (default)",
     )
     parser.add_argument(
-        "--no-push", dest="allow_push", action="store_false", help="Commit without pushing"
+        "--no-push",
+        dest="allow_push",
+        action="store_false",
+        help="Commit and rebase, but do not push",
     )
     add_json_flag(parser, help_override="Output as JSON")
 
