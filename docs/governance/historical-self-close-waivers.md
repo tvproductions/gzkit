@@ -14,7 +14,7 @@ This document explains `data/historical_self_close_waivers.json`, the closed enu
    - `obpi_completion: completed` (missing the `attested_` prefix)
    - `attestor: agent:*` (machine attestation instead of human attestation)
 
-The waiver list resolves the tension between ledger immutability (Behavior Rules — Never #2: never edit the ledger directly) and the new fail-closed validator scope `gz validate --receipt-shape` (introduced under OBPI-0.0.36-03). Without the waiver list, the validator would refuse historical receipts the doctrine cannot retroactively re-attest. With the waiver list, pre-cutoff drift is preserved as documented historical fact (auditable, dated, bounded) while the doctrine binds going forward.
+The waiver list resolves the tension between ledger immutability (`AGENTS.md` § Behavior Rules: write the ledger only through `gz` commands) and the new fail-closed validator scope `gz validate --receipt-shape` (introduced under OBPI-0.0.36-03). Without the waiver list, the validator would refuse historical receipts the doctrine cannot retroactively re-attest. With the waiver list, pre-cutoff drift is preserved as documented historical fact (auditable, dated, bounded) while the doctrine binds going forward.
 
 ## Schema
 

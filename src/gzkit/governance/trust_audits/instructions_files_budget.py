@@ -1,8 +1,8 @@
 """Per-file char-budget audit for AGENTS.md / CLAUDE.md / .claude/rules (GHI #373).
 
-The diet doctrine (`AGENTS.md` § Anti-vibing mantra operative claim 2,
-*"lighter ceremony is not a tradeoff axis"*) binds the per-turn agent
-contract surface to a maximum char budget. Until this audit landed,
+The diet doctrine (`AGENTS.md` § MAKE LLM STOCHASTIC VIBES INERT,
+*"Maintenance burden, speed and lighter ceremony are not reasons to choose"*)
+binds the per-turn agent contract surface to a maximum char budget. Until this audit landed,
 the budget was binding-by-doctrine only — every new invariant authored
 inline could re-inflate AGENTS.md past Claude Code's 40,000-char
 performance threshold without a structural floor. This audit promotes

@@ -141,8 +141,8 @@ not in giant ADR-shaped batches. The brief tells the agent what it is
 
 > *Value claim:* you cannot pretend you weren't unsure.
 
-Before implementation begins, if your self-reported confidence is below
-90% (Behavior Rule 7) — or if `gz-adr-evaluate` flagged a low score — you
+Before implementation begins, if you are unsure of direction (`AGENTS.md`
+§ Behavior Rules: "Ask when unsure") — or if `gz-adr-evaluate` flagged a low score — you
 run `gz justify`. ADR-0.0.19 makes this canon. The CLI renders an
 eight-section reasoning scaffold pre-populated with anchor evidence; you
 fill in the reasoning, citing what you read. The artifact attaches to the

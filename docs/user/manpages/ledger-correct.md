@@ -22,7 +22,8 @@ gz ledger correct --subject-event EVENT --subject-id ID --subject-ts TS \
 
 ## Why this exists
 
-`AGENTS.md` § Behavior Rules — Never #2 forbids modifying the ledger, and that
+`AGENTS.md` § Behavior Rules forbids modifying the ledger ("Write the ledger
+only through `gz` commands"), and that
 prohibition is what makes the ledger trustworthy. Before this verb, the only
 governed reversals were per-error-class point solutions —
 `gz obpi repudiate` (a Gate-5), `gz obpi withdraw` (an OBPI), the

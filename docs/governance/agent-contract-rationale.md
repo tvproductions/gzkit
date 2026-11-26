@@ -263,17 +263,18 @@ Karpathy principles onto this contract, three are adopted with stronger
 mechanical backstops; one is **deliberately inverted**:
 
 - **#1 Think Before Coding** (assumptions, ambiguity, push back) —
-  adopted. `AGENTS.md` § Behavior Rules — Always #7–#10 (90% confidence
-  threshold, surface assumptions, STOP on inconsistencies, push back on
-  flawed approaches) and § DO IT RIGHT §2 ("no vibe coding") carry the
+  adopted. `AGENTS.md` § Behavior Rules (ask when unsure of direction,
+  state assumptions, stop on a disagreement, push back on a clear
+  problem) and § DO IT RIGHT §2 ("no vibe coding") carry the
   same intent under stronger framing; § Anti-vibing mantra is the
   conscience when the judgment invariants are silent.
 - **#2 Simplicity First** (minimum code, no speculative features) —
   adopted on *defaults*, departed on *velocity framing*. § STDLIB-FIRST
   and the no-speculative-features clause in § PRIME DIRECTIVE land the
   same defaults. The upstream framing "bias toward caution over speed"
-  is presented as a tradeoff axis; § Anti-vibing operative claim 2
-  forbids that framing (*"'Lighter ceremony' is not a tradeoff axis"*).
+  is presented as a tradeoff axis; § MAKE LLM STOCHASTIC VIBES INERT
+  forbids that framing (*"Maintenance burden, speed and lighter ceremony
+  are not reasons to choose"*).
   Advisory scorecard rows #18–24 (ruff complexity, ty, class/module
   size) are the mechanical floor.
 - **#3 Surgical Changes** — **deliberately inverted**. Upstream: *"every
@@ -332,7 +333,8 @@ misread as lag.
 1. **Repo-as-system-of-record / agent legibility.** OpenAI: *"anything it
    can't access in-context while running effectively doesn't exist."*
    gzkit: the [trust doctrine](trust-doctrine.md) T1/T2/T3 invariants
-   and the ledger-of-truth posture in `AGENTS.md § Never #7` say the
+   and the ledger-of-truth posture in `AGENTS.md` § Behavior Rules ("Completion
+   evidence is the ledger") say the
    same thing in a different vocabulary — derived views (Layer 3) are
    never source-of-truth because a derived view the agent cannot trace
    back to canon or ledger is, operationally, not there.
@@ -403,9 +405,9 @@ pattern-match a recommendation from training memory. The mantra names the
 failure class both other pillars defend against.
 
 The other invariants in `AGENTS.md` — DO IT RIGHT 6g (verify the runtime
-surface), 6h (quote rules verbatim), § Behavior Rules — Always #7–#10 (90%
-confidence threshold, surface assumptions, STOP on inconsistencies, push
-back on flawed approaches), § Attestation (ARB receipts as observed
+surface), 6h (quote rules verbatim), § Behavior Rules (ask when unsure of
+direction, state assumptions, stop on a disagreement, push back on a clear
+problem), § Attestation (ARB receipts as observed
 evidence) — are this mantra rendered as mechanical checks. When those
 checks are silent, the mantra is the conscience.
 
@@ -712,7 +714,7 @@ that bind here under OBPI-0.0.54-02. The top-three doctrine pointers
 as binding pointers; the per-scope mechanical enforcement detail is
 preserved here verbatim.*
 
-- **Per-file char budget for AGENTS.md / CLAUDE.md / `.claude/rules/*.md`** (companion to Anti-vibing operative claim 2) — enforced by `gz validate --instructions-files-budget` (GHI #373). Budgets live in `data/instructions_files_budget.json`, which since GHI #1249 also carries a total for every surface an agent loads (packaged defaults when the file is absent: 40k chars AGENTS.md/CLAUDE.md, 16k per rule file). Advisory until 1.0 (operator ruling 2026-08-17): an overrun is reported with its distance and the `/gz-context-diet` pointer and never changes the exit code.
+- **Per-file char budget for AGENTS.md / CLAUDE.md / `.claude/rules/*.md`** (companion to § MAKE LLM STOCHASTIC VIBES INERT) — enforced by `gz validate --instructions-files-budget` (GHI #373). Budgets live in `data/instructions_files_budget.json`, which since GHI #1249 also carries a total for every surface an agent loads (packaged defaults when the file is absent: 40k chars AGENTS.md/CLAUDE.md, 16k per rule file). Advisory until 1.0 (operator ruling 2026-08-17): an overrun is reported with its distance and the `/gz-context-diet` pointer and never changes the exit code.
 - **The editor/IDE authoring-guide protocol envelope (LSP-style Content-Length–framed JSON)** is defined by `src/gzkit/schemas/authoring_guide_protocol.json`. Every request, response, notification, and error shape MUST be named in the schema; protocol drift is caught by JSON Schema validation at server runtime, not by human review (ADR-0.0.30 / OBPI-0.0.30-04).
 - **Eval-feedback-source commit trailer** — when a rule edit lands under a GHI labeled `eval-feedback`, include `Eval-feedback-source: <event-id-or-artifact-path>` in the commit trailer. The trailer is validated by `gz validate --commit-trailers` (ADR-0.0.26).
 - **`abandon categories are closed`** — lock release is coupled to an exchange-record register entry per ADR-0.0.41; `parse_abandon_spec` refuses an unregistered category and `gz validate --lock-exchange-coupling` fails closed on a release without a valid record (`.gzkit/rules/token-block-discipline.md`).

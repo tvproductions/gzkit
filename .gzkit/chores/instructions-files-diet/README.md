@@ -15,6 +15,6 @@ uv run gz chores run instructions-files-diet
 ```
 
 This is a narrative trim, never an invariant relaxation
-(`AGENTS.md` § Anti-vibing mantra operative claim 2 — *"lighter ceremony
-is not a tradeoff axis"*). Every Mechanical / Promotable bullet on the
+(`AGENTS.md` § MAKE LLM STOCHASTIC VIBES INERT — *"Maintenance burden,
+speed and lighter ceremony are not reasons to choose"*). Every Mechanical / Promotable bullet on the
 advisory scorecard remains in the per-turn contract.

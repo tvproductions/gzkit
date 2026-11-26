@@ -5,9 +5,9 @@ description: Use when asking whether what shipped fulfils what was decided, or a
 category: adr-audit
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-11-26
 metadata:
-  skill-version: "1.0.3"
+  skill-version: "1.0.4"
 model: sonnet
 ---
 
@@ -138,7 +138,8 @@ A trace run is deliverable-bearing work and will compete with the active
 campaign, which is Magna Carta (`AGENTS.md` § Operator Doctrine). The sample's
 top entries are frequently the ADRs the campaign is already sequenced around.
 **Surface the collision to the operator and get a ruling before running** — do
-not resolve it unilaterally (Behavior Rule 9).
+not resolve it unilaterally (`AGENTS.md` § Behavior Rules: "stop and name the
+disagreement with its tradeoff").
 
 ## Related
 

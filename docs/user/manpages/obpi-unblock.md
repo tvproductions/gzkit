@@ -16,7 +16,7 @@ Records an `obpi_unblocked` event, clearing the block written by
 
 Block and unblock compose as forward corrective events over the append-only
 ledger — current state is the net of the sequence, never an edit (AGENTS.md
-Never #2). An OBPI may be blocked again after a ruling; that is ordinary, and
+§ Behavior Rules: "Write the ledger only through `gz` commands"). An OBPI may be blocked again after a ruling; that is ordinary, and
 the latest event wins.
 
 `--ruling` carries the operator's decision **verbatim**, per AGENTS.md

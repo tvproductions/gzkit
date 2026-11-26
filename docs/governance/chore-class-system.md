@@ -1154,7 +1154,7 @@ Step 2 of § Implementation order builds a command. The research surveyed how th
 this project already depends on spell diagnosis, preview and repair, and what their exit
 codes mean. This section records it so the verb is designed against conventions rather
 than against memory. **gzkit's own CLI doctrine governs** where they conflict
-(`AGENTS.md` § Behavior Rules — Always #15; `.gzkit/rules/cli.md`); the ecosystem is
+(`AGENTS.md` § Behavior Rules, "Match the codebase's conventions"; `.gzkit/rules/cli.md`); the ecosystem is
 evidence, never authority.
 
 ### Diagnosis is a verb with an exit status

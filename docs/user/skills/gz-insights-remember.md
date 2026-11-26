@@ -13,8 +13,8 @@ the payload is *constructed* into an `InsightRecord` (stamping `ts`, validating
 `type`/`scope`/`summary`) and only then serialized to a single JSONL line, so a
 missing or malformed required field fails closed — non-zero exit, no line
 written — instead of drifting past the schema the way hand-authored appends did
-(contradiction C4, ADR-0.0.72). It is the surface Behavior Rule 11 directs
-agents to.
+(contradiction C4, ADR-0.0.72). It is the surface `AGENTS.md` § Behavior Rules
+directs agents to when the operator course-corrects.
 
 ## Invocation
 
@@ -42,7 +42,7 @@ gz insights remember --type <improvement|defect|defect-resolution|discovery> \
 
 ## When to use
 
-- **Course-correction (Behavior Rule 11):** the operator names a wrong
+- **Course-correction (`AGENTS.md` § Behavior Rules):** the operator names a wrong
   assumption, redirects an interpretation, or calls out drift in flight — record
   an `improvement` before completing the corrected work.
 - **Defect / discovery:** an out-of-scope defect that cannot be fixed now, or a

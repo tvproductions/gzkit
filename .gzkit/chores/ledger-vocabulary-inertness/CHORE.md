@@ -39,7 +39,7 @@ that every *emitted* type has a schema entry; nothing checks the converse.
 - **Lane:** Lite — audit-only; this chore never edits the schema, the ledger, or
   any producer.
 - **The project ledger is never modified.** `.gzkit/ledger.jsonl` is append-only and
-  agent-writable only through `gz` verbs (`AGENTS.md` § Never #2). This chore
+  agent-writable only through `gz` verbs (`AGENTS.md` § Behavior Rules). This chore
   reads it. A registered probe invokes the real producer in a disposable project
   and checks its typed persisted record against the expected subject and contract.
 - **Isolated execution is observed afresh.** The gate runs the probe when needed;

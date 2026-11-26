@@ -22,7 +22,7 @@ gz ledger merge-driver ANCESTOR OURS THEIRS
 runtime during every session and tracked in git, so two clones in flight
 collide by construction — each appends to the tail, and git reports a conflict
 over disjoint additions. Resolving that by hand is the action
-`AGENTS.md` § Never #2 prohibits ("NEVER: Modify the ledger directly"), and
+`AGENTS.md` § Behavior Rules prohibits ("Write the ledger only through `gz` commands"), and
 before this verb existed there was no `gz` command that could do it instead.
 
 Git's built-in `merge=union` is **not** a substitute. It concatenates one

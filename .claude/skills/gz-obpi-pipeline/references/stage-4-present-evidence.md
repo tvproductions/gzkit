@@ -147,7 +147,7 @@ Then present the open findings, what each round changed, and one recommendation.
 
 > Rationale: docs/governance/obpi-pipeline-control-rationale.md § S4-044
 
-**When a round repeats the prior round's ROOT, stop dispatching and escalate the DESIGN (operator ruling 2026-09-03).** Compare each round's `Weakest point` against the last. If it names the same root cause at a different surface, another rework round will surface it again one layer deeper: stop, and put the design decision to the operator (§ Behavior Rules — Always #9).
+**When a round repeats the prior round's ROOT, stop dispatching and escalate the DESIGN (operator ruling 2026-09-03).** Compare each round's `Weakest point` against the last. If it names the same root cause at a different surface, another rework round will surface it again one layer deeper: stop, and put the design decision to the operator (`AGENTS.md` § Behavior Rules: "stop and name the disagreement with its tradeoff").
 
 > Rationale: docs/governance/obpi-pipeline-control-rationale.md § S4-045
 

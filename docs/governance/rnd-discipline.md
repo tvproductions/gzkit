@@ -196,7 +196,7 @@ at sign-off."*
 - **Ask one question at a time** (operator, verbatim: *"ask me the questions one at a
   time"*), each with a recommended answer and its tradeoffs. AGENTS.md § Operator Economy
   #2 already requires the recommendation; MPAS supplies the mechanism.
-- **Never ask what canon answers** (AGENTS.md § Operator Economy #7). A settled matter
+- **Never ask what canon answers** (AGENTS.md § OPERATOR ECONOMY OF EFFORT: "Consult canon before asking"). A settled matter
   presented as an open choice is a drift vector, not merely wasted tokens.
 - **Research reports are primary sources.** Save each verbatim beside the record; never
   replace one with a summary.

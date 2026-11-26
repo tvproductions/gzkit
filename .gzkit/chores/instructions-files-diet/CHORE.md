@@ -457,8 +457,8 @@ the finding in `proofs/CHORE-LOG.md` and consult the operator before any edit.
 | **Only operator canon remains** | Every surviving candidate is `prime-directive-ownership`, `operator-doctrine-verbatim-canon`, or another entry carrying operator words | § Attestation passes operator words through unchanged. Editing them is the operator's act, and the agent's job stops at proposing |
 | **A binding bullet is the only saving left** | Every remaining candidate scores Mechanical or Promotable | Bullet retention is gated on the scorecard, not author judgment. A trim that removes a witnessed rule is an invariant relaxation wearing a diet's clothes |
 
-The doctrine is explicit at `AGENTS.md` § Anti-vibing mantra operative claim 2:
-*"lighter ceremony is not a tradeoff axis."* A chore that cannot hit its target
+The doctrine is explicit at `AGENTS.md` § MAKE LLM STOCHASTIC VIBES INERT:
+*"Maintenance burden, speed and lighter ceremony are not reasons to choose."* A chore that cannot hit its target
 without crossing one of these lines has found a finding, not a failure — report
 it.
 

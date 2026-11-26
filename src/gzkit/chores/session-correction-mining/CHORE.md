@@ -19,7 +19,8 @@ a static-check-in-waiting (Buetow, Beyond Coding Podcast 2026-06-10:
 This is the third sensor feeding the promotion ladder — eval-feedback-cluster
 mines ledger events, arb-pattern-extraction mines ARB receipts, this chore
 mines the un-instrumented ground truth that compliance-dependent
-self-reporting (Behavior Rule 11) cannot reach.
+self-reporting (the course-correction rule in `AGENTS.md` § Behavior Rules)
+cannot reach.
 
 ## Policy and Guardrails
 

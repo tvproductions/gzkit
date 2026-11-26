@@ -13,7 +13,7 @@ philosophical-justification narrative.*
   unit tier. Fast fix for the symptom (`gz test` from 90s to 30s), but
   labeled the wrong class of failure.
 - **GHI #182**: per the DO IT RIGHT maxim (`AGENTS.md` § DO IT RIGHT, items
-  1 (6a) and 7 (6c)), the thorough fix is per-test triage — every test
+  1 and 7 (6c)), the thorough fix is per-test triage — every test
   under the old `tests/integration/` was either (a) already mockable at
   the Python level and relocated back to `tests/commands/` with
   `_git_subprocess_patcher` / `_uv_sync_patcher` / `_quick_init`, or (b)

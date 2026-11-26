@@ -5,9 +5,9 @@ description: Run a governed R&D session — diamond 1 of the double diamond, whi
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-26
 metadata:
-  skill-version: "0.9.0"
+  skill-version: "0.9.1"
 model: opus
 ---
 
@@ -134,7 +134,7 @@ the mechanic, not the posture** — full inventory and the not-appropriated list
   the thing itself.
 - **Ask one question at a time** (operator, verbatim: *"ask me the questions one at a
   time"*), each with a recommended answer and its tradeoffs.
-- **Never ask what canon already answers** (AGENTS.md § Operator Economy #7). Search canon
+- **Never ask what canon already answers** (AGENTS.md § OPERATOR ECONOMY OF EFFORT: "Consult canon before asking"). Search canon
   first; where canon rules, act and name the rule that governed.
 - **Research reports are primary sources.** Save each verbatim under
   `docs/rnd/<slug>/sources/`. Never replace one with a summary.

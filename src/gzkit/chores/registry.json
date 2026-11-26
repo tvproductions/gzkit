@@ -476,7 +476,7 @@
     {
       "slug": "instructions-files-diet",
       "title": "Instructions, Memory Files & Skill Bodies Diet (Progressive Disclosure)",
-      "version": "3.4.0",
+      "version": "3.4.1",
       "path": ".gzkit/chores/instructions-files-diet",
       "lane": "lite",
       "timeoutSeconds": 180,
@@ -812,7 +812,7 @@
     {
       "slug": "session-correction-mining",
       "title": "Ground-Truth Correction Mining (ADR-0.0.70)",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "path": ".gzkit/chores/session-correction-mining",
       "lane": "lite",
       "timeoutSeconds": 300,

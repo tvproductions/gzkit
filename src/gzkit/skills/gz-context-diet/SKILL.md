@@ -5,10 +5,10 @@ description: Use when the operator asks for a "diet" or "progressive disclosure"
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-11-26
 gz_command: chores show instructions-files-diet
 metadata:
-  skill-version: "1.1.4"
+  skill-version: "1.1.5"
 model: sonnet
 ---
 
@@ -69,9 +69,9 @@ These three constraints justify a dedicated skill over generic
 `gz-chore-runner` discovery — they are the points an agent must hold in
 the per-turn surface even before reading `CHORE.md`:
 
-1. **Narrative trim, never invariant relaxation.** *"Lighter ceremony is
-   not a tradeoff axis"* — `AGENTS.md` § MAKE LLM STOCHASTIC VIBES INERT
-   operative claim 1. Every Mechanical / Promotable bullet on the advisory
+1. **Narrative trim, never invariant relaxation.** *"Maintenance burden,
+   speed and lighter ceremony are not reasons to choose"* — `AGENTS.md`
+   § MAKE LLM STOCHASTIC VIBES INERT. Every Mechanical / Promotable bullet on the advisory
    scorecard remains in the per-turn contract.
 2. **Edit canonical, let sync propagate.** `.claude/rules/**` is
    generated from `.gzkit/rules/**`. Direct mirror edits get overwritten

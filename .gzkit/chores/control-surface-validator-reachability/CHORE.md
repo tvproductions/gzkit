@@ -126,7 +126,7 @@ or retire it — never to re-baseline upward.
 
 Findings route as **retirement or promotion, per scope**. This chore's output is
 a disposition list, not a report. Where a scope's routing needs a decision the
-chore cannot make, file it per `AGENTS.md` § Behavior Rules — Always #13.
+chore cannot make, file it through `ghi-author`, per `AGENTS.md` § Behavior Rules.
 
 ## Acceptance Criteria
 

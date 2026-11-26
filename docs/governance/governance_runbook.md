@@ -989,7 +989,7 @@ runtime every session, so two clones in flight conflict over disjoint tail
 additions. `gz git-sync --apply` registers a merge driver
 ([`gz ledger merge-driver`](../user/manpages/ledger-merge-driver.md)) that
 reconciles them as a timestamp-ordered union, so the ritual no longer forces a
-hand-edit of the ledger — the action `AGENTS.md` § Never #2 prohibits.
+hand-edit of the ledger — the action `AGENTS.md` § Behavior Rules prohibits.
 
 ### Correcting an erroneous ledger row
 

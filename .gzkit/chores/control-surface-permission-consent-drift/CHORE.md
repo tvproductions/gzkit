@@ -13,7 +13,7 @@ Background: on 2026-07-16 the local permission surface was found carrying `Bash(
 
 The failure class is the family signature: **T1 doctrine with no T2 mechanical fail-close** — the same shape as Pass A (rules contradict each other), Pass B (skills route around rules), and Pass C (promoted checks under-enforce their prose). Pass D is the permission-surface cut. Every "always allow" click converts a one-time situational judgment into a permanent rule that outlives the context that justified it.
 
-The harm is **not** agent comprehension — permission rules never enter agent context and cannot confuse a model. The harm is that the one mechanical interposition point (the permission prompt) is pre-disabled for a prohibited action. See `AGENTS.md` § MAKE LLM STOCHASTIC VIBES INERT operative claim 3 (doctrine drift is invariant drift).
+The harm is **not** agent comprehension — permission rules never enter agent context and cannot confuse a model. The harm is that the one mechanical interposition point (the permission prompt) is pre-disabled for a prohibited action. See `AGENTS.md` § MAKE LLM STOCHASTIC VIBES INERT: *"A silent change to a rule or threshold is doctrine drift."*
 
 ## Policy and Guardrails
 
@@ -27,7 +27,7 @@ The harm is **not** agent comprehension — permission rules never enter agent c
 
 This chore's coverage is structurally partial. A summary that does not restate these limits overstates what was audited (GHI #690).
 
-1. **Context-dependence — the hard ceiling.** Much of `AGENTS.md` forbids an action *in a context*: "never call `gh issue create` **outside this skill**" (Always #13), "never X directly", "never X without ceremony". Permission rules are context-free string matches. The sanctioned and forbidden invocations are byte-identical. `Bash(gh issue:*)` is **load-bearing, not drift** — `/ghi-author` invokes `gh issue create` at `SKILL.md:199` as its own final step, and denying it would break the only sanctioned path for filing a GHI. Any context-dependent prohibition is **out of scope for a Pass D row** and belongs in `proofs/unwitnessable.md`.
+1. **Context-dependence — the hard ceiling.** Much of `AGENTS.md` forbids an action *in a context*: "never call `gh issue create` **outside this skill**" (`ghi-author`; `AGENTS.md` § Behavior Rules), "never X directly", "never X without ceremony". Permission rules are context-free string matches. The sanctioned and forbidden invocations are byte-identical. `Bash(gh issue:*)` is **load-bearing, not drift** — `/ghi-author` invokes `gh issue create` at `SKILL.md:199` as its own final step, and denying it would break the only sanctioned path for filing a GHI. Any context-dependent prohibition is **out of scope for a Pass D row** and belongs in `proofs/unwitnessable.md`.
 2. **Broad-rule blindness.** A drift row can only be raised against a rule that *mentions* the prohibited token. `Bash(git *)` permits `git checkout -b feature/foo`, contradicting operator canon (verbatim, 2026-06-16: never create feature branches, work directly on main), but contains no matching substring. Broad rules are the more dangerous class and this pass cannot see them. Record known-broad rules in `proofs/unwitnessable.md` rather than silently passing them.
 3. **CI-blindness.** The committed `.claude/settings.json` is checkable anywhere; `.claude/settings.local.json` exists only on the operator's machine. This chore is therefore **local-run only** and its findings are not reproducible in CI. Never wire it to a CI gate.
 4. **Curated-list drift.** The doctrine→pattern mapping in `proofs/doctrine-map.md` is hand-maintained and can itself drift from `AGENTS.md`, reproducing the drift failure one level up. Step 1 re-derives the map from the corpus each run rather than trusting the prior run's map.
@@ -90,7 +90,7 @@ git check-ignore -v .claude/settings.local.json \
 - GHI #690 — origin; carries the four design problems verbatim
 - GHI #669 — sibling cut (OBPI-status writers; convention-only enforcement)
 - `control-surface-rule-conflicts` (Pass A), `control-surface-skill-rule-reachability` (Pass B), `control-surface-rule-vs-check-drift` (Pass C)
-- `AGENTS.md` § MAKE LLM STOCHASTIC VIBES INERT operative claim 3
+- `AGENTS.md` § MAKE LLM STOCHASTIC VIBES INERT (doctrine drift)
 - `docs/governance/trust-doctrine.md` (T1/T2/T3 trust-chain)
 
 ---

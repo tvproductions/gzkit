@@ -11,7 +11,7 @@
 #
 # Two clones in flight both append to the tail, so git conflicts over disjoint
 # additions and a human is forced to hand-edit the ledger — the action
-# AGENTS.md § Never #2 prohibits. `merge=gzkit-jsonl` reconciles them as a
+# AGENTS.md § Behavior Rules prohibits ("Write the ledger only through `gz` commands"). `merge=gzkit-jsonl` reconciles them as a
 # timestamp-ordered union via `gz ledger merge-driver`.
 #
 # NOT `merge=union`: git's built-in concatenates without ordering, and these

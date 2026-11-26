@@ -3,7 +3,7 @@
 GHI #358 locks the read-side schema for the course-correction insights
 surface. The file accumulates four trust-bearing record kinds, named by
 the `type` field — `defect` observations, `defect-resolution` outcomes,
-`improvement` post-correction lessons (Behavior Rule #11), and
+`improvement` post-correction lessons (`AGENTS.md` § Behavior Rules), and
 `discovery` survey findings (GHI #502) — and was hand-appended without
 enforcement until this lock landed; the existing record drift (date-only
 timestamps, nested-object evidence, plural `adr_ids` keys, prose
