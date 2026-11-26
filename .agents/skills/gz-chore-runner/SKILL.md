@@ -5,9 +5,9 @@ description: Use to run a chore from the registry end to end (show, plan, advise
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-07
+last_reviewed: 2026-11-26
 metadata:
-  skill-version: "1.6.0"
+  skill-version: "1.6.1"
 model: sonnet
 ---
 
@@ -20,7 +20,7 @@ Execute a repository chore using the canonical `gz chores` workflow.
 ## Inputs
 
 - `chore_slug`: Chore identifier from the chores registry (`uv run gz chores list`).
-- `lane`: The configured lane reported by `gz chores show` (lite, medium, or heavy).
+- `lane`: The configured lane reported by `gz chores show` (lite or heavy).
 
 ## Outputs
 

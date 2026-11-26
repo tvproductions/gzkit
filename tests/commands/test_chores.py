@@ -359,8 +359,9 @@ class TestChoresCommands(unittest.TestCase):
 
             result = runner.invoke(main, ["chores", "list"])
             self.assertNotEqual(result.exit_code, 0)
-            self.assertIn("lane must be one of", result.output)
-            self.assertNotIn("medium", "lite heavy")  # canonical lanes per AGENTS.md
+            # The refusal names the whole lane set, which AGENTS.md § Gate Covenant
+            # rules is lite and heavy (GHI #1386).
+            self.assertIn("lane must be one of: heavy, lite.", result.output)
 
     def test_chores_rejects_missing_timeout_seconds(self) -> None:
         """Each chore must declare an explicit positive timeoutSeconds (GHI #447)."""

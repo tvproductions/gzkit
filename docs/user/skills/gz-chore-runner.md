@@ -29,7 +29,7 @@ Invoke `/gz-chore-runner` in these situations:
 
 This skill operates in the maintenance phase of the
 [daily workflow](../concepts/workflow.md). Each chore has its own acceptance
-criteria and lane (lite, medium, or heavy) that determines the validation
+criteria and lane (lite or heavy) that determines the validation
 depth required.
 
 ## What to Expect
