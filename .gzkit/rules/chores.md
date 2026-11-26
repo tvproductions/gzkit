@@ -6,11 +6,11 @@ paths:
 description: Chores workflow command sequences, two-surface layout, and evidence patterns
 ---
 
-<!-- rule-version: 0.6.6 -->
+<!-- rule-version: 0.6.7 -->
 
 # Chores Workflow (gzkit)
 
-> **Rule version:** `0.6.6` — § Correct Evidence says its commands emit no receipt and points attestation evidence to `gz-arb` (GHI #1383); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#choresmd).
+> **Rule version:** `0.6.7` — plan-first reads what `gz chores plan` displays (GHI #1387); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#choresmd).
 
 > **Purpose:** Enable agents to run repository chores effectively with clear,
 > repeatable command sequences, aligned to gzkit guardrails and the two-surface
@@ -59,7 +59,7 @@ definition files, run `gz chores doctor --dry-run` first and sync any unsynced
 
 | Principle           | Description                                     |
 | ------------------- | ----------------------------------------------- |
-| **Plan-first**      | Generate or refresh a chore plan before any run |
+| **Plan-first**      | Read the chore's plan (`gz chores plan`) before any run |
 | **Lite by default** | Run `uv run gz test` (unit tier only); no `behave`, no network, no external services. Duration ceilings are a test-infra contract (see `.gzkit/rules/tests.md` § Smoke/BVT) — not an agent-introspected clock. |
 | **Small diffs**     | Touch only files in scope for the chore         |
 | **CLI evidence**    | Never use raw SQL for attestation               |

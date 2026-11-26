@@ -171,6 +171,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `chores.md`
 
+### Changed 2026-11-26 at version `0.6.7` (plan displays)
+
+Prior `0.6.6` banner: *"§ Correct Evidence says its commands emit no receipt and points attestation evidence to `gz-arb` (GHI #1383)"*. The independent review of GHI #1387 (prompt audit M19) found § Principles' Plan-first row saying to *"Generate or refresh a chore plan"*; `chores_plan` only prints the chore's lane, log path and criteria. The row now says to read the plan `gz chores plan` displays. Binding rules unchanged.
+
 ### Changed 2026-11-26 at version `0.6.6` (receipt pointer)
 
 Prior `0.6.5` banner: *"§ Evidence & Attestation's behave example names a tag the features carry, not the absent `@schema`"*. The independent review of GHI #1383 (prompt audit M16) found § Correct Evidence offering bare `gz check --full` and `behave` under an Attestation heading with no receipt caveat; it now says those commands emit no receipt and points attestation evidence to `gz-arb`'s canonical invocations, per `AGENTS.md` § Attestation. Binding rules unchanged.

@@ -743,7 +743,7 @@ uv run gz task escalate TASK-<id> --reason "..."  # Escalate with reason
 
 Skill shortcuts for maintenance workflows:
 
-- [`/gz-chore-runner`](../user/skills/gz-chore-runner.md) — run a chore end-to-end (show, plan, advise, execute, validate)
+- [`/gz-chore-runner`](../user/skills/gz-chore-runner.md) — run a chore end-to-end (show, plan, advise, fix, validate, run, audit)
 - [`/gz-check`](../user/skills/gz-check.md) — run full quality checks in one pass (lint, typecheck, test, docs)
 - [`/gz-arb`](../user/skills/gz-arb.md) — quality evidence workflow with structured JSON receipts
 - [`/gz-tidy`](../user/skills/gz-tidy.md) — report maintenance findings (exit 3 on a breach); `--fix` regenerates control surfaces

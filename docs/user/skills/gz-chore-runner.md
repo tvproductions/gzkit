@@ -1,7 +1,7 @@
 # /gz-chore-runner
 
-Run a repository chore end-to-end: discover, plan, advise, execute, and
-validate.
+Run a repository chore end-to-end: discover, inspect, plan, advise, fix,
+validate, run and audit.
 
 ---
 
@@ -34,18 +34,22 @@ depth required.
 
 ## What to Expect
 
-The skill runs through 6 steps:
+The skill's Procedure groups into six stages:
 
 1. **Discover** — `gz chores status` shows which chores are due or overdue, and
    `gz chores list` lists every registered chore.
-2. **Inspect** — `gz chores show <slug>` displays the chore details, lane, and
+2. **Inspect** — `gz chores show <slug>` displays the chore's `CHORE.md`: its
+   workflow and remediation procedure.
+3. **Plan** — `gz chores plan <slug>` displays the chore's lane, log path and
    acceptance criteria.
-3. **Plan** — `gz chores plan <slug>` displays the chore's execution plan.
 4. **Advise** — `gz chores advise <slug>` dry-runs the acceptance criteria to
    assess current state and identify what needs fixing.
 5. **Execute** — implements the fixes surgically (minimal diffs, preserve
    behavior), validates locally with lint/typecheck/tests, then runs
-   `gz chores run <slug>`, which writes the result to the chore's log.
+   `gz chores run <slug>`, which writes the result to the chore's log. Two
+   steps apply only when they fit: `gz chores propose-ghi <slug>` for a finding
+   worth a GHI, and `gz chores record-processed` for
+   `decommission-tautological-tests`.
 6. **Audit** — `gz chores audit --slug <slug>` reports whether that log is
    present. It exits 0 either way, so read its table.
 

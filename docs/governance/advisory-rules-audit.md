@@ -70,7 +70,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `security-sensitivity.md` | `0.7.0` |
 | `skill-surface-sync.md` | `0.15.0` |
 | `skill-authoring.md` | `0.2.1` |
-| `chores.md` | `0.6.6` |
+| `chores.md` | `0.6.7` |
 | `cli.md` | `0.9.3` |
 | `cross-platform.md` | `0.8.1` |
 | `gate5-runbook-code-covenant.md` | `0.3.2` |

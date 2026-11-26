@@ -6,7 +6,7 @@ maintenance task, or time to spare.
 ## Steps
 
 - **A scheduled or stale chore** → **`gz-chore-runner`**: show, plan, advise,
-  run and validate one chore. `uv run gz chores status` shows which are stale.
+  fix, validate, run and audit one chore. `uv run gz chores status` shows which are stale.
 - **Where the debt is** → **`gz-tech-debt-review`**: a line-grounded survey that
   routes each finding to a chore, an in-flight fix or at most one GHI.
 - **Class shapes that should be plain Python** →

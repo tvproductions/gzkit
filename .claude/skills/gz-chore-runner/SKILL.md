@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-26
 metadata:
-  skill-version: "1.6.2"
+  skill-version: "1.6.3"
 model: sonnet
 ---
 
@@ -20,7 +20,7 @@ Execute a repository chore using the canonical `gz chores` workflow.
 ## Inputs
 
 - `chore_slug`: Chore identifier from the chores registry (`uv run gz chores list`).
-- `lane`: The configured lane reported by `gz chores show` (lite or heavy).
+- `lane`: The lane the registry configures, which `gz chores plan` prints (lite or heavy).
 
 ## Outputs
 
@@ -94,7 +94,7 @@ Execute a repository chore using the canonical `gz chores` workflow.
    uv run gz chores record-processed decommission-tautological-tests --file <path> --disposition <disposition> --task <TASK-ID>
    ```
 
-10. Audit the logged result:
+10. Check that the log is present:
 
    ```bash
    uv run gz chores audit --slug <chore_slug>

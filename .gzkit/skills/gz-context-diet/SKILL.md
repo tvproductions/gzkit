@@ -8,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-11-26
 gz_command: chores show instructions-files-diet
 metadata:
-  skill-version: "1.1.5"
+  skill-version: "1.1.6"
 model: sonnet
 ---
 
@@ -52,8 +52,8 @@ uv run gz chores show instructions-files-diet
 
 The Workflow, Acceptance Criteria, Anti-patterns, and Related sections
 in that `CHORE.md` are the binding procedure. After reading, run the
-chore through the standard chore lifecycle (the same five steps
-`gz-chore-runner` enforces):
+chore through the standard chore lifecycle (the sequence `gz-chore-runner`'s
+Procedure prescribes):
 
 ```bash
 uv run gz chores plan instructions-files-diet
