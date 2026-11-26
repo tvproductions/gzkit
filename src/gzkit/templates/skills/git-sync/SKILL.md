@@ -7,9 +7,9 @@ lifecycle_state: active
 disable-model-invocation: true
 owner: gzkit-governance
 model: haiku
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-26
 metadata:
-  skill-version: "1.2.3"
+  skill-version: "1.2.4"
 ---
 
 # SKILL.md
@@ -96,6 +96,4 @@ These thoughts mean STOP — you are about to push without the guards:
 
 ## Related Skills
 
-- `lint`
-- `test`
-- `format`
+- `gz-check`

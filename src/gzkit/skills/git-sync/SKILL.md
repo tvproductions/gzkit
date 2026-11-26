@@ -6,9 +6,9 @@ category: agent-operations
 lifecycle_state: active
 disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-11-08
+last_reviewed: 2026-11-26
 metadata:
-  skill-version: "1.5.0"
+  skill-version: "1.5.1"
 model: haiku
 ---
 
@@ -138,6 +138,4 @@ These thoughts mean STOP — you are about to push without the guards:
 
 ## Related Skills
 
-- `lint`
-- `test`
-- `format`
+- `gz-check`

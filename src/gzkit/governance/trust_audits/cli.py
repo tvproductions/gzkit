@@ -54,7 +54,7 @@ _NO_SKILL_VERBS: dict[str, str] = {
     "flag": "Feature-flag inspection; internal developer affordance.",
     "flags": "Feature-flag inspection; internal developer affordance.",
     "parity": "Cross-repo parity inspector; consumed by airlineops-parity-scan skill.",
-    "format": "Alias invocation — the `format` skill wraps it.",
+    "format": "Formatting verb; gz-check wields it, and gz check runs it.",
     "lint": "Direct lint verb; wrapped by ARB workflow.",
     "typecheck": "Direct typecheck verb; wrapped by ARB workflow.",
     "test": "Direct test verb; wrapped by ARB workflow.",
