@@ -7947,8 +7947,11 @@
       "stage5"
      ],
      "cause": null,
-     "delivered_span": "- Pass the operator's attestation phrase (e.g. \"attest completed\") verbatim through `--attestation-text`, enriched per `AGENTS.md` § Attestation (em-dash + session evidence + receipt IDs). The operator's `attest completed` (or equivalent) IS the attestation — it is not a request for more instructions. Do not stop the turn to ask the operator to run the command themselves.",
-     "reworded": null
+     "delivered_span": "- Pass the operator's attestation phrase (e.g. \"attest completed\") verbatim through `--attestation-text`, then append concrete evidence per `AGENTS.md` § Attestation: receipt IDs from the canonical invocations `gz-arb` lists, test counts, file paths. The operator's `attest completed` (or equivalent) IS the attestation — it is not a request for more instructions. Do not stop the turn to ask the operator to run the command themselves.",
+     "reworded": {
+      "text": "- Pass the operator's attestation phrase (e.g. \"attest completed\") verbatim through `--attestation-text`, then append concrete evidence per `AGENTS.md` § Attestation: receipt IDs from the canonical invocations `gz-arb` lists, test counts, file paths. The operator's `attest completed` (or equivalent) IS the attestation — it is not a request for more instructions. Do not stop the turn to ask the operator to run the command themselves.",
+      "reason": "A ruled correction (GHI #1374; operator 2026-11-26, \"A\"): the 2026-09-17 AGENTS.md rewrite moved the canonical invocations to gz-arb and carried the em-dash pattern nowhere; § Attestation now reads \"pass user words verbatim, then append concrete evidence — receipt IDs, test counts, file paths\" and points to gz-arb for the invocations."
+     }
     },
     {
      "id": "S5-017",
