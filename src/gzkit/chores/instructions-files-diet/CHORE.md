@@ -3,6 +3,11 @@
 **Lane:** Lite
 **Slug:** `instructions-files-diet`
 
+> **3.4.2 (2026-11-26, GHI #1375) — the anti-pattern quote follows the rewrite.** The
+> anti-vibing citation (3.4.1, 7a291cd02) and its anti-pattern quote (3.4.2, aeec877c5) now
+> name `AGENTS.md` § MAKE LLM STOCHASTIC VIBES INERT and quote its current wording, in
+> place of the numbered claim the 2026-09-17 rewrite dropped.
+>
 > **3.4.0 (operator rulings 2026-09-19, GHI #921) — skill bodies are in scope.** Verbatim:
 > *"skills should be reviewed as a part of a chore (new or existing), where parsimony and
 > new model alignment are part of the review"*, and by selection *"Widen
