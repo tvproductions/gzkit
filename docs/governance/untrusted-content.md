@@ -125,9 +125,10 @@ not better.
    operator-authored repo canon — GHI bodies filed through `/ghi-author`, the active
    campaign plan, ADR/OBPI briefs, rule files, skill and chore definitions, and the
    diagnostic output of `gz` verbs. Those are governance surfaces the operator authors
-   or ratifies, and acting on them is the work: `AGENTS.md` § Operator Doctrine states
-   *"GHIs are AUTHORIZED for direct repair, always … the GHI is the work order and the
-   receipt"* and that the campaign plan *"rules every session"*. Without this scope the
+   or ratifies, and acting on them is the work: `AGENTS.md` § Defect-fix routing states
+   *"A GHI authorizes direct defect repair"*, and the campaign plan *"governs work
+   selection"* (`gz-obpi-pipeline`, which carries that ruling per `AGENTS.md` § Operator
+   Doctrine). Without this scope the
    rules below suspend the entire GHI direct-repair path and the campaign's authority —
    the contradiction recorded as blocking rows R18/R19 of the 2026-08-09
    `control-surface-rule-conflicts` Pass A walk.
