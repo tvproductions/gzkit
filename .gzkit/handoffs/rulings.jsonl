@@ -2579,3 +2579,7 @@
 {"ts": "2026-11-26T07:09:38Z", "source": "20261126T070937Z-prompt-audit-m9-m11-compression-drydock.md", "text": "RP-7's compression-consumer line is graded blocks return to service (verbatim: \"Blocks return to service\")."}
 {"ts": "2026-11-26T07:42:45Z", "source": "20261126T074244Z-prompt-audit-m12-m14.md", "text": "M12 now (verbatim: \"M12 now\")."}
 {"ts": "2026-11-26T07:42:45Z", "source": "20261126T074244Z-prompt-audit-m12-m14.md", "text": "File GHIs for the three findings from the #1376 review, then M14 (verbatim: \"GHIs for those three findings, then M14\")."}
+{"ts": "2026-11-26T08:29:18Z", "source": "20261126T082917Z-prompt-audit-m15-related-skills.md", "text": "M15 now (verbatim: \"M15 now\")."}
+{"ts": "2026-11-26T08:29:18Z", "source": "20261126T082917Z-prompt-audit-m15-related-skills.md", "text": "The pool ADR's test-skill target moves to gz-check (verbatim: \"Re-target gz-check\")."}
+{"ts": "2026-11-26T08:29:18Z", "source": "20261126T082917Z-prompt-audit-m15-related-skills.md", "text": "#1381 closes with its two undriven reason-string hunks disclosed and the dead-waiver check routed separately (verbatim: \"Close, disclose, file (Rec.)\")."}
+{"ts": "2026-11-26T08:29:18Z", "source": "20261126T082917Z-prompt-audit-m15-related-skills.md", "text": "File the CORE_SKILLS finding, then a fresh handoff and git sync (verbatim: \"yes, then frsh handoff + git sync\")."}
