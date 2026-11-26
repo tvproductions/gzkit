@@ -3,6 +3,9 @@
 **Lane:** Lite
 **Slug:** `dependency-currency`
 
+> **Version 2.1.2 (2026-11-26, GHI #1369):** the criteria section names the
+> gates' callers without naming a command `acceptance.json` does not run.
+>
 > **Version 2.1.1 (2026-11-25, GHI #1369 review):** the currency criterion also
 > reads the build pins, `.python-version` and a hold on the uv binary, and the
 > guardrails let a forward repair touch the code the new release breaks.
@@ -187,8 +190,9 @@ that it is current (GHI #1369):
    toolchain (the gzkit-wrapped commands honor configured exclusions).
 
 Both gates need the network (`gh`, PyPI through uv); an unreachable upstream
-exits 2, never passes. They run only inside `gz chores run`, never from
-`gz check`, so they behave the same in operation, the hangar and the drydock.
+exits 2, never passes. They run only inside `gz chores run` and the daily
+`dependency-currency` workflow, never in the per-change gate, so they behave the
+same in operation, the hangar and the drydock.
 
 ## Evidence Commands
 

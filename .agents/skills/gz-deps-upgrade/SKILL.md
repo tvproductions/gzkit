@@ -8,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-11-19
 model: haiku
 metadata:
-  skill-version: "1.8.1"
+  skill-version: "1.8.2"
 ---
 
 # gz deps-upgrade
@@ -100,7 +100,11 @@ order, not skipping the floor-bump or the verification step.
     gh api repos/<owner>/<repo>/commits/<tag> --jq .sha          # for a SHA pin
     ```
 
-    A major-tag pin (`@v6`) moves to the latest major; a commit-SHA pin moves to
+    `autoupdate` moves each hook to the newest tag on its default branch, which
+    can be older than the latest release (on 2026-11-26 it proposed gitleaks
+    v8.30.1 → v8.30.0); never accept a downgrade, and re-run the currency
+    criterion, which names the release. A major-tag pin (`@v6`) moves to the
+    latest major; a commit-SHA pin moves to
     the latest release's commit, with its `# vX.Y.Z` comment rewritten to match.
     Read each major bump's changelog before moving it. CI is the action pins'
     verification, so push and watch the run. Raise the `[build-system] requires`
