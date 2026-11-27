@@ -1168,13 +1168,13 @@ of unchanged canon, exit 1). Every consumer's sidecar records the same
 ```json
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "6be864c97e6649d004652a3b4b6b63d6a4b4ab7349b3fe68495d7110f5e3f767",
+  "corpus_fingerprint": "d630ec2e50a73cb89b3c3546d19dec805c6ca482a6a541e6f4cdcc783f5fff29",
   "corpus_entry_count": 2,
   "rendition_fingerprint": "2af63dcd5a45ca06a7f864a68ad305043d6a8c4ed6274fda0171425e1c84b5ee",
-  "committed_ts": "2026-09-27T23:59:01.760782+00:00",
+  "committed_ts": "2026-11-27T10:09:13.448259+00:00",
   "attestor": "g0",
   "attestation_text": "corpus delta attested",
-  "landing_id": "landing-20260927T235901Z-7a3e2a46"
+  "landing_id": "landing-20261127T100913Z-1f683ee4"
 }
 ```
 
