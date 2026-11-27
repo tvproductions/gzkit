@@ -792,6 +792,49 @@ The frontier, recomputed from the subject: the construction question first, now 
 operator's word that the drydock moves forward to the new structure; then T37 and the sub-ids;
 then the review of W44 to W50 against the separated model.
 
+## decision · RP-12's kit obligations are construction, built legitimately in the drydock
+
+Session 0cce0fdc, 2026-11-27, resuming on the operator's ruling of the handoff
+`20261127T080353Z-m25-m29-ty-rp4-r9-rnd-resumed.md`, verbatim: *"renew the lease, then
+proceed"*. Read in full before the question was put: `docs/governance/harbor-ro12-contractor-kit.md`
+(828 lines, rulings 1 to 205), `docs/governance/ieee/requirements-model.md` (563 lines, § 12
+among them) and the FIX rulings W6 to W19 and W51 of `docs/governance/drydock-taxonomy.md` § 9.
+
+The kit, ruling 104, as read:
+
+> a repair REQ states what must hold again after a repair, which O2's new code is not, so none is
+> written to satisfy the gate
+
+The requirements model § 12, as read:
+
+> | New construction | states a new one | Release Package, minor |
+> | Repair (restore) | answers what must hold again | patch |
+
+Question: are RP-12's kit obligations construction, catalog REQs, or FIXes? Options put: A,
+construction, each numbered ruling stating an obligation becoming a catalog REQ admitted at
+civil rule, the rulings page the dated record of its derivation, a FIX arising only where built
+kit code fails an obligation already ruled (rulings 157, 161 and 163 the cases), RP-12 read as
+construction done out of service and not a repair; B, FIXes, every kit obligation restoring
+declared intent and each FIX answering a GHI, against ruling 104 and the § 12 table; C, split by
+trigger, an obligation born of an in-service incident such as #1296 a FIX even when its remedy is
+new capability. Recommended A. Operator, verbatim: *"A, but we don't need to wait for civil rule -
+classic dry dock is for repair, refit, rearm, or even upgrade - most of RP-12 is to reshape older
+gzkit structures with new, so even if these are REQs, the dry dock is purposeful and
+legitimate."* And, the same turn: *"and, it could well be that there are a mix of FIX and REQ in
+RP-12"*.
+
+So RP-12's kit obligations are construction, catalog REQs, and RP-12 may hold FIXes beside them:
+a FIX answers a failure of built work to meet an obligation already of record, as rulings 157, 161
+and 163 read. Two parts of option A as put are
+corrected by the operator's words. The REQs need not wait for civil rule: their admission is
+drydock work. And construction inside the drydock is not a misplacement. A drydock repairs,
+refits, rearms and upgrades, so reshaping gzkit's older structures with new ones is the drydock's
+purpose, and the work is legitimate there. What this leaves for the frontier: the level table
+pairs the drydock with the repair column alone (return to service package, repair package,
+repair order), so how a drydock package carries construction REQs beside FIXes, and the § 12
+release reading (*"New construction … Release Package, minor"*) for work the drydock builds, meet
+this ruling next.
+
 ---
 
 ## Disposition map
