@@ -44,7 +44,7 @@ positional `task_id` argument.
 |------|---------|
 | 0 | Success |
 | 1 | Invalid transition, invalid REQ identifier, `--seq` neither `next` nor a positive integer, or collision on explicit `--seq N` |
-| 2 | Usage error: neither a `task_id` nor `--req` with `--seq` supplied, a `task_id` combined with `--req`/`--seq`, or `--req` without `--seq` |
+| 2 | Usage error: neither a `task_id` nor `--req` with `--seq` supplied, a `task_id` combined with `--req`, or `--req` without `--seq` |
 
 ## Examples
 
