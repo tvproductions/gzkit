@@ -2606,3 +2606,12 @@
 {"ts": "2026-11-27T01:48:09Z", "source": "20261127T014808Z-prompt-audit-m22-m24.md", "text": "Do M23 (verbatim: \"proceed to m23\")."}
 {"ts": "2026-11-27T01:48:09Z", "source": "20261127T014808Z-prompt-audit-m22-m24.md", "text": "Do M24 (verbatim: \"proceed to m24\")."}
 {"ts": "2026-11-27T01:48:09Z", "source": "20261127T014808Z-prompt-audit-m22-m24.md", "text": "Write the successor handoff and push (verbatim: \"create fresh handoff and git sync\")."}
+{"ts": "2026-11-27T08:03:54Z", "source": "20261127T080353Z-m25-m29-ty-rp4-r9-rnd-resumed.md", "text": "Do M25 (verbatim: \"proceed with m25\")."}
+{"ts": "2026-11-27T08:03:54Z", "source": "20261127T080353Z-m25-m29-ty-rp4-r9-rnd-resumed.md", "text": "Take #1346 to independent review at its own boundary, not into other OBPI surfaces (verbatim: \"are we sure we aren't getting mired in soon-to-be-deprecated terms like obpi when we are workings their replacement.\" then \"take #1346 to independent review\")."}
+{"ts": "2026-11-27T08:03:54Z", "source": "20261127T080353Z-m25-m29-ty-rp4-r9-rnd-resumed.md", "text": "Do M26 (verbatim: \"proceed with m26\")."}
+{"ts": "2026-11-27T08:03:54Z", "source": "20261127T080353Z-m25-m29-ty-rp4-r9-rnd-resumed.md", "text": "Do M27 as a one-line fix (verbatim: \"continue with m27\" then \"One-line fix (Recommended)\")."}
+{"ts": "2026-11-27T08:03:54Z", "source": "20261127T080353Z-m25-m29-ty-rp4-r9-rnd-resumed.md", "text": "Do M28 (verbatim: \"proceed with m28\")."}
+{"ts": "2026-11-27T08:03:54Z", "source": "20261127T080353Z-m25-m29-ty-rp4-r9-rnd-resumed.md", "text": "A work order checks the state of its Release Package, booked in the RP-4 spec (verbatim: \"this means that a work order (the new obpi) needs to check to see the state of the release package\" then \"Amend the RP-4 spec (Recommended)\")."}
+{"ts": "2026-11-27T08:03:54Z", "source": "20261127T080353Z-m25-m29-ty-rp4-r9-rnd-resumed.md", "text": "Upgrade ty, do M29, then resume the drydock (verbatim: \"ty then m29, then drydock resumption\")."}
+{"ts": "2026-11-27T08:03:54Z", "source": "20261127T080353Z-m25-m29-ty-rp4-r9-rnd-resumed.md", "text": "Restore the moved last_reviewed dates and leave rule 6 for diamond 2 (verbatim: \"Restore dates + note (Recommended)\")."}
+{"ts": "2026-11-27T08:03:54Z", "source": "20261127T080353Z-m25-m29-ty-rp4-r9-rnd-resumed.md", "text": "Hand off before reading the construction-question sources (verbatim: \"Handoff now (Recommended)\")."}
