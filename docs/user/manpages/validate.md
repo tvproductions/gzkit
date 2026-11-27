@@ -278,9 +278,9 @@ gz validate --frontmatter --explain ADR-0.1.0
 Enforces the chores-tree layout invariant from
 [ADR-0.0.21](../../design/adr/foundation/ADR-0.0.21-chores-as-gzkit-surface/ADR-0.0.21-chores-as-gzkit-surface.md).
 Walks the working tree and flags any `CHORE.md` or `acceptance.json` file
-located outside the two canonical roots — `src/gzkit/chores/` (the packaged
-canonical source in this repo) and `.gzkit/chores/` (the project-local
-overlay in consumer projects, or the configured `paths.chores` value).
+located outside the two chore roots — `.gzkit/chores/` (the canonical
+authoring source, or the configured `paths.chores` value) and
+`src/gzkit/chores/` (its generated package copy, shipped in the wheel).
 
 Stray files outside those roots reproduce the pre-ADR-0.0.21 layout this
 audit exists to close. The walk skips `.git/`, `__pycache__/`, `.venv/`,

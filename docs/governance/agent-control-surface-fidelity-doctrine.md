@@ -37,7 +37,7 @@ The doctrine does not introduce a new philosophical claim. It names what the ups
 
 This doctrine is invariant across implementation eras (per ADR-0.0.34 — Agent Control Surface Rendering Substrate):
 
-- **Era 1 — today:** hand-authored + partial-templated static files. Validators grep against rendered output and the limited canonical sources that exist (`src/gzkit/templates/agents.md`, `.gzkit/rules/**`).
+- **Era 1 — today:** hand-authored + partial-templated static files. Validators grep against rendered output and the limited canonical sources that exist (`.gzkit/corpus/AGENTS.md.jsonl`, `.gzkit/rules/**`).
 - **Era 2 — substrate landed:** Pydantic content models + Jinja2 templates render the full surface. Validators diff canonical models against rendered output; tests are sharper.
 - **Era 3 — progressive disclosure:** scenario-aware retrieval composes per-turn surface on demand. Validators check the per-scenario render; canonical bullet-retention claims become bullet-reachability-from-scenario claims.
 

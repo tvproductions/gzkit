@@ -20,7 +20,7 @@ restores from. Never edit it: the next sync overwrites it.
 
 `gz chores` resolves each slug **project-first → package-fallback**: it looks
 under `<project_root>/.gzkit/chores/<slug>/` first; if that path is absent or
-incomplete, it falls back to the canonical package resource. The same order
+incomplete, it falls back to the package copy shipped in the wheel. The same order
 applies to the `registry.json` file (REQ-0.0.21-04-05).
 
 `gz chores list --explain` prints one row per chore labeling the resolution

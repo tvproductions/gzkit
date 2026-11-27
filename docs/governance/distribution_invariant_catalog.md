@@ -67,7 +67,7 @@ Self-hosting blindness is the meta-failure: gzkit ran every test against its own
 
 ADR-0.0.21 promoted chores from `ops/chores/` (gzkit-repo-only scratch directory) to a first-class `.gzkit/` surface with:
 
-- **Two-surface layout:** canonical source ships in `src/gzkit/chores/` inside the wheel; consumer project overlay lives in `.gzkit/chores/`.
+- **Two-surface layout:** a package copy ships in `src/gzkit/chores/` inside the wheel, and a project surface lives in `.gzkit/chores/`. ADR-0.0.21 named the package copy canonical; today `.gzkit/chores/` is the authoring source and the package copy is generated from it (`.gzkit/rules/chores.md` § Two-Surface Layout).
 - **Project-first → package-fallback resolution:** resolvers consult `importlib.resources` as fallback rather than relying on `Path.cwd()` alone.
 - **Wheel include extended:** `pyproject.toml` `[tool.hatch.build.targets.wheel]` gained `src/gzkit/chores/**/*.md`, `*.json`, `README.md`, `registry.json` entries.
 - **Doctor repair surface:** `gz chores doctor` detects and repairs missing or stale project-overlay artifacts.
