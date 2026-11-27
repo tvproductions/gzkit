@@ -4,9 +4,9 @@ description: Use between gz content compose and corpus attestation to judge a ca
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-11-27
 metadata:
-  skill-version: "0.2.3"
+  skill-version: "0.2.4"
 model: sonnet
 gz_command: gz content advise-rendition
 ---
@@ -50,7 +50,7 @@ This is an **LLM-as-judge** surface governed by ADR-0.0.39 doctrine:
 5. Record the verdict:
 
    ```bash
-   gz content advise-rendition <surface> [--consumer <vendor>] \
+   uv run gz content advise-rendition <surface> [--consumer <vendor>] \
      --score <0.0-1.0> --explanation "<your reasoning>"
    ```
 
@@ -73,10 +73,10 @@ This is an **LLM-as-judge** surface governed by ADR-0.0.39 doctrine:
 
 ```bash
 # After composing a candidate for AGENTS.md → root, judge and record the verdict.
-gz content advise-rendition AGENTS.md --consumer root --score 0.94 \
+uv run gz content advise-rendition AGENTS.md --consumer root --score 0.94 \
   --explanation "All Mechanical bullets retained verbatim; two Promotable bullets combined without information loss; no Judgment content dropped."
 
 # A low score is still recorded (advisory) — it is evidence for the operator, not a block.
-gz content advise-rendition AGENTS.md --consumer root --score 0.55 \
+uv run gz content advise-rendition AGENTS.md --consumer root --score 0.55 \
   --explanation "One Judgment-tier rationale paragraph compressed past the point of recoverability; flagging measurable loss for operator review."
 ```

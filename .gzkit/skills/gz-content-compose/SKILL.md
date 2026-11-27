@@ -6,7 +6,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-27
 metadata:
-  skill-version: "1.1.2"
+  skill-version: "1.1.3"
 model: sonnet
 gz_command: gz content compose
 ---
@@ -46,7 +46,7 @@ artifact under `.gzkit/renditions/` and the ledger change.
 5. **Run the compose tool** to validate + stage:
 
 ```bash
-gz content compose <surface> --consumer <vendor> --candidate /tmp/candidate.md
+uv run gz content compose <surface> --consumer <vendor> --candidate /tmp/candidate.md
 ```
 
 6. **Confirm the output** — check byte evidence and candidate path:

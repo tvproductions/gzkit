@@ -4,9 +4,9 @@ description: Use when the operator says "remember X" for a control surface; capt
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-26
+last_reviewed: 2026-11-27
 metadata:
-  skill-version: "0.3.0"
+  skill-version: "0.3.1"
 model: haiku
 gz_command: gz content remember
 ---
@@ -37,7 +37,7 @@ terminal ADR, when routing work.
 3. Run the capture:
 
    ```bash
-   gz content remember <surface> --section <id> --text "<prose>" \
+   uv run gz content remember <surface> --section <id> --text "<prose>" \
      [--tier invariant|compressible] [--classification Mechanical|Promotable|Judgment|Ambiguous] \
      [--origin <provenance>] [--witness <who-vouches>]
    ```
@@ -86,11 +86,11 @@ is strictly worse than a red tree. If the chain above cannot be finished this se
 
 ```bash
 # Remember a compressible note for AGENTS.md (never touches AGENTS.md itself)
-gz content remember AGENTS.md --section "Behavior Rules" \
+uv run gz content remember AGENTS.md --section "Behavior Rules" \
   --text "Prefer stdlib JSONL for append-only stores." --tier compressible
 
 # Remember an invariant-tier operator directive with provenance
-gz content remember AGENTS.md --section operator-doctrine-verbatim-canon \
+uv run gz content remember AGENTS.md --section operator-doctrine-verbatim-canon \
   --text "YOU OWN THE WORK COMPLETELY." --tier invariant \
   --classification Promotable --origin operator-directive-2026-08-21
 ```

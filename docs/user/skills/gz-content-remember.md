@@ -52,7 +52,7 @@ See [`gz content`](../manpages/content.md) § land.
 ## Example
 
 ```bash
-gz content remember AGENTS.md --section "Behavior Rules" \
+uv run gz content remember AGENTS.md --section "Behavior Rules" \
   --text "Prefer stdlib JSONL for append-only stores." --tier compressible
 ```
 
