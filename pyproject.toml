@@ -400,7 +400,7 @@ dev = [
     # up, do not avoid hard work by clinging to older version of Ty." The 88
     # diagnostics 0.0.69 surfaced were latent defects the older release could not
     # see, so the checker moving is the signal to fix the code (GHI #789).
-    "ty>=0.0.111",
+    "ty>=0.0.112",
     # Pinned here rather than fetched via `uv run --with` (operator ruling
     # 2026-08-27, GHI #856). It backs the canonical "Tests pass" attestation
     # (`CANONICAL_STEP_COMMANDS["unittest"]`), and an ARB receipt is durable
