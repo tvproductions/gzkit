@@ -5,7 +5,7 @@ description: Use to run an ADR's closeout ceremony through to the operator's att
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.21.1"
+  skill-version: "7.21.2"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -13,7 +13,7 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-11-26
 model: opus
 ---
 
@@ -102,7 +102,7 @@ The ceremony is driven by `src/gzkit/commands/closeout_ceremony.py` (state model
 
 - **Step sequencing** — deterministic step ordering via `CeremonyStep` enum
 - **Foundation skip** — `FOUNDATION_SKIP_STEPS` automatically skips RELEASE_NOTES and RELEASE steps for 0.0.x ADRs
-- **State persistence** — ceremony state saved in `.gzkit/ceremonies/<ADR-ID>.json`
+- **State persistence** — ceremony state saved at the path `ceremony_state_path()` returns, `.gzkit/ceremonies/<ADR-ID>.ceremony.json`
 - **Walkthrough discovery** — commands extracted from OBPI briefs and command docs
 - **Turn locks** — prevents step skipping
 
@@ -267,7 +267,7 @@ The ceremony is done.
 If `gz git-sync` is unavailable (network failure, gh outage, dirty submodule):
 
 1. Stop the ceremony at the failed sync. Do not advance.
-2. Capture the exact error output and the ceremony state file path (`.gzkit/ceremonies/<ADR-ID>.json`).
+2. Capture the exact error output and the ceremony state file path (`.gzkit/ceremonies/<ADR-ID>.ceremony.json`).
 3. Hand off to the human with a one-line summary plus the resume command:
    `uv run gz closeout ADR-X.Y.Z --ceremony` (re-attaches to the persisted state).
 4. Do **not** manually commit closeout artifacts or hand-edit the ledger as a workaround. The ceremony resumes cleanly once sync is restored.
@@ -367,7 +367,7 @@ When the human requests corrections instead of attesting:
 
 ## Ceremony State
 
-State is persisted at `.gzkit/ceremonies/<ADR-ID>.json` by the CLI. The `CeremonyState` model in `src/gzkit/commands/ceremony_state.py` is the authority for its fields; read the current step with `--ceremony-status` rather than from the file.
+State is persisted by the CLI at the path `ceremony_state_path()` returns, `.gzkit/ceremonies/<ADR-ID>.ceremony.json`. `src/gzkit/commands/ceremony_state.py` is the authority: that function for the path, the `CeremonyState` model for its fields; read the current step with `--ceremony-status` rather than from the file.
 
 **Resumption:** `gz closeout ADR-X.Y.Z --ceremony` checks for existing state and resumes from the last completed step. The agent does not need to re-run completed steps.
 
@@ -412,5 +412,5 @@ One-sided directives. Each row states the required behavior and names the failur
 - Audit protocol: `docs/governance/GovZero/audit-protocol.md`
 - Gate definitions: `docs/governance/GovZero/charter.md`
 - Release tag rule: `docs/governance/GovZero/adr-lifecycle.md`
-- Runbook: `docs/user/operator_runbook.md`
+- Runbook: `docs/user/runbook.md`
 - Pipeline skill (behavioral reference): `.gzkit/skills/gz-obpi-pipeline/SKILL.md`
