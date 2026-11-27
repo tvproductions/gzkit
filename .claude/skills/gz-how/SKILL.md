@@ -8,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-11-26
 model: sonnet
 metadata:
-  skill-version: "1.1.0"
+  skill-version: "1.1.1"
 ---
 
 # gz-how

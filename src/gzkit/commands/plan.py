@@ -16,7 +16,6 @@ from gzkit.commands.register import (
 from gzkit.core.models import ADR_ID_BODY, compose_adr_full_id, normalize_pool_adr_input
 from gzkit.decomposition import build_checklist_seed, compute_scorecard, default_dimension_scores
 from gzkit.ledger import Ledger, adr_created_event
-from gzkit.models.foundation_grandfather import foundation_kind_is_closed
 from gzkit.templates import render_template
 from gzkit.templates.author_prompts import AUTHOR_PROMPTS, PERSONA_PROMPT
 
@@ -166,13 +165,13 @@ def _render_pool_adr(*, name: str, title: str, parent: str, lane: str) -> tuple[
     return slug, "pool", content
 
 
-def _validate_kind_and_semver(kind: str | None, semver: str, project_root: Path) -> None:
+def _validate_kind_and_semver(kind: str | None, semver: str) -> None:
     """Enforce --kind required + kind/semver consistency. Exit 1 on violation.
 
     Covers REQ-0.0.17-02-01 (kind required), -02/-03/-06 (kind/semver binding).
 
-    The closed-kind refusal is conditioned on the project-local decision
-    (ADR-0.34.0 § Decision; GHI #740). This is the CLI-handler door; the render
+    The closed-kind refusal binds every project, adopters included (GHI #1402).
+    This is the CLI-handler door; the render
     layer holds a second one. GHI #740's surface table listed only the render
     layer, so this guard was found by running the closed-kind tests rather than
     by reading the issue.
@@ -187,7 +186,7 @@ def _validate_kind_and_semver(kind: str | None, semver: str, project_root: Path)
         console.print("  [bold]pool[/bold]       — backlog ADR; no semver required")
         sys.exit(1)
 
-    if kind == "foundation" and foundation_kind_is_closed(project_root):
+    if kind == "foundation":
         console.print(
             "[red]ERROR:[/red] --kind foundation was requested, but the foundation "
             "kind is closed to new authoring by ADR-0.34.0 (Foundation Sunset). It "
@@ -258,7 +257,6 @@ def _render_adr_by_kind(
     scorecard: object,
     checklist_seed: str,
     adrs_root: Path,
-    project_root: Path,
 ) -> tuple[str, Path]:
     """Render the ADR markdown and resolve its on-disk path. Returns (adr_id, adr_file).
 
@@ -267,15 +265,13 @@ def _render_adr_by_kind(
     per-instance fix that the next new caller reopens, so the write path itself
     is the choke point (AGENTS.md § DO IT RIGHT 1 — fix the class of failure).
 
-    The refusal is conditioned on ``foundation_kind_is_closed(project_root)``:
-    closure is a project-local decision, so an adopter who never sunset the kind
-    authors foundation ADRs normally (ADR-0.34.0 § Decision; GHI #740).
+    The refusal binds every project, adopters included (GHI #1402).
 
     Returns:
         Tuple of (ADR id, path of the written ADR file).
 
     """
-    if kind == "foundation" and foundation_kind_is_closed(project_root):
+    if kind == "foundation":
         msg = (
             "kind='foundation' was requested, but the foundation kind is closed "
             "to new authoring by ADR-0.34.0 (Foundation Sunset). It remains a "
@@ -291,10 +287,6 @@ def _render_adr_by_kind(
         adr_dir = adrs_root / rel_dir
     else:
         adr_id = _compose_canonical_adr_id(name, semver)
-        # ADR-0.0.35 § Decision item #6 — only foundation-kind ADRs scaffold
-        # the `## Why foundation tier?` section; feature-kind ADRs render an
-        # empty string for the placeholder so no spurious heading appears.
-        why_foundation_tier = WHY_FOUNDATION_TIER_SECTION if kind == "foundation" else ""
         content = render_template(
             "adr",
             id=adr_id,
@@ -307,7 +299,7 @@ def _render_adr_by_kind(
             date=date.today().isoformat(),
             decomposition_scorecard=scorecard.to_markdown(),  # ty: ignore[missing-attribute]
             checklist=checklist_seed,
-            why_foundation_tier=why_foundation_tier,
+            why_foundation_tier="",
             persona=PERSONA_PROMPT,
             **AUTHOR_PROMPTS["adr"],
         )
@@ -367,7 +359,6 @@ def register_adr_in_ledger(
         adr_file,
         canonical_id,
         grandfathered,
-        kind_is_closed=foundation_kind_is_closed(get_project_root()),
     ):
         warn_foundation_refused(canonical_id)
         sys.exit(3)
@@ -425,7 +416,7 @@ def plan_cmd(
     project_root = get_project_root()
     adrs_root = project_root / config.paths.adrs
 
-    _validate_kind_and_semver(kind, semver, project_root)
+    _validate_kind_and_semver(kind, semver)
     # After _validate_kind_and_semver, kind is guaranteed non-None.
     assert kind is not None
     _reject_noncanonical_name(name, kind)
@@ -489,7 +480,6 @@ def plan_cmd(
         scorecard=scorecard,
         checklist_seed=checklist_seed,
         adrs_root=adrs_root,
-        project_root=project_root,
     )
 
     if kind == "pool":

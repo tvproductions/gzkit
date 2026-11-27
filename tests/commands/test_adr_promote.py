@@ -429,18 +429,13 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
     def test_foundation_rejects_non_zero_zero_semver(self) -> None:
         """@covers REQ-0.0.17-03-02 — foundation requires 0.0.x semver.
 
-        Un-retired under GHI #740. It was retired on the premise that "ADR-0.34.0
-        Foundation Sunset closes --kind foundation before the semver-binding check
-        ever runs" — true only while closure was framework-wide. Closure is a
-        project-local decision, so in an adopter's tree (no manifest, kind open)
-        the binding check is the FIRST guard this promotion meets.
-
-        Retiring the test also concealed that the guard did not exist: the
-        `_validate_promotion_kind_semver` docstring declared REQ-0.0.17-03-02
-        while only the feature-side twin was implemented. Without the carve-out
-        this promotion produced `design/adr/foundation/ADR-0.6.0-sample-work` —
-        a foundation package at a release-carrying semver, which
-        `gz validate --taxonomy` forbids.
+        Repaired at the surface under GHI #1402. The foundation kind is closed in
+        every project (operator, 2026-11-27: *"we must not permit adopters to use
+        them"*), so the closure refuses this promotion before the semver-binding
+        check runs, exactly as it does for a 0.0.x semver. What the REQ protects
+        still holds and is what this asserts: no foundation package is ever
+        written at a release-carrying semver, which `gz validate --taxonomy`
+        forbids.
         """
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -458,7 +453,7 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
                 ],
             )
             self.assertEqual(result.exit_code, 1, msg=result.output)
-            self.assertIn("0.0.x", result.output)
+            self.assertIn("ADR-0.34.0", result.output)
             self.assertFalse(
                 Path("design/adr/foundation").exists(),
                 msg="a semver-unbound foundation promotion must write no package",

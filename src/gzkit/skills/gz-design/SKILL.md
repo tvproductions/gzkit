@@ -4,7 +4,7 @@ persona: main-session
 description: Use for "design X", "let's design", "brainstorm X" or "I want to build X"; a dialogue that produces ADR artifacts.
 category: adr-lifecycle
 metadata:
-  skill-version: "1.9.1"
+  skill-version: "1.9.2"
   govzero-framework-version: "v6"
 lifecycle_state: active
 owner: gzkit-governance
@@ -140,7 +140,7 @@ After design approval, ask:
 **Canonical ADR** (ready to implement):
 - Confirm: next available ADR semver (check `uv run gz status --table`)
 - Confirm: lane (Lite = Gates 1–2; Heavy adds Gate 3 docs and Gate 4 BDD; Gate 5 attestation is universal — every lane, ADR-0.0.36)
-- **Confirm: kind (feature/pool).** Feature = release-carrying capability (`0.y.z` and up). Pool = backlog awaiting promotion. **`foundation` is CLOSED for gzkit authoring (ADR-0.34.0 Foundation Sunset)** — `gz plan create --kind foundation` and `gz adr promote --kind foundation` are rejected at the command layer, so do not offer it. The kind remains open for **adopter projects**, whose `gz init` scaffolds it available; when running this skill in an adopter repo, use the invariance test to resolve the edge cases: *"Foundation = without it, we wouldn't be doing the project."* The hexagonal-ports lens clarifies: **ports point to invariance; adapters are features**. See `docs/user/concepts/foundation-feature-invariance-test.md` for worked examples and anti-patterns, and `docs/governance/hexagonal-architecture.md` for Cockburn's source and gzkit's port/adapter mapping.
+- **Confirm: kind (feature/pool).** Feature = release-carrying capability (`0.y.z` and up). Pool = backlog awaiting promotion. **`foundation` is CLOSED in every project, adopters included (ADR-0.34.0 Foundation Sunset; GHI #1402)** — `gz plan create --kind foundation` and `gz adr promote --kind foundation` are rejected at the command layer, so do not offer it. Read gzkit's grandfathered foundation ADRs with the invariance test, *"Foundation = without it, we wouldn't be doing the project"* (the hexagonal-ports lens: ports point to invariance; adapters are features), per `docs/user/concepts/foundation-feature-invariance-test.md` and `docs/user/concepts/adr-taxonomy.md`; it classifies that frozen set and opens no new choice.
 - Invoke `gz-adr-create` with semver, slug, lane, and OBPI count
 - OBPIs are co-created with the ADR — never deferred
 - Design content from this conversation populates the ADR's Intent, Decision, Alternatives Considered, and Consequences sections

@@ -19,8 +19,8 @@ needs repair, or its founding intent is not written down.
 - **Paths look wrong after init** (a surface in the wrong place, a manifest
   path that does not resolve) → `gz-check-config-paths`, in
   [Surface integrity](surface-integrity.md).
-- **Adopter repository.** The `foundation` ADR kind is open to you; in gzkit
-  itself it is closed to new authoring.
+- **Adopter repository.** The `foundation` ADR kind is closed to you, as it is
+  in gzkit: new ADRs are `feature` or `pool` (GHI #1402).
 
 ## Only you can
 

@@ -764,22 +764,18 @@ class TestClassifyTemplateFile(unittest.TestCase):
         self.assertEqual(result, "package_only")
 
 
-class TestAdopterScaffoldKeepsFoundationOpen(unittest.TestCase):
-    """The foundation-kind closure is PROJECT-LOCAL and must never reach the wheel.
+class TestAdopterScaffoldClosesFoundation(unittest.TestCase):
+    """The foundation-kind closure binds every project, so the wheel template states it.
 
-    ADR-0.34.0 (Foundation Sunset) sealed `foundation` for gzkit's own authoring
-    and says so in gzkit's rendered AGENTS.md via an invariant-tier corpus entry.
-    Its § Positive #8 keeps the mechanism framework-wide while keeping the
-    DECISION project-local: `gz init` scaffolds adopters OPEN, "because early
-    adopter projects are exactly when identity-shaping foundations make sense".
+    Operator rulings: *"foundations are retired"* (2026-09-27) and, on 2026-11-27,
+    *"we WERE using foundation ADRs but have stopped doing so. They must not
+    persist and we must not permit adopters to use them."* (GHI #1402). That
+    retires ADR-0.34.0 Positive #8's project-local carve-out, under which these
+    tests once asserted the opposite.
 
-    `src/gzkit/templates/agents.md` is what `gz init` copies into an adopter, so
-    propagating gzkit's closure into it would cripple every downstream project.
-    Until now nothing checked that: `gz validate --distribution` enforces
-    byte-parity between the two template copies, which an edit to BOTH satisfies,
-    and the only thing standing against the mistake was prose asking an agent not
-    to make it. These assertions bite in both directions — the closure must not
-    leak in, and the kind must not be quietly dropped out.
+    `src/gzkit/templates/agents.md` is what `gz init` copies into an adopter. The
+    assertions bite in both directions: the adopter contract must state the
+    closure, and must not offer the kind as an authoring choice.
     """
 
     @override
@@ -789,31 +785,27 @@ class TestAdopterScaffoldKeepsFoundationOpen(unittest.TestCase):
         )
         self._agents_md = (_PROJECT_ROOT / "AGENTS.md").read_text(encoding="utf-8")
 
-    def test_adopter_template_does_not_carry_the_gzkit_closure(self) -> None:
-        """gzkit's project-local closure must not be scaffolded into adopters."""
-        # assertFalse on a membership test, not assertNotIn: assertNotIn renders the
-        # whole ~20 KB template into the failure message, burying the finding.
-        for leaked in ("CLOSED to new authoring", "ADR-0.34.0", "Foundation Sunset"):
-            self.assertFalse(
-                leaked in self._template,
-                f"the adopter scaffold carries gzkit's own closure ({leaked!r}); "
-                "ADR-0.34.0 Positive #8 keeps gz init scaffolding adopters OPEN, so "
-                "the closure belongs in gzkit's corpus only, never in the wheel template",
-            )
+    def test_adopter_template_states_the_closure(self) -> None:
+        """An adopter's contract says the foundation kind is closed there too."""
+        # given the adopter scaffold
+        # when it is read for the closure
+        # then it names the closure and its authority
+        self.assertTrue(
+            "closed in every project" in self._template and "ADR-0.34.0" in self._template,
+            "the adopter scaffold must state that the foundation kind is closed in "
+            "every project (ADR-0.34.0; GHI #1402)",
+        )
 
-    def test_adopter_template_still_offers_the_foundation_kind(self) -> None:
-        """An adopter must still be able to author a foundation ADR."""
-        self.assertIn(
-            "`foundation`",
-            self._template,
-            "the adopter scaffold must still present foundation as an authorable kind",
-        )
-        self.assertIn(
-            "identity-shaping",
-            self._template,
-            "the adopter scaffold must keep the guidance describing what a "
-            "foundation ADR is for; dropping it silently removes the kind",
-        )
+    def test_adopter_template_offers_no_foundation_kind(self) -> None:
+        """The Kinds table and the authoring flags offer feature and pool only."""
+        # given the adopter scaffold
+        # when it is read for authoring choices
+        # then no foundation row or foundation flag value is offered
+        for offered in ("| `foundation` |", "--kind {pool,foundation,feature}"):
+            self.assertFalse(
+                offered in self._template,
+                f"the adopter scaffold still offers the foundation kind ({offered!r})",
+            )
 
     def test_gzkit_own_contract_does_carry_the_closure(self) -> None:
         """The paired direction: gzkit's rendered contract must state the closure.

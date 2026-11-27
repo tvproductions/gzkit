@@ -3,7 +3,7 @@ name: gz-plan
 description: Use to create an ADR, a pool ADR included, recording architecture intent and lane scope.
 category: adr-lifecycle
 metadata:
-  skill-version: "1.8.3"
+  skill-version: "1.8.4"
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-17
@@ -21,10 +21,8 @@ ledger. `uv run gz plan create <name>` (`plan_cmd`, `src/gzkit/commands/plan.py`
 
 - **refuses before any write, exit 1,** when `--kind` is missing (argparse gives
   it no default; `_validate_kind_and_semver` requires it); when `--kind
-  foundation` is asked in a project that has sunset the kind
-  (`foundation_kind_is_closed`: `data/foundation_grandfather.json` exists, as it
-  does in gzkit per ADR-0.34.0; an adopter without that file keeps the kind
-  open); when `--kind feature` carries a `0.0.x` `--semver`; and, for a non-pool
+  foundation` is asked, in any project, adopters included (ADR-0.34.0;
+  GHI #1402); when `--kind feature` carries a `0.0.x` `--semver`; and, for a non-pool
   kind, when `name` is a bare semver or a bare `ADR-<semver>` id without a slug
   (`_reject_noncanonical_name`, GHI #494);
 - **non-pool:** composes the id `ADR-<semver>-<name>` (a `name` already of that
@@ -88,14 +86,9 @@ Decomposition Scorecard (legacy).
    until they are answered.
 5. **Ask the operator for `--kind`; never propose a default.** In gzkit the
    choices are `feature` (ships a named capability, semver `0.y.z` and up) and
-   `pool` (noted, not committed). `foundation` is closed here by ADR-0.34.0
-   and the command refuses it. In an adopter project without
-   `data/foundation_grandfather.json` it stays open: offer it with the
-   invariance test,
-   *"Foundation = without it, we wouldn't be doing the project"*
-   (the hexagonal-ports lens: ports point to invariance; adapters are features),
-   and see `docs/user/concepts/foundation-feature-invariance-test.md` and
-   `docs/user/concepts/adr-taxonomy.md`. Bare `uv run gz plan` exits 2, since
+   `pool` (noted, not committed). `foundation` is closed in every project,
+   adopters included (ADR-0.34.0; GHI #1402), and the command refuses it.
+   Read gzkit's grandfathered foundation ADRs with the invariance test, *"Foundation = without it, we wouldn't be doing the project"* (the hexagonal-ports lens: ports point to invariance; adapters are features), per `docs/user/concepts/foundation-feature-invariance-test.md` and `docs/user/concepts/adr-taxonomy.md`; it classifies that frozen set and opens no new choice. Bare `uv run gz plan` exits 2, since
    the subcommand is required.
 6. **Preview, then create.** Pick a descriptive kebab-case `name` and, for a
    feature, the semver the work order allows. Run with `--dry-run`, then without

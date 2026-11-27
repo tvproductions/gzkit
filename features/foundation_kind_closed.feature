@@ -1,6 +1,7 @@
 Feature: foundation kind closed to new authoring (ADR-0.34.0 / OBPI-0.34.0-02)
   As the operator,
-  I want every foundation-authoring door to refuse new foundation ADRs,
+  I want every foundation-authoring door to refuse new foundation ADRs in every
+  project, adopters included (GHI #1402),
   So that "no more foundation ADRs" is mechanically enforced, not remembered.
 
   Supersedes features/plan_create_nominal.feature, whose scenarios asserted the
@@ -10,7 +11,6 @@ Feature: foundation kind closed to new authoring (ADR-0.34.0 / OBPI-0.34.0-02)
   @REQ-0.34.0-02-01
   Scenario: gz plan create --kind foundation is refused with recovery prose
     Given the workspace is initialized in heavy mode
-    And the project has closed the foundation kind
     When I run the gz command "plan create sunset-demo --kind foundation --semver 0.0.99 --lane lite"
     Then the command exits with code 1
     And the output contains "closed to new"
@@ -21,7 +21,6 @@ Feature: foundation kind closed to new authoring (ADR-0.34.0 / OBPI-0.34.0-02)
   @REQ-0.34.0-02-01
   Scenario: closed-kind refusal fires before the semver-binding check
     Given the workspace is initialized in heavy mode
-    And the project has closed the foundation kind
     When I run the gz command "plan create sunset-demo --kind foundation --semver 0.5.0 --lane lite"
     Then the command exits with code 1
     And the output contains "ADR-0.34.0"

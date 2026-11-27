@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-06
 metadata:
-  skill-version: "1.1.2"
+  skill-version: "1.1.3"
 model: sonnet
 ---
 
@@ -65,21 +65,12 @@ For each record in the Step 1 JSON, read the foundation ADR's `§ Intent`
 section and `§ Decision` section. This is the contract; everything else
 hangs off it. Do not classify without reading both.
 
-Then apply the **port/adapter reclassification check** (mirrored from the
-pool-triage cognitive-pass pattern, which adopted GHI #424 round-3
-hardening): flag any candidate whose scope authors an invariant or
-prerequisite without which downstream features cannot exist. A flagged
-candidate is emitted as `{id, reclassify: "foundation"}` in a separate
-annotation list, NOT as a rank-input entry. Ranked candidates and
-reclassification annotations are mutually exclusive: a single candidate
-appears in one list or the other, never both.
-
-**Where the foundation kind is closed, the annotation list stays empty.** A
-project that has closed the kind carries `data/foundation_grandfather.json`,
-and gzkit has (`AGENTS.md` § Gate Covenant; `gz validate --taxonomy`). A closed
-kind takes no new member, so emit `"reclassify_foundation": []` and rank every
-candidate. Where the kind is open, the check applies as written, and the
-example below shows that case.
+**The port/adapter reclassification check yields an empty list.** The check
+once flagged a pool candidate that authors an invariant downstream features
+need, for reclassification into the foundation kind. That kind is closed in
+every project, adopters included (GHI #1402), so no candidate is reclassified
+into it: emit `"reclassify_foundation": []` and rank every
+candidate. The renderer still accepts the field, which is why it is emitted.
 
 Compose a single rank-input JSON document with one entry per candidate the
 agent recommends working on:
@@ -90,9 +81,7 @@ agent recommends working on:
     {"id": "ADR-0.0.57", "severity": "urgent"},
     {"id": "ADR-0.0.48", "severity": "next-quarter"}
   ],
-  "reclassify_foundation": [
-    {"id": "ADR-pool.some-slug", "reclassify": "foundation"}
-  ]
+  "reclassify_foundation": []
 }
 ```
 

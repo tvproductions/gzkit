@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-17
 metadata:
-  skill-version: "1.8.3"
+  skill-version: "1.8.4"
 model: sonnet
 ---
 
@@ -112,12 +112,8 @@ under a clean table (path 1) while keeping rich prose in a
     active campaign plan, which sets release prioritization.
 2.  **Choose the target version and kind.** `--kind feature` in gzkit, with the
     semver the ascending feature-ADR order allows (the work-order ruling carried
-    in `gz-obpi-pipeline`). In an adopter project where `foundation` is open, it
-    takes a `0.0.x` semver; resolve the boundary with the invariance test,
-    *"Foundation = without it, we wouldn't be doing the project"*
-    (the hexagonal-ports lens: ports point to invariance; adapters are features),
-    per
-    `docs/user/concepts/foundation-feature-invariance-test.md`.
+    in `gz-obpi-pipeline`). `foundation` is closed in every project, adopters
+    included (GHI #1402). Read gzkit's grandfathered foundation ADRs with the invariance test, *"Foundation = without it, we wouldn't be doing the project"* (the hexagonal-ports lens: ports point to invariance; adapters are features), per `docs/user/concepts/foundation-feature-invariance-test.md` and `docs/user/concepts/adr-taxonomy.md`; it classifies that frozen set and opens no new choice.
 3.  **Decompose in the pool ADR, before promoting.** Promotion creates one
     checklist item and one brief per derived scope item, 1:1, and fits the
     scorecard to that count (`_promotion_scorecard`). The decomposition decision
@@ -146,7 +142,7 @@ under a clean table (path 1) while keeping rich prose in a
 
 - `--semver` (required): the target version, `X.Y.Z`.
 - `--kind` (required, no default): `feature`; `pool` is always refused;
-  `foundation` only where the kind is open.
+  `foundation` is always refused (closed in every project, GHI #1402).
 - `--slug`: target slug override (defaults to the slug derived from the pool id).
 - `--title`: target title (defaults to the pool H1 title).
 - `--parent`: parent override (defaults to the pool's `parent:`).

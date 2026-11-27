@@ -95,7 +95,7 @@ See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md)
 ### Operative claims (binding)
 
 1. **The default is stdlib.** When a capability exists in stdlib, that path is chosen absent named rationale to depart.
-2. **Departures are foundation-attested.** Adding a runtime dependency requires an ADR or OBPI naming what stdlib cannot do and why the third-party surface is worth its cost.
+2. **Departures are ADR-attested.** Adding a runtime dependency requires an ADR or OBPI naming what stdlib cannot do and why the third-party surface is worth its cost.
 3. **"Popularity" is not rationale.** *"Most projects use X"*, *"X is the modern choice"*, *"X is what everyone reaches for"* are explicit anti-rationales — canonical signature of training-corpus-driven choice.
 4. **"Hot topic" is not rationale.** Recent prominence in conference talks/blog posts/social media doesn't shift defaults. Five-year aging is the minimum signal for ecosystem trust.
 5. **Existing dependencies inherit this rule.** Every existing third-party dependency in `pyproject.toml` should be backed by articulated rationale visible in an ADR.
@@ -204,24 +204,23 @@ Run `uv run gz skill list` for the authoritative active catalog. For details on 
 - **lite**: Gates 1, 2 required, plus Gate 5 (universal)
 - **heavy**: All gates required; reserved for command/API/schema/runtime-contract changes used by humans or external systems. Documentation/process/template-only changes stay Lite unless they change one of those external surfaces.
 
-### Kinds (pool, foundation, feature)
+### Kinds (pool, feature)
 
 `kind` = what the ADR is about; `lane` = external-contract exposure. Orthogonal — any kind can be any lane.
 
 | Kind | Semver | Content |
 |------|--------|---------|
 | `pool` | none (flat backlog; id prefix `ADR-pool.<slug>`) | Backlog awaiting promotion |
-| `foundation` | `0.0.x` | App/system invariants, identity-shaping facts, conditions, concepts, semantics |
 | `feature` | `0.y.z` and up | Active/committed (or queued) release-carrying capability |
+
+The `foundation` kind (`0.0.x`) is closed in every project, this one included: `gz plan create`, `gz adr promote` and `gz interview adr` refuse it, and registration refuses a foundation package (ADR-0.34.0; GHI #1402).
 
 Mechanical enforcement (ADR-0.0.17):
 
-- `kind:` frontmatter on every non-pool ADR; validated against schema enum `{foundation, feature}` (`src/gzkit/schemas/adr.json`)
-- `gz plan create --kind {pool,foundation,feature}` scaffolds correct shape with kind/semver consistency
-- `gz adr promote --kind {foundation,feature}` writes `kind:` into promoted ADR frontmatter
-- `gz validate --taxonomy` enforces: `foundation` ⇒ `0.0.x`, `feature` ⇒ non-`0.0.x`, `pool` ⇒ no `kind`/`semver` frontmatter
-
-Operator guidance on *when* to choose which kind: [ADR-0.0.18](docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md).
+- `kind:` frontmatter on every non-pool ADR (`src/gzkit/schemas/adr.json`)
+- `gz plan create --kind {pool,feature}` scaffolds correct shape with kind/semver consistency
+- `gz adr promote --kind feature` writes `kind:` into promoted ADR frontmatter
+- `gz validate --taxonomy` enforces: `feature` ⇒ non-`0.0.x`, `pool` ⇒ no `kind`/`semver` frontmatter
 
 ### OBPI Decomposition Mandate
 
@@ -245,8 +244,6 @@ of parent ADR kind or lane. There is NO self-close path.**
 `kind`, `lane`, and `sensitivity` remain three orthogonal axes that determine *which gates
 fire* — they NEVER determine whether Gate 5 brief-level attestation fires. Gate 5 is universal:
 
-- **`foundation` kind** — determines whether Gate 3 (docs scope) and Gate 4 (BDD scope)
-  apply the foundation-tier bar.
 - **`heavy` lane** — determines whether Gate 3 (docs) and Gate 4 (BDD) are required.
 - **`security` sensitivity** — adds security-scan requirements to Gate 5.
 

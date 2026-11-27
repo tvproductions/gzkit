@@ -22,14 +22,10 @@ Feature: gz adr promote --kind taxonomy enforcement (ADR-0.0.17 / OBPI-0.0.17-03
     Then the command exits with code 1
     And the output contains "source"
 
-  # In a project that HAS closed the kind, the closed-kind guard refuses outright
-  # before the semver check runs. Closure is project-local, so the scenario states
-  # that precondition rather than assuming it (GHI #740); REQ-0.0.17-03-02's
-  # foundation semver-binding branch is proven for open projects at
-  # tests/commands/test_adr_promote.py::test_foundation_rejects_non_zero_zero_semver.
+  # The closed-kind guard refuses outright, in every project, before the semver
+  # check runs (GHI #1402).
   @REQ-0.34.0-02-02
   Scenario: --kind foundation is refused with recovery prose
-    Given the project has closed the foundation kind
     When I run the gz command "adr promote ADR-pool.sample-work --semver 0.6.0 --kind foundation"
     Then the command exits with code 1
     And the output contains "closed to new"

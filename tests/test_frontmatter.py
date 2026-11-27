@@ -194,12 +194,9 @@ class MembraneRefusesWhatItCannotRead(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             adr_file = Path(tmp) / f"{self._ADR_ID}.md"
             adr_file.write_bytes(raw)
-            # kind_is_closed=True: these probes assert the membrane's behavior in a
-            # project that HAS sunset the kind (gzkit itself). The adopter-open case
-            # is covered by TestFoundationClosureIsProjectLocal (GHI #740).
-            return is_ungrandfathered_foundation(
-                adr_file, self._ADR_ID, frozenset(), kind_is_closed=True
-            )
+            # The closure binds every project (GHI #1402), so an empty roster
+            # refuses every foundation package.
+            return is_ungrandfathered_foundation(adr_file, self._ADR_ID, frozenset())
 
     def test_canonical_foundation_package_is_refused(self) -> None:
         """Baseline: the membrane works on the shape it was built for."""
@@ -220,7 +217,6 @@ class MembraneRefusesWhatItCannotRead(unittest.TestCase):
                     adr_file,
                     self._ADR_ID,
                     frozenset({self._ADR_ID}),
-                    kind_is_closed=True,
                 )
             )
 

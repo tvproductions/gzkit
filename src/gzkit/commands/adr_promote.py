@@ -39,7 +39,6 @@ from gzkit.ledger import (
     obpi_created_event,
 )
 from gzkit.ledger_events import obpi_unparked_event
-from gzkit.models.foundation_grandfather import foundation_kind_is_closed
 from gzkit.obpi_lifecycle import parked_at
 
 if TYPE_CHECKING:
@@ -63,16 +62,14 @@ def _adr_bucket_for_kind(kind: str) -> str:
     return "foundation" if kind == "foundation" else "pre-release"
 
 
-def _validate_promotion_kind_semver(kind: str | None, semver: str, project_root: Path) -> None:
+def _validate_promotion_kind_semver(kind: str | None, semver: str) -> None:
     """Validate --kind and its binding to --semver. Exits 1 on failure.
 
     REQ-0.0.17-03-01 -- --kind required; pool rejected (pool is the source).
     REQ-0.0.17-03-02 -- foundation requires 0.0.x semver.
     REQ-0.0.17-03-03 -- feature rejects 0.0.x semver.
 
-    The closed-kind refusal is conditioned on ``foundation_kind_is_closed`` --
-    closure is a project-local decision, so an adopter who never sunset the kind
-    promotes into it normally (ADR-0.34.0 § Decision; GHI #740).
+    The closed-kind refusal binds every project, adopters included (GHI #1402).
     """
     if kind is None:
         console.print("[red]ERROR:[/red] --kind is required for promotion. Choose one of:")
@@ -82,7 +79,7 @@ def _validate_promotion_kind_semver(kind: str | None, semver: str, project_root:
             "requires --semver NOT matching 0.0.x"
         )
         raise SystemExit(1)
-    if kind == "foundation" and foundation_kind_is_closed(project_root):
+    if kind == "foundation":
         console.print(
             "[red]ERROR:[/red] --kind foundation was requested, but the foundation "
             "kind is closed to new authoring by ADR-0.34.0 (Foundation Sunset). It "
@@ -108,13 +105,9 @@ def _validate_promotion_kind_semver(kind: str | None, semver: str, project_root:
             "If this is infrastructure work, use --kind foundation."
         )
         raise SystemExit(1)
-    # REQ-0.0.17-03-02's half of the binding, which this docstring has always
-    # declared and the code never implemented. Only the feature-side twin above
-    # existed; foundation + non-0.0.x was unreachable while the closed-kind
-    # refusal short-circuited above it, so nothing surfaced the gap. Conditioning
-    # that refusal on the project-local decision (GHI #740) makes it reachable for
-    # adopters, where it would otherwise promote ADR-0.6.0 INTO foundation/ and
-    # break the ADR-0.0.17 binding that `gz validate --taxonomy` enforces.
+    # REQ-0.0.17-03-02's half of the binding. Unreachable while the closed-kind
+    # refusal above binds every project (GHI #1402); kept so the binding holds
+    # on its own should that refusal ever move.
     if kind == "foundation" and not _FOUNDATION_SEMVER_RE.match(semver):
         console.print(
             f"[red]ERROR:[/red] --kind foundation requires 0.0.x semver (got {semver!r}). "
@@ -148,15 +141,14 @@ def _build_adr_promotion_plan(
     command handler is reopened by the next caller that builds a plan directly
     (AGENTS.md § DO IT RIGHT 1 — fix the class of failure, not the instance).
 
-    Conditioned on the project-local closure decision, same as the CLI guard
-    (ADR-0.34.0 § Decision; GHI #740).
+    Binds every project, adopters included, same as the CLI guard (GHI #1402).
 
     Returns:
         Plan dict holding the pool and target ids, target bucket/dir/file, kind, semver, promoted
         parent/lane/status, rendered ADR content, OBPI plans, and updated pool content.
 
     """
-    if kind == "foundation" and foundation_kind_is_closed(project_root):
+    if kind == "foundation":
         msg = (
             "kind='foundation' was requested, but the foundation kind is closed "
             "to new authoring by ADR-0.34.0 (Foundation Sunset). It remains a "
@@ -405,7 +397,7 @@ def adr_promote_cmd(
 ) -> None:
     """Promote a pool ADR into canonical ADR package structure."""
     # REQ-0.0.17-03-01/-02/-03/-04: validate kind/semver atomically before any I/O.
-    _validate_promotion_kind_semver(kind, semver, get_project_root())
+    _validate_promotion_kind_semver(kind, semver)
     assert kind is not None and kind != "pool"  # noqa: S101 — narrowed by validator above
 
     config = ensure_initialized()

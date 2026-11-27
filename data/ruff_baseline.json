@@ -9349,7 +9349,7 @@
     {
       "file": "tests/commands/test_foundation_kind_closed.py",
       "rule": "PLC0415",
-      "count": 8
+      "count": 7
     },
     {
       "file": "tests/commands/test_frontmatter_reconcile.py",

@@ -16,7 +16,6 @@ from gzkit.commands.common import (
 from gzkit.commands.plan import (
     CANONICAL_ADR_ID_RE,
     FOUNDATION_SEMVER_RE,
-    WHY_FOUNDATION_TIER_SECTION,
     register_adr_in_ledger,
 )
 from gzkit.commands.specify_cmd import _validate_parent_adr, obpi_template_vars
@@ -28,7 +27,6 @@ from gzkit.interview import (
     get_interview_questions,
 )
 from gzkit.ledger import Ledger, obpi_created_event, prd_created_event
-from gzkit.models.foundation_grandfather import foundation_kind_is_closed
 from gzkit.templates import render_template
 from gzkit.templates.author_prompts import AUTHOR_PROMPTS, PERSONA_PROMPT
 
@@ -125,7 +123,6 @@ def _resolve_adr_doc(
     answers: dict[str, str],
     template_vars: dict[str, str],
     adrs_root: Path,
-    project_root: Path,
 ) -> tuple[Path, str]:
     """Resolve the canonical slug-package path for an interview-created ADR.
 
@@ -140,7 +137,7 @@ def _resolve_adr_doc(
 
     Raises:
         GzCliError: If the ``id`` answer is not canonical slug-form, or it routes to the
-            foundation kind while that kind is closed for this project.
+            foundation kind, which is closed in every project (GHI #1402).
 
     """
     doc_id = answers.get("id", "").strip()
@@ -161,7 +158,7 @@ def _resolve_adr_doc(
     # taxonomy binding enforced by `gz validate --taxonomy`.
     embedded_semver = doc_id.split("-")[1]
     is_foundation = bool(FOUNDATION_SEMVER_RE.match(embedded_semver))
-    if is_foundation and foundation_kind_is_closed(project_root):
+    if is_foundation:
         msg = (
             f"--kind foundation was requested (ADR id {doc_id!r} embeds semver "
             f"{embedded_semver!r}, which routes to the foundation kind), but the "
@@ -174,16 +171,10 @@ def _resolve_adr_doc(
             "work) or `gz plan create <slug> --kind pool` (backlog)."
         )
         raise GzCliError(msg)
-    # Reached only when the kind is OPEN for this project, so foundation routing
-    # is restored here rather than collapsed into the feature branch. Forcing
-    # kind="feature" for a 0.0.x id would file an adopter's foundation ADR under
-    # pre-release/ and break the ADR-0.0.17 foundation <=> 0.0.x binding that
-    # `gz validate --taxonomy` enforces (GHI #740).
-    sub = "foundation" if is_foundation else "pre-release"
     template_vars["semver"] = embedded_semver
-    template_vars["kind"] = "foundation" if is_foundation else "feature"
-    template_vars["why_foundation_tier"] = WHY_FOUNDATION_TIER_SECTION if is_foundation else ""
-    return adrs_root / sub / doc_id, doc_id
+    template_vars["kind"] = "feature"
+    template_vars["why_foundation_tier"] = ""
+    return adrs_root / "pre-release" / doc_id, doc_id
 
 
 def _answer_lines(answer: str) -> list[str]:
@@ -304,9 +295,7 @@ def interview(document_type: str, from_file: str | None = None) -> None:
         doc_dir = project_root / config.paths.prd
         doc_id = answers.get("id", "PRD-DRAFT")
     elif document_type == "adr":
-        doc_dir, doc_id = _resolve_adr_doc(
-            answers, template_vars, project_root / config.paths.adrs, project_root
-        )
+        doc_dir, doc_id = _resolve_adr_doc(answers, template_vars, project_root / config.paths.adrs)
     else:
         parent_input = answers.get("parent", "").strip()
         if not parent_input:
