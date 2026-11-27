@@ -88,7 +88,7 @@ Each line names the owning order, what the order gains, and a proposed grade.
 
 | # | Owning order | What it gains | Grade (ruled by H3) |
 |---|---|---|---|
-| CO-1 | RP-6, contradicted canon | The ADR authoring surfaces moved to the decision-only form for new records, legacy records untouched: `.gzkit/templates/adr.md` (still carries `semver`, § Checklist, § Decomposition Scorecard and an attestation table), `src/gzkit/schemas/adr.json` (status enum `Pool` … `Deprecated`, `kind` derived from semver), the skills that author ADRs (`gz-adr-create`, `gz-plan`, `gz-design`) and their manpages, each through its generator; `docs/governance/hexagonal-architecture.md` § Mapping to gzkit ADR taxonomy, which maps foundation ADRs to ports and feature ADRs to adapters by semver kind (added 2026-11-08 on the operator's *"Yes, record both"*). Canon that still states ADR-checklist containment is listed for its owner: root `AGENTS.md` § Gate Covenant (*"ADR Feature Checklist items and OBPI briefs correspond 1:1"*) is cut only by the operator (RP-7 stage 7) | blocks return to service (exit item 5) |
+| CO-1 | RP-6, contradicted canon | The ADR authoring surfaces moved to the decision-only form for new records, legacy records untouched: `.gzkit/templates/adr.md` (still carries `semver`, § Checklist, § Decomposition Scorecard and an attestation table), `src/gzkit/schemas/adr.json` (status enum `Pool` … `Deprecated`, `kind` derived from semver), the skills that author ADRs (`gz-adr-create`, `gz-plan`, `gz-design`, and `gz-adr-promote`, added 2026-11-27 by H7) and their manpages, each through its generator; `docs/governance/hexagonal-architecture.md` § Mapping to gzkit ADR taxonomy, which maps foundation ADRs to ports and feature ADRs to adapters by semver kind (added 2026-11-08 on the operator's *"Yes, record both"*). Canon that still states ADR-checklist containment is listed for its owner: root `AGENTS.md` § Gate Covenant (*"ADR Feature Checklist items and OBPI briefs correspond 1:1"*) is cut only by the operator (RP-7 stage 7) | blocks return to service (exit item 5) |
 | CO-2 | RP-6, with CO-1 (**ruled 2026-11-08**, H2) | The identity crossover: the resolver seam accepts the sequential decision id and the edition reference (`ADR-0001`, `ADR-0001-001`), new ids never collide with a retained id or alias, and the crossover is the commit that lands CO-1 and CO-2 together (H4). The October identifier program's 1.0 timing and bulk-rename clauses are reconciled explicitly, not silently overridden | blocks return to service (exit items 2 and 11) |
 | CO-3 | RP-4, release | Confirmation only: no ADR-derived release, version or closeout survives, and a legacy semver is never read as a document revision | inspected at RP-4's close |
 | CO-4 | RP-5, RP-12 and RP-14 | Confirmation only: decomposition, execution, inspection and Gate 5 stay on the work and order surface; no ADR checklist containment returns | inspected at each order's close |
@@ -98,7 +98,7 @@ Each line names the owning order, what the order gains, and a proposed grade.
 
 ## Held rulings
 
-Put to the operator one at a time; none is assumed. All six were ruled on 2026-11-08.
+Put to the operator one at a time; none is assumed. H1 to H6 were ruled on 2026-11-08, H7 on 2026-11-27.
 
 - **H1. Ruled 2026-11-08.** Amend Exit item 9 with the decision-reconciliation inventory (CO-7)? The
   contract changes only by its own amendment (§ Records, B1). Operator, by selection: *"Amend item 9
@@ -138,6 +138,11 @@ Put to the operator one at a time; none is assumed. All six were ruled on 2026-1
   invariant stated once in § How work moves; B, both in the ADR row; C, no amendment, short of exit
   item 11. Operator, by selection: *"Row, plus invariant in How work moves (Recommended)"*. Both texts,
   put to the operator before the ruling, now stand in the contract.
+- **H7. Ruled 2026-11-27.** CO-1's skill list named `gz-adr-create`, `gz-plan` and `gz-design`, but
+  not `gz-adr-promote`, which also creates versioned ADR packages with checklists and briefs; left
+  off, it would keep authoring the legacy form after RP-6 lands. Found in the prompt-audit walk
+  (M31, #1400). Put to the operator: A, add it to CO-1's list now; B, leave CO-1 and record the
+  omission for RP-6. Operator, verbatim: *"A"*.
 
 Every held ruling is ruled. What remains is the work itself, under its owning orders.
 
