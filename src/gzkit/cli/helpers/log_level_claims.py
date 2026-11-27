@@ -18,6 +18,16 @@ import logging
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
+from gzkit.cli.main import configure_logging_from_flags
+from gzkit.enforcement import (
+    EXEMPTS_NONE,
+    POPULATION_NONE,
+    create_fixture_tempdir,
+    enforces,
+    extend_known_claims,
+    get_enforcement_registry,
+)
+
 CLI_LOG_LEVELS_CLAIM_ID = "cli-log-levels-follow-spec"
 
 CLI_LOG_LEVEL_CLAIM_IDS: frozenset[str] = frozenset({CLI_LOG_LEVELS_CLAIM_ID})
@@ -41,15 +51,11 @@ def _build_log_level_fixture() -> Path:
         The runner-owned temp root created for the fixture.
 
     """
-    from gzkit.enforcement import create_fixture_tempdir  # noqa: PLC0415
-
     return create_fixture_tempdir(prefix="gzkit-cli-log-levels-nc-")
 
 
 def _pole_holds(flags: dict[str, bool], shown: int, hidden: int | None, token: str) -> bool:
     """Configure logging from *flags* through the entrypoint and observe both streams."""
-    from gzkit.cli.main import configure_logging_from_flags  # noqa: PLC0415
-
     args = argparse.Namespace(**{"quiet": False, "verbose": False, "debug": False, **flags})
     stdout, stderr = io.StringIO(), io.StringIO()
     with redirect_stdout(stdout), redirect_stderr(stderr):
@@ -97,14 +103,6 @@ def ensure_cli_log_level_claims_registered() -> None:
     registration reachable from nowhere else is an orphan whose floor
     membership is a facade.
     """
-    from gzkit.enforcement import (  # noqa: PLC0415
-        EXEMPTS_NONE,
-        POPULATION_NONE,
-        enforces,
-        extend_known_claims,
-        get_enforcement_registry,
-    )
-
     extend_known_claims(CLI_LOG_LEVEL_CLAIM_IDS)
     if CLI_LOG_LEVELS_CLAIM_ID not in {r.claim_id for r in get_enforcement_registry()}:
         enforces(

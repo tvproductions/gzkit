@@ -73,7 +73,7 @@ class _SingleValueAction(argparse.Action):
 def _state_handler(a: argparse.Namespace) -> None:
     """Route gz state to repair or query mode."""
     if a.repair:
-        from gzkit.commands.state import state_repair  # noqa: PLC0415
+        from gzkit.commands.state import state_repair  # noqa: PLC0415 -- help-path deferral
 
         state_repair(as_json=a.as_json)
     else:
@@ -97,7 +97,7 @@ def _closeout_dispatch(a: argparse.Namespace) -> None:
         or a.ceremony_restart
     )
     if ceremony_flags:
-        from gzkit.commands.closeout_ceremony import ceremony_cmd  # noqa: PLC0415
+        from gzkit.commands.closeout_ceremony import ceremony_cmd  # noqa: PLC0415 -- help-path deferral
 
         ceremony_cmd(
             adr=a.adr,
@@ -825,7 +825,7 @@ def register_governance_parsers(  # noqa: PLR0915
     def _mx_dispatch(a: argparse.Namespace) -> None:
         """Route gz mx subcommands to their handlers (local import for lazy loading)."""
         if a.mx_command == "enter":
-            from gzkit.commands.mx_cmd import mx_enter_cmd  # noqa: PLC0415
+            from gzkit.commands.mx_cmd import mx_enter_cmd  # noqa: PLC0415 -- help-path deferral
 
             mx_enter_cmd(
                 reason=a.reason,
@@ -835,15 +835,15 @@ def register_governance_parsers(  # noqa: PLR0915
                 contract=a.contract,
             )
         elif a.mx_command == "exit":
-            from gzkit.commands.mx_cmd import mx_exit_cmd  # noqa: PLC0415
+            from gzkit.commands.mx_cmd import mx_exit_cmd  # noqa: PLC0415 -- help-path deferral
 
             mx_exit_cmd(attestor=a.attestor)
         elif a.mx_command == "repair":
-            from gzkit.commands.mx_cmd import mx_repair_cmd  # noqa: PLC0415
+            from gzkit.commands.mx_cmd import mx_repair_cmd  # noqa: PLC0415 -- help-path deferral
 
             mx_repair_cmd(attestor=a.attestor)
         elif a.mx_command == "renew":
-            from gzkit.commands.mx_cmd import mx_renew_cmd  # noqa: PLC0415
+            from gzkit.commands.mx_cmd import mx_renew_cmd  # noqa: PLC0415 -- help-path deferral
 
             mx_renew_cmd(attestor=a.attestor)
 
@@ -977,7 +977,7 @@ def register_governance_parsers(  # noqa: PLR0915
     # gz permitted-entry — the airlock's third door (ADR-0.33.0, OBPI-05) ---------
     def _permitted_entry_dispatch(a: argparse.Namespace) -> None:
         """Route gz permitted-entry to its handler (local import for lazy loading)."""
-        from gzkit.commands.permitted_entry import permitted_entry_cmd  # noqa: PLC0415
+        from gzkit.commands.permitted_entry import permitted_entry_cmd  # noqa: PLC0415 -- help-path deferral
 
         permitted_entry_cmd(
             target=a.target,

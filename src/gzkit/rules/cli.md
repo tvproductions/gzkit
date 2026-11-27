@@ -7,9 +7,9 @@ description: CLI contract doctrine and design principles
 
 # CLI Contract Doctrine
 
-<!-- rule-version: 0.9.4 -->
+<!-- rule-version: 0.9.5 -->
 
-> **Rule version:** `0.9.4` — § Help Text Requirements bounds each option's help string at 80 characters, the length the parser audit enforces, where it had said lines (operator, 2026-11-27: *"a"*); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#climd).
+> **Rule version:** `0.9.5` — the help-path rule names the lazy-import carve-out that `pythonic.md` § Imports admits for it (GHI #1411); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#climd).
 
 **Baseline:** [clig.dev](https://clig.dev/). **Canonical specification:** [`docs/design/cli-standards-v3.md`](../../docs/design/cli-standards-v3.md) (ADR-0.0.4) — read its § Document status before citing a section; parts are live-and-met, live-but-unmet, or retired. **Mechanical check:** `uv run gz cli audit`. **Heavy lane trigger:** any CLI contract change — subcommands, flags, exit codes, output schemas.
 
@@ -23,7 +23,7 @@ Mirrored from the specification's § Command Structure and § Output Rules; scor
 - New root commands may not hyphenate a noun-verb pair; a subcommand is what the hyphen stands in for.
 - Every leaf command declares --json or carries a waiver with rationale.
 - A parser node is a leaf or a group, never both.
-- Building the gz parser tree may not import handler-only dependencies — every `gz --help` pays what the tree imports (GHI #180); guarded by `tests/cli/test_help_path_imports.py`.
+- Building the gz parser tree may not import handler-only dependencies — every `gz --help` pays what the tree imports (GHI #180); guarded by `tests/cli/test_help_path_imports.py`. A handler import deferred for this carries `# noqa: PLC0415 -- help-path deferral`, the carve-out `pythonic.md` § Imports admits.
 - A new subcommand satisfies all seven coupled obligations in the authoring patch (§ New Subcommand); the validators named there win any disagreement with the list.
 - User-facing output passes through the formatter, never console.print directly — the precondition for the `--json` rule: a `--json` flag on a command whose body prints human text is green while blind.
 

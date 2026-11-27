@@ -72,6 +72,8 @@ Prior `0.12.0` — the MD-values bullet's remaining carve-out is **measured rath
 
 ## `cli.md`
 
+Prior `0.9.4` banner: *"§ Help Text Requirements bounds each option's help string at 80 characters, the length the parser audit enforces, where it had said lines (operator, 2026-11-27: "a")."* Superseded 2026-11-27 by `0.9.5`: the help-path rule names its lazy-import carve-out (GHI #1411).
+
 Prior `0.9.3` banner: *"§ Exit Codes states the specification's return-an-int handler boundary in place of `sys.exit(code)`, under the operator's "fix what is stale" (2026-11-08)."* Superseded 2026-11-27 by `0.9.4` (operator: *"a"*): § Help Text Requirements said *"lines ≤ 80 chars"* while `tests/test_help_text_completeness.py::test_help_text_under_80_chars` (REQ-0.0.4-04-04) bounds each option's whole help string, the stricter reading enforced since 2026-03-24. The rule now states what the test enforces. The operator kept the limit itself (*"we'll keep it"*) after a 106-character `--auto-add` help failed CI on 13ca8167d.
 
 Prior `0.9.2` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* Superseded 2026-11-08 by `0.9.3` under the operator's *"fix what is stale"*: § Exit Codes said *"Use `sys.exit(code)`"* while the specification's § CLI Boundary Pattern has the handler return an `int`, and `gzkit.cli.main` returns a typed error's `exit_code`.
@@ -420,6 +422,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 > **Rule version:** `0.10.0` — diet pass under GHI #921: rollout histories (GHI #752/#753 deferrals, the 19-day `_crossing_channels` split, the trailer-set recurrence measurement) lifted to [Rule Version History](rule-version-history.md#task-discoverymd); `paths:` narrowed from `.gzkit/**` and `docs/design/adr/**` to the surfaces the four channels are written on (`.gzkit/hooks/**`, the OBPI briefs), since the old scope fanned this rule into every `.gzkit` and ADR subtree contract. Binding rules unchanged.
 
 ## `pythonic.md`
+
+### Changed 2026-11-27 at version `0.8.0` (prompt-audit M46)
+
+Prior `0.7.1` banner, verbatim: *"the mutation engine and the cognitive scorer are now the `gz-mutation-witness` and `gz-mindload` libraries (operator, 2026-11-21: *"they need to migrate as libraries"*)"*. Superseded when § Imports gained the third carve-out, help-path deferral, on the operator's *"Third carve-out (Recommended)"* (GHI #1411).
 
 ### Changed 2026-11-21 at version `0.7.1` (the tool extraction)
 

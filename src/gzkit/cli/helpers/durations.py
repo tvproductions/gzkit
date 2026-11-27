@@ -25,7 +25,7 @@ def parse_older_than_days(raw: str) -> int:
     # tree is being built, so a module-scope ``gzkit.commands.common`` import puts
     # ``gzkit.sync`` and ``yaml`` on the ``gz --help`` path — the cost GHI #180
     # exists to keep off it. ``console`` is only needed on the error branches.
-    from gzkit.commands.common import console  # noqa: PLC0415
+    from gzkit.commands.common import console  # noqa: PLC0415 -- help-path deferral
 
     token = raw.strip().lower().removesuffix("d")
     try:

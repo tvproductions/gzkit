@@ -14,6 +14,16 @@ import io
 from contextlib import redirect_stderr
 from pathlib import Path
 
+from gzkit.cli.helpers import exit_codes
+from gzkit.cli.parser import StableArgumentParser
+from gzkit.enforcement import (
+    EXEMPTS_NONE,
+    create_fixture_tempdir,
+    enforces,
+    extend_known_claims,
+    get_enforcement_registry,
+)
+
 CLI_USAGE_ERROR_EXIT_TWO_CLAIM_ID = "cli-usage-error-exit-two"
 
 CLI_EXIT_CODE_CLAIM_IDS: frozenset[str] = frozenset({CLI_USAGE_ERROR_EXIT_TWO_CLAIM_ID})
@@ -29,8 +39,6 @@ def _build_usage_error_fixture() -> Path:
         The runner-owned temp root created for the fixture.
 
     """
-    from gzkit.enforcement import create_fixture_tempdir  # noqa: PLC0415
-
     return create_fixture_tempdir(prefix="gzkit-cli-exit-two-nc-")
 
 
@@ -56,9 +64,6 @@ def _ep_usage_error_exit_two(root: Path) -> int:
         1 when the refuse, permit and label poles all hold; 0 otherwise.
 
     """
-    from gzkit.cli.helpers import exit_codes  # noqa: PLC0415
-    from gzkit.cli.parser import StableArgumentParser  # noqa: PLC0415
-
     token = f"--nc-{root.name.lower().replace('_', '-')}"
     parser = StableArgumentParser(prog="gz-nc")
     parser.add_argument("--declared", action="store_true")
@@ -96,13 +101,6 @@ def ensure_cli_exit_code_claims_registered() -> None:
     registration reachable from nowhere else is an orphan whose floor
     membership is a facade.
     """
-    from gzkit.enforcement import (  # noqa: PLC0415
-        EXEMPTS_NONE,
-        enforces,
-        extend_known_claims,
-        get_enforcement_registry,
-    )
-
     extend_known_claims(CLI_EXIT_CODE_CLAIM_IDS)
     if CLI_USAGE_ERROR_EXIT_TWO_CLAIM_ID not in {r.claim_id for r in get_enforcement_registry()}:
         enforces(

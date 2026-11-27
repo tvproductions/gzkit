@@ -5,6 +5,7 @@ A Development Covenant for Human-AI Collaboration.
 
 import argparse
 import os
+import sys
 from importlib import import_module
 from typing import Any
 
@@ -127,7 +128,7 @@ def configure_logging_from_flags(args: argparse.Namespace) -> None:
     clean (``.gzkit/rules/cli.md`` § Output Contracts, GHI #1010). Imported here,
     after parsing, so ``gz --help`` never loads the adapter.
     """
-    from gzkit.cli.logging import Verbosity, configure_logging  # noqa: PLC0415
+    from gzkit.cli.logging import Verbosity, configure_logging  # noqa: PLC0415 -- help-path deferral
 
     verbosity: Verbosity = "normal"
     if getattr(args, "debug", False):
@@ -146,8 +147,6 @@ def _ensure_utf8_console() -> None:
     can decode to a lone surrogate no UTF-8 stream encodes, so such a character is
     shown escaped and never stops the command (GHI #1205).
     """
-    import sys  # noqa: PLC0415
-
     for stream_name in ("stdout", "stderr"):
         stream = getattr(sys, stream_name, None)
         if stream is not None and hasattr(stream, "reconfigure"):
@@ -182,14 +181,14 @@ def _refused_by_stamp(*, forwards: bool) -> bool:
         True when the call is refused, its message already on stderr.
 
     """
-    from gzkit.commands.common import err_console, get_project_root  # noqa: PLC0415
+    from gzkit.commands.common import err_console, get_project_root  # noqa: PLC0415 -- help-path deferral
 
     refusal = stamp_refusal(os.environ, get_project_root)
     if refusal is None:
         if not forwards:
             consume_stamp(os.environ)
         return False
-    from rich.markup import escape  # noqa: PLC0415
+    from rich.markup import escape  # noqa: PLC0415 -- help-path deferral
 
     err_console.print(f"[red]{escape(refusal)}[/red]")
     return True
@@ -200,13 +199,12 @@ def _report_failure(args: argparse.Namespace, message: str) -> None:
 
     Called from inside an ``except`` block, so the traceback is the one in flight.
     """
-    from rich.markup import escape  # noqa: PLC0415
+    from rich.markup import escape  # noqa: PLC0415 -- help-path deferral
 
-    from gzkit.commands.common import err_console  # noqa: PLC0415
+    from gzkit.commands.common import err_console  # noqa: PLC0415 -- help-path deferral
 
     if getattr(args, "debug", False):
-        import sys  # noqa: PLC0415
-        import traceback  # noqa: PLC0415
+        import traceback  # noqa: PLC0415 -- help-path deferral
 
         traceback.print_exc(file=sys.stderr)
     # The message is text: unescaped, Rich consumes bracketed spans as tags.
@@ -250,7 +248,7 @@ def main(argv: list[str] | None = None) -> int:
     except SystemExit as exc:
         return int(exc.code) if isinstance(exc.code, int) else 1
     except KeyboardInterrupt:
-        from gzkit.commands.common import err_console  # noqa: PLC0415
+        from gzkit.commands.common import err_console  # noqa: PLC0415 -- help-path deferral
 
         err_console.print("[yellow]Interrupted.[/yellow]")
         return 130

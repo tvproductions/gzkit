@@ -51,7 +51,7 @@ def apply_configured_attestor(args: argparse.Namespace) -> None:
     dest = getattr(args, _DEST_KEY, None)
     if not isinstance(dest, str) or getattr(args, dest, None) is not _OMITTED:
         return
-    from gzkit.attestor import configured_attestor_handle  # noqa: PLC0415
+    from gzkit.attestor import configured_attestor_handle  # noqa: PLC0415 -- help-path deferral
 
     handle = configured_attestor_handle()
     if handle not in {None, ""}:
