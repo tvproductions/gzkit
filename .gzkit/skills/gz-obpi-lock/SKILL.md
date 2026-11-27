@@ -5,9 +5,9 @@ description: Use to claim, release or list OBPI work locks.
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-11-27
 metadata:
-  skill-version: "6.4.7"
+  skill-version: "6.4.8"
 model: haiku
 ---
 
@@ -181,7 +181,7 @@ Before pushing, agents should verify no divergence on shared files:
 ```bash
 # Check if shared governance files have diverged from remote
 git fetch origin
-git diff --name-only origin/main..HEAD | grep -E '(adr_status|obpi-audit\.jsonl|agent-insights\.jsonl)'
+git diff --name-only origin/main..HEAD | grep -E '(adr-status\.md|obpi-audit\.jsonl|agent-insights\.jsonl)'
 ```
 
 If shared files appear in the diff, the agent should:
