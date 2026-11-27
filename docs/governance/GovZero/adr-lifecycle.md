@@ -189,14 +189,14 @@ Before an ADR transitions to **Accepted** status:
 
 ### OBPI Decomposition Protocol (Matrix of Four Overlay)
 
-To maximize granularity and ensure incremental delivery, the ADR Feature Checklist MUST be developed using a two-step decomposition protocol:
+Legacy ADR Feature Checklists were developed using a two-step decomposition protocol, kept here as the record of how they were sized:
 
 1.  **Step 1: Baseline Structural Template (Rule of Three, legacy)**: Legacy heavy and foundation ADRs were scaffolded into three baseline checklist items: Registry/Interface, Core Execution, and Lifecycle/Operations. The [OBPI Decomposition Matrix](obpi-decomposition-matrix.md) was rekeyed on 2026-10-28 (drydock RO-5 ruling 9) to size outcomes and task cards, detached from lane and kind.
 2.  **Step 2: Refining Overlay (Matrix of Four)**: Apply the principles defined in the [OBPI Decomposition Matrix](obpi-decomposition-matrix.md) (Single-Narrative, Testability, State Anchor, Surface Boundary) to each baseline unit. If a unit violates a principle, it MUST be further decomposed into multiple checklist items.
 
 **Rationale:** The Feature Checklist is the governance contract for the ADR. OBPIs are the execution units for that contract. High-granularity decomposition prevents "god-object" briefs and oversized verification batches. Drift between the checklist and the briefs creates un-auditable scope and violates the principle of layered trust.
 
-**Enforcement:** The `gz-adr-create`, `gz-plan`, and `gz-adr-evaluate` skills enforce this 1:1 synchronization, quality review, and the two-step protocol during the spec/decomposition phase. Automated verification (e.g., `gz validate`) that fails the checklist-to-brief count check is a blocking governance failure.
+**Enforcement:** The `gz-adr-create`, `gz-plan`, and `gz-adr-evaluate` skills enforce this 1:1 synchronization and quality review during the spec/decomposition phase, and size legacy-form ADRs with the two-step protocol. Automated verification (e.g., `gz validate`) that fails the checklist-to-brief count check is a blocking governance failure.
 
 **Anti-pattern:** ADR tables listing OBPIs as "Pending" with no actual brief files. This is a governance violation. All briefs must exist as files before the ADR is Accepted.
 

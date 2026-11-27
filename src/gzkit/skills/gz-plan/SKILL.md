@@ -3,7 +3,7 @@ name: gz-plan
 description: Use to create an ADR, a pool ADR included, recording architecture intent and lane scope.
 category: adr-lifecycle
 metadata:
-  skill-version: "1.8.2"
+  skill-version: "1.8.3"
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-17
@@ -59,7 +59,7 @@ and lane. `baseline_range_for_total` maps their total to a baseline range;
 outside the range fails, exit 1); each `--split-*` flag adds one OBPI. The sum
 is the number of checklist items seeded. The doctrine the numbers implement is
 `docs/governance/GovZero/obpi-decomposition-matrix.md` § Deterministic
-Decomposition Gate.
+Decomposition Scorecard (legacy).
 
 ## Work order (operator ruling, verbatim canon)
 
@@ -77,7 +77,7 @@ Decomposition Gate.
    (`AGENTS.md` § Behavior Rules).
 3. **Size the decomposition** with the matrix doc's legacy scorecard, which
    `gz plan create` still computes for this ADR form (the doc was rekeyed on
-   2026-10-28, detached from lane): the dimension total sets the baseline count,
+   2026-10-28, detached from lane): the dimension total sets the baseline range,
    then the Matrix of Four overlay, whose four principles are the four
    `--split-*` flags. Choose the dimension
    scores, then present them, the resulting OBPI count and the rationale for
