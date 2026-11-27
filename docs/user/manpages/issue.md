@@ -75,9 +75,10 @@ Common:
 
 - `0` — Success (issue created, or dry-run preview emitted).
 - `1` — User/config error: body references no gzkit-owned surface,
-  no `git remote` available, mutually-exclusive flags both supplied.
-- `2` — System/IO error: `gh` subprocess failed (auth, network,
-  GitHub API error). Stderr from `gh` propagates verbatim.
+  or no `git remote` available.
+- `2` — Usage error: `--defect` and `--enhancement` both supplied
+  (argparse rejects the pair). System/IO error: `gh` subprocess failed
+  (auth, network, GitHub API error). Stderr from `gh` propagates verbatim.
 - `3` — Policy breach (reserved).
 
 ## EXAMPLES

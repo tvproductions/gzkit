@@ -43,7 +43,8 @@ positional `task_id` argument.
 | Code | Meaning |
 |------|---------|
 | 0 | Success |
-| 1 | Invalid transition, collision on explicit `--seq N`, or missing argument |
+| 1 | Invalid transition, or collision on explicit `--seq N` |
+| 2 | Usage error: neither a `task_id` nor `--req` with `--seq` supplied |
 
 ## Examples
 

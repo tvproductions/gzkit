@@ -51,8 +51,8 @@ mutually exclusive.
 | Code | Meaning |
 |------|---------|
 | 0 | Success (issue created or dry-run preview emitted). |
-| 1 | User/config error (body references no gzkit surface; no git remote; mutually-exclusive flag conflict). |
-| 2 | System/IO error (`gh` subprocess failure). |
+| 1 | User/config error (body references no gzkit surface; no git remote). |
+| 2 | Usage error (`--defect` and `--enhancement` both supplied; argparse rejects the pair) or System/IO error (`gh` subprocess failure). |
 | 3 | Reserved (policy breach). |
 
 ---
