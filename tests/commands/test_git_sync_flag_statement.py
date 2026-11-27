@@ -15,11 +15,14 @@ import tempfile
 import unittest
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import cast
+from unittest import mock
 
 from gzkit.cli.main import _build_parser
 from gzkit.commands.ceremony_state import CeremonyState
 from gzkit.commands.ceremony_steps import render_step_11_complete
 from gzkit.commands.obpi_stages import _build_sync_stage_steps
+from gzkit.commands.sync import _plan_git_sync
 from gzkit.commands.version_sync import write_in_flight_release_manifest
 from gzkit.pipeline_markers import pipeline_stage_output
 
@@ -142,6 +145,50 @@ class TestReleaseManifestNamesTheReleaseSweep(unittest.TestCase):
         text = _written_manifest()
         self.assertIn("`gz check --full`", text)
         self.assertNotIn("--lint --test", text)
+
+
+def _plan(*, apply: bool, auto_add: bool, dirty: bool) -> dict[str, object]:
+    """Return `_plan_git_sync`'s plan over a stubbed clean-remote repository."""
+
+    def fake_git(_root: Path, *args: str) -> tuple[int, str, str]:
+        if args[:2] == ("rev-list", "--count"):
+            return 0, "0", ""
+        return 0, "", ""
+
+    status = ([" M docs/notes.md"] if dirty else [], None)
+    with (
+        mock.patch("gzkit.commands.sync.git_cmd", side_effect=fake_git),
+        mock.patch("gzkit.git_sync.git_cmd", side_effect=fake_git),
+        mock.patch("gzkit.commands.sync._head_is_merge_commit", return_value=False),
+        mock.patch("gzkit.commands.sync._git_status_lines", return_value=status),
+    ):
+        return _plan_git_sync(
+            project_root=Path("/nonexistent"),
+            current_branch="main",
+            target_branch="main",
+            remote="origin",
+            apply=apply,
+            auto_add=auto_add,
+            allow_push=True,
+        )
+
+
+class TestDryRunPredictsApplyUnderNoAutoAdd(unittest.TestCase):
+    """The preview reports what --apply does (operator ruling 2026-11-26: "A")."""
+
+    def test_dirty_tree_is_not_a_dry_run_blocker(self) -> None:
+        plan = _plan(apply=False, auto_add=False, dirty=True)
+        self.assertEqual(plan["blockers"], [])
+
+    def test_dry_run_and_apply_agree_on_blockers(self) -> None:
+        dry = _plan(apply=False, auto_add=False, dirty=True)
+        applied = _plan(apply=True, auto_add=False, dirty=True)
+        self.assertEqual(dry["blockers"], applied["blockers"])
+
+    def test_dry_run_warns_that_unstaged_changes_stay_behind(self) -> None:
+        plan = _plan(apply=False, auto_add=False, dirty=True)
+        warnings = cast("list[str]", plan["warnings"])
+        self.assertTrue(any("--no-auto-add" in w and "uncommitted" in w for w in warnings))
 
 
 if __name__ == "__main__":

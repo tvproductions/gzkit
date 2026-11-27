@@ -22,7 +22,7 @@ gz git-sync [OPTIONS]
 | `--apply` | flag | Execute actions (dry-run by default) |
 | `--lint/--no-lint` | flag | `--lint` runs whole-tree `gz lint` before the commit (a failure blocks) and again at the end (a failure warns). Default `--no-lint` |
 | `--test/--no-test` | flag | `--test` runs the full unit suite (`gz test`) before the commit; a failure blocks. No hook runs the full suite; without it, CI runs it after the push. Default `--no-test` |
-| `--auto-add/--no-auto-add` | flag | `--auto-add` (default) stages every change with `git add -A`, refused when it would stage `src/` or `tests/`; `--no-auto-add` stages nothing and commits whatever is already staged, with no `src/`/`tests/` refusal |
+| `--auto-add/--no-auto-add` | flag | `--auto-add` (default) stages every change with `git add -A`, refused when it would stage `src/` or `tests/`; `--no-auto-add` stages nothing and commits whatever is already staged, with no `src/`/`tests/` refusal; on a dirty tree it warns, in the dry run too, that unstaged and untracked changes stay uncommitted |
 | `--push/--no-push` | flag | `--push` (default) pushes when the branch is ahead; `--no-push` commits and rebases but does not push, so no pre-push hook runs |
 | `--json` | flag | Output JSON summary |
 | `--skill` | flag | Print the paired skill file's path and exit, before any check |

@@ -147,8 +147,13 @@ def _plan_git_sync(
     if allow_push and projected_ahead > 0:
         actions.append(f"git push {remote} {target_branch}")
 
-    if not apply and dirty and not auto_add:
-        blockers.append("Working tree is dirty. Use --auto-add or clean it before applying sync.")
+    # --apply proceeds here and commits only what is staged, so the preview warns
+    # rather than blocks (operator ruling 2026-11-26 on GHI #1390: "A").
+    if dirty and not auto_add:
+        warnings.append(
+            "--no-auto-add: only what is already staged is committed; "
+            "unstaged and untracked changes stay uncommitted."
+        )
 
     return {
         "dirty": dirty,
