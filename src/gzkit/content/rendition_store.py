@@ -2,7 +2,7 @@
 
 The rendition store owns ``.gzkit/renditions/<surface>/<consumer>.md``: one
 durable artifact per *(surface × consumer)* pair. It is the seam between the
-authoring-time compression composer (OBPI-21, non-deterministic) and the
+authoring-time compression composer (``gz content compose``, non-deterministic) and the
 deterministic render path: once committed, the rendition is replayed verbatim
 to the rendered surface — no LLM, no network, no template substitution.
 
