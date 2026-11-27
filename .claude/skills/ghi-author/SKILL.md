@@ -5,9 +5,9 @@ description: Use to file a GitHub issue when a finding needs its own work order 
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-26
 metadata:
-  skill-version: "1.12.0"
+  skill-version: "1.12.1"
 model: sonnet
 ---
 
@@ -327,10 +327,10 @@ Surface **the brief id, its `status:`, its parent ADR, and the requirement lines
 
 ## Examples
 
-Four worked examples — correction inside an active OBPI, an independent defect
-surfaced mid-pipeline, an enhancement, an investigation, and an architectural
-absence routed to a pool ADR and closed in the same session — live in
-[`references/examples.md`](references/examples.md).
+The worked examples live in [`references/examples.md`](references/examples.md):
+a correction inside an active OBPI, an independent defect surfaced mid-pipeline,
+an enhancement, an investigation, and an architectural absence routed to a pool
+ADR and closed in the same session.
 
 ## Constraints
 
