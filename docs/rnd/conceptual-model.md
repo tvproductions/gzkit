@@ -835,6 +835,22 @@ repair order), so how a drydock package carries construction REQs beside FIXes, 
 release reading (*"New construction … Release Package, minor"*) for work the drydock builds, meet
 this ruling next.
 
+## decision · W9 stands, and a paused ruling is checked, never put again
+
+The agent put W9's cardinality again, reading W51's list (*"W9's cardinality … go to the
+conceptual-model R&D"*) as a call to re-rule it. W9 was already ruled (*"A"*, 2026-11-22: one GHI
+yields many FIXes, each FIX answering exactly one GHI). The run's rulings meet it without
+contradiction: one discrepancy is one GHI and one failure mechanism, and a FIX shares the base
+requirement's shape, *"one atomic obligation"*, so one mechanism may owe several FIXes. The
+check alone was owed. Operator, verbatim: *"A (and why have me reevaluate and reajudicate prior
+rulings? that is how drift happens. Why are you reopening a past ruling?)"*.
+
+So W9 stands as ruled, its reason now on record: a FIX is atomic, and one failure mechanism can
+owe several obligations to restore. The method: a ruling the walk paused to this run, W44 to W50
+among them, is checked against the separated model. A ruling no later ruling contradicts is
+recorded as standing, the rule that governs it named. Only a contradiction between two
+rulings goes to the operator, both quoted verbatim (AGENTS.md § DO IT RIGHT 9).
+
 ---
 
 ## Disposition map
