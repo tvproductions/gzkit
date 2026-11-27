@@ -70,7 +70,7 @@ class ConsumerLineage(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     surface: str = Field(..., description="Control surface name (e.g. 'AGENTS.md')")
-    consumer: str = Field(..., description="Target vendor (e.g. 'codex')")
+    consumer: str = Field(..., description="Target vendor consumer (e.g. 'root')")
     sections: dict[str, SectionLineage] = Field(
         ..., description="Per-AGENTS.md-section-id lineage entries"
     )

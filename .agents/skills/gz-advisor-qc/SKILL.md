@@ -6,7 +6,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-17
 metadata:
-  skill-version: "0.2.2"
+  skill-version: "0.2.3"
 model: sonnet
 gz_command: gz content advise-rendition
 ---
@@ -77,6 +77,6 @@ gz content advise-rendition AGENTS.md --consumer root --score 0.94 \
   --explanation "All Mechanical bullets retained verbatim; two Promotable bullets combined without information loss; no Judgment content dropped."
 
 # A low score is still recorded (advisory) — it is evidence for the operator, not a block.
-gz content advise-rendition CLAUDE.md --consumer claude --score 0.55 \
+gz content advise-rendition AGENTS.md --consumer root --score 0.55 \
   --explanation "One Judgment-tier rationale paragraph compressed past the point of recoverability; flagging measurable loss for operator review."
 ```

@@ -23,7 +23,7 @@ The content type registry exposes eight model types:
 
 | Type | Surface |
 |------|---------|
-| `AgentContract` | `AGENTS.md`, `CLAUDE.md` |
+| `AgentContract` | `AGENTS.md` |
 | `Rule` | `.gzkit/rules/*.md` |
 | `Skill` | `.gzkit/skills/*/SKILL.md` |
 | `Chore` | `.gzkit/chores/*/CHORE.md` |
@@ -1570,7 +1570,7 @@ verdict value itself is never the fail-closed trigger.
 | `--witness <who>` | remember | WHO vouches for the entry. Recorded provenance, never a gate — capture is never blocked for want of one (GHI #821) |
 | `--entry <id>` | retire | Id of the corpus entry to retire (required) |
 | `--reason <text>` | retire | Why the entry is superseded; becomes the retraction row's text (required on every tier) |
-| `--consumer <vendor>` | compose, commit, advise-rendition | Target vendor consumer (e.g. `codex`, `claude`); optional for advise-rendition (surface-wide when omitted) |
+| `--consumer <vendor>` | compose, commit, advise-rendition | Target vendor consumer (`root`, the one `AgentContract` route); optional for advise-rendition (surface-wide when omitted) |
 | `--candidate <file>` | compose | Path to the candidate rendition file; when omitted, reads piped/redirected stdin with real content (explicit path), or generates from the corpus when stdin is a tty or is empty/whitespace-only (generated path) |
 | `--attestor <name>` | retire, commit, land | Defaults to `authorship.attestor_handle` in `.gzkit.json` when set (GHI #1036). Operator retiring (retire) or attesting the corpus delta this promotion renders (commit, land); empty fails closed **only when** the retirement moves invariant-tier liveness (retire) or the corpus moved since the last commit (commit) or since the committed sidecars (land); ignored on a `land` resume |
 | `--attestation-text <text>` | commit, land | Operator's verbatim corpus-attestation token; same conditional requirement as `--attestor`. Also where a DROPPED retention condition's id must appear (§ Retention gate) |

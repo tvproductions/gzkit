@@ -3444,7 +3444,7 @@
     {
       "file": "src/gzkit/commands/content/__init__.py",
       "rule": "ISC004",
-      "count": 12
+      "count": 11
     },
     {
       "file": "src/gzkit/commands/content/__init__.py",

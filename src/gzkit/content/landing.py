@@ -219,7 +219,7 @@ class ConsumerPlan(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    consumer: str = Field(..., min_length=1, description="Routed vendor consumer (e.g. 'claude')")
+    consumer: str = Field(..., min_length=1, description="Routed vendor consumer (e.g. 'root')")
     old_corpus_fingerprint: str | None = Field(
         ..., description="Corpus fingerprint of the prior sidecar; None when absent or unreadable"
     )

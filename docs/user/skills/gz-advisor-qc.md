@@ -30,7 +30,7 @@ gz content advise-rendition <surface> [--consumer <vendor>] \
 ```
 
 - `<surface>` is the control surface scored (e.g. `AGENTS.md`).
-- `--consumer` is the target vendor (e.g. `codex`); omit for surface-wide scoring.
+- `--consumer` is the target vendor (`root`, the one `AgentContract` route); omit for surface-wide scoring.
 - `--score` is the information-retained-per-byte verdict value — advisory, never gates.
 - `--explanation` is the advisor's reasoning, recorded **before** the verdict. An empty
   explanation fails closed (non-zero exit, no receipt).

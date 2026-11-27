@@ -172,7 +172,7 @@ None of the 9 `disable-model-invocation` routers is a stale alias: every target 
 | S35 | `gz-adr-closeout-ceremony:397` | "Run git-sync before `gh release create`" | G2 internal conflict | Step 8 says release ends at the bump and `gz-patch-release` publishes | rewrite |
 | S36 | `gz-adr-audit:41` | "file a GHI … and route to a fresh OBPI brief" | G2 conflict | `AGENTS.md`: "Do not create an ADR or OBPI to discharge one" | rewrite |
 | S37 | `gz-adr-audit:120` | "`docs/design/audit/**` remains historical only" | G2 / 1d | The path does not exist | remove |
-| S38 | `gz-advisor-qc:80` | "advise-rendition CLAUDE.md --consumer claude" | G2 | The only corpus is `AGENTS.md`, with consumers `root` and `codex` | rewrite |
+| S38 | `gz-advisor-qc:80` | "advise-rendition CLAUDE.md --consumer claude" | G2 | The only corpus is `AGENTS.md`, with the one consumer `root` (`data/vendor-manifest.json`; `codex.md` is a retained off-route record; corrected 2026-11-27, operator: *"yes"*) | rewrite |
 | S39 | `gz-adr-promote:124-128` | "Rule of Three baseline (which the doc sets for heavy-lane ADRs)" | G2 | The matrix was rekeyed 2026-10-28; the lane columns are retired | rewrite |
 | S40 | `gz-adr-create/references/govzero-compliance-rules.md:35,39` | "Gate 5 … Heavy only" / "Lite lane: Gates 1-2 only" | G2 conflict | Gate 5 is universal | rewrite |
 
@@ -301,7 +301,7 @@ None of the 9 `disable-model-invocation` routers is a stale alias: every target 
 | M21 | Renamed or removed paths: `operator_runbook.md`, `docs/design/audit/`, `adr_status` | S34, S37, S5 |
 | M22 | Release publication moved to `gz-patch-release` | S35 |
 | M23 | Defect-fix routing: a GHI is repaired directly, never via a new OBPI | S36 |
-| M24 | Corpus consumers are `root`/`codex` only; no `CLAUDE.md` corpus | S38 |
+| M24 | Corpus consumer is `root` only; no `CLAUDE.md` corpus (corrected 2026-11-27) | S38 |
 | M25 | Decomposition matrix rekeyed 2026-10-28; lane columns retired | S39 |
 | M26 | Receipt fail-closed condition includes foundation kind (`AGENTS.md`, via corpus) | A2 |
 
@@ -342,7 +342,7 @@ Reach = every consumer of the changed fact repo-wide, found at repair. Medium fi
 | M27 | `adr_status` → `adr-status.md` | S5 | verified |
 | M28 | release publication moved to `gz-patch-release` | S35 | verified (Step 8, blame) |
 | M29 | Defect-fix routing: a GHI is repaired directly | S36 | verified |
-| M30 | corpus consumers `root`/`codex` only | S38 | verified |
+| M30 | corpus consumer `root` only (corrected 2026-11-27, operator: *"yes"*) | S38 | verified (`data/vendor-manifest.json`) |
 | M31 | decomposition matrix rekeyed 2026-10-28 | S39 | verified |
 | M32 | receipts fail closed on foundation kind too | A2 | verified (`obpi_complete.py:396,708`) |
 | M33 | `gz issue file` exits 2 on `gh` failure | S27 | verified (`issue_cmd.py:212`) |

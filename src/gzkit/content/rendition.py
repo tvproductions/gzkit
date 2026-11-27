@@ -88,7 +88,7 @@ class CandidateRendition(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     surface: str = Field(..., description="Control surface name (e.g. 'AGENTS.md')")
-    consumer: str = Field(..., description="Target vendor (e.g. 'codex')")
+    consumer: str = Field(..., description="Target vendor consumer (e.g. 'root')")
     setpoint: str = Field(..., description="Compression setpoint tier: lite | medium | heavy")
     candidate_text: str = Field(..., description="The full candidate rendition text")
     byte_evidence: ByteEvidence = Field(..., description="Per-tier byte accounting")

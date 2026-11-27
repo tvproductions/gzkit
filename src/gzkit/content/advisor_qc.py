@@ -73,7 +73,7 @@ def record_verdict(
     Args:
         root: Project root; the receipts directory is resolved relative to it.
         surface: The control surface scored (e.g. ``AGENTS.md``).
-        consumer: The target vendor consumer (e.g. ``codex``), or ``None``.
+        consumer: The target vendor consumer (e.g. ``root``), or ``None``.
         explanation: The advisor's reasoning. MUST be non-empty — it is
             serialized BEFORE the verdict (ADR-0.0.39 explanation-before-verdict).
         score: The information-retained-per-byte verdict value. ANY value is

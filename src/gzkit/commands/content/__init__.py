@@ -543,7 +543,7 @@ def _register_compose(
     p.add_argument(
         "--consumer",
         required=True,
-        help="Target vendor consumer (e.g. codex, claude).",
+        help="Target vendor consumer (root, the one AgentContract route).",
     )
     p.add_argument(
         "--candidate",
@@ -582,11 +582,9 @@ def _register_commit(content_commands: argparse._SubParsersAction[StableArgument
         ),
         epilog=_build_epilog(
             [
-                "gz content commit AGENTS.md --consumer codex "
+                "gz content commit AGENTS.md --consumer root "
                 '--attestor "g0" --attestation-text "attest completed"',
-                "gz content commit AGENTS.md --consumer claude "
-                '--attestor "g0" --attestation-text "recompose attested"',
-                "gz content commit AGENTS.md --consumer codex --attestor g0 "
+                "gz content commit AGENTS.md --consumer root --attestor g0 "
                 '--attestation-text "C1 drop accepted" '
                 "--retention-map /tmp/agents.retention.json",
             ]
@@ -596,7 +594,7 @@ def _register_commit(content_commands: argparse._SubParsersAction[StableArgument
     p.add_argument(
         "--consumer",
         required=True,
-        help="Target vendor consumer (e.g. codex, claude).",
+        help="Target vendor consumer (root, the one AgentContract route).",
     )
     p.add_argument(
         "--attestor",
@@ -763,9 +761,9 @@ def _register_advise_rendition(
         ),
         epilog=_build_epilog(
             [
-                "gz content advise-rendition AGENTS.md --consumer codex --score 0.94 "
+                "gz content advise-rendition AGENTS.md --consumer root --score 0.94 "
                 '--explanation "All Mechanical bullets retained; two Promotable combined."',
-                "gz content advise-rendition CLAUDE.md --score 0.6 "
+                "gz content advise-rendition AGENTS.md --score 0.6 "
                 '--explanation "One Judgment bullet compressed with measurable loss."',
             ]
         ),
@@ -774,7 +772,7 @@ def _register_advise_rendition(
     p.add_argument(
         "--consumer",
         default=None,
-        help="Target vendor consumer (e.g. codex, claude). Omit for surface-wide scoring.",
+        help="Target vendor consumer (root). Omit for surface-wide scoring.",
     )
     p.add_argument(
         "--score",
