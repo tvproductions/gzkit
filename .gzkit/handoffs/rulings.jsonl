@@ -2599,3 +2599,10 @@
 {"ts": "2026-11-27T00:18:54Z", "source": "20261127T001853Z-prompt-audit-m21.md", "text": "M21 repairs pipeline_markers.py:96 directly although OBPI-0.35.0-16 owns it (verbatim: \"B\")."}
 {"ts": "2026-11-27T00:18:54Z", "source": "20261127T001853Z-prompt-audit-m21.md", "text": "The dry run, not --apply, was wrong under --no-auto-add on a dirty tree: it warns, not blocks (verbatim: \"A\")."}
 {"ts": "2026-11-27T00:18:54Z", "source": "20261127T001853Z-prompt-audit-m21.md", "text": "Write the successor handoff and push the M21 commits (verbatim: \"write the successor handoff and run git-sync to push the 12 commits\")."}
+{"ts": "2026-11-27T01:48:09Z", "source": "20261127T014808Z-prompt-audit-m22-m24.md", "text": "Fix the CI break before anything else (verbatim: \"do it first, why do we care about an 80-character limit?\")."}
+{"ts": "2026-11-27T01:48:09Z", "source": "20261127T014808Z-prompt-audit-m22-m24.md", "text": "Keep the 80-character help limit (verbatim: \"we'll keep it\")."}
+{"ts": "2026-11-27T01:48:09Z", "source": "20261127T014808Z-prompt-audit-m22-m24.md", "text": "cli.md follows the test: each option's help string is at most 80 characters (verbatim: \"a\")."}
+{"ts": "2026-11-27T01:48:09Z", "source": "20261127T014808Z-prompt-audit-m22-m24.md", "text": "Do M22 once CI is green (verbatim: \"yes, proceed with m22 after CI\")."}
+{"ts": "2026-11-27T01:48:09Z", "source": "20261127T014808Z-prompt-audit-m22-m24.md", "text": "Do M23 (verbatim: \"proceed to m23\")."}
+{"ts": "2026-11-27T01:48:09Z", "source": "20261127T014808Z-prompt-audit-m22-m24.md", "text": "Do M24 (verbatim: \"proceed to m24\")."}
+{"ts": "2026-11-27T01:48:09Z", "source": "20261127T014808Z-prompt-audit-m22-m24.md", "text": "Write the successor handoff and push (verbatim: \"create fresh handoff and git sync\")."}
