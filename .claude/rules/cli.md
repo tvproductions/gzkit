@@ -6,9 +6,9 @@ paths:
 
 # CLI Contract Doctrine
 
-<!-- rule-version: 0.9.3 -->
+<!-- rule-version: 0.9.4 -->
 
-> **Rule version:** `0.9.3` — § Exit Codes states the specification's return-an-int handler boundary in place of `sys.exit(code)`, under the operator's *"fix what is stale"* (2026-11-08); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#climd).
+> **Rule version:** `0.9.4` — § Help Text Requirements bounds each option's help string at 80 characters, the length the parser audit enforces, where it had said lines (operator, 2026-11-27: *"a"*); version narrative in [Rule Version History](../../docs/governance/rule-version-history.md#climd).
 
 **Baseline:** [clig.dev](https://clig.dev/). **Canonical specification:** [`docs/design/cli-standards-v3.md`](../../docs/design/cli-standards-v3.md) (ADR-0.0.4) — read its § Document status before citing a section; parts are live-and-met, live-but-unmet, or retired. **Mechanical check:** `uv run gz cli audit`. **Heavy lane trigger:** any CLI contract change — subcommands, flags, exit codes, output schemas.
 
@@ -65,7 +65,7 @@ A handler returns its exit code as an `int` (specification § CLI Boundary Patte
 
 ## Help Text Requirements
 
-Every command responds to `-h`/`--help` (exit 0) with a one-or-two-sentence description, a usage line, every option, at least one example, and lines ≤ 80 chars.
+Every command responds to `-h`/`--help` (exit 0) with a one-or-two-sentence description, a usage line, every option, at least one example, and each option's help string ≤ 80 chars (REQ-0.0.4-04-04).
 
 ## Adding CLI Features
 

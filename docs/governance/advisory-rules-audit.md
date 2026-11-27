@@ -71,7 +71,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `skill-surface-sync.md` | `0.15.0` |
 | `skill-authoring.md` | `0.2.1` |
 | `chores.md` | `0.6.7` |
-| `cli.md` | `0.9.3` |
+| `cli.md` | `0.9.4` |
 | `cross-platform.md` | `0.8.1` |
 | `gate5-runbook-code-covenant.md` | `0.3.2` |
 | `guardrail-feedback-prose.md` | `0.3.1` |
@@ -585,6 +585,8 @@ The Claude-specific invariant 10a is scored as a row rather than in prose:
 | 65a | `RELEASE_NOTES.md` is authored and updated through the `gz-patch-release` skill, not by hand | **Judgment** | **Scored 2026-08-30 (rule `1.2.0`), GHI #921 — never scored.** The same caller-attribution limit as row 51a: a skill-authored file and a hand-authored one are indistinguishable on disk, and gzkit models no artifact recording which produced it. Not idle doctrine — `cli.md` `0.2.0` records a live instance where a rule's own procedure *"prescribed hand-authoring release notes, the one artifact `changelog-release-notes.md` forbids hand-editing"*, and the conflict shipped. Backstop is the release ceremony itself: `gz-patch-release` rewrites the file, so a hand edit is overwritten rather than caught. `source=.gzkit/rules/changelog-release-notes.md` |
 
 ### CLI Contract Doctrine (`.gzkit/rules/cli.md`)
+
+**Re-scored 2026-11-27 at rule `0.9.4`**: § Help Text Requirements now bounds each option's help string at 80 characters, the length `test_help_text_under_80_chars` (REQ-0.0.4-04-04) enforces, where it had said lines (operator: *"a"*). No row scores that clause and no score moves.
 
 **Re-scored 2026-11-08 at rule `0.9.3`** — stale clause corrected under the operator's *"fix what is stale"*: § Exit Codes states the specification's return-an-`int` handler boundary in place of *"Use `sys.exit(code)`"*. No row quoted that sentence and no score moves.
 

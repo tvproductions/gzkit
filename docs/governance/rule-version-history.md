@@ -72,6 +72,8 @@ Prior `0.12.0` — the MD-values bullet's remaining carve-out is **measured rath
 
 ## `cli.md`
 
+Prior `0.9.3` banner: *"§ Exit Codes states the specification's return-an-int handler boundary in place of `sys.exit(code)`, under the operator's "fix what is stale" (2026-11-08)."* Superseded 2026-11-27 by `0.9.4` (operator: *"a"*): § Help Text Requirements said *"lines ≤ 80 chars"* while `tests/test_help_text_completeness.py::test_help_text_under_80_chars` (REQ-0.0.4-04-04) bounds each option's whole help string, the stricter reading enforced since 2026-03-24. The rule now states what the test enforces. The operator kept the limit itself (*"we'll keep it"*) after a 106-character `--auto-add` help failed CI on 13ca8167d.
+
 Prior `0.9.2` banner: *"version narrative lifted to Rule Version History; binding rules unchanged."* Superseded 2026-11-08 by `0.9.3` under the operator's *"fix what is stale"*: § Exit Codes said *"Use `sys.exit(code)`"* while the specification's § CLI Boundary Pattern has the handler return an `int`, and `gzkit.cli.main` returns a typed error's `exit_code`.
 
 ### Lifted 2026-09-17 at version `0.8.1` (rule now at `0.9.0`)
