@@ -2143,7 +2143,9 @@ Valid values: `true`, `1`, `yes`, `false`, `0`, `no`
 ## MX Mode — Maintenance Hangar
 
 When governance itself needs repair, open the Maintenance Hangar so most guards drop to
-advisory. gate5_invariants and the PRIME DIRECTIVE still bind.
+advisory. gate5_invariants and every guard pinned CRITICAL still bind, and the PRIME
+DIRECTIVE binds in full (in safe mode only its trackability binds, the fixes waiting for
+the exit except lint and fast-static debt; `.gzkit/rules/mx-mode.md`).
 
 ```bash
 # Open the hangar (operator only — not delegable to an agent)

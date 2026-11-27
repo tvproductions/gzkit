@@ -22,7 +22,9 @@ gz mx enter --reason REASON --attestor ATTESTOR [--scope ADR_OR_OBPI ...] [--lev
 
 Sets the marker file, writes one `mx_session_opened` ledger event, and captures the
 inspection scope. The marker's presence means MX==TRUE — most governance guards drop to
-advisory. gate5_invariants and the PRIME DIRECTIVE still bind.
+advisory. gate5_invariants and every guard pinned CRITICAL still bind; the PRIME
+DIRECTIVE binds in full in the hangar, and in safe mode as trackability, its fixes
+waiting for the exit except lint and fast-static debt.
 
 **Requires an operator-supplied `--attestor`.** Agents cannot open the hangar
 autonomously; only an operator may initiate an MX session (ADR-0.0.74 Decision #4).

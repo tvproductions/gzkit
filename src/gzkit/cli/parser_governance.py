@@ -854,7 +854,10 @@ def register_governance_parsers(  # noqa: PLR0915
             "Open and close the Maintenance Hangar. "
             "While the hangar is open, most governance guards drop to advisory "
             "so the operator can repair governance itself. "
-            "gate5_invariants and the PRIME DIRECTIVE still bind."
+            "gate5_invariants and every guard pinned CRITICAL still bind; the "
+            "PRIME DIRECTIVE binds in full in the hangar, and in safe mode as "
+            "trackability, its fixes waiting for the exit except lint and "
+            "fast-static debt."
         ),
         epilog=build_epilog(
             [

@@ -5,11 +5,11 @@ description: Use to open or exit the MX hangar or safe mode, or to check which m
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-21
+last_reviewed: 2026-11-27
 model: haiku
 gz_command: mx
 metadata:
-  skill-version: "1.12.0"
+  skill-version: "1.12.1"
 ---
 
 # gz mx
@@ -19,14 +19,19 @@ metadata:
 The MX Maintenance Hangar lets the operator repair governance surfaces that
 the guards themselves protect. While the hangar is open, most governance
 guards drop to advisory so repair work can proceed without the checked-in
-surfaces blocking the repair itself. Two guards NEVER drop: `gate5_invariants`
-and the PRIME DIRECTIVE (ownership — "fix what you know AND what you find").
+surfaces blocking the repair itself. The floor NEVER drops: `gate5_invariants` by
+name, and every guard pinned `CRITICAL` by level (`.gzkit/rules/mx-mode.md`
+§ Opting a guard into the floor names them). In the hangar the PRIME DIRECTIVE
+binds in full (ownership — "fix what you know AND what you find").
 
 The same marker carries a second mode. **Safe mode** is the toggle
 (GHI #1244): OBPI initiation and brief ceremony are suspended under a written
 contract, every guard outside the floor drops to advisory as in the hangar, and the banner names the contract each
-turn. Gate 5, the ledger through `gz` verbs, operator PII and the PRIME DIRECTIVE bind
-in both modes.
+turn. Gate 5, the ledger through `gz` verbs, operator PII, the secret scan, no removal
+of a control, and lint with the fast static checks bind. Of the PRIME DIRECTIVE only
+trackability binds: *fix immediately* waits for the exit, except the lint and
+fast-static debt each act sweeps (`mx-mode.md` § PRIME DIRECTIVE binds the entire
+session, ruling 2026-10-25).
 
 **Out of service is one state** (ruled 2026-11-03,
 `docs/governance/safe-mode-doctrine.md` § Out of service and the four levels): hangar and
@@ -229,6 +234,6 @@ since been resolved — it leaves the liveness reading but stays evidence), and
 - Safe mode is entered only under a contract that carries § Authority, § Purpose, § The
   general arrangement, § What is suspended, § Mandate, § Records, § Repair orders and
   § Exit; exit is attempted only after § Exit and the register are read
-- `gate5_invariants` and the PRIME DIRECTIVE bind throughout the session
+- The floor binds throughout the session; the PRIME DIRECTIVE binds in full in the hangar and as trackability in safe mode
 - Exit is a hard gate — do not attempt exit while any line graded *blocks return to service* stays open; the handback transfers every other open discrepancy, departure and deferred action to its holder (`.gzkit/rules/mx-mode.md`)
 - See `.gzkit/rules/mx-mode.md` for the binding agent rule for hangar sessions
