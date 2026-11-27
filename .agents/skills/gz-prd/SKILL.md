@@ -4,9 +4,9 @@ description: Use to define or revise project-level intent as a PRD before ADR pl
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-11-27
 metadata:
-  skill-version: "0.3.1"
+  skill-version: "0.3.2"
 model: opus
 ---
 
@@ -26,7 +26,8 @@ Scaffold a product requirements document, then fill it with the operator.
   stripped to alphanumerics and upper-cased, so `my-product` becomes
   `PRD-MYPRODUCT-1.0.0` (GHI #186). A name with no alphanumeric character
   exits 1;
-- renders the `prd` template (`src/gzkit/templates/prd.md`) with
+- renders the `prd` template (`.gzkit/templates/prd.md`, or its wheel copy
+  when the project has none) with
   `status: Draft`, today's date, `--title` (default: the id) and the author
   prompts in `AUTHOR_PROMPTS["prd"]` (`src/gzkit/templates/author_prompts.py`)
   into `<paths.prd>/<id>.md`;

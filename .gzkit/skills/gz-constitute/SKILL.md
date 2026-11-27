@@ -4,9 +4,9 @@ description: Use to create or refresh governance constitution artifacts.
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-11-27
 metadata:
-  skill-version: "0.3.1"
+  skill-version: "0.3.2"
 model: opus
 ---
 
@@ -26,7 +26,8 @@ Scaffold a constitution, then fill it with the operator. `gz constitute <name>`
   `1.0.0`), and the rest is stripped to alphanumerics and upper-cased, so
   `charter` becomes `CONSTITUTION-CHARTER-1.0.0` (GHI #216). A name with no
   alphanumeric character exits 1;
-- renders the `constitution` template (`src/gzkit/templates/constitution.md`)
+- renders the `constitution` template (`.gzkit/templates/constitution.md`, or
+  its wheel copy when the project has none)
   with `status: Draft`, today's date and `--title` (default: the id) into
   `<paths.constitutions>/<id>.md`;
 - appends one `constitution_created` ledger event, which makes the id a node in

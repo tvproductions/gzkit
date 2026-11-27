@@ -46,9 +46,9 @@ gz plan create <name> --kind {feature,pool} [OPTIONS]
 ## What It Does
 
 1. Refuses, exit 1 and before any file or ledger write: a missing `--kind`; `--kind foundation` where the kind is closed (see [Closed kind: `foundation`](#closed-kind-foundation)); `--kind feature` with a `0.0.x` `--semver`; a bare-semver or slugless `ADR-<semver>` `name` for a non-pool kind.
-2. `feature`: renders the ADR template (`src/gzkit/templates/adr.md`) with status `Draft`, a deterministic `## Decomposition Scorecard` and a `## Checklist` seeded to the scorecard's final OBPI count, and writes `<paths.adrs>/pre-release/<id>/<id>.md` (per-ADR folder).
+2. `feature`: renders the ADR template (`.gzkit/templates/adr.md`, or its wheel copy when the project has none) with status `Draft`, a deterministic `## Decomposition Scorecard` and a `## Checklist` seeded to the scorecard's final OBPI count, and writes `<paths.adrs>/pre-release/<id>/<id>.md` (per-ADR folder).
 3. `feature`: appends an `adr_created` ledger event, skipped with a warning when the id already has one. The ADR file is written first, so when this step fails the file stays on disk: exit 3 if the directory name is not a canonical `ADR-<semver>-<slug>` id, exit 2 if the ledger append fails or the id is absent from the graph afterwards. Each message names `gz register-adrs --all` as the recovery.
-4. `pool`: renders `src/gzkit/templates/adr_pool.md` (no scorecard, checklist, `kind:` or `semver:`) to `<paths.adrs>/pool/ADR-pool.<name>.md` and appends **no** ledger event. [`gz register-adrs`](register-adrs.md) books pool ADRs. `gz adr promote` requires a `## Target Scope` section, which the pool template does not carry, so author one before promoting.
+4. `pool`: renders `.gzkit/templates/adr_pool.md`, or its wheel copy (no scorecard, checklist, `kind:` or `semver:`) to `<paths.adrs>/pool/ADR-pool.<name>.md` and appends **no** ledger event. [`gz register-adrs`](register-adrs.md) books pool ADRs. `gz adr promote` requires a `## Target Scope` section, which the pool template does not carry, so author one before promoting.
 5. `--dry-run` applies step 1, prints the path it would write and, for a non-pool kind, the `adr_created` event it would append, then exits 0 without writing.
 
 It creates no OBPI briefs; `gz specify` does, one per checklist item.

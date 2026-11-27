@@ -3,7 +3,7 @@ name: gz-plan
 description: Use to create an ADR, a pool ADR included, recording architecture intent and lane scope.
 category: adr-lifecycle
 metadata:
-  skill-version: "1.8.5"
+  skill-version: "1.8.6"
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-27
@@ -26,7 +26,8 @@ ledger. `uv run gz plan create <name>` (`plan_cmd`, `src/gzkit/commands/plan.py`
   kind, when `name` is a bare semver or a bare `ADR-<semver>` id without a slug
   (`_reject_noncanonical_name`, GHI #494);
 - **non-pool:** composes the id `ADR-<semver>-<name>` (a `name` already of that
-  form is used as given), renders `src/gzkit/templates/adr.md` with status
+  form is used as given), renders `.gzkit/templates/adr.md` (or its wheel copy
+  when the project has none) with status
   `Draft`, a Decomposition Scorecard and a `## Checklist` seeded with one
   placeholder `OBPI-<semver>-NN` item per targeted OBPI, and writes it to
   `<paths.adrs>/pre-release/<id>/<id>.md` (`foundation/<id>/` for an open
@@ -38,7 +39,7 @@ ledger. `uv run gz plan create <name>` (`plan_cmd`, `src/gzkit/commands/plan.py`
   afterwards, each time naming `uv run gz register-adrs --all` as the recovery.
   The ADR file is already on disk in all of those cases;
 - **pool:** writes `<paths.adrs>/pool/ADR-pool.<name>.md` from
-  `src/gzkit/templates/adr_pool.md` (no scorecard, no checklist, no `kind:` or
+  `.gzkit/templates/adr_pool.md`, or its wheel copy (no scorecard, no checklist, no `kind:` or
   `semver:`; `--semver` is ignored) and **books nothing**: the pool branch
   returns before `register_adr_in_ledger`. `uv run gz register-adrs` books pool
   entries.

@@ -82,11 +82,14 @@ Triggers requiring a refresh:
 1. **New skill landed** at `.gzkit/skills/<new-slug>/SKILL.md` and propagated
    to `src/gzkit/skills/<new-slug>/SKILL.md`. Add `"<new-slug>/SKILL.md"` to
    `surfaces.skills`.
-2. **New rule landed** at `src/gzkit/rules/<new-name>.md`. Add
+2. **New rule landed** at `.gzkit/rules/<new-name>.md` and propagated
+   to `src/gzkit/rules/<new-name>.md`. Add
    `"<new-name>.md"` to `surfaces.rules`.
-3. **New persona landed** at `src/gzkit/personas/<new-name>.md`. Add
+3. **New persona landed** at `.gzkit/personas/<new-name>.md` and propagated
+   to `src/gzkit/personas/<new-name>.md`. Add
    `"<new-name>.md"` to `surfaces.personas`.
-4. **New template landed** at `src/gzkit/templates/<new-name>.md`. Add
+4. **New template landed** at `.gzkit/templates/<new-name>.md` and propagated
+   to `src/gzkit/templates/<new-name>.md`. Add
    `"<new-name>.md"` to `surfaces.templates`.
 5. **New chore landed** at `.gzkit/chores/<new-slug>/` and propagated to
    `src/gzkit/chores/<new-slug>/`. Add each shipped file as a slug-relative

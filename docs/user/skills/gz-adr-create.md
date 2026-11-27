@@ -37,7 +37,8 @@ See [Runbook: ADR Creation](../runbook.md) for the full workflow.
    functions. `--kind` is always asked, never defaulted. In gzkit itself
    `foundation` is closed to new authoring, so the choice is `feature` or `pool`.
 2. **The answers are recorded** to a JSON file kept alongside the ADR.
-3. **The ADR is scaffolded by the CLI** from `src/gzkit/templates/adr.md` —
+3. **The ADR is scaffolded by the CLI** from `.gzkit/templates/adr.md` (or its
+   wheel copy when the project has none) —
    `uv run gz interview adr --from <answers>.json` for a feature ADR,
    `uv run gz plan create <slug> --kind pool --lane <lite|heavy>` for a pool ADR.
    The scaffolder chooses the directory under `docs/design/adr/`.
