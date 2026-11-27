@@ -5,14 +5,14 @@ description: Use to create and book an ADR with its OBPI briefs under five-gate 
 category: adr-lifecycle
 compatibility: Requires GovZero v6 framework; provides governance rules internally for portable use across repositories
 metadata:
-  skill-version: "6.12.2"
+  skill-version: "6.12.3"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), linkage (ADR/OBPI/GHI), foundation-nominal-allocation (next-free-integer)"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-11-27
 model: opus
 ---
 
@@ -85,8 +85,8 @@ ADRs propel MINOR versions only -- each ADR increments the minor odometer (human
 
 ## Assets
 
-- **ADR Template:** `src/gzkit/templates/adr.md` (canonical in-repo shape; the gold standard recent foundation ADRs use).
-- **OBPI Brief Template:** `src/gzkit/templates/obpi.md` (canonical; `.gzkit/skills/gz-obpi-specify/assets/OBPI_BRIEF-template.md` is the authoring guide)
+- **ADR Template:** `.gzkit/templates/adr.md` (canonical in-repo shape, with `src/gzkit/templates/adr.md` its generated wheel copy; the gold standard recent foundation ADRs use).
+- **OBPI Brief Template:** `.gzkit/templates/obpi.md` (canonical, with `src/gzkit/templates/obpi.md` its generated wheel copy; `.gzkit/skills/gz-obpi-specify/assets/OBPI_BRIEF-template.md` is the authoring guide)
 
 ## Outputs
 
@@ -246,7 +246,7 @@ the decision before any artifacts exist, preventing scope ambiguity at the sourc
 
 ---
 
-1. **Read the canonical template** at `src/gzkit/templates/adr.md` (the in-repo shape recent foundation ADRs use).
+1. **Read the canonical template** at `.gzkit/templates/adr.md` (the in-repo shape recent foundation ADRs use).
 2. **Verify GovZero compliance:** ADR ID follows 0.y.z format; status uses canonical lifecycle states.
 3. **Scaffold through the CLI, not by hand.** Step 0's `gz interview adr --from` (non-pool) or `gz plan create --kind pool` writes the ADR folder and file from the template.
 4. Populate every section the scaffold left as a placeholder (§ Template Sections).
@@ -289,7 +289,7 @@ uv run mkdocs build --strict
 
 ## Template Sections (Required)
 
-The `##` headings of `src/gzkit/templates/adr.md` are the authority — populate every one. Illustratively, at 2026-09-19: Persona, Intent, Decision, Consequences (Positive / Negative), Fidelity Assertions, Decomposition Scorecard, Checklist, Q&A Transcript, Evidence, Alternatives Considered, Forcing Functions (the seven, plus Downstream Decisions Forced), Attestation Block.
+The `##` headings of `.gzkit/templates/adr.md` are the authority — populate every one. Illustratively, at 2026-09-19: Persona, Intent, Decision, Consequences (Positive / Negative), Fidelity Assertions, Decomposition Scorecard, Checklist, Q&A Transcript, Evidence, Alternatives Considered, Forcing Functions (the seven, plus Downstream Decisions Forced), Attestation Block.
 
 ## Failure Modes
 

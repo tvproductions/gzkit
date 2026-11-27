@@ -184,11 +184,13 @@ the other side's check passing. Tracked under GHI #372 — the judgment
 invariant lands now; mechanical promotion follows the canonical
 advisory → mechanical pipeline (`docs/governance/advisory-rules-audit.md`).
 
-The same discipline applies recursively to AGENTS.md itself: edit
-`src/gzkit/templates/agents.md` (canonical) and let
-`gz agent sync control-surfaces` propagate to the rendered file.
+The same discipline applies recursively to AGENTS.md itself: change its
+canon in the corpus (`.gzkit/corpus/AGENTS.md.jsonl`) through the content
+skills and let `gz agent sync control-surfaces` play the committed rendition
+back to the rendered file.
 Editing the rendered file directly violates the very invariant 1a
-binds (template ↔ rendered file is a registered coupled-surface pair).
+binds: the corpus and the rendered file are a coupled pair, and playback
+is the sole writer of the rendered file.
 
 ## Rationale for Behavior Rule 11 (course-correction → insights)
 

@@ -402,8 +402,9 @@ Split compound commands into separate criteria.
 **ASK THE HUMAN:**
 
 - "Should I create a new chore or add to an existing one?"
-- "Should this chore live in canonical (`src/gzkit/chores/`) or only as a
-  project overlay (`.gzkit/chores/`)?"
+- "Should this chore be canonical (authored at `.gzkit/chores/` and shipped
+  in the wheel as `src/gzkit/chores/`) or project-local only
+  (`"projectLocal": true` in the registry)?"
 - "What lane should this chore be?"
 - "Where should I store this proof artifact?"
 
