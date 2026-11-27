@@ -24,7 +24,7 @@ gz chores list [--explain]
   `package`, or `missing`.
 - Validates each chore's class declaration (`class`, `rung`, `idempotent`,
   `staleness`, `remediation`, `nonAuthority`, `governingRule`; see
-  `src/gzkit/chores/README.md`). A partial or malformed declaration fails
+  `.gzkit/chores/README.md`). A partial or malformed declaration fails
   closed with a `chores[<slug>].<field>` blocker; an absent one does not.
 - After the table, announces how many chores carry no class declaration and
   that `gz chores run` refuses them (GHI #999), e.g.

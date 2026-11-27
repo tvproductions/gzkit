@@ -221,7 +221,7 @@ uv run gz chores propose-ghi eval-feedback-cluster
   end-to-end chore execution.
 - ADR-0.0.21 — `docs/design/adr/foundation/ADR-0.0.21-chores-as-gzkit-surface/`
 - Rule — `.gzkit/rules/chores.md`
-- Agent contract — [`src/gzkit/chores/README.md`](https://github.com/tvproductions/gzkit/blob/main/src/gzkit/chores/README.md)
+- Agent contract — [`.gzkit/chores/README.md`](https://github.com/tvproductions/gzkit/blob/main/.gzkit/chores/README.md)
 
 ## See Also
 

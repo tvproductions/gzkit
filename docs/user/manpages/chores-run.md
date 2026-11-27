@@ -28,7 +28,7 @@ gz chores run <slug>
 - Returns non-zero on command failure, timeout, or missing executable.
 - Refuses a chore with no class declaration before running anything, with a
   `BLOCKERS:` message naming it and exit 1 (GHI #999). Declare it on its
-  `registry.json` entry (`src/gzkit/chores/README.md` § Class Declaration).
+  `registry.json` entry (`.gzkit/chores/README.md` § Class Declaration).
 
 ---
 

@@ -169,7 +169,7 @@ are not permitted.
 ## What You SHOULD Do
 
 1. **Follow the established pattern** — Study existing chores under
-   `src/gzkit/chores/` before creating new ones.
+   `.gzkit/chores/` before creating new ones.
 2. **Keep proofs atomic** — One file per evidence artifact.
 3. **Use descriptive filenames** — `ruff-report-2026-04-25.txt`, not
    `output.txt`.
@@ -181,20 +181,21 @@ are not permitted.
 ## Adding a New Chore (Canonical)
 
 A new chore meets § Admission criterion first, and the operator directs its
-creation. Use an existing canonical chore as a template. Required structure for
-a canonical addition:
+creation. Use an existing canonical chore as a template. Author it under
+`.gzkit/chores/`; `uv run gz agent sync control-surfaces` writes the package
+copy to `src/gzkit/chores/<slug>/`. Required structure for a canonical addition:
 
 ```text
-src/gzkit/chores/<slug>/
+.gzkit/chores/<slug>/
 ├── CHORE.md          # Definition, workflow, acceptance criteria
 ├── acceptance.json   # Machine-readable criteria
 └── README.md         # Brief human summary
 ```
 
-After creating, register the slug in `src/gzkit/chores/registry.json` with its
-class declaration (§ Class Declaration). Project
-overlays (`.gzkit/chores/<slug>/`) are scaffolded by `gz init` or `gz chores
-doctor` from the canonical surface.
+After creating, register the slug in `.gzkit/chores/registry.json` with its
+class declaration (§ Class Declaration); the shipped registry is generated from
+it. In an adopter project, `gz init` or `gz chores doctor` scaffolds
+`.gzkit/chores/<slug>/` from the package copy.
 
 ---
 

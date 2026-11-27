@@ -299,7 +299,7 @@ gz validate --chores-layout --json
 | Code | Meaning | Recovery |
 |------|---------|----------|
 | 0 | Clean tree (or all violations waived) | — |
-| 3 | One or more unwaived stray `CHORE.md` / `acceptance.json` | Move the file under `src/gzkit/chores/<slug>/` or `.gzkit/chores/<slug>/`, or add an explicit waiver entry |
+| 3 | One or more unwaived stray `CHORE.md` / `acceptance.json` | Move the file under `.gzkit/chores/<slug>/` (sync writes the package copy of a canonical-class chore), or add an explicit waiver entry |
 
 ### `--bullet-retention`
 
