@@ -471,9 +471,8 @@ storage, exit codes, and rationale.
 *Lifted from `AGENTS.md` § Attestation § Lane behavior under
 OBPI-0.0.54-02.*
 
-**Heavy lane or foundation kind:** missing receipt IDs are fail-closed.
-**Otherwise (lite lane, non-foundation):** missing receipt IDs produce a
-warning. Fabricating a receipt ID is the
+**Lite lane:** missing receipt IDs produce a warning. **Heavy lane:**
+missing receipt IDs are fail-closed. Fabricating a receipt ID is the
 same failure as fabricating the claim.
 
 <!-- Lifted from AGENTS.md. The lift declaration was retired 2026-09-17 (GHI #921): the rewritten contract carries no forward pointer to this section, by operator ruling that a pointer never stands in for a rule. -->
