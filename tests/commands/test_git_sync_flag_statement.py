@@ -22,7 +22,7 @@ from gzkit.cli.main import _build_parser
 from gzkit.commands.ceremony_state import CeremonyState
 from gzkit.commands.ceremony_steps import render_step_11_complete
 from gzkit.commands.obpi_stages import _build_sync_stage_steps
-from gzkit.commands.sync import _plan_git_sync
+from gzkit.commands.sync import _has_unstaged_changes, _plan_git_sync
 from gzkit.commands.version_sync import write_in_flight_release_manifest
 from gzkit.pipeline_markers import pipeline_stage_output
 
@@ -211,6 +211,13 @@ class TestDryRunPredictsApplyUnderNoAutoAdd(unittest.TestCase):
         plan = _plan(apply=False, auto_add=False, dirty=True, unstaged=False)
         warnings = cast("list[str]", plan["warnings"])
         self.assertFalse(any("--no-auto-add" in w for w in warnings))
+
+    def test_the_probe_answers_false_not_none_when_everything_is_staged(self) -> None:
+        """`_has_unstaged_changes` is typed `-> bool`; an implicit None breaks the contract."""
+        with mock.patch("gzkit.commands.sync.git_cmd", return_value=(0, "", "")):
+            answer = _has_unstaged_changes(Path("/nonexistent"))
+        self.assertIsInstance(answer, bool)
+        self.assertFalse(answer)
 
     def test_an_untracked_file_alone_still_warns(self) -> None:
         plan = _plan(apply=False, auto_add=False, dirty=True, unstaged=False, untracked=True)
