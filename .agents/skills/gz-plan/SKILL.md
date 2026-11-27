@@ -3,10 +3,10 @@ name: gz-plan
 description: Use to create an ADR, a pool ADR included, recording architecture intent and lane scope.
 category: adr-lifecycle
 metadata:
-  skill-version: "1.8.4"
+  skill-version: "1.8.5"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-11-27
 model: opus
 ---
 
@@ -81,9 +81,10 @@ Decomposition Scorecard (legacy).
    scores, then present them, the resulting OBPI count and the rationale for
    the operator's approval: the Granularity Assessment the doc's § Enforcement
    asks of this skill.
-4. **Ask before creating.** Put up to 20 non-obvious questions to the operator
-   on edge cases, dependencies and possible regressions. Do not create the ADR
-   until they are answered.
+4. **Ask before creating.** Put non-obvious questions on edge cases,
+   dependencies and possible regressions to the operator one at a time, each
+   with a recommended answer (`AGENTS.md` § Operator Economy of Effort). Do not
+   create the ADR until they are answered.
 5. **Ask the operator for `--kind`; never propose a default.** In gzkit the
    choices are `feature` (ships a named capability, semver `0.y.z` and up) and
    `pool` (noted, not committed). `foundation` is closed in every project,
