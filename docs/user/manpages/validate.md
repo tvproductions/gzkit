@@ -959,7 +959,7 @@ Validated: surface_fidelity
 
 Static T0 distribution invariant audit (ADR-0.0.32-07). Verifies that every
 file in a packaged surface tree (`src/gzkit/skills/`, `src/gzkit/rules/`,
-`src/gzkit/personas/`, `src/gzkit/templates/`, and any surface tracked by
+`src/gzkit/personas/`, `src/gzkit/templates/`, `src/gzkit/chores/`, and any surface tracked by
 `data/distribution_baseline_manifest.json`) is wheel-deliverable — i.e.,
 shipped by the uv_build wheel `pyproject.toml` declares AND present in the
 baseline manifest.
