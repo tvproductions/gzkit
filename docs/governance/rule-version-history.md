@@ -423,6 +423,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `pythonic.md`
 
+### Changed 2026-11-27 at version `0.8.1` (GHI #1411 review)
+
+Prior `0.8.0` banner, verbatim: *"§ Imports names a third lazy-import carve-out, help-path deferral, which reconciles it with `cli.md`'s help-path rule (prompt-audit M46, operator, 2026-11-25: *"Third carve-out (Recommended)"*; GHI #1411)"*. Superseded the same day: 0.8.0 said the carve-out was "witnessed by `tests/cli/test_help_path_imports.py`", but that guard forbids only `gzkit.commands.common` (`_FORBIDDEN_AT_IMPORT_TIME`), so the rule now says so.
+
 ### Changed 2026-11-27 at version `0.8.0` (prompt-audit M46)
 
 Prior `0.7.1` banner, verbatim: *"the mutation engine and the cognitive scorer are now the `gz-mutation-witness` and `gz-mindload` libraries (operator, 2026-11-21: *"they need to migrate as libraries"*)"*. Superseded when § Imports gained the third carve-out, help-path deferral, on the operator's *"Third carve-out (Recommended)"* (GHI #1411).
