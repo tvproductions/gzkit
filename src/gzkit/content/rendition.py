@@ -97,7 +97,7 @@ class CandidateRendition(BaseModel):
 def candidate_path(root: Path, surface: str, consumer: str) -> Path:
     """Return the staging path for a candidate rendition.
 
-    Written by ``gz content compose``; never by the playback path (OBPI-22).
+    Written by ``gz content compose``; never by the playback path (ADR-0.35.0).
     Path: ``<root>/.gzkit/renditions/<surface>/<consumer>.candidate.md``
 
     Returns:

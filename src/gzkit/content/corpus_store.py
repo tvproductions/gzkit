@@ -8,7 +8,7 @@ discipline, never the entry shape or validation rules (those belong to the model
 The sole mutation is append: load the existing corpus, ``Corpus.append`` a new entry
 (which returns a new immutable corpus), and rewrite the JSONL file. No rendered surface
 is ever touched here — capture writes the source of truth; deterministic playback
-(OBPI-22) remains the sole writer of rendered surfaces.
+(ADR-0.35.0) remains the sole writer of rendered surfaces.
 
 That rewrite-the-whole-file shape is why this module owns three disciplines rather than
 none — a store with no delete path cannot recover from a bad write, so every failure

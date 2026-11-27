@@ -1,10 +1,11 @@
 """Deterministic advisor-QC verdict-record engine — ADR-0.0.37, OBPI-0.0.37-24.
 
-The advisor-QC stage sits between compress (OBPI-21) and commit (OBPI-22): an
-agent wielding the ``gz-advisor-qc`` skill judges the information-retained-per-byte
-of a candidate rendition and records its verdict as an ARB receipt the operator
-cites at Gate 5. This module is the **deterministic record half** — it performs
-NO in-code LLM or network call. The judgment is the skill's; the engine only:
+The advisor-QC stage sits between compress (``gz content compose``) and commit
+(``gz content commit``): an agent wielding the ``gz-advisor-qc`` skill judges the
+information-retained-per-byte of a candidate rendition and records its verdict as
+an ARB receipt the operator cites at Gate 5. This module is the **deterministic
+record half** — it performs NO in-code LLM or network call. The judgment is the
+skill's; the engine only:
 
 1. validates receipt shape (explanation-before-verdict; ADR-0.0.39 doctrine),
 2. assembles the verdict-shaped ARB receipt payload, and
