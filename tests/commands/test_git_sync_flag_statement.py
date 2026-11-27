@@ -147,10 +147,19 @@ class TestReleaseManifestNamesTheReleaseSweep(unittest.TestCase):
         self.assertNotIn("--lint --test", text)
 
 
-def _plan(*, apply: bool, auto_add: bool, dirty: bool, unstaged: bool = True) -> dict[str, object]:
+def _plan(
+    *,
+    apply: bool,
+    auto_add: bool,
+    dirty: bool,
+    unstaged: bool = True,
+    untracked: bool = False,
+    probe_fails: bool = False,
+) -> dict[str, object]:
     """Return `_plan_git_sync`'s plan over a stubbed clean-remote repository.
 
-    *unstaged* False models a dirty tree whose every change is already staged.
+    *unstaged* False models a dirty tree whose every change is already staged;
+    *untracked* adds a new file only; *probe_fails* makes the git probes error.
 
     Returns:
         The plan mapping `_plan_git_sync` returns.
@@ -160,8 +169,12 @@ def _plan(*, apply: bool, auto_add: bool, dirty: bool, unstaged: bool = True) ->
     def fake_git(_root: Path, *args: str) -> tuple[int, str, str]:
         if args[:2] == ("rev-list", "--count"):
             return 0, "0", ""
+        if probe_fails and args[0] in {"diff", "ls-files"}:
+            return 1, "", "fatal: probe failed"
         if args == ("diff", "--name-only") and unstaged:
             return 0, "docs/notes.md", ""
+        if args == ("ls-files", "--others", "--exclude-standard") and untracked:
+            return 0, "docs/new.md", ""
         return 0, "", ""
 
     status = ([" M docs/notes.md"] if dirty else [], None)
@@ -198,6 +211,16 @@ class TestDryRunPredictsApplyUnderNoAutoAdd(unittest.TestCase):
         plan = _plan(apply=False, auto_add=False, dirty=True, unstaged=False)
         warnings = cast("list[str]", plan["warnings"])
         self.assertFalse(any("--no-auto-add" in w for w in warnings))
+
+    def test_an_untracked_file_alone_still_warns(self) -> None:
+        plan = _plan(apply=False, auto_add=False, dirty=True, unstaged=False, untracked=True)
+        warnings = cast("list[str]", plan["warnings"])
+        self.assertTrue(any("--no-auto-add" in w for w in warnings))
+
+    def test_a_failing_probe_warns_rather_than_stays_silent(self) -> None:
+        plan = _plan(apply=False, auto_add=False, dirty=True, unstaged=False, probe_fails=True)
+        warnings = cast("list[str]", plan["warnings"])
+        self.assertTrue(any("--no-auto-add" in w for w in warnings))
 
     def test_dry_run_warns_that_unstaged_changes_stay_behind(self) -> None:
         plan = _plan(apply=False, auto_add=False, dirty=True)
