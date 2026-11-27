@@ -5,7 +5,7 @@ description: Use to claim, release or list OBPI work locks.
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-27
+last_reviewed: 2026-10-17
 metadata:
   skill-version: "6.4.8"
 model: haiku
