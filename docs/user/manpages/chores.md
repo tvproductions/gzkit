@@ -163,8 +163,8 @@ gz chores record-processed decommission-tautological-tests --file <path> --dispo
 | Code | Meaning |
 |------|---------|
 | 0 | Success |
-| 1 | User/config error (missing slug, malformed `acceptance.json`, etc.) |
-| 2 | System/IO error |
+| 1 | User/config error (malformed `acceptance.json`, etc.) |
+| 2 | Usage error (a subcommand's `<slug>` not supplied) or System/IO error |
 | 3 | Policy breach (acceptance criterion failed; layout violation; missing canonical chore not waived) |
 
 ## Examples

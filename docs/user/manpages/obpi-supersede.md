@@ -45,7 +45,8 @@ withdraw` instead when an OBPI is simply retired with no replacement.
 | Code | Meaning |
 |------|---------|
 | 0 | Success |
-| 1 | User/config error (invalid OBPI, missing rationale/attestor) |
+| 1 | User/config error (invalid OBPI, empty `--rationale` or `--attestor`) |
+| 2 | Usage error (`--by`, `--rationale` or `--attestor` not supplied) |
 
 ## Examples
 

@@ -45,7 +45,8 @@ the intent is to reverse a completion while keeping the OBPI re-completable.
 | Code | Meaning |
 |------|---------|
 | 0 | Success |
-| 1 | User/config error (invalid OBPI, missing reason, missing attestor) |
+| 1 | User/config error (invalid OBPI, empty `--attestor`) |
+| 2 | Usage error (`--reason` or `--attestor` not supplied) |
 
 ## Examples
 

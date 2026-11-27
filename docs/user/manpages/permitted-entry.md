@@ -56,7 +56,8 @@ never evade the ceiling and fresh-transit routing by adding `--recon`.
 | Code | Meaning |
 |------|---------|
 | `0` | Success — the transit crossed (the diagnostic gate never hard-blocks) |
-| `1` | User/config error (e.g. missing `--target`) |
+| `1` | User/config error |
+| `2` | Usage error (e.g. `--target` not supplied) |
 
 ## Examples
 

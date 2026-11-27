@@ -61,8 +61,8 @@ Per state doctrine (Layer 2 ledger = source of truth for state transitions), the
 | Code | Meaning |
 |------|---------|
 | 0 | Demotion completed (or dry-run succeeded). |
-| 1 | User/config error: missing `--ghi`, pool target collision, ADR already pool, missing `kind`/`semver`. |
-| 2 | System/IO error: frontmatter parse failure, ledger write failure. |
+| 1 | User/config error: pool target collision, ADR already pool, missing `kind`/`semver`. |
+| 2 | Usage error: `--ghi` not supplied. System/IO error: frontmatter parse failure, ledger write failure. |
 | 3 | Policy breach: dependent children exist, or live `@covers` decorators name REQs from the briefs being deleted; `--force` overrides. |
 
 ---
