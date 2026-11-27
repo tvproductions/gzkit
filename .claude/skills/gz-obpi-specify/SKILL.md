@@ -5,9 +5,9 @@ description: Use to decompose an ADR item into an authored OBPI brief.
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-14
+last_reviewed: 2026-11-27
 metadata:
-  skill-version: "1.10.3"
+  skill-version: "1.10.4"
 model: opus
 ---
 
@@ -127,7 +127,7 @@ provenance is owned by `.gzkit/rules/agent-failure-modes.md`). When the first
 authoring step is "quote the Decision item," drift between the ADR's Feature
 Checklist line and the OBPI brief is structurally harder to introduce.
 
-The pin lives in the rendered template (`src/gzkit/templates/obpi.md`).
+The pin lives in the OBPI template (`.gzkit/templates/obpi.md`; the CLI renders its wheel copy `src/gzkit/templates/obpi.md`).
 A brief that drifts the pinned items out of order, deletes the STOP guard,
 or omits the Decision quote in Implementation Summary is the same class of
 defect as a thin Allowed Paths section: a brief that won't survive pipeline

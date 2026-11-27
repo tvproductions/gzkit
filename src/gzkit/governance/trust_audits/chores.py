@@ -30,8 +30,9 @@ def audit_chores_layout(project_root: Path) -> list[ValidationError]:
     """Flag ``CHORE.md`` / ``acceptance.json`` outside canonical chores roots.
 
     ADR-0.0.21 Decision #9: chores live under exactly two roots —
-    ``src/gzkit/chores/`` (canonical, shipped in the wheel) and the
-    project-scoped ``paths.chores`` (default ``.gzkit/chores/``). Two vectors
+    ``src/gzkit/chores/`` (the generated package copy, shipped in the wheel)
+    and the project-scoped ``paths.chores`` (default ``.gzkit/chores/``, the
+    canonical authoring source). Two vectors
     fail closed: (1) any ``CHORE.md`` or ``acceptance.json`` discovered
     outside both roots is layout drift; (2) ANY file under the forbidden
     legacy ``ops/chores/`` root is drift regardless of filename — bare proof
@@ -424,7 +425,7 @@ def audit_chore_rung_conformance(project_root: Path) -> list[ValidationError]:
                             f"chore `{entry.get('slug')}` carries no class declaration, so "
                             "`gz chores run` refuses it and its steps have no rung to be held "
                             "to; declare it on its registry.json entry "
-                            "(src/gzkit/chores/README.md § Class Declaration, GHI #999)."
+                            "(.gzkit/chores/README.md § Class Declaration, GHI #999)."
                         ),
                     )
                 )

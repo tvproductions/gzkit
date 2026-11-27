@@ -437,7 +437,7 @@ def chores_run(slug: str) -> None:
         msg = (
             f"BLOCKERS:\n- Chore '{chore.slug}' carries no class declaration, so it is "
             "refused: an undeclared chore has no rung to hold a run to "
-            "(src/gzkit/chores/README.md § Class Declaration, GHI #999).\n"
+            "(.gzkit/chores/README.md § Class Declaration, GHI #999).\n"
             f"- Declare class, rung, idempotent, staleness, remediation, nonAuthority and "
             f"governingRule on its registry.json entry, stage every Workflow step, then "
             f"confirm with `uv run gz chores list`."
