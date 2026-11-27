@@ -98,7 +98,7 @@ Each line names the owning order, what the order gains, and a proposed grade.
 
 ## Held rulings
 
-Put to the operator one at a time; none is assumed. H1 to H6 were ruled on 2026-11-08, H7 on 2026-11-27.
+Put to the operator one at a time; none is assumed. H1 to H6 were ruled on 2026-11-08, H7 and H8 on 2026-11-27.
 
 - **H1. Ruled 2026-11-08.** Amend Exit item 9 with the decision-reconciliation inventory (CO-7)? The
   contract changes only by its own amendment (§ Records, B1). Operator, by selection: *"Amend item 9
@@ -143,6 +143,15 @@ Put to the operator one at a time; none is assumed. H1 to H6 were ruled on 2026-
   off, it would keep authoring the legacy form after RP-6 lands. Found in the prompt-audit walk
   (M31, #1400). Put to the operator: A, add it to CO-1's list now; B, leave CO-1 and record the
   omission for RP-6. Operator, verbatim: *"A"*.
+- **H8. Ruled 2026-11-27.** The ADR kinds. Operator, verbatim: *"these all refer to work that the
+  drydock supersedes - there is only one kind of ADR and it is the actual Architecture Decision
+  Record. The "feature" kind is a misnomer and should be deprecated. this is all slated dry dock
+  work."* With the earlier *"we WERE using foundation ADRs but have stopped doing so. They must not
+  persist and we must not permit adopters to use them."* CO-1 therefore carries the retirement of
+  every ADR kind for new records, `feature` and `foundation` alike, adopters included; legacy records
+  keep their `kind:` as frozen history. GHI #1402 landed the foundation closure ahead of RP-6
+  (`0da00cf36`, `0b45fad78`) and closes superseded by CO-1 and CO-2; the operator kept those commits
+  (*"A"*).
 
 Every held ruling is ruled. What remains is the work itself, under its owning orders.
 
