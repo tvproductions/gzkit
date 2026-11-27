@@ -5,7 +5,7 @@ description: Use to run a GHI-driven patch release, or to publish a minor releas
 category: adr-audit
 compatibility: GovZero v6 framework; provides ceremony walkthrough for GHI-driven patch releases
 metadata:
-  skill-version: "1.14.4"
+  skill-version: "1.14.5"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/releases/patch-release.md, docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md"
@@ -13,7 +13,7 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-22
+last_reviewed: 2026-11-27
 model: sonnet
 ---
 
@@ -383,7 +383,7 @@ uv run gz git-sync --apply
 ```
 
 The full sweep is the release's QC (GHI #1191); a failure stops the release. Commit the release yourself: the bump changes `src/gzkit/__init__.py`, which `gz git-sync` will not sweep (git-sync skill, § What each flag runs, step 3).
-Sync MUST run immediately before `gh release create`, as in the closeout ceremony.
+Sync MUST run immediately before `gh release create`.
 
 #### 4d. GitHub Release (non-Foundation only)
 

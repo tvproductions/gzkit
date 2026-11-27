@@ -5,7 +5,7 @@ description: Use to run an ADR's closeout ceremony through to the operator's att
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.21.4"
+  skill-version: "7.21.5"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -13,7 +13,7 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-26
+last_reviewed: 2026-11-27
 model: opus
 ---
 
@@ -394,7 +394,7 @@ One-sided directives. Each row states the required behavior and names the failur
 7. **Record attestation only through `uv run gz closeout ADR-X.Y.Z`.** Never hand-edit the ledger, never substitute "Completed - Partial" for what the human intended as a rejection (follow the Rejection Loop-Back procedure).
 8. **Stop on any failed walkthrough command.** Fix the root cause or escalate; do not advance, and do not work around CLI errors by reimplementing the step in prose.
 9. **Review and close related GitHub Issues after attestation, each through `ghi-close`.** Unlinked closure leaves evidence orphaned.
-10. **Run `uv run gz git-sync --apply` before `gh release create` (non-Foundation) and after ceremony completion.** An unsynced attestation is a dangling ceremony.
+10. **Run `uv run gz git-sync --apply` after ceremony completion, as Step 9's two-sync pattern.** An unsynced attestation is a dangling ceremony. Publication, and the sync before `gh release create`, are `gz-patch-release`'s (Step 8).
 
 ---
 
