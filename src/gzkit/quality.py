@@ -617,11 +617,12 @@ def run_tests(project_root: Path) -> QualityResult:
     re-spelled here, exactly as ``run_typecheck`` reads its own entry. GHI #856
     was this gate and the ARB attestation label of the same name running
     DIFFERENT commands: the ``unittest-parallel`` accelerator was adopted here
-    and on the pre-commit hook (GHI #512) and never carried to the attestation
-    surface, so proving "Tests pass" cost 144.23s while this gate proved the
-    same tree in 41.34s. Re-spelling the command in both places is what made
-    that divergence possible; a test asserting the two agree would only detect
-    it after the fact. Deriving makes it unrepresentable.
+    and on the ``unittest`` hook in ``.pre-commit-config.yaml`` (GHI #512) and
+    never carried to the attestation surface, so proving "Tests pass" cost
+    144.23s while this gate proved the same tree in 41.34s. Re-spelling the
+    command in both places is what made that divergence possible; a test
+    asserting the two agree would only detect it after the fact. Deriving makes
+    it unrepresentable.
 
     ``--buffer`` captures each test's stdout/stderr and replays it ONLY for tests
     that fail or error (GHI #723). Negative-path tests deliberately trigger

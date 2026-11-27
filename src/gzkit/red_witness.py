@@ -37,9 +37,10 @@ runs the scoped test there. Four outcomes, and they are not equivalent:
     - the run failed, but only in tests the REQ does not name, so the
       designated discriminator itself was never observed failing (GHI #1154).
 
-Why a base-tree run and not superpowers' commit-the-failing-test witness: gzkit's
-trunk is green and pre-commit runs unittest, so a RED can never be committed to
-``main``. The witness must be an isolated base-tree run, not a RED commit.
+Why a base-tree run and not superpowers' commit-the-failing-test witness: gzkit
+keeps ``main`` green (the pre-push ``gz check`` runs the tests a change touches and
+CI runs the full suite), so a RED commit does not belong on ``main``. The witness
+must be an isolated base-tree run, not a RED commit.
 """
 
 import re

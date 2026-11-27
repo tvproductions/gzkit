@@ -166,9 +166,10 @@ reconstructed`, GHI #849). When no tree withholds the implementation it reports
 current tree, and the base run's class stands only when the named covering tests
 executed there and produced it (GHI #1154).
 
-gzkit's trunk is green and pre-commit runs unittest, so a RED can never be
-committed to `main`. That is why the witness is an isolated base-tree run rather
-than superpowers' commit-the-failing-test.
+gzkit keeps `main` green (the pre-push `gz check` runs the tests a change touches
+and CI runs the full suite), so a RED commit does not belong on `main`. That is
+why the witness is an isolated base-tree run rather than superpowers'
+commit-the-failing-test.
 
 ---
 

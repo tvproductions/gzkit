@@ -458,7 +458,8 @@ def test(bdd: bool = False, obpi: str | None = None) -> None:
       OBPI pipeline Stage 3 uses this.
     * ``--bdd`` (no ``--obpi``) — full unittest suite + full behave run
       (ADR closeout / Heavy-lane ceremony).
-    * default — full unittest suite only (ad-hoc / CI / pre-commit baseline).
+    * default — full unittest suite only (ad-hoc; ``gz check --full`` runs the
+      same suite in CI).
 
     See ``.gzkit/rules/tests.md`` and GHI #185 for the scenario-tag convention.
     """
