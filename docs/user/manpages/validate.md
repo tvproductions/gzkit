@@ -299,7 +299,7 @@ gz validate --chores-layout --json
 | Code | Meaning | Recovery |
 |------|---------|----------|
 | 0 | Clean tree (or all violations waived) | — |
-| 3 | One or more unwaived stray `CHORE.md` / `acceptance.json` | Move the file under `.gzkit/chores/<slug>/` (sync writes the package copy of a canonical-class chore), or add an explicit waiver entry |
+| 3 | One or more unwaived stray `CHORE.md` / `acceptance.json` | Move the file under `.gzkit/chores/<slug>/` or the configured `paths.chores` (sync writes the package copy of a canonical-class chore), or add an explicit waiver entry |
 
 ### `--bullet-retention`
 
@@ -958,7 +958,7 @@ Validated: surface_fidelity
 ### `--distribution`
 
 Static T0 distribution invariant audit (ADR-0.0.32-07). Verifies that every
-file in a canonical surface tree (`src/gzkit/skills/`, `src/gzkit/rules/`,
+file in a packaged surface tree (`src/gzkit/skills/`, `src/gzkit/rules/`,
 `src/gzkit/personas/`, `src/gzkit/templates/`, and any surface tracked by
 `data/distribution_baseline_manifest.json`) is wheel-deliverable — i.e.,
 shipped by the uv_build wheel `pyproject.toml` declares AND present in the
