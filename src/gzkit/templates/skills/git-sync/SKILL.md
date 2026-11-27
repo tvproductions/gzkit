@@ -9,7 +9,7 @@ owner: gzkit-governance
 model: haiku
 last_reviewed: 2026-11-26
 metadata:
-  skill-version: "1.3.6"
+  skill-version: "1.3.7"
 ---
 
 # SKILL.md
@@ -122,7 +122,7 @@ These thoughts mean STOP — you are about to push without the guards:
 | "Divergence with remote — just rebase and force" | Investigate first. Divergence may mean another agent or another machine pushed work you don't have. Force-pushing destroys it. |
 | "Dry-run looks fine, no need to actually run --apply" | Dry-run shows the plan; apply executes it. Walking away after dry-run leaves the local tree out of sync, which the next session inherits. |
 | "Pre-commit hook failed — `--no-verify` it" | Hooks are part of the contract. Skipping them with `--no-verify` removes the gates a sync runs (§ What each flag runs). Diagnose, don't bypass. |
-| "I'll commit and sync separately" | The ritual includes the sync step deliberately. Committing without syncing leaves the branch behind on the remote, which is exactly the divergence trap. |
+| "I committed; the sync can wait" | Commit first with a descriptive subject, then run `gz git-sync --apply` in the same session. A commit left unpushed is work the remote lacks, which is exactly the divergence trap. |
 
 ## Red Flags
 
