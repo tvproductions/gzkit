@@ -4,8 +4,8 @@ The *candidate* rendition is the authoring artifact produced by the
 ``gz content compose`` tool: the agent supplies the compressed text; the
 tool validates invariant-floor compliance, computes byte evidence, writes
 the candidate, and emits a ledger event. The *committed* rendition (the
-durable store, written by ``gz content commit``) and deterministic playback
-are ADR-0.35.0 scope.
+durable store, written by ``gz content commit`` or ``gz content land``) and
+deterministic playback are ADR-0.35.0 scope.
 """
 
 from pathlib import Path

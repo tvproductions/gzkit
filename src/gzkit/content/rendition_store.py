@@ -1,10 +1,11 @@
 """Committed-rendition store — deterministic playback layer (ADR-0.0.37, OBPI-0.0.37-22).
 
 The rendition store owns ``.gzkit/renditions/<surface>/<consumer>.md``: one
-durable artifact per *(surface × consumer)* pair. It is the seam between the
-authoring-time compression composer (``gz content compose``, non-deterministic) and the
-deterministic render path: once committed, the rendition is replayed verbatim
-to the rendered surface — no LLM, no network, no template substitution.
+durable artifact per *(surface × consumer)* pair. It is the seam between
+authoring-time compression (the agent's compressed text, staged by
+``gz content compose``) and the deterministic render path: once committed, the
+rendition is replayed verbatim to the rendered surface — no LLM, no network, no
+template substitution.
 
 Two artifacts are committed per pair: the rendition bytes (``save_rendition``)
 and a provenance sidecar (``save_fingerprint``) at ``<consumer>.corpus.json``
