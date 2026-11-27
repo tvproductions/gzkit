@@ -73,9 +73,9 @@ The same-commit-window backfill heuristic exempts five structurally distinct sha
 
 # Brief Heading Conventions (gzkit)
 
-<!-- rule-version: 0.2.1 -->
+<!-- rule-version: 0.2.2 -->
 
-> **Rule version:** `0.2.1` — version narrative lifted to [Rule Version History](../../docs/governance/rule-version-history.md#brief-heading-conventionsmd); binding rules unchanged.
+> **Rule version:** `0.2.2` — top-level brief sections are named as the template names them, never as Gate 2 (GHI #1414); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#brief-heading-conventionsmd).
 
 OBPI brief evidence sections MUST use H3 (`###`), not H2 (`##`).
 
@@ -99,8 +99,8 @@ silently passes schema validation (the section exists) but the extractor
 stops at the next H2 boundary and returns an empty body — triggering
 mid-ceremony failures and post-attestation diagnostic noise.
 
-Gate 2 (`## Objective`, `## Acceptance Criteria`, `## ALLOWED PATHS`, etc.)
-remains H2: those are top-level brief structure, not per-pass evidence.
+Top-level brief sections (`## Objective`, `## Acceptance Criteria`, `## Allowed Paths`,
+etc.) stay H2: they are brief structure, not per-pass evidence.
 
 ## Mechanical check
 

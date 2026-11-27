@@ -58,7 +58,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `agents-md-map-doctrine.md` | `0.14.0` |
 | `adr-audit.md` | `0.3.4` |
 | `agent-failure-modes.md` | `0.8.4` |
-| `brief-heading-conventions.md` | `0.2.1` |
+| `brief-heading-conventions.md` | `0.2.2` |
 | `changelog-release-notes.md` | `1.2.2` |
 | `complexity-doctrine.md` | `0.4.3` |
 | `complexity-thresholds.md` | `0.6.1` |
@@ -317,7 +317,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
 | 53a | OBPI brief evidence sections MUST use H3 (`###`), not H2 (`##`) | **Promotable** | `uv run gz validate --brief-headings` exits 3 on drift (GHI #238) when run. **Corrected 2026-11-08:** this note called it "a real fail-closed gate", but the scope is explicit-only and listed in `data/validator_reachability_grandfather.json` `ungated_scopes`; its one automatic path is the per-brief `_check_brief_headings_scoped` inside `gz obpi precomplete`, a pipeline pre-flight. Separately, this scorecard reserves **Mechanical** for a row citing a registered `NC:<claim-id>` from the `@enforces` registry, and no control plants an H2-drifted evidence heading (the 45b / 62c precedent). The failure it guards is specifically silent: a drifted heading still passes schema validation because the section exists, while the extractor stops at the next H2 and returns an empty body. Promotion path: author an `@enforces` control planting `## Implementation Summary` in a brief and cite its claim id. `source=.gzkit/rules/brief-heading-conventions.md` |
-| 53b | `## Acceptance Criteria` (H2) is top-level brief structure and is deliberately NOT an evidence section | **Judgment** | A carve-out that exists to stop an over-eager reading of 53a from rewriting the canonical H2 section, and to keep it distinct from the per-pass `### ACCEPTANCE` evidence section. Nothing mechanical distinguishes "this H2 is structure" from "this H2 is drifted evidence" except the closed list of three canonical evidence headings the validator already carries — so the carve-out is discharged by 53a's implementation rather than separately witnessed. Scored so the exemption is recorded rather than inferred from 53a's silence. `source=.gzkit/rules/brief-heading-conventions.md` |
+| 53b | `## Acceptance Criteria` (H2) is top-level brief structure and is deliberately NOT an evidence section | **Judgment** | **Amended 2026-11-27 (rule `0.2.2`, GHI #1414): the sentence that called the top-level sections Gate 2 (Gate 2 is Tests) now names them top-level brief sections, with `## Allowed Paths` as the template spells it; the score is unchanged.** A carve-out that exists to stop an over-eager reading of 53a from rewriting the canonical H2 section, and to keep it distinct from the per-pass `### ACCEPTANCE` evidence section. Nothing mechanical distinguishes "this H2 is structure" from "this H2 is drifted evidence" except the closed list of three canonical evidence headings the validator already carries — so the carve-out is discharged by 53a's implementation rather than separately witnessed. Scored so the exemption is recorded rather than inferred from 53a's silence. `source=.gzkit/rules/brief-heading-conventions.md` |
 
 ### GitHub CLI Guardrails (`.gzkit/rules/gh-cli.md`)
 

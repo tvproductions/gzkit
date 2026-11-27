@@ -1237,6 +1237,12 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 > **Rule version:** `0.2.0` — scored for real under GHI #921 (2026-08-30). This rule sat in `data/advisory_scorecard_grandfather.json`, pinned at `0.1.0` against a version nobody recorded; the pin is stripped by any edit, so its clauses were re-read and its Coverage Ledger rows added or corrected in the same commit. Prior version history lifted to [Rule Version History](rule-version-history.md#brief-heading-conventionsmd). Binding rules unchanged.
 
+### Lifted 2026-11-27 at version `0.2.1` (rule now at `0.2.2`)
+
+The version banner as it stood, lifted with its link rebased to this page (GHI #1414):
+
+> **Rule version:** `0.2.1` — version narrative lifted to [Rule Version History](rule-version-history.md#brief-heading-conventionsmd); binding rules unchanged.
+
 ## `changelog-release-notes.md`
 
 Lifted 2026-08-30 at version `1.1.0` (rule now at `1.2.0`).
