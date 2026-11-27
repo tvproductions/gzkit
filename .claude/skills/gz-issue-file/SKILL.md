@@ -5,9 +5,9 @@ description: Use from a consuming repository to file a gzkit defect or enhanceme
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-26
+last_reviewed: 2026-11-27
 metadata:
-  skill-version: "1.0.5"
+  skill-version: "1.0.6"
   govzero-framework-version: "v6"
 model: sonnet
 ---
@@ -69,7 +69,7 @@ For enhancements to any of the above, file with `--enhancement` instead of
 
 3. **File live** by re-running without `--dry-run`. The wrapper invokes
    `gh issue create --repo tvproductions/gzkit --title T --body B --label L`
-   and propagates `gh`'s exit code on failure.
+   and exits 2 when `gh` fails, whatever code `gh` returned.
 
 4. **Record the assigned issue number** into the relevant brief, GHI, or
    commit body so downstream `(GHI #N)` references resolve.
