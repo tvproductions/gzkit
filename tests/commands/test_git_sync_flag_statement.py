@@ -147,12 +147,21 @@ class TestReleaseManifestNamesTheReleaseSweep(unittest.TestCase):
         self.assertNotIn("--lint --test", text)
 
 
-def _plan(*, apply: bool, auto_add: bool, dirty: bool) -> dict[str, object]:
-    """Return `_plan_git_sync`'s plan over a stubbed clean-remote repository."""
+def _plan(*, apply: bool, auto_add: bool, dirty: bool, unstaged: bool = True) -> dict[str, object]:
+    """Return `_plan_git_sync`'s plan over a stubbed clean-remote repository.
+
+    *unstaged* False models a dirty tree whose every change is already staged.
+
+    Returns:
+        The plan mapping `_plan_git_sync` returns.
+
+    """
 
     def fake_git(_root: Path, *args: str) -> tuple[int, str, str]:
         if args[:2] == ("rev-list", "--count"):
             return 0, "0", ""
+        if args == ("diff", "--name-only") and unstaged:
+            return 0, "docs/notes.md", ""
         return 0, "", ""
 
     status = ([" M docs/notes.md"] if dirty else [], None)
@@ -184,6 +193,11 @@ class TestDryRunPredictsApplyUnderNoAutoAdd(unittest.TestCase):
         dry = _plan(apply=False, auto_add=False, dirty=True)
         applied = _plan(apply=True, auto_add=False, dirty=True)
         self.assertEqual(dry["blockers"], applied["blockers"])
+
+    def test_no_warning_when_every_change_is_already_staged(self) -> None:
+        plan = _plan(apply=False, auto_add=False, dirty=True, unstaged=False)
+        warnings = cast("list[str]", plan["warnings"])
+        self.assertFalse(any("--no-auto-add" in w for w in warnings))
 
     def test_dry_run_warns_that_unstaged_changes_stay_behind(self) -> None:
         plan = _plan(apply=False, auto_add=False, dirty=True)

@@ -149,7 +149,7 @@ def _plan_git_sync(
 
     # --apply proceeds here and commits only what is staged, so the preview warns
     # rather than blocks (operator ruling 2026-11-26 on GHI #1390: "A").
-    if dirty and not auto_add:
+    if dirty and not auto_add and _has_unstaged_changes(project_root):
         warnings.append(
             "--no-auto-add: only what is already staged is committed; "
             "unstaged and untracked changes stay uncommitted."
@@ -164,6 +164,23 @@ def _plan_git_sync(
         "blockers": blockers,
         "warnings": warnings,
     }
+
+
+def _has_unstaged_changes(project_root: Path) -> bool:
+    """Return True when the worktree holds an unstaged or untracked change.
+
+    Asks git directly rather than parsing `git status --porcelain`: `git_cmd`
+    strips its output, which drops the first line's leading status column.
+
+    Returns:
+        True when either probe lists a path or fails; False when every change is staged.
+
+    """
+    for probe in (("diff", "--name-only"), ("ls-files", "--others", "--exclude-standard")):
+        rc, out, _err = git_cmd(project_root, *probe)
+        if rc != 0 or out:
+            return True
+    return False
 
 
 def _enforce_git_sync_skip_policy() -> None:
