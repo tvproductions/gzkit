@@ -1,19 +1,19 @@
 # ADR Folder Structure
 
-The ADR root is `artifacts.adr.path` in `.gzkit/manifest.json`: `docs/design/adr` in gzkit, `design/adr` where `gz init` scaffolded it. gzkit's layout record is `docs/design/adr/meta/README.md` § Canonical Layout. The tree is illustrative; the comment on each line names the producer that writes it.
+The ADR root is `paths.adrs` in `.gzkit.json`, which the ADR writers read: `docs/design/adr` in gzkit, `design/adr` by default where `gz init` scaffolded it. gzkit's layout record is `docs/design/adr/meta/README.md` § Canonical Layout. The tree is illustrative; the comment on each line names the producer that writes it.
 
 ```text
 <adr-root>/
-  foundation/ADR-0.0.z-{slug}/     # foundation kind
-  pre-release/ADR-0.y.z-{slug}/    # feature kind, before 1.0
-    ADR-0.y.z-{slug}.md            # Intent document (gz plan create)
-    ADR-CLOSEOUT-FORM.md           # Closeout workspace (_closeout_form_path)
-    obpis/
-      OBPI-0.y.z-01-{slug}.md      # Atomic implementation units (gz specify)
-    audit/
-      AUDIT_PLAN.md                # Audit plan (gz audit)
-      AUDIT.md                     # Post-attestation reconciliation (gz audit)
-      proofs/                      # Captured verification output (gz audit)
+  foundation/ADR-0.0.z-{slug}/     # gz plan create --kind foundation
+  pre-release/ADR-0.y.z-{slug}/    # gz plan create --kind feature
+    ADR-0.y.z-{slug}.md            # gz plan create (intent document)
+    ADR-CLOSEOUT-FORM.md           # _closeout_form_path (closeout workspace)
+    obpis/                         # gz specify
+      OBPI-0.y.z-01-{slug}.md      # gz specify (atomic implementation units)
+    audit/                         # gz audit
+      AUDIT_PLAN.md                # gz audit (audit plan)
+      AUDIT.md                     # gz audit (post-attestation reconciliation)
+      proofs/                      # gz audit (captured verification output)
   pool/
-    ADR-pool.{slug}.md             # Proposal only; no OBPIs
+    ADR-pool.{slug}.md             # gz plan create --kind pool (proposal only)
 ```
