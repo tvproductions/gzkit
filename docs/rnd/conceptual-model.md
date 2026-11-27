@@ -765,6 +765,33 @@ restated-fact family (a skill restates a fact, its source changes, nothing re-ve
 restatement), whose witness is the staleness audit this run re-armed, and RP-7 placement F2's
 ungated-scope family. The wording and narrative findings go to RP-7 as stage input.
 
+## decision · the run resumes at the construction question, the test case stopped at M29
+
+Session 45772479, 2026-11-27. The test case was walked from M25 to M29. #1346 absorbed M25, and
+M26 to M29 were filed and closed as #1394 to #1397. Then the operator set the order. Verbatim:
+*"ty then m29, then drydock resumption"*. The walk stops at M29, and M30 to M51 stay in the
+audit source's Revised mechanism map, unwalked. Checked against git: the record is clean at
+`8f2ffdd67`.
+
+Two corrections from the operator during the walk bear on the frontier. Verbatim: *"are we sure
+we aren't getting mired in soon-to-be-deprecated terms like obpi when we are workings their
+replacement."* And: *"this is not quite right, we used to release a new minor version after each
+obpi. now, we'll have release packages. this means that a work order (the new obpi) needs to
+check to see the state of the release package. i know this is part of a doctor pass for
+inconsstencies in exiting files, but the drydock we are currently in is meant to move forward to
+new structural arrangements."* The second was booked as RP-4 ruling 9
+(`docs/governance/harbor-ro4-release.md`, `09b16889f`). Both were recorded as insights:
+`prompt-audit:legacy-vocabulary-surfaces` and `prompt-audit:drydock-forward-not-doctor`.
+
+The agent then broke this run's decision *`last_reviewed` records a review, never an edit*. The
+M25 to M29 repairs moved `last_reviewed` because `.gzkit/rules/skill-surface-sync.md` rule 6
+still mandates it. `a6aa3604f` restored the four dates, and the mistaken insight was superseded.
+Rule 6 waits for diamond 2.
+
+The frontier, recomputed from the subject: the construction question first, now with the
+operator's word that the drydock moves forward to the new structure; then T37 and the sub-ids;
+then the review of W44 to W50 against the separated model.
+
 ---
 
 ## Disposition map
