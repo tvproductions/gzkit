@@ -1,10 +1,10 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "cc13ba002db487710aa3ba163eff1652a58b7f5690f9398343991607cb2ade24",
-  "corpus_entry_count": 536,
-  "rendition_fingerprint": "b4353b5c008027ae93f2fe430fabf620e9287a3096734aca00af7a268ec6a1f7",
-  "committed_ts": "2026-10-30T11:44:12.355716+00:00",
+  "corpus_fingerprint": "b7e921de6762f45a8a9c51970c2c38979e8f4426ca281da4077d52e02770e095",
+  "corpus_entry_count": 538,
+  "rendition_fingerprint": "be1ff4dc81fe729a008bdc705d3ec0705610f04f587ed816f0d24fb13e50e22c",
+  "committed_ts": "2026-11-27T11:43:25.839429+00:00",
   "attestor": "g0",
-  "attestation_text": "uv sync && uv run gz check - and fix AGENTS.md. — corpus delta: retired corpus-project-identity-2026-10-05T21:33:07.986003+00:00 (Python 3.13+), captured corpus-project-identity-2026-10-30T11:42:56.232937+00:00 (Python 3.14+), matching pyproject.toml requires-python >=3.14; retention map .gzkit/chores/instructions-files-diet/proofs/retention-map-2026-10-30-python-floor.json drops C1 (Python 3.13+), keeps C2-C5",
-  "landing_id": "landing-20261030T114412Z-d009835b"
+  "attestation_text": "this change is approved — corpus delta: retired corpus-gate-covenant-2026-09-24T10:04:49.965096+00:00, re-captured with the foundation closure binding every project, adopters included (GHI #1402); C3, C9, C11 dropped (gzkit-only scope and 'adopters scaffold open', revoked by the operator's 2026-11-27 ruling), C1, C2, C4-C8, C10, C12 kept; conditions extracted by a spec-reviewer subagent",
+  "landing_id": "landing-20261127T114325Z-0d86ff67"
 }

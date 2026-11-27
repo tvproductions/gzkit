@@ -1,0 +1,119 @@
+{
+  "surface": "AGENTS.md",
+  "consumer": "root",
+  "extracted_by": "spec-reviewer",
+  "mapped_by": "main-session",
+  "blocks": [
+    {
+      "removed": "- `kind` and `lane` are independent. New gzkit ADRs are `feature` (semver `0.y.z`) or `pool` (`ADR-pool.<slug>`); `foundation` (`0.0.x`) is CLOSED to new authoring here (roster `data/foundation_grandfather.json`; adopters scaffold open). `gz validate --taxonomy` enforces this.",
+      "non_binding": [
+        {
+          "quote": "- ",
+          "reason": "Markdown list-item marker; it only formats the bullet and binds nothing."
+        },
+        {
+          "quote": ".",
+          "reason": "Sentence-ending period (after 'independent', after the roster parenthetical, and at the end); it binds nothing."
+        },
+        {
+          "quote": ";",
+          "reason": "Clause separator (after the pool clause, and inside the roster parenthetical before 'adopters'); it only divides clauses and binds nothing."
+        },
+        {
+          "quote": "(",
+          "reason": "Opening parenthesis of the roster/adopters aside; it only groups text. The parentheses inside C5 and C7 belong to those condition quotes."
+        },
+        {
+          "quote": ")",
+          "reason": "Closing parenthesis of the roster/adopters aside; it only groups text."
+        }
+      ],
+      "conditions": [
+        {
+          "id": "C1",
+          "quote": "`kind` and `lane` are independent",
+          "disposition": "kept",
+          "span": "`kind` and `lane` are independent",
+          "reason": null
+        },
+        {
+          "id": "C2",
+          "quote": "New",
+          "disposition": "kept",
+          "span": "New",
+          "reason": null
+        },
+        {
+          "id": "C3",
+          "quote": "gzkit",
+          "disposition": "dropped",
+          "span": null,
+          "reason": "The scope word limited the taxonomy rule to gzkit's own ADRs. The replacement takes it out ('New ADRs are') so the rule covers every project, following the operator ruling of 2026-11-27 (GHI #1402): 'we must not permit adopters to use them'."
+        },
+        {
+          "id": "C4",
+          "quote": "ADRs are `feature`",
+          "disposition": "kept",
+          "span": "ADRs are `feature`",
+          "reason": null
+        },
+        {
+          "id": "C5",
+          "quote": "(semver `0.y.z`)",
+          "disposition": "kept",
+          "span": "(semver `0.y.z`)",
+          "reason": null
+        },
+        {
+          "id": "C6",
+          "quote": "or `pool`",
+          "disposition": "kept",
+          "span": "or `pool`",
+          "reason": null
+        },
+        {
+          "id": "C7",
+          "quote": "(`ADR-pool.<slug>`)",
+          "disposition": "kept",
+          "span": "(`ADR-pool.<slug>`)",
+          "reason": null
+        },
+        {
+          "id": "C8",
+          "quote": "`foundation` (`0.0.x`) is CLOSED to new authoring",
+          "disposition": "kept",
+          "span": "`foundation` (`0.0.x`) is CLOSED to new authoring",
+          "reason": null
+        },
+        {
+          "id": "C9",
+          "quote": "here",
+          "disposition": "dropped",
+          "span": null,
+          "reason": "The locative scope limited the closure to the gzkit repository. The replacement swaps it for the wider scope 'in every project, adopters included', following the operator ruling of 2026-11-27 (GHI #1402) that adopters may not use foundation ADRs."
+        },
+        {
+          "id": "C10",
+          "quote": "roster `data/foundation_grandfather.json`",
+          "disposition": "kept",
+          "span": "roster `data/foundation_grandfather.json`",
+          "reason": null
+        },
+        {
+          "id": "C11",
+          "quote": "adopters scaffold open",
+          "disposition": "dropped",
+          "span": null,
+          "reason": "The adopter exemption is revoked by the operator ruling of 2026-11-27 (GHI #1402), 'we must not permit adopters to use them'. The replacement states the opposite: 'adopters included'."
+        },
+        {
+          "id": "C12",
+          "quote": "`gz validate --taxonomy` enforces this",
+          "disposition": "kept",
+          "span": "`gz validate --taxonomy` enforces this",
+          "reason": null
+        }
+      ]
+    }
+  ]
+}

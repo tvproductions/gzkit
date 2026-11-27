@@ -130,8 +130,6 @@ A size limit triggers a compress-and-merge pass before any growth or extraction;
 
 - Gate 5 is universal: it applies to every OBPI completion in every lane, kind and sensitivity (ADR-0.0.36, GHI #342; enforced by `_requires_human_obpi_attestation`). The operator attests, and the agent records their words with `--attestation-text`.
 
-- `kind` and `lane` are independent. New gzkit ADRs are `feature` (semver `0.y.z`) or `pool` (`ADR-pool.<slug>`); `foundation` (`0.0.x`) is CLOSED to new authoring here (roster `data/foundation_grandfather.json`; adopters scaffold open). `gz validate --taxonomy` enforces this.
-
 - ADR Feature Checklist items and OBPI briefs correspond 1:1; size them with the [OBPI Decomposition Matrix](docs/governance/GovZero/obpi-decomposition-matrix.md).
 
 - Two verbs undo a completion (ADR-0.0.71): `gz obpi withdraw` retires an OBPI permanently (superseded, phantom, duplicate; not re-completable); `gz obpi repudiate` reverses a completion whose attestation or evidence was invalid while the work intent stands (re-completable by genuine re-attestation). Only a human may repudiate a Gate-5: `--attestor` and `--reason` are required and fail closed when empty.
@@ -141,6 +139,8 @@ At closeout, `uv run gz closeout <ADR-ID>` runs the gates the ADR's lane require
 > See [Gate Covenant — BDD and Gate 4 rationale](docs/governance/agent-contract-rationale.md#gate-covenant--bdd-and-gate-4-rationale) for why BDD binds to the heavy lane and CI, why Gate 4 precedes Gate 5 only there, and why unit/BDD line-overlap is not evidence of redundancy.
 
 - `behave` belongs to heavy-lane OBPI work and to CI, never to a per-change gate; Gate 4 precedes Gate 5 on the heavy lane and nowhere else.
+
+- `kind` and `lane` are independent. New ADRs are `feature` (semver `0.y.z`) or `pool` (`ADR-pool.<slug>`); `foundation` (`0.0.x`) is CLOSED to new authoring in every project, adopters included (frozen roster `data/foundation_grandfather.json`). `gz validate --taxonomy` enforces this.
 ## OBPI Acceptance Protocol
 
 - `security` sensitivity adds security-scan requirements to Gate 5 (`.gzkit/rules/security-sensitivity.md`).
