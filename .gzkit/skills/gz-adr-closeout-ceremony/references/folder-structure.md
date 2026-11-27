@@ -14,6 +14,6 @@ The ADR root is `paths.adrs` in `.gzkit.json`, which the ADR writers read: `docs
       AUDIT_PLAN.md                # gz audit (audit plan)
       AUDIT.md                     # gz audit (post-attestation reconciliation)
       proofs/                      # gz audit (captured verification output)
-  pool/
+  pool/                            # gz plan create --kind pool
     ADR-pool.{slug}.md             # gz plan create --kind pool (proposal only)
 ```
