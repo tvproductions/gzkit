@@ -473,7 +473,7 @@ $ echo $?
 | 3 (capture default) | A corpus-owned section has a live entry classified `Ambiguous` | Retire the entry, capture the reviewed class, land the surface, refresh the row's `entry=` id, then re-run |
 | 3 (declared source) | A row attributed to a skill or ADR file names a missing file, or its Mechanical/Promotable text is absent from that file | Restore the text to the source, or correct the row's `source=` attribution, then re-run |
 | 3 (invariant tier) | One or more invariant-tier Mechanical/Promotable bullets absent from per-turn surface | Restore the missing bullet text verbatim to `AGENTS.md`, `CLAUDE.md`, or a `.claude/rules/*.md` file, then re-run |
-| 3 (compressible tier) | One or more compressible-tier bullets lack a valid advisor-QC retention witness | Record the verdict with `uv run gz content advise-rendition <surface> --score <0.0-1.0> --explanation "<reasoning>"`, cite the receipt at Gate 5, then re-run |
+| 3 (compressible tier) | One or more compressible-tier bullets lack a valid advisor-QC retention witness | Record the verdict with `uv run gz content advise-rendition <surface> --score <0.0-1.0> --explanation "<reasoning>"`, cite the receipt in the corpus attestation, then re-run |
 
 ### `--surface-weight`
 

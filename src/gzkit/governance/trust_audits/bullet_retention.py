@@ -15,7 +15,7 @@ OBPI-0.0.37-25:
   information-retention witness for the entry's committed rendition — the latest
   ``rendition_advisor_verdict`` ledger event for the surface, whose
   ``arb-step-judge-*`` receipt exists and carries ``exit_status == 0`` (the
-  receipt the operator cites at Gate 5; ADR-0.0.39, OBPI-0.0.37-24). A reworded
+  receipt the operator cites in the corpus attestation; ADR-0.0.39, OBPI-0.0.37-24). A reworded
   or combined compressible entry that carries the witness MUST NOT fail; one
   without a valid witness fails closed (retention is unwitnessed). The invariant
   preserved is *no binding information is lost* (witnessed by receipt +

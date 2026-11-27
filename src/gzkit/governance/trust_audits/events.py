@@ -264,8 +264,8 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
     "rendition_advisor_verdict": (
         "Advisor-QC verdict record (ADR-0.0.37, OBPI-0.0.37-24). Layer-2 witness that "
         "`gz content advise-rendition` recorded an information-retained-per-byte verdict as an "
-        "ARB receipt the operator cites at Gate 5. Advisory, never gating; consumed by the "
-        "advisor-QC audit trail and operator attestation, not the artifact graph."
+        "ARB receipt the operator cites in the corpus attestation. Advisory, never gating; "
+        "consumed by the advisor-QC audit trail and operator attestation, not the artifact graph."
     ),
     "foundation_grandfathered": (
         "Terminality witness for one closed-manifest `kind: foundation` entry (ADR-0.34.0 "
