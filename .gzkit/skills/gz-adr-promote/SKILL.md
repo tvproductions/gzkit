@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-17
 metadata:
-  skill-version: "1.8.2"
+  skill-version: "1.8.3"
 model: sonnet
 ---
 
@@ -121,11 +121,12 @@ under a clean table (path 1) while keeping rich prose in a
 3.  **Decompose in the pool ADR, before promoting.** Promotion creates one
     checklist item and one brief per derived scope item, 1:1, and fits the
     scorecard to that count (`_promotion_scorecard`). The decomposition decision
-    is therefore the pool's table or bullets. Size it with
-    `docs/governance/GovZero/obpi-decomposition-matrix.md`: the Rule of Three
-    baseline (which the doc sets for heavy-lane ADRs), then the Matrix of Four
-    overlay (Single-Narrative, Testability Ceiling, State Anchor, Surface
-    Boundary). A unit that violates a principle is split further.
+    is therefore the pool's table or bullets. Check each unit against the Matrix
+    of Four overlay in `docs/governance/GovZero/obpi-decomposition-matrix.md`
+    (Single-Narrative, Testability Ceiling, State Anchor, Surface Boundary); a
+    unit that violates a principle is split further. The matrix was rekeyed on
+    2026-10-28 to size outcomes and task cards, detached from lane; its Rule of
+    Three baseline and scorecard are legacy, read here only for this ADR form.
 4.  **Preview:** `uv run gz adr promote <POOL-ADR> --semver <X.Y.Z> --kind
     feature --dry-run`. Check the target id, the brief slugs and any legacy-bullet
     warning.
@@ -163,7 +164,7 @@ These thoughts mean STOP — you are about to violate the architectural boundary
 | Thought | Reality |
 |---------|---------|
 | "The pool ADR doesn't have actionable Target Scope bullets, but I know what it means" | Promotion is fail-closed without actionable scope. Your interpretation is not a substitute. Refine the pool ADR first. |
-| "The Rule of Three feels like overengineering for this small ADR" | The decomposition protocol exists because ADRs that skip it produce briefs that drift during implementation. Small now, sprawling later. |
+| "Decomposing feels like overengineering for this small ADR" | The decomposition protocol exists because ADRs that skip it produce briefs that drift during implementation. Small now, sprawling later. |
 | "I'll add OBPIs after the promote runs" | Promotion fixes the checklist and briefs 1:1 from the pool's decomposition. Change the pool's table or bullets before promoting, not the promoted package after it. |
 | "The post-promote check failed — I'll promote again with `--force`" | The promotion is already applied and recorded; the rename refuses a second run. Author the retained briefs and re-check them. |
 | "I can skip `--dry-run`, I know the layout" | `--dry-run` costs nothing. A wrong-version promotion is undone only by `gz adr demote`, which deletes the package. |

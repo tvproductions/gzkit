@@ -3,7 +3,7 @@ name: gz-plan
 description: Use to create an ADR, a pool ADR included, recording architecture intent and lane scope.
 category: adr-lifecycle
 metadata:
-  skill-version: "1.8.1"
+  skill-version: "1.8.2"
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-17
@@ -75,9 +75,11 @@ Decomposition Gate.
 2. **Read the target.** Read the code and docs the change touches before sizing
    it. Hand a subagent only an independent research track, with its Why
    (`AGENTS.md` § Behavior Rules).
-3. **Size the decomposition** with the matrix doc: the Rule of Three baseline
-   (which the doc sets for heavy-lane ADRs), then the Matrix of Four overlay,
-   whose four principles are the four `--split-*` flags. Choose the dimension
+3. **Size the decomposition** with the matrix doc's legacy scorecard, which
+   `gz plan create` still computes for this ADR form (the doc was rekeyed on
+   2026-10-28, detached from lane): the dimension total sets the baseline count,
+   then the Matrix of Four overlay, whose four principles are the four
+   `--split-*` flags. Choose the dimension
    scores, then present them, the resulting OBPI count and the rationale for
    the operator's approval: the Granularity Assessment the doc's § Enforcement
    asks of this skill.
