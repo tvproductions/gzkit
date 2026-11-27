@@ -5,7 +5,7 @@ description: Use to do the work a GHI describes, verify it and close the issue w
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-26
+last_reviewed: 2026-10-28
 metadata:
   skill-version: "2.15.1"
 model: opus

@@ -12,7 +12,7 @@ metadata:
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-27
+last_reviewed: 2026-10-17
 model: opus
 ---
 

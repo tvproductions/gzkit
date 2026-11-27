@@ -5,7 +5,7 @@ description: Use to run a chore from the registry end to end (show, plan, advise
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-26
+last_reviewed: 2026-11-07
 metadata:
   skill-version: "1.6.3"
 model: sonnet

@@ -5,7 +5,7 @@ description: Use to file a GitHub issue when a finding needs its own work order 
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-26
+last_reviewed: 2026-10-28
 metadata:
   skill-version: "1.12.1"
 model: sonnet

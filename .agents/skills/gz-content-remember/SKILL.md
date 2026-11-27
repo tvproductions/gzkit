@@ -4,7 +4,7 @@ description: Use when the operator says "remember X" for a control surface; capt
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-27
+last_reviewed: 2026-10-17
 metadata:
   skill-version: "0.3.1"
 model: haiku

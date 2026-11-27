@@ -4,7 +4,7 @@ description: Use to create or refresh governance constitution artifacts.
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-27
+last_reviewed: 2026-10-17
 metadata:
   skill-version: "0.3.2"
 model: opus

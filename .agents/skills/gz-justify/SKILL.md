@@ -5,7 +5,7 @@ description: Use before implementing a GHI, OBPI or draft when direction or scop
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: "2026-11-26"
+last_reviewed: "2026-10-18"
 gz_command: justify
 metadata:
   skill-version: "6.4.3"

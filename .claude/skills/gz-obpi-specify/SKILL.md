@@ -5,7 +5,7 @@ description: Use to decompose an ADR item into an authored OBPI brief.
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-27
+last_reviewed: 2026-11-14
 metadata:
   skill-version: "1.10.4"
 model: opus

@@ -5,7 +5,7 @@ description: Use when the operator asks "how do I …?" or "what can I …?", or
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-26
+last_reviewed: 2026-10-28
 model: sonnet
 metadata:
   skill-version: "1.1.1"

@@ -5,7 +5,7 @@ description: Use to wrap QA commands in ARB receipts for attestation evidence or
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-26
+last_reviewed: 2026-10-24
 model: haiku
 gz_command: arb advise
 metadata:

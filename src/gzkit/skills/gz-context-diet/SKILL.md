@@ -5,7 +5,7 @@ description: Use when the operator asks for a "diet" or "progressive disclosure"
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-26
+last_reviewed: 2026-10-17
 gz_command: chores show instructions-files-diet
 metadata:
   skill-version: "1.1.7"

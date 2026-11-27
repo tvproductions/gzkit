@@ -5,7 +5,7 @@ description: Run a governed R&D session — diamond 1 of the double diamond, whi
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-26
+last_reviewed: 2026-11-12
 metadata:
   skill-version: "0.9.1"
 model: opus

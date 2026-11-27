@@ -5,7 +5,7 @@ description: Use to read a target's seam map before touching it (gz airlock in),
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-26
+last_reviewed: 2026-11-01
 model: haiku
 gz_command: airlock
 metadata:

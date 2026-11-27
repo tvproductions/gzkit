@@ -5,7 +5,7 @@ description: Use for repository hygiene; reports governance maintenance findings
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-26
+last_reviewed: 2026-10-17
 model: haiku
 metadata:
   skill-version: "1.3.2"

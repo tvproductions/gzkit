@@ -5,7 +5,7 @@ description: Use when asking whether what shipped fulfils what was decided, or a
 category: adr-audit
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-26
+last_reviewed: 2026-10-17
 metadata:
   skill-version: "1.0.5"
 model: sonnet

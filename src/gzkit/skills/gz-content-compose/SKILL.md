@@ -4,7 +4,7 @@ description: Use after compression decisions on a corpus to validate and stage t
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-27
+last_reviewed: 2026-10-17
 metadata:
   skill-version: "1.1.3"
 model: sonnet

@@ -4,7 +4,7 @@ description: Use between gz content compose and corpus attestation to judge a ca
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-27
+last_reviewed: 2026-10-17
 metadata:
   skill-version: "0.2.4"
 model: sonnet

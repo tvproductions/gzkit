@@ -5,7 +5,7 @@ description: Use to open or exit the MX hangar or safe mode, or to check which m
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-27
+last_reviewed: 2026-11-21
 model: haiku
 gz_command: mx
 metadata:
