@@ -4,7 +4,7 @@ Append-only corpus capture: ``gz content remember <surface> --section <id> --tex
 [--tier invariant|compressible]`` appends one addressed/provenanced ``CorpusEntry`` to the
 per-surface corpus store and emits a ``corpus_entry_appended`` ledger event. It NEVER edits
 a rendered surface (AGENTS.md, CLAUDE.md, or any mirror) — capture writes the source of
-truth; deterministic playback (OBPI-22) remains the sole writer of rendered surfaces.
+truth; deterministic playback (ADR-0.35.0) remains the sole writer of rendered surfaces.
 
 Fail-closed discipline: an unknown surface (no parseable AgentContract) or a ``--section``
 that resolves to no template-defined Pillar of that surface aborts with a non-zero exit and

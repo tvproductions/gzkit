@@ -4,9 +4,9 @@ description: Use after compression decisions on a corpus to validate and stage t
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-11-27
 metadata:
-  skill-version: "1.1.1"
+  skill-version: "1.1.2"
 model: sonnet
 gz_command: gz content compose
 ---
@@ -56,8 +56,8 @@ test -s .gzkit/renditions/<surface>/<consumer>.candidate.md
 grep "composition_candidate_emitted" .gzkit/ledger.jsonl
 ```
 
-7. The candidate flows to the advisor-QC loop (OBPI-24) and operator attestation
-   (OBPI-22) before promotion to a committed rendition.
+7. The candidate goes to advisor QC (`gz-advisor-qc`), then `gz content commit`
+   promotes it with the operator's corpus attestation (§ Before commit).
 
 ## Before commit: the retention map
 

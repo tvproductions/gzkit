@@ -1634,8 +1634,8 @@ per-tier byte evidence, writes the candidate to
 `.gzkit/renditions/AGENTS.md/root.candidate.md`, and emits a
 `composition_candidate_emitted` ledger event. The tool fails closed if the corpus is
 absent, the `(surface, consumer)` setpoint is undeclared, or the candidate drops an
-invariant-tier entry. The candidate then flows to the advisor-QC loop (OBPI-24) and
-operator attestation (OBPI-22) before promotion to a committed rendition.
+invariant-tier entry. The candidate then goes to advisor QC (`gz-advisor-qc`), and
+`gz content commit` promotes it with the operator's corpus attestation.
 
 See the `gz-content-compose` skill and [`gz content`](manpages/content.md) § compose.
 
