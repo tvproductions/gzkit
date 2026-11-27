@@ -3,7 +3,7 @@
 The advisor-QC stage sits between compress (``gz content compose``) and commit
 (``gz content commit``): an agent wielding the ``gz-advisor-qc`` skill judges the
 information-retained-per-byte of a candidate rendition and records its verdict as
-an ARB receipt the operator cites at Gate 5. This module is the **deterministic
+an ARB receipt the operator cites in the corpus attestation. This module is the **deterministic
 record half** — it performs NO in-code LLM or network call. The judgment is the
 skill's; the engine only:
 
@@ -18,8 +18,8 @@ path is a structurally malformed receipt: an empty/absent explanation raises
 
 The receipt ``run_id`` uses step name ``judge`` (``arb-step-judge-<32hex>``) so it
 binds against the canonical receipt-id regex in
-``gzkit.governance.trust_audits.attestation_receipts`` and is citable in a Gate-5
-attestation. The step segment forbids a hyphen, so ``advisor-qc`` is not a legal
+``gzkit.governance.trust_audits.attestation_receipts`` and is citable in the operator's
+corpus attestation. The step segment forbids a hyphen, so ``advisor-qc`` is not a legal
 step name — ``judge`` is the doctrine-aligned form (plan booked decision,
 2026-06-14).
 """

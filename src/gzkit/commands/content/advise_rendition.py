@@ -67,7 +67,8 @@ def content_advise_rendition_cmd(
     print(
         f"Advisor-QC verdict recorded: {surface} [{consumer_label}] "
         f"score={score} (information-retained-per-byte)\n"
-        f"Receipt: {receipt_path.as_posix()} (advisory — cite at Gate 5; never gating)"
+        f"Receipt: {receipt_path.as_posix()} "
+        "(advisory — cite it in the corpus attestation; never gating)"
     )
 
 

@@ -1159,7 +1159,7 @@ def rendition_committed_event(
     """Create a rendition_committed event (ADR-0.0.37, OBPI-0.0.37-22).
 
     Layer-2 witness that ``gz content commit`` promoted a staged candidate to the
-    durable committed rendition under operator attestation (Gate 5), freezing the
+    durable committed rendition under the operator's corpus attestation, freezing the
     corpus content-fingerprint the rendition was attested against.
 
     Returns:

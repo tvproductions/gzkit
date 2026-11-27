@@ -1536,7 +1536,7 @@ rendition. This is the **advisor-QC** stage of the ADR-0.0.37 CMS pipeline
 (`corpus → compress → advisor-QC → operator attest → committed rendition → playback`):
 the agent wielding the `gz-advisor-qc` skill judges how much information the
 candidate retains per byte, and records that verdict as an ARB receipt the
-operator cites at Gate 5.
+operator cites in the corpus attestation.
 
 **`advise-rendition` is deterministic** — NO LLM call, NO network I/O. The
 LLM-as-judge read is the agent's; the tool validates the verdict shape
@@ -1639,7 +1639,7 @@ uv run gz content remember AGENTS.md --section "Behavior Rules" \
 uv run gz content advise-rendition AGENTS.md --consumer root --score 0.94 \
   --explanation "All Mechanical bullets retained; two Promotable bullets combined without information loss."
 
-# The verdict is witnessed in the ledger and written as an ARB receipt cited at Gate 5:
+# The verdict is witnessed in the ledger and written as an ARB receipt cited in the corpus attestation:
 grep "rendition_advisor_verdict" .gzkit/ledger.jsonl
 ```
 
@@ -1766,7 +1766,7 @@ root.retention.json
 | `src/gzkit/commands/content/own.py` | The governed `unowned -> corpus-owned` transition (`own`, GHI #974); shares `unown.py`'s journalled transaction |
 | `.gzkit/ownership/<surface>.json` | Section-ownership declaration read and written by `own` / `unown` (OBPI-0.35.0-04) |
 | `src/gzkit/content/advisor_qc.py` | Deterministic advisor-QC verdict-record engine (`advise-rendition`, OBPI-0.0.37-24) |
-| `artifacts/receipts/arb-step-judge-<hash>.json` | Advisor-QC verdict ARB receipt cited at Gate 5 |
+| `artifacts/receipts/arb-step-judge-<hash>.json` | Advisor-QC verdict ARB receipt cited in the corpus attestation |
 | `src/gzkit/content/composer.py` | `compose()` (explicit path) and `generate_candidate()` (generated path, OBPI-0.35.0-05) |
 | `src/gzkit/content/lineage.py` | `ConsumerLineage`/`SectionLineage` models and the staged/committed lineage path helpers |
 | `.gzkit/renditions/<surface>/<consumer>.candidate.lineage.json` | Staged section-provenance map written by the `compose` generated path |

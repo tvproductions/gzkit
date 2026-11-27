@@ -752,7 +752,8 @@ def _register_advise_rendition(
         help="Record an advisory info-retained-per-byte verdict for a candidate rendition",
         description=(
             "Record an agent-supplied advisor-QC verdict (information-retained-per-byte) "
-            "for a candidate rendition as an ARB receipt the operator cites at Gate 5. "
+            "for a candidate rendition as an ARB receipt the operator cites in the corpus "
+            "attestation. "
             "The tool is deterministic: NO LLM call, NO network I/O — the judgment is the "
             "wielding gz-advisor-qc skill's (the agent's). It is ADVISORY, NEVER gating: any "
             "score is recorded and the command exits 0 (ADR-0.0.39 Evidentiary invariant). "

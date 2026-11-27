@@ -2,7 +2,7 @@ Feature: gz content advise-rendition — advisor-QC info-retention verdict
 
   The advise-rendition subcommand records an agent-supplied
   information-retained-per-byte verdict for a candidate rendition as an ARB
-  receipt the operator cites at Gate 5. The tool is deterministic (no LLM /
+  receipt the operator cites in the corpus attestation. The tool is deterministic (no LLM /
   network call) and advisory, never gating: any score is recorded and the
   command exits 0. The only fail-closed path is a structurally malformed
   verdict — an empty explanation — which writes no receipt (ADR-0.0.39

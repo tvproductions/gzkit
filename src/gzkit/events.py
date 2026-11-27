@@ -891,10 +891,10 @@ class CompositionCandidateEmittedEvent(_EventBase):
 
 
 class RenditionCommittedEvent(_EventBase):
-    """rendition_committed event — operator-attested candidate→committed promotion (OBPI-22).
+    """rendition_committed event — operator-attested candidate→committed promotion (ADR-0.35.0).
 
     Layer-2 witness that ``gz content commit`` promoted a staged candidate to the
-    durable committed rendition under Gate-5 attestation, freezing the corpus
+    durable committed rendition under the corpus attestation, freezing the corpus
     content-fingerprint the rendition was attested against.
     """
 

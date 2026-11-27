@@ -1656,9 +1656,9 @@ grep "rendition_advisor_verdict" .gzkit/ledger.jsonl
 The tool is deterministic (no LLM/network call — the judgment is the agent's). It writes
 the verdict as an `arb-step-judge-<hash>` ARB receipt and emits a `rendition_advisor_verdict`
 ledger event carrying `surface`, `consumer`, `receipt_id`, and `score`. A low retention
-score is evidence for the operator at Gate 5, never a fail-closed gate — the only non-zero
+score is evidence for the operator's corpus attestation, never a fail-closed gate — the only non-zero
 exit is an empty `--explanation` (malformed verdict shape). The operator cites the receipt
-id in the Gate-5 attestation that promotes the candidate to a committed rendition.
+id in the corpus attestation that promotes the candidate to a committed rendition.
 
 See the `gz-advisor-qc` skill and [`gz content`](manpages/content.md) § advise-rendition.
 
@@ -1666,10 +1666,10 @@ See the `gz-advisor-qc` skill and [`gz content`](manpages/content.md) § advise-
 After compose stages a candidate and the operator attests it, promote the candidate to
 the durable committed rendition with `gz content commit`. The commit verb writes
 `.gzkit/renditions/<surface>/<consumer>.md` **and** freezes the corpus content-fingerprint
-in a provenance sidecar (`<consumer>.corpus.json`), under operator attestation (Gate 5):
+in a provenance sidecar (`<consumer>.corpus.json`), under the operator's corpus attestation:
 
 ```bash
-# Promote the attested candidate to the committed rendition (Gate 5: fail-closed on empty)
+# Promote the attested candidate to the committed rendition (corpus attestation: fail-closed on empty)
 uv run gz content commit AGENTS.md --consumer root \
   --attestor "g0" --attestation-text "attest completed"
 
