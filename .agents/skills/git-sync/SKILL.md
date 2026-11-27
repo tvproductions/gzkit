@@ -8,7 +8,7 @@ disable-model-invocation: true
 owner: gzkit-governance
 last_reviewed: 2026-11-26
 metadata:
-  skill-version: "1.6.5"
+  skill-version: "1.6.6"
 model: haiku
 ---
 
@@ -66,7 +66,7 @@ combination.
 | 0. Refusals | refuses when `SKIP` would bypass the complexity gates (before any other step), or when the current branch is not `--branch`, HEAD is a merge commit, or `git status` fails (then only step 2, a local git-config write, still runs) | — | — | — | — |
 | 1. Fetch | `git fetch --prune <remote>`; a failure blocks | — | — | — | — |
 | 2. Merge driver | registers the append-only JSONL merge driver (§ Append-only JSONL conflicts) | — | — | — | — |
-| 3. Stage | on a dirty tree, `git add -A`; refused when it would stage a path under `src/` or `tests/`, which you commit yourself first (the refusal fails open on a git error) | — | — | stages nothing, and the `src/`/`tests/` refusal does not run: whatever is already staged, governed work included, is committed at step 6 under the generic subject; when an unstaged or untracked change exists, the run, dry or not, warns that it stays uncommitted | — |
+| 3. Stage | on a dirty tree, `git add -A`; refused when it would stage a path under `src/` or `tests/`, which you commit yourself first (the refusal fails open on a git error) | — | — | stages nothing, and the `src/`/`tests/` refusal does not run: whatever is already staged, governed work included, is committed at step 6 under the generic subject; when an unstaged or untracked change exists, or git cannot say, the run, dry or not, warns that it stays uncommitted | — |
 | 4. Hook check | refuses when a gating hook type `.pre-commit-config.yaml` installs (such as `pre-commit` or `pre-push`) is not installed in the hooks directory (a `core.hooksPath` in the repository's own `.git/config` is honoured; a global or included one is not) or is not the pre-commit shim; a missing recording hook (`prepare-commit-msg`, `post-commit`) only warns. Nothing is checked and nothing refuses here when the config is missing, unreadable or declares no pre-push `gz check` hook, or in a linked worktree, where `.git` is a file | — | — | — | — |
 | 5. Pre-check | nothing | whole-tree `gz lint`; a failure blocks | the full unit suite (`gz test`); a failure blocks | — | — |
 | 6. Commit | when something is staged: refuses when `.git/COMMIT_EDITMSG` holds a stranded commit attempt; otherwise commits it, under `chore: update <areas> (gz git-sync)`, and the pre-commit-stage hooks run | — | — | — | — |
