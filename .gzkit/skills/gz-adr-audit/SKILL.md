@@ -5,7 +5,7 @@ description: Use for an ADR's Gate-5 audit; provides the audit templates and pro
 category: adr-audit
 compatibility: GovZero v6 framework; provides audit procedure for COMPLETED→VALIDATED ADR transition
 metadata:
-  skill-version: "6.15.1"
+  skill-version: "6.15.2"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -16,7 +16,7 @@ gz_command: audit
 invocation: uv run gz audit <adr-id>
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-17
+last_reviewed: 2026-11-26
 model: opus
 ---
 
@@ -117,7 +117,6 @@ mkdir -p docs/design/adr/<kind>/ADR-x.y.z-slug/audit/proofs
 - Read ADR prose, extract all claims
 - Create `audit/AUDIT_PLAN.md` with checks for each claim
 - Run `uv run gz cli audit` for governance issues
-- Legacy note: `docs/design/audit/**` remains historical only; new audits live under the ADR folder.
 
 ### 2. Verify Ledger Completeness
 
