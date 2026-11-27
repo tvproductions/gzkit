@@ -33,6 +33,10 @@
 
 8. **RO-4 lands the feature package's store and its value attestation** (operator, verbatim: *"yes, it blocks; RO-4 owns it"*; the contract's § Rulings of 2026-10-30). The feature package is the mADR's successor from [the four-records R&D](../rnd/four-records.md): a list of catalog outcomes, each in at most one feature package, plus the story of why they belong together; no version, release, order or prerequisite field. A human attests its value delivered at the release package's or the work package's attestation, not in a ceremony of its own. It blocks return to service because RO-8's first act at civil rule turns ADR-0.35.0, an mADR, into the 0.35.0 release package. The store's place and form, and the verbs and event names, are structural questions the contractor stops on.
 
+## Ruling of 2026-11-27
+
+9. **A work order checks the state of its Release Package** (operator, verbatim: *"we used to release a new minor version after each obpi. now, we'll have release packages. this means that a work order (the new obpi) needs to check to see the state of the release package. i know this is part of a doctor pass for inconsstencies in exiting files, but the drydock we are currently in is meant to move forward to new structural arrangements."*; booked on the operator's selection *"Amend the RP-4 spec (Recommended)"*). The work order is the OBPI's successor, and its record lands with RP-12 (contract § Rulings of 2026-11-03). Rulings 1 to 3 key the release to the Release Package. This ruling adds the order's side: the order reads the package's state. What it reads, at which point in the order's lifecycle and through which verb are structural questions the contractor stops on. The legacy text it replaces still stands: `gz-adr-closeout-ceremony` Step 8 and Ceremony Rule 10, and `gz-patch-release` § Hand-over from closeout, describe the minor release that followed an ADR closeout. GHI #1396 (`650f5cf16`, 2026-11-27) only made those two skills agree with each other in that model, and tranche 4 retires them.
+
 ## Tranches (for the contractor)
 
 The contractor stops and waits on every structural question; the names of new verbs and events are among them.
@@ -40,7 +44,7 @@ The contractor stops and waits on every structural question; the names of new ve
 1. **Store and events.** `data/catalog/releases.json` and its schema (version, members as outcomes and repair packages, state); the membership verb booking each change to the ledger; `release_recorded` (ruling 2) with the version, the closed work packages and issues that delivered the members, and the release attestation.
 <!-- gz-validate-skip: command-shape -->
 2. **Version.** `version_sync` stops deriving from the ADR id (`version_sync.py:18`, Q-08) and `closeout.py:557-563` stops bumping from it; the floor rule (ruling 4); `gz release pressure` and its data file (GHI #1248).
-3. **Closeout.** `gz closeout <version>` (ruling 3), its dry run against an empty Release Package, the release attestation (R2), ending in `release_recorded`.
+3. **Closeout.** `gz closeout <version>` (ruling 3), its dry run against an empty Release Package, the release attestation (R2), ending in `release_recorded`. The work order's check of its Release Package's state (ruling 9) is built with RP-12's work order record.
 4. **Skills and canon.** `gz-release` subsuming `gz-patch-release` (R3); `gz validate --version-release` reading release records; the ADR-as-carrier text retired with retention maps in `GovZero/releases/README.md`, `GovZero/adr-lifecycle.md` and the sibling `patch-release.md`, `minor-release.md` and `major-release.md`; the template retired (ruling 7); the safe-mode doctrine's § The Release Package and `doctrine-merge.md` Part 0's Release Package term, which still name a Markdown document per version, corrected to ruling 1 (moved here from RO-6).
 
 ## Restoration (RO-4's list-of-discrepancies lines)
