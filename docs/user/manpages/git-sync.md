@@ -55,7 +55,9 @@ order:
 9. **Post-check:** `--lint` runs whole-tree `gz lint` again; a failure warns.
 
 A blocker stops every later step and exits `1`, except step 2, which runs under
-`--apply` whatever blocked. Nothing already done is undone.
+`--apply` whatever blocked, and step 4, which still runs its check when
+`git add -A` itself fails (not when step 3 refuses). Nothing already done is
+undone.
 The flags are independent, so any combination runs the union of their steps.
 The git-sync skill (`.gzkit/skills/git-sync/SKILL.md`) states each step in full,
 what each hook stage runs, and which command each moment (routine, OBPI Stage 5,

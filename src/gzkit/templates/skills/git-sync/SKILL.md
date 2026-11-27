@@ -9,7 +9,7 @@ owner: gzkit-governance
 model: haiku
 last_reviewed: 2026-11-26
 metadata:
-  skill-version: "1.3.3"
+  skill-version: "1.3.4"
 ---
 
 # SKILL.md
@@ -65,7 +65,8 @@ combination.
 
 A blocker at any step stops every later step and exits 1, except step 2, which
 runs under `--apply` whatever blocked, and step 4, which still runs its check
-after a failed stage and adds any finding to the report. Nothing already done is undone, so a tree
+when `git add -A` itself fails (not when step 3 refuses) and adds any finding to
+the report. Nothing already done is undone, so a tree
 step 3 staged stays staged. `--lint` and `--test` call
 `gz lint` and `gz test` directly rather than through a hook, so safe mode never
 turns them off.
