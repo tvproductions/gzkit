@@ -1904,8 +1904,7 @@ def _add_git_sync_options(parser: argparse.ArgumentParser) -> None:
         dest="auto_add",
         action="store_true",
         default=True,
-        help="Stage every change with git add -A before the commit (default); "
-        "refused when it would stage src/ or tests/",
+        help="Stage all with git add -A (default); refused if it would stage src/ or tests/",
     )
     parser.add_argument(
         "--no-auto-add",
