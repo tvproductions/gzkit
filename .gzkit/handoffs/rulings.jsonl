@@ -2593,3 +2593,9 @@
 {"ts": "2026-11-26T15:33:00Z", "source": "20261126T153300Z-prompt-audit-m18-m19.md", "text": "Successor handoff and git-sync (verbatim: \"write the successor handoff and run git-sync to push those six commits\")."}
 {"ts": "2026-11-26T16:12:39Z", "source": "20261126T161239Z-prompt-audit-m20.md", "text": "Do M20 next (verbatim: \"do m20\")."}
 {"ts": "2026-11-26T16:12:39Z", "source": "20261126T161239Z-prompt-audit-m20.md", "text": "Write the successor handoff and push the M20 commits (verbatim: \"write the successor handoff and run git-sync to push these four commits now.\")."}
+{"ts": "2026-11-27T00:18:54Z", "source": "20261127T001853Z-prompt-audit-m21.md", "text": "Finish the M findings, M21 next (verbatim: \"we should finish these M findings - continue with M21\")."}
+{"ts": "2026-11-27T00:18:54Z", "source": "20261127T001853Z-prompt-audit-m21.md", "text": "Flag semantics must be explicit for every case and combination (verbatim: \"we need to be explicit in all cases for all combinations - this is the worst kind of slopcode bench\")."}
+{"ts": "2026-11-27T00:18:54Z", "source": "20261127T001853Z-prompt-audit-m21.md", "text": "The two-table statement is the direction; this drydock will deprecate OBPI/ADR (verbatim: \"that's a start. this drydock will deprecate obpi/adr btw\")."}
+{"ts": "2026-11-27T00:18:54Z", "source": "20261127T001853Z-prompt-audit-m21.md", "text": "M21 repairs pipeline_markers.py:96 directly although OBPI-0.35.0-16 owns it (verbatim: \"B\")."}
+{"ts": "2026-11-27T00:18:54Z", "source": "20261127T001853Z-prompt-audit-m21.md", "text": "The dry run, not --apply, was wrong under --no-auto-add on a dirty tree: it warns, not blocks (verbatim: \"A\")."}
+{"ts": "2026-11-27T00:18:54Z", "source": "20261127T001853Z-prompt-audit-m21.md", "text": "Write the successor handoff and push the M21 commits (verbatim: \"write the successor handoff and run git-sync to push the 12 commits\")."}
