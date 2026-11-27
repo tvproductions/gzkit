@@ -280,7 +280,7 @@ uv run gz agent sync control-surfaces  # Regenerate surfaces
 
 Locked by `CANONICAL_STEP_COMMANDS`; `gz arb validate` flags drift. Applies to `uv run gz obpi complete`, `uv run gz adr emit-receipt`, any `gz` CLI attestation string, and `git commit -m` messages.
 
-**Lane behavior:** **Lite lane:** missing receipt IDs produce a warning. **Heavy lane:** missing receipt IDs are fail-closed. Fabricating a receipt ID is the same failure as fabricating the claim.
+**Lane and kind behavior:** **Heavy lane or foundation kind:** missing receipt IDs are fail-closed. **Otherwise (lite lane, non-foundation):** missing receipt IDs produce a warning. Fabricating a receipt ID is the same failure as fabricating the claim.
 
 See [`docs/governance/agent-contract-rationale.md` § Attestation — worked example](docs/governance/agent-contract-rationale.md#attestation--worked-example) for the canonical worked example, and [`docs/governance/arb-middleware.md`](docs/governance/arb-middleware.md) for ARB deep-dive.
 

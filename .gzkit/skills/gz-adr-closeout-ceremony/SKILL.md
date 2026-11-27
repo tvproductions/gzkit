@@ -5,7 +5,7 @@ description: Use to run an ADR's closeout ceremony through to the operator's att
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.21.5"
+  skill-version: "7.21.6"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -304,7 +304,7 @@ The ADR's outcome, demonstrated. Every row is a concrete invocation that exercis
 
 **3b. Quality Evidence — construction housekeeping**
 
-Cite canonical ARB-wrapped invocations with receipt IDs. These prove the codebase is healthy; they are not the ADR's product. Heavy-lane attestation fail-closes on missing receipt IDs per `AGENTS.md` § Attestation; bare (non-ARB) commands do not satisfy this requirement. The canonical invocations are locked by `CANONICAL_STEP_COMMANDS` in `src/gzkit/canonical_steps.py`.
+Cite canonical ARB-wrapped invocations with receipt IDs. These prove the codebase is healthy; they are not the ADR's product. Heavy-lane and foundation-kind attestation fail-closes on missing receipt IDs (`obpi_complete.py`); bare (non-ARB) commands do not satisfy this requirement. The canonical invocations are locked by `CANONICAL_STEP_COMMANDS` in `src/gzkit/canonical_steps.py`.
 
 | Command | Result | Receipt ID | REQ Bindings | Notes |
 |---------|--------|------------|--------------|-------|
