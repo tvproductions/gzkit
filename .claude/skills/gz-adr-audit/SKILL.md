@@ -5,7 +5,7 @@ description: Use for an ADR's Gate-5 audit; provides the audit templates and pro
 category: adr-audit
 compatibility: GovZero v6 framework; provides audit procedure for COMPLETED→VALIDATED ADR transition
 metadata:
-  skill-version: "6.15.2"
+  skill-version: "6.15.3"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -16,7 +16,7 @@ gz_command: audit
 invocation: uv run gz audit <adr-id>
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-26
+last_reviewed: 2026-11-27
 model: opus
 ---
 
@@ -38,7 +38,7 @@ The audit is read-only judgment work — a single driver scoring its own finding
 | `quality-reviewer` | Independent assessment of the ADR package's structural coherence: do the OBPIs cohere into the ADR's claimed capability, or is the integration brittle? | After Step 2, before Step 3 |
 | `narrator` | Frames the Step 4 audit documentation (AUDIT.md) in operator-value terms; the Step 3 fidelity gate is now bound and runs itself — no prose value-demonstration to compose | Step 4 (Document) |
 
-Personas not dispatched: `implementer` (no code written in this ceremony — if audit reveals a defect requiring code, file a GHI via `/ghi-author` and route to a fresh OBPI brief, never spawn an implementer inside the audit).
+Personas not dispatched: `implementer` (no code written in this ceremony — if audit reveals a defect requiring code, file a GHI via `/ghi-author`, which is repaired directly outside the audit (`AGENTS.md` § Defect-fix routing); never spawn an implementer inside the audit).
 
 **This ceremony has no artifact channel for these dispatches** — they are unattested and undisclosed (GHI #770's named residual), and the receipt machinery that would record them is not yet authored (GHI #846; `ADR-pool.obpi-pipeline-dispatch-attestation` is Superseded into ADR-0.0.73, which delivered no receipts). Treat the mandate as binding on you, not as something a gate will catch.
 
