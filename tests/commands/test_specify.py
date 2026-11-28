@@ -53,6 +53,11 @@ class TestPersonaSurfaceSuggestionsNameCanon(unittest.TestCase):
     def test_the_agents_corpus_is_suggested(self) -> None:
         self.assertIn(".gzkit/corpus/AGENTS.md.jsonl", self._paths())
 
+    def test_template_canon_is_suggested(self) -> None:
+        paths = self._paths()
+        self.assertIn(".gzkit/templates/agents.md", paths)
+        self.assertIn(".gzkit/templates/adr.md", paths)
+
 
 class TestSpecifyCommand(unittest.TestCase):
     """Tests for gz specify command."""

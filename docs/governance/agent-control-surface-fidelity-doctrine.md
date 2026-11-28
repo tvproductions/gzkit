@@ -37,11 +37,11 @@ The doctrine does not introduce a new philosophical claim. It names what the ups
 
 This doctrine is invariant across implementation eras (per ADR-0.0.34 — Agent Control Surface Rendering Substrate):
 
-- **Era 1 — hand-authored:** hand-authored + partial-templated static files. Validators grep against rendered output and the limited canonical sources that exist. Still the method for `CLAUDE.md`, `.gzkit/rules/**` and the nested AGENTS.md they fan out to (#921).
-- **Era 2 — substrate landed (in part):** corpus-backed Pydantic content models, rendered through the Jinja2 pipeline (`src/gzkit/content/render/pipeline.py`) and played back from a committed rendition. Validators diff canonical models against rendered output; tests are sharper. Landed for root AGENTS.md (`.gzkit/corpus/AGENTS.md.jsonl`); not yet for `CLAUDE.md` or the rules.
+- **Era 1 — hand-authored:** hand-authored + partial-templated static files. Validators grep against rendered output and the limited canonical sources that exist. Still the method for `CLAUDE.md`, `.gzkit/rules/**` and the nested AGENTS.md they fan out to (#921), and for root AGENTS.md on its bootstrap path before a first committed rendition, where a template is parsed into a content model and rendered through `src/gzkit/content/render/pipeline.py`.
+- **Era 2 — substrate landed (in part):** corpus composition: `gz content compose` (`src/gzkit/content/composer.py`) joins the corpus entries into a candidate rendition, which is committed and played back. Validators check the delivered surface against its corpus (`gz validate --invariant-coherence` byte-compares AGENTS.md with its rendition playback); tests are sharper. Landed for root AGENTS.md (`.gzkit/corpus/AGENTS.md.jsonl`); not yet for `CLAUDE.md` or the rules.
+- **Era 3 — progressive disclosure:** scenario-aware retrieval composes per-turn surface on demand. Validators check the per-scenario render; canonical bullet-retention claims become bullet-reachability-from-scenario claims.
 
 **Current state (a record of 2026-11-27, operator ruling "A", GHI #1416): Era 2 in part**, as above. The live population is `.gzkit/corpus/` and `sync_surfaces.py`, never this line.
-- **Era 3 — progressive disclosure:** scenario-aware retrieval composes per-turn surface on demand. Validators check the per-scenario render; canonical bullet-retention claims become bullet-reachability-from-scenario claims.
 
 In every era, the agent reads a static document. What changes is composition method. **The doctrine's invariants survive transitions; validators evolve to test the active composition method.** Errors in the rendered output become feedback to whatever composition method is active.
 
@@ -117,8 +117,8 @@ Reads `data/agent-control-surface-scenarios.json` (the loading-scenarios registr
 
 | Layer | Lever (gzkit owns) | Constraint (gzkit accepts) |
 |---|---|---|
-| Canonical authorship | Pydantic content models (Era 2); rule frontmatter (Era 1); validator suite | — |
-| Rendering | Jinja2 templates (Era 2); naive substitution (Era 1); deterministic byte-stable output | — |
+| Canonical authorship | Corpus entries (Era 2); hand-authored canon and rule frontmatter (Era 1); validator suite | — |
+| Rendering | Corpus composition into a committed rendition (Era 2); template substitution, with the content-model render pipeline on the AGENTS.md bootstrap path (Era 1); deterministic byte-stable output | — |
 | Vendor mirror sync | Mirror-fidelity validation; canonical-source authority | Vendor harness honors its own loading semantics; gzkit's templates adapt to vendor format changes |
 | Loading per turn | — | Vendor harness decides what loads (path-scoped frontmatter for Claude Code, equivalent for Codex/Copilot) |
 | Within-turn dynamics | — | Context window is append-only at runtime; "forgetting" exists only between turns |
