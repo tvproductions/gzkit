@@ -9,7 +9,7 @@ The extraction was forced rather than chosen. ``validate_cmd`` sits on a
 shrink-only grandfather entry in ``.gzkit/rules/complexity-thresholds.json`` at
 exactly its recorded ceiling, so ANY added line breaks the module-size gate --
 the fix that needed room was a five-line one. This function was the cleanest
-thing to move: 83 lines, one caller, and no dependency on any module-level name
+thing to move (83 lines at the time), one caller, and no dependency on any module-level name
 in ``validate_cmd``.
 """
 

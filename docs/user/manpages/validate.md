@@ -1139,7 +1139,7 @@ finding, so a renamed directory cannot shrink the fence; in an adopter project a
 absent root is skipped.
 
 **Dated history** passes only when its sentence carries an anchored form: "then in
-force", "then in" a path to `pythonic.md`, "at the time" (not "at the time of"),
+force", "then in" a path to `pythonic.md`, "at the time" closing a parenthesis,
 "until" a commit hash, or an ISO date followed by "census". A bare "then" is not
 history.
 
@@ -1150,16 +1150,18 @@ missing natural wordings (#1367 review).
 
 | Shape | Example |
 |-------|---------|
-| A function, method or module, then a number and a line unit within sixty characters | "keep functions to *N* lines", "the module size limit is *N* lines", "*N* lines of code" |
+| A function, method, module or file, then a number and a line unit within sixty characters | "keep functions to *N* lines", "the module size limit is *N* lines", "*N* lines of code", "no file should exceed *N* lines" |
 | A number and a line unit, then one of them within twenty characters | "the *N*-line module cap", "a *N* LOC module", "*N* lines per function" |
 | One of them or a file, directly followed by a symbol and a number | "functions >*N* get split", "file length ≤ *N*" |
 | One of them or a file, directly followed by a comparison word and a number | "files over *N* lines", "modules >*N*, functions >*M*" |
 
-Numbers count as digits or spelled out ("fifty"). Not a limit: output, log, diff
-and stream counts ("*N* lines of log output"); one measured unit introduced by
-"this", "that", "these", "those", "its" or "their" ("this 87-line function"), unless
-a comparison or limit word makes it a bound; a change's size counted in files
-("*N* lines across *M* files"). A general measurement ("the module is about *N*
+Numbers count as digits (with "k" or "+") or spelled out ("fifteen", "forty-five",
+"a thousand"). A file is not a subject after a number, as a path part, or as an
+instruction, rule or skill file. Not a limit: a subject naming what code prints
+("module output") or a unit counting it ("*N* lines of log output"); a size attached
+to "this", "that", "these", "those", "its" or "their" ("this 87-line function"),
+unless a comparison or limit word makes it a bound; a change's size counted in files
+("*N* lines across *M* files"). A demonstrative before the subject exempts nothing. A general measurement ("the module is about *N*
 lines") is refused like a limit: cite its source or date it. A subject and size
 further apart than the windows, or split across table cells, pass.
 

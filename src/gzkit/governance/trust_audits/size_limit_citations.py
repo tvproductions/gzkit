@@ -16,30 +16,34 @@ alone, so a quoted bound followed by a word ("`Modules <=N` while") is still see
 The test is proximity, not a phrasing list (#1367 review: an enumerated list kept
 missing natural wordings). A sentence states a size limit when, inside one clause:
 
-- a function, method or module is followed within sixty characters by a number and a
-  line unit ("keep functions to N lines", "the module size limit is N lines",
-  "split any function that reaches N lines of code");
+- a function, method, module or file is followed within sixty characters by a
+  number and a line unit ("keep functions to N lines", "the module size limit is N
+  lines", "split any function that reaches N lines of code", "no file should
+  exceed N lines");
 - a number and a line unit are followed within twenty characters, no bracket or dash
-  between, by one of them ("the N-line module cap", "a N LOC module", "N lines per
-  function");
-- one of them, or a file, is followed directly (after an optional "length", "size" or
+  between, by a function, method or module ("the N-line module cap", "a N LOC
+  module", "N lines per function");
+- any of the four is followed directly (after an optional "length", "size" or
   "body") by a symbol and a number ("functions >N get split", "file length <= N"), or
   by a comparison word and a number that ends the phrase or carries a unit ("files
   over N lines").
 
-A file is a subject only in that last, adjacent form, because "N lines across M
-files" counts a change, not a limit. Numbers count as digits or spelled out
-("fifty", "six hundred"). Not a limit: a span naming output, a log, a diff or a
-stream, or a unit counting one ("N lines of log output"); a size introduced by
-"this", "that", "these", "those", "its" or "their", or a subject introduced by
-"this", "that", "these" or "those", which name one measured unit ("this 87-line
-function"), unless a comparison or limit word makes the number a bound ("keeps that
-module under the N-line ceiling"). Classes stay out of scope, because `pythonic.md` owns
+A file is not a subject after a number ("N lines across M files" counts a change),
+nor as a path part, a placeholder, or an instruction, rule or skill file, whose
+budget is in characters. Numbers count as digits (with "k" or "+"), or spelled out
+("fifteen", "forty-five", "six hundred", "a thousand"); "e.g." and "i.e." split no
+sentence. Not a limit: a subject naming what code prints ("module output", "function
+logs") or a unit counting it ("N lines of log output"); a size attached to "this",
+"that", "these", "those", "its" or "their", which names one measured unit ("this
+87-line function"), unless a comparison or limit word makes the number a bound ("its
+N-line cap"). A demonstrative before the subject exempts nothing ("keep these
+modules to N lines" is a limit). Classes stay out of scope, because `pythonic.md` owns
 that one number itself. A general measurement ("the module is about N lines") is
 refused like a limit; cite the measurement's source or date it.
 
 Dated history passes only in an anchored form inside the same sentence: "then in
-force", "then in" a path to `pythonic.md`, "at the time", "until" a commit hash, or
+force", "then in" a path to `pythonic.md`, "at the time" closing a parenthesis,
+"until" a commit hash, or
 an ISO date followed by "census". A bare "then" is not history, so a conditional
 ("if ... then split it") is refused (#1367 F3). Dated records stay as written and are
 not read: any path part carrying an ISO date, the `harbor-` records and the two
@@ -102,15 +106,20 @@ DATED_RECORD_FILES = (
 #: The authority itself names its bands' numbers.
 _AUTHORITY = "complexity-thresholds"
 
+_UNITS_WORD = r"(?:one|two|three|four|five|six|seven|eight|nine)"
 _SPELLED = (
-    r"(?:(?:one|two|three|four|five|six|seven|eight|nine)[- ]hundred"
-    r"|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred)"
+    rf"(?:{_UNITS_WORD}[- ](?:hundred|thousand)|a (?:hundred|thousand)"
+    rf"|(?:twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)(?:[- ]{_UNITS_WORD})?"
+    r"|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen"
+    r"|hundred|thousand)"
 )
-_NUM = rf"(?:\d+(?:,\d{{3}})*(?!,?\d)|{_SPELLED})"
+_NUM = rf"(?:\d+(?:,\d{{3}})*(?!,?\d)(?:k\b)?\+?|{_SPELLED})"
 _UNIT = r"(?:lines?|LOC|NLOC|SLOC)"
-_SIZE = rf"\b{_NUM}[- ]?{_UNIT}\b"
+_SIZE = rf"(?<![\w-]){_NUM}[- ]?{_UNIT}\b"
+#: A file names a module, except as a count ("M files"), a path or a placeholder.
+_FILE = r"(?<![<\w-])(?<!\d )(?<!instruction )(?<!rule )(?<!skill )files?"
 _SUBJECT = r"\b(?:functions?|modules?|methods?)\b"
-_ADJACENT_SUBJECT = r"(?:\b(?:functions?|modules?|methods?)|(?<![<\w-])(?<!instruction )files?)\b"
+_FORWARD_SUBJECT = rf"(?:\b(?:functions?|modules?|methods?)|{_FILE})\b"
 _COMPARE = (
     r"(?:\bover\b|\bexceed\w*|\bunder\b|\bmax(?:imum)?\b|\bat most\b|\bup to\b"
     r"|\bfits? in\b|\b(?:longer|shorter|larger|bigger|more|fewer|less) than\b"
@@ -121,41 +130,45 @@ _SYMBOL = r"(?:>=?|≥|<=?|≤)"
 #: A bare number after a comparison word is a size only when the phrase ends there
 #: ("over 5 parameters" is not); after a symbol any word may follow ("> N get split").
 _BARE_END = r"(?=\s*(?:[,;:)|]|\.(?=\s|$)|$|\band\b|\bor\b))"
-_HEAD = rf"{_ADJACENT_SUBJECT}\s*(?:(?:length|size|bod(?:y|ies))\s*)?"
+_HEAD = rf"{_FORWARD_SUBJECT}\s*(?:(?:length|size|bod(?:y|ies))\s*)?"
 PATTERNS = tuple(
     re.compile(pattern, re.IGNORECASE)
     for pattern in (
-        rf"{_SUBJECT}[^.;|]{{0,60}}?{_SIZE}",
+        rf"{_FORWARD_SUBJECT}[^.;|]{{0,60}}?{_SIZE}",
         rf"{_SIZE}[^.;|()\u2014\u2013]{{0,20}}?{_SUBJECT}",
         rf"{_HEAD}{_SYMBOL}\s*{_NUM}\b(?![>&%])",
         rf"{_HEAD}{_COMPARE}\s*(?:{_SIZE}|{_NUM}{_BARE_END})",
     )
 )
-_NOT_SIZE = re.compile(r"\b(?:output|logs?|stdout|stderr|diffs?)\b", re.IGNORECASE)
+#: "module output", "function logs": the subject names what code prints, not its size.
+_NOT_SIZE = re.compile(
+    rf"{_FORWARD_SUBJECT}\s+(?:output|logs?|stdout|stderr|diffs?)\b", re.IGNORECASE
+)
 #: "N lines of log output": the unit counts something that is not code.
 _OF_NOT_SIZE = re.compile(
     r"\s+of\s+(?:\w+\s+){0,2}(?:output|logs?|stdout|stderr|diffs?)\b", re.IGNORECASE
 )
-#: A word that makes a measured unit's number a bound ("that module under the N cap").
+#: A word that makes a measured unit's number a bound ("its N-line cap").
 _BOUND = re.compile(
     rf"{_COMPARE}|{_SYMBOL}|\b(?:cap|limit|ceiling|budget|guidance|threshold)\b", re.IGNORECASE
 )
+#: One measured unit: the number is attached to a demonstrative ("this N-line function").
 _MEASURED = re.compile(
-    rf"\b(?:this|that|these|those|its|their)\s+{_NUM}[- ]?{_UNIT}\b"
-    rf"|\b(?:this|that|these|those)\s+{_SUBJECT}",
-    re.IGNORECASE,
+    rf"\b(?:this|that|these|those|its|their)\s+{_NUM}[- ]?{_UNIT}\b", re.IGNORECASE
 )
 #: How far before a match a demonstrative may sit and still name the measured unit.
 _LEAD = 12
 HISTORY = re.compile(
-    r"\bthen in force\b|\bthen in \S*pythonic\.md\b|\bat the time\b(?!\s+of\b)"
+    r"\bthen in force\b|\bthen in \S*pythonic\.md\b|\bat the time\)"
     r"|\b\d{4}-\d{2}-\d{2} census\b|(?-i:\buntil (?=[0-9a-f]*[a-f])[0-9a-f]{7,40}\b)",
     re.IGNORECASE,
 )
 _EMPHASIS = re.compile(r"(?<!\w)_+|_+(?!\w)")
+#: "e.g." and "i.e." end no sentence and break no window.
+_ABBREVIATION = re.compile(r"\b([ei])\.([ge])\.")
 _CODE_SPAN = re.compile(r"`+([^`]+)`+")
 _BLOCK = re.compile(r"\n\s*\n|\n(?=\s*(?:[-*+]|\d+\.|\||#)\s)")
-_SENTENCE = re.compile(r"[.;!?]\s+|\|")
+_SENTENCE = re.compile(r"(?<!\be\.g)(?<!\bi\.e)[.;!?]\s+|\|")
 _STRING_TOKENS = frozenset(
     getattr(tokenize, name)
     for name in ("STRING", "FSTRING_MIDDLE", "TSTRING_MIDDLE")
@@ -166,7 +179,7 @@ _RECOVERY = (
     "states a function or module size limit as a number. `.gzkit/rules/pythonic.md` "
     "§ Size Limits: cite the lizard_nloc / lizard_file_nloc bands of "
     ".gzkit/rules/complexity-thresholds.json, never a number copied from it (GHI #1366). "
-    'A dated record keeps one only in an anchored form ("then in force", "at the time"; '
+    'A dated record keeps one only in an anchored form ("then in force", "(... at the time)"; '
     "GHI #1367). Cite the table or date the sentence, then re-run "
     "`uv run gz validate --{scope}`."
 )
@@ -184,7 +197,7 @@ def states_size_limit(text: str) -> bool:
 
 def _limit_in(sentence: str) -> bool:
     """Return whether *sentence*, or a code span in it read alone, states a size limit."""
-    text = _EMPHASIS.sub("", sentence)
+    text = _ABBREVIATION.sub(r"\1\2", _EMPHASIS.sub("", sentence))
     phrases = (text.replace("`", ""), *_CODE_SPAN.findall(text))
     return any(
         _states_limit(phrase, match)

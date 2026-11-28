@@ -108,13 +108,29 @@ REVIEW_COUNTEREXAMPLES = (
     "Aim for 50 lines per function.",
     "Keep functions ~50, modules ~600.",
     "Truncate module output over 50 lines and then, separately, keep modules to 600 lines.",
+    # The re-review (NB-1, NB-2, NB-4, NB-5): a file subject, a demonstrative before
+    # the subject, an output word away from the subject, and more number forms.
+    "No file should exceed 600 lines.",
+    "Source files should stay under 600 lines.",
+    "Keep files to 600 lines.",
+    "Split any file that grows past 600 lines.",
+    "Keep these modules to 600 lines.",
+    "Split that module once it reaches 600 lines.",
+    "These functions should be 50 lines at most.",
+    "Keep modules that format CLI output under 600 lines.",
+    "Split any function that parses diffs once it passes 50 lines.",
+    "Keep functions under forty-five lines.",
+    "Keep functions to fifteen lines.",
+    "Split modules at 600+ lines.",
+    "Keep modules under a thousand lines.",
+    "Keep modules under 1k lines.",
+    "Keep functions (e.g. helpers) under 50 lines.",
 )
 
 #: Live sentences a proximity test must not refuse: one measured unit, a change's
 #: size counted in files, and shell redirection (measured on the tree, 2026-11-28).
 LIVE_NON_LIMITS = (
     '"This 87-line function has three responsibility boundaries" is actionable',
-    "This function was the cleanest thing to move: 83 lines, one caller.",
     "Phase 2 routes to direct fix (≤30 lines, 2 files: the brief and the WBS row).",
     "adds two new unit tests — roughly 80 lines across 3 files",
     "The 80-line / 3-file count is a routing fact recorded in the commit body.",
@@ -122,6 +138,7 @@ LIVE_NON_LIMITS = (
     "wc -l # 13 over 300 lines git ls-files",
     "the defect-fix routing thresholds (≤10 lines / ≤2 files)",
     "| Module >5s total | `setUp` runs expensive ops per test |",
+    "Observed outcome: rule files with binding tables below 100+ lines of narrative",
     "it failed `cli/parser_governance.py` (1010 SLOC) — a module the corpus does not block",
 )
 
@@ -203,6 +220,7 @@ class HistoryTests(unittest.TestCase):
     def test_history_anchors_carry_a_date_or_a_commit(self) -> None:
         for text in (
             "At the time of writing, keep functions under 50 lines.",
+            "At the time you write it, keep functions under 50 lines.",
             "Keep functions under 50 lines until 1234567 is merged.",
         ):
             with self.subTest(text=text):
