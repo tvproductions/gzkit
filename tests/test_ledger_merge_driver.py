@@ -7,7 +7,9 @@ import unittest
 from pathlib import Path
 
 from gzkit.commands.ledger import (
+    JSONL_MERGE_PATTERNS,
     MERGE_DRIVER_NAME,
+    ensure_jsonl_merge_attributes,
     ensure_jsonl_merge_driver,
     ledger_merge_driver_cmd,
 )
@@ -112,6 +114,103 @@ class TestEnsureMergeDriverRegistration(unittest.TestCase):
             ).stdout.strip()
 
         self.assertEqual(configured, "uv run gz ledger merge-driver %O %A %B")
+
+    def test_outside_a_repository_reports_nothing_registered(self) -> None:
+        """A failed `git config` write is not a registration (GHI #1363).
+
+        Repair runs this on every invocation; a directory that is not a git
+        repository must not be told, each time, that a driver was registered.
+        """
+        with tempfile.TemporaryDirectory() as td:
+            self.assertFalse(ensure_jsonl_merge_driver(Path(td)))
+
+
+_ROUTED_FILES = (
+    ".gzkit/ledger.jsonl",
+    ".gzkit/insights/agent-insights.jsonl",
+    ".gzkit/corpus/AGENTS.md.jsonl",
+)
+
+
+class TestEnsureMergeAttributes(unittest.TestCase):
+    """An adopter's `.gitattributes` routes gzkit's append-only JSONL to the driver (GHI #1363).
+
+    The driver in local config is half of #811's fix; without the routing lines
+    in the adopter's own `.gitattributes`, git never invokes it.
+    """
+
+    def _init_repo(self, root: Path) -> None:
+        subprocess.run(
+            ["git", "init", "-q"],
+            cwd=root,
+            check=True,
+            capture_output=True,
+            text=True,
+            errors="replace",
+            env=_isolated_git_env(),
+        )
+
+    def _merge_attribute(self, root: Path, path: str) -> str:
+        out = subprocess.run(  # noqa: S603 — argv this test builds, list form
+            ["git", "check-attr", "merge", "--", path],
+            cwd=root,
+            check=True,
+            capture_output=True,
+            text=True,
+            errors="replace",
+            env=_isolated_git_env(),
+        ).stdout
+        return out.rsplit(": ", 1)[-1].strip()
+
+    def test_absent_file_is_created_and_routes_every_append_only_file(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            self._init_repo(root)
+
+            added = ensure_jsonl_merge_attributes(root)
+
+            self.assertEqual(added, list(JSONL_MERGE_PATTERNS))
+            for path in _ROUTED_FILES:
+                self.assertEqual(self._merge_attribute(root, path), MERGE_DRIVER_NAME, path)
+
+    def test_existing_rules_are_kept_and_missing_lines_added_once(self) -> None:
+        adopter = "* text=auto eol=lf\n*.png binary\n.gzkit/ledger.jsonl merge=gzkit-jsonl"
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            self._init_repo(root)
+            attributes = root / ".gitattributes"
+            attributes.write_text(adopter, encoding="utf-8")
+
+            added = ensure_jsonl_merge_attributes(root)
+            after_first = attributes.read_text(encoding="utf-8")
+            again = ensure_jsonl_merge_attributes(root)
+
+            self.assertEqual(added, [p for p in JSONL_MERGE_PATTERNS if p != ".gzkit/ledger.jsonl"])
+            self.assertTrue(after_first.startswith(adopter + "\n"), after_first)
+            self.assertEqual(again, [])
+            self.assertEqual(attributes.read_text(encoding="utf-8"), after_first)
+            # The adopter's own `binary` rule still applies: the macro unsets merge.
+            self.assertEqual(self._merge_attribute(root, "logo.png"), "unset")
+            for path in _ROUTED_FILES:
+                self.assertEqual(self._merge_attribute(root, path), MERGE_DRIVER_NAME, path)
+
+    def test_dry_run_reports_without_writing(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+
+            planned = ensure_jsonl_merge_attributes(root, dry_run=True)
+
+            self.assertEqual(planned, list(JSONL_MERGE_PATTERNS))
+            self.assertFalse((root / ".gitattributes").exists())
+
+    def test_gzkits_own_attributes_route_every_pattern_it_ships(self) -> None:
+        """The repository and the wheel name one set; neither may drift from the other."""
+        repo_root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as td:
+            copy = Path(td) / ".gitattributes"
+            copy.write_bytes((repo_root / ".gitattributes").read_bytes())
+
+            self.assertEqual(ensure_jsonl_merge_attributes(Path(td), dry_run=True), [])
 
 
 if __name__ == "__main__":

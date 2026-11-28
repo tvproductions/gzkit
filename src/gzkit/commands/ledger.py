@@ -20,6 +20,48 @@ from gzkit.utils import git_cmd
 MERGE_DRIVER_NAME = "gzkit-jsonl"
 _DRIVER_COMMAND = "uv run gz ledger merge-driver %O %A %B"
 
+#: The append-only JSONL gzkit writes, each routed to the driver by a
+#: `.gitattributes` line. gzkit's own `.gitattributes` carries the same set;
+#: `tests/test_ledger_merge_driver.py` holds the two together.
+JSONL_MERGE_PATTERNS = (
+    ".gzkit/ledger.jsonl",
+    ".gzkit/insights/agent-insights.jsonl",
+    ".gzkit/corpus/*.jsonl",
+)
+
+
+def _routes_to_driver(line: str, pattern: str) -> bool:
+    """Whether one `.gitattributes` line routes `pattern` to the driver."""
+    fields = line.split()
+    return bool(fields) and fields[0] == pattern and f"merge={MERGE_DRIVER_NAME}" in fields[1:]
+
+
+def ensure_jsonl_merge_attributes(project_root: Path, *, dry_run: bool = False) -> list[str]:
+    """Route gzkit's append-only JSONL to the merge driver in `.gitattributes` (GHI #1363).
+
+    The driver registered in local config does nothing until a `.gitattributes`
+    line routes a file to it, and an adopter's repository carries no such line
+    of gzkit's. Each missing routing line is appended; an existing line is never
+    rewritten, so the adopter's own rules stand, and a second call adds nothing.
+
+    Returns:
+        The patterns whose routing line this call added, or would add on a dry run.
+
+    """
+    path = project_root / ".gitattributes"
+    text = path.read_text(encoding="utf-8") if path.is_file() else ""
+    lines = text.splitlines()
+    missing = [
+        pattern
+        for pattern in JSONL_MERGE_PATTERNS
+        if not any(_routes_to_driver(line, pattern) for line in lines)
+    ]
+    if missing and not dry_run:
+        prefix = text if not text or text.endswith("\n") else text + "\n"
+        added = "".join(f"{pattern} merge={MERGE_DRIVER_NAME}\n" for pattern in missing)
+        path.write_text(prefix + added, encoding="utf-8")
+    return missing
+
 
 def ensure_jsonl_merge_driver(project_root: Path) -> bool:
     """Register the append-only merge driver in local git config if absent.
@@ -28,13 +70,14 @@ def ensure_jsonl_merge_driver(project_root: Path) -> bool:
 
     Registration cannot ride in `.gitattributes` with the rest of the rule: git
     reads the driver *command* from config only, and config is per-clone and
-    uncommittable. So the attribute ships in the repo and the command has to be
-    seeded by something that runs in the clone — `gz init` for new ones, and
-    `gz git-sync` for every clone that already exists, which is also the exact
-    moment the driver is about to be needed.
+    uncommittable. So the attribute is committed (`ensure_jsonl_merge_attributes`
+    writes it) and the command has to be seeded by something that runs in the
+    clone — `gz init` for new ones, and `gz git-sync` for every clone that
+    already exists, which is also the exact moment the driver is about to be needed.
 
     Returns:
-        True when this call installed the driver, False when it was already configured.
+        True when this call installed the driver; False when it was already
+        configured or the write failed, as outside a git repository.
 
     """
     key = f"merge.{MERGE_DRIVER_NAME}.driver"
@@ -42,7 +85,9 @@ def ensure_jsonl_merge_driver(project_root: Path) -> bool:
     if rc_read == 0 and existing.strip() == _DRIVER_COMMAND:
         return False
 
-    git_cmd(project_root, "config", key, _DRIVER_COMMAND)
+    rc_write, _out, _err = git_cmd(project_root, "config", key, _DRIVER_COMMAND)
+    if rc_write != 0:
+        return False
     git_cmd(
         project_root,
         "config",

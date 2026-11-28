@@ -55,14 +55,19 @@ more than add rows.
 
 ## Registration
 
-The `.gitattributes` rule ships with the repository:
+Two halves, both per repository. The routing lines live in the repository's
+own `.gitattributes`, which is committed. `gz init`, repair mode included,
+appends whichever of them are missing and never rewrites an existing line
+(GHI #1363):
 
 ```
 .gzkit/ledger.jsonl merge=gzkit-jsonl
+.gzkit/insights/agent-insights.jsonl merge=gzkit-jsonl
+.gzkit/corpus/*.jsonl merge=gzkit-jsonl
 ```
 
-The driver *command* cannot ship with it — git reads that from local config,
-which is per-clone and uncommittable. `gz git-sync` registers it on every apply
+The driver *command* cannot be committed with them — git reads that from local
+config, which is per-clone. `gz git-sync` registers it on every apply
 (idempotently), and `gz init` seeds it for new clones. To register by hand:
 
 ```bash

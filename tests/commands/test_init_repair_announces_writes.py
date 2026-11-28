@@ -152,6 +152,21 @@ class RepairAnnouncesEveryWrite(unittest.TestCase):
 
             self._assert_plan_matches_writes(runner, {readme.as_posix()})
 
+    def test_missing_jsonl_merge_routing_is_announced_then_written(self) -> None:
+        """A project initialized before GHI #1363 gets the routing lines from repair."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            self.assertEqual(runner.invoke(main, ["init", "--no-skeleton"]).exit_code, 0)
+            attributes = Path(".gitattributes")
+            self.assertIn(
+                "merge=gzkit-jsonl",
+                attributes.read_text(encoding="utf-8"),
+                "precondition: init wrote no JSONL merge routing",
+            )
+            attributes.unlink()
+
+            self._assert_plan_matches_writes(runner, {attributes.as_posix()})
+
     def test_repaired_tree_reports_and_writes_nothing(self) -> None:
         """Control: with nothing to repair, repair writes nothing — the ledger included."""
         runner = CliRunner()

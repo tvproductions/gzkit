@@ -33,7 +33,11 @@ from gzkit.commands.common import (
     get_project_root,
 )
 from gzkit.commands.init_cmd_errors import InvalidConstitutionSlugError, InvalidPrdSlugError
-from gzkit.commands.ledger import MERGE_DRIVER_NAME, ensure_jsonl_merge_driver
+from gzkit.commands.ledger import (
+    MERGE_DRIVER_NAME,
+    ensure_jsonl_merge_attributes,
+    ensure_jsonl_merge_driver,
+)
 from gzkit.commands.register import (
     grandfathered_foundation_ids,
     is_ungrandfathered_foundation,
@@ -819,6 +823,29 @@ def _session_green_gate_statuses(project_root: Path, *, dry_run: bool = False) -
     ]
 
 
+def _jsonl_merge_statuses(project_root: Path, *, dry_run: bool = False) -> list[str]:
+    """Route gzkit's append-only JSONL to its merge driver; return each step's status line.
+
+    Two halves, both per-repository (GHI #811, #1363): the routing lines live in
+    the adopter's `.gitattributes`, which is committed, and the driver command
+    lives in local git config, which is not. Either half alone merges nothing.
+
+    Returns:
+        The status lines for the routing lines added and the driver registered, in that order.
+
+    """
+    statuses: list[str] = []
+    patterns = ensure_jsonl_merge_attributes(project_root, dry_run=dry_run)
+    if patterns:
+        verb = "Would route" if dry_run else "Routed"
+        statuses.append(f"{verb} {', '.join(patterns)} to '{MERGE_DRIVER_NAME}' in .gitattributes")
+    if dry_run:
+        return statuses
+    if ensure_jsonl_merge_driver(project_root):
+        statuses.append(f"Registered git merge driver '{MERGE_DRIVER_NAME}' for append-only JSONL")
+    return statuses
+
+
 def _setup_session_green_gate(project_root: Path, *, dry_run: bool = False) -> None:
     """Run the session-green-gate setup and print each step's status."""
     for status in _session_green_gate_statuses(project_root, dry_run=dry_run):
@@ -1236,9 +1263,15 @@ def _repair_missing_artifacts(
         )
     )
 
-    # Repair the session-green gate — declaration then delivery. Projects
-    # initialized before GHI #715 carry neither; repair is how they get both.
-    repaired.extend(_session_green_gate_statuses(project_root, dry_run=dry_run))
+    # Repair the git-layer deliveries: the session-green gate, declaration then
+    # delivery (GHI #715), and the JSONL merge routing and driver (GHI #1363).
+    # Projects initialized before those fixes carry neither; repair is how they get them.
+    repaired.extend(
+        [
+            *_session_green_gate_statuses(project_root, dry_run=dry_run),
+            *_jsonl_merge_statuses(project_root, dry_run=dry_run),
+        ]
+    )
 
     # Repair skills — scaffold any core skills added in newer gzkit versions.
     # A dry run never calls the scaffolder, which writes (GHI #1098).
@@ -1530,12 +1563,10 @@ def init(
     # delivery, so a failure to install here surfaces rather than going silent.
     _setup_session_green_gate(project_root)
 
-    # Append-only JSONL merge driver. The `.gitattributes` rule ships with the
-    # repo, but git reads the driver *command* from local config, which cannot
-    # be committed — so a fresh clone has the attribute and no driver behind it
-    # until something seeds it here (GHI #811).
-    if ensure_jsonl_merge_driver(project_root):
-        console.print(f"  Registered git merge driver '{MERGE_DRIVER_NAME}' for append-only JSONL")
+    # Append-only JSONL merge driver: the `.gitattributes` routing and the
+    # local-config driver command, both written here (GHI #811, #1363).
+    for status in _jsonl_merge_statuses(project_root):
+        console.print(f"  {status}")
 
     # Scaffold core skills
     skills = scaffold_core_skills(project_root, config)

@@ -52,9 +52,11 @@ gz init [OPTIONS]
 13. Writes `.gitignore`, `data/audit_thresholds.json` and each absent
     `data/catalog/` file (the family legend, the delivery event types with a
     cutover stamped at that moment, and empty stores, so `gz wp` works on a
-    fresh project) and, in a
-    git worktree, registers the `gzkit-jsonl` append-only merge driver in
-    local git config
+    fresh project). It appends to `.gitattributes`, creating it if absent, each
+    missing line routing `.gzkit/ledger.jsonl`,
+    `.gzkit/insights/agent-insights.jsonl` and `.gzkit/corpus/*.jsonl` to the
+    `gzkit-jsonl` merge driver, never rewriting an existing line, and, in a
+    git worktree, registers that driver in local git config (GHI #1363)
 14. Appends `project_init` to the ledger, plus one `agent_sync_completed` per
     sync it runs
 
@@ -432,6 +434,17 @@ validation that bare CLI commands do not. Use them when available.
 See: /user/skills/ in the docs or run gz skill list.
 ```
 
+That record predates GHI #1363. Since then the merge-driver line is preceded by
+the routing line, observed 2026-11-28 with `gz init --no-skeleton` in a git
+repository whose `.gitattributes` held only `* text=auto eol=lf`; a second run
+prints neither line:
+
+```text
+  Routed .gzkit/ledger.jsonl, .gzkit/insights/agent-insights.jsonl,
+.gzkit/corpus/*.jsonl to 'gzkit-jsonl' in .gitattributes
+  Registered git merge driver 'gzkit-jsonl' for append-only JSONL
+```
+
 ---
 
 ## Result Tree
@@ -478,6 +491,7 @@ my-project/
 ├── pyproject.toml             ← Built by uv init
 ├── uv.lock
 ├── README.md
+├── .gitattributes             ← JSONL merge-driver routing (appended, never rewritten)
 ├── .gitignore
 ├── .pre-commit-config.yaml    ← Pre-push gz check gate
 ├── AGENTS.md                  ← Agent governance contract (plus nested AGENTS.md files)

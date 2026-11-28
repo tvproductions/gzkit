@@ -7,7 +7,7 @@ owner: gzkit-governance
 last_reviewed: 2026-10-17
 gz_command: init
 metadata:
-  skill-version: "6.4.1"
+  skill-version: "6.4.2"
 model: sonnet
 ---
 
@@ -27,7 +27,9 @@ current directory; it never searches upward for a project.
   `.pre-commit-config.yaml` with the pre-push `gz check` gate, and
   `data/audit_thresholds.json`. In a git worktree it runs `pre-commit install`
   for every declared hook type, installs the commit-locus recorder when
-  `post-commit` is declared, and registers the `gzkit-jsonl` merge driver. It
+  `post-commit` is declared, and registers the `gzkit-jsonl` merge driver; in
+  every project it appends the missing lines routing the append-only JSONL to
+  that driver to `.gitattributes`, never rewriting one (GHI #1363). It
   copies the wheel's canonical skills, chores, personas, templates and rules
   into `.gzkit/`, runs the sync preflight, syncs the control surfaces, and
   offers to register PRDs and ADRs it finds. Ledger: one `project_init` and an

@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-17
 metadata:
-  skill-version: "6.4.8"
+  skill-version: "6.4.9"
 model: haiku
 ---
 
@@ -172,7 +172,7 @@ Files known to cause multi-agent conflicts:
 
 ### JSONL Merge Strategy
 
-`.gitattributes` routes `.gzkit/ledger.jsonl`, `.gzkit/insights/agent-insights.jsonl` and `.gzkit/corpus/*.jsonl` to the `gzkit-jsonl` merge driver, `gz ledger merge-driver`, which merges both sides' appended rows as a timestamp-ordered union (GHI #811). Its registration lives in local git config, which `gz git-sync` and `gz init` seed. Git's built-in `merge=union` is not a substitute: it concatenates without ordering, and ledger rows are strictly timestamp-ordered (GHI #812). Contract and recovery: [`gz ledger merge-driver`](../../../docs/user/manpages/ledger-merge-driver.md).
+`.gitattributes` routes `.gzkit/ledger.jsonl`, `.gzkit/insights/agent-insights.jsonl` and `.gzkit/corpus/*.jsonl` to the `gzkit-jsonl` merge driver, `gz ledger merge-driver`, which merges both sides' appended rows as a timestamp-ordered union (GHI #811). `gz init`, repair mode included, appends those routing lines to an adopter's `.gitattributes` (GHI #1363); the driver's registration lives in local git config, which `gz git-sync` and `gz init` seed. Git's built-in `merge=union` is not a substitute: it concatenates without ordering, and ledger rows are strictly timestamp-ordered (GHI #812). Contract and recovery: [`gz ledger merge-driver`](../../../docs/user/manpages/ledger-merge-driver.md).
 
 ### Pre-Push Conflict Check
 
