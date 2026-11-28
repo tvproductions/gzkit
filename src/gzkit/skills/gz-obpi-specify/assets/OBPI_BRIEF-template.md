@@ -77,8 +77,7 @@ and ensures implementations don't violate established contracts.
 
 **STOP if you cannot locate these documents or do not understand:**
 
-- Which bounded context your OBPI operates in
-- What canonical formats apply to your work
+- Which bounded context your OBPI operates in, or that none is designed yet
 - Which invariants must be preserved
 
 ## Policy references
@@ -368,7 +367,7 @@ Agent MUST conform to these constraints:
 
 - **No invented files:** Only edit files listed in ALLOWED PATHS; never create undeclared files.
 - **No invented config:** Do not assume config keys exist; verify in `.gzkit.json` or `.gzkit/manifest.json`.
-- **No invented data:** Do not reference test data, fixtures, or datasets not present in `fixtures/**` or `data/**`.
+- **No invented data:** Do not reference test data, fixtures, or datasets not present in `tests/fixtures/**` or `data/**`.
 - **No placeholder code:** Never commit `TODO`, `FIXME`, `@skip`, or incomplete test/function implementations.
 - **No private/stashed work:** Work must be complete and visible; no agent-only staging or ledger hiding.
 
@@ -433,7 +432,7 @@ If the plan is questioned or modified, update it and re-present.
 
 - [ ] Implementation: `{allowed_path}` — what exists now?
 - [ ] Tests: `tests/test_{module}.py` — current coverage?
-- [ ] Fixtures: `fixtures/{module}/` — test data available?
+- [ ] Fixtures: `tests/fixtures/{module}/` — test data available?
 
 **Templates/Examples (patterns to follow):**
 
