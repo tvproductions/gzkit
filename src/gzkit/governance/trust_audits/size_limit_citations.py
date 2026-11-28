@@ -36,7 +36,9 @@ sentence. Not a limit: a subject naming what code prints ("module output", "func
 logs") or a unit counting it ("N lines of log output"); a size attached to "this",
 "that", "these", "those", "its" or "their", which names one measured unit ("this
 87-line function"), unless a comparison or limit word makes the number a bound ("its
-N-line cap"). A demonstrative before the subject exempts nothing ("keep these
+N-line cap"); a match is exempt only when every size in it is so attached, so a
+separate limit beside a measured unit is still refused. A demonstrative before the
+subject exempts nothing ("keep these
 modules to N lines" is a limit). Classes stay out of scope, because `pythonic.md` owns
 that one number itself. A general measurement ("the module is about N lines") is
 refused like a limit; cite the measurement's source or date it.
@@ -117,7 +119,7 @@ _NUM = rf"(?:\d+(?:,\d{{3}})*(?!,?\d)(?:k\b)?\+?|{_SPELLED})"
 _UNIT = r"(?:lines?|LOC|NLOC|SLOC)"
 _SIZE = rf"(?<![\w-]){_NUM}[- ]?{_UNIT}\b"
 #: A file names a module, except as a count ("M files"), a path or a placeholder.
-_FILE = r"(?<![<\w-])(?<!\d )(?<!instruction )(?<!rule )(?<!skill )files?"
+_FILE = r"(?<![<\w/.-])(?<!\d )(?<!instruction )(?<!rule )(?<!skill )files?"
 _SUBJECT = r"\b(?:functions?|modules?|methods?)\b"
 _FORWARD_SUBJECT = rf"(?:\b(?:functions?|modules?|methods?)|{_FILE})\b"
 _COMPARE = (
@@ -152,12 +154,9 @@ _OF_NOT_SIZE = re.compile(
 _BOUND = re.compile(
     rf"{_COMPARE}|{_SYMBOL}|\b(?:cap|limit|ceiling|budget|guidance|threshold)\b", re.IGNORECASE
 )
-#: One measured unit: the number is attached to a demonstrative ("this N-line function").
-_MEASURED = re.compile(
-    rf"\b(?:this|that|these|those|its|their)\s+{_NUM}[- ]?{_UNIT}\b", re.IGNORECASE
-)
-#: How far before a match a demonstrative may sit and still name the measured unit.
-_LEAD = 12
+#: One measured unit: a size attached to a demonstrative ("this N-line function").
+_DEMONSTRATIVE = re.compile(r"\b(?:this|that|these|those|its|their)\s+$", re.IGNORECASE)
+_SIZE_RE = re.compile(_SIZE, re.IGNORECASE)
 HISTORY = re.compile(
     r"\bthen in force\b|\bthen in \S*pythonic\.md\b|\bat the time\)"
     r"|\b\d{4}-\d{2}-\d{2} census\b|(?-i:\buntil (?=[0-9a-f]*[a-f])[0-9a-f]{7,40}\b)",
@@ -211,8 +210,13 @@ def _states_limit(phrase: str, match: re.Match[str]) -> bool:
     """Return whether *match* names a limit, not output or one measured unit."""
     if _NOT_SIZE.search(match.group(0)) or _OF_NOT_SIZE.match(phrase, match.end()):
         return False
-    lead = phrase[max(0, match.start() - _LEAD) : match.end()]
-    return not _MEASURED.search(lead) or bool(_BOUND.search(match.group(0)))
+    return not _measured(phrase, match) or bool(_BOUND.search(match.group(0)))
+
+
+def _measured(phrase: str, match: re.Match[str]) -> bool:
+    """Return whether every size in *match* is one measured unit's, never a separate limit."""
+    sizes = list(_SIZE_RE.finditer(phrase, match.start(), match.end()))
+    return bool(sizes) and all(_DEMONSTRATIVE.search(phrase[: size.start()]) for size in sizes)
 
 
 def _markdown_blocks(text: str) -> Iterator[tuple[int, str]]:

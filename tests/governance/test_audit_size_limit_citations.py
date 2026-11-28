@@ -125,6 +125,8 @@ REVIEW_COUNTEREXAMPLES = (
     "Keep modules under a thousand lines.",
     "Keep modules under 1k lines.",
     "Keep functions (e.g. helpers) under 50 lines.",
+    # The final review: a measured unit beside a separate limit exempts only itself.
+    "Unlike this 87 LOC function, keep functions to 50 lines.",
 )
 
 #: Live sentences a proximity test must not refuse: one measured unit, a change's
@@ -139,6 +141,7 @@ LIVE_NON_LIMITS = (
     "the defect-fix routing thresholds (≤10 lines / ≤2 files)",
     "| Module >5s total | `setUp` runs expensive ops per test |",
     "Observed outcome: rule files with binding tables below 100+ lines of narrative",
+    "List docs/files over 600 lines with wc.",
     "it failed `cli/parser_governance.py` (1010 SLOC) — a module the corpus does not block",
 )
 
