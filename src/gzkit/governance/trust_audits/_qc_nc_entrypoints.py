@@ -683,6 +683,7 @@ _SIZE_LIMIT_ROOTS = frozenset(
         "src/gzkit",
         "AGENTS.md",
         "CLAUDE.md",
+        "README.md",
     }
 )
 

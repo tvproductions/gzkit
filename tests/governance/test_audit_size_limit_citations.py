@@ -106,6 +106,8 @@ REVIEW_COUNTEREXAMPLES = (
     "Truncate module output over 50 lines, and keep modules under 600 lines.",
     "Keep _functions_ over 50 lines out.",
     "Aim for 50 lines per function.",
+    "Keep functions ~50, modules ~600.",
+    "Truncate module output over 50 lines and then, separately, keep modules to 600 lines.",
 )
 
 #: Live sentences a proximity test must not refuse: one measured unit, a change's

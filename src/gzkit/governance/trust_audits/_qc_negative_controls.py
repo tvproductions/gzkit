@@ -1929,6 +1929,7 @@ def _build_size_limit_citations() -> Path:
         "src/gzkit/x.py": f'"""If a module is over {mod} lines then split it."""\n',
         "AGENTS.md": f"The {mod}-line module cap applies.\n",
         "CLAUDE.md": f"Keep files over {mod} lines out.\n",
+        "README.md": f"Keep functions ~{fn}, modules ~{mod}.\n",
     }
     root = _mkroot("size-limit-citations")
     for rel, body in phrasings.items():
