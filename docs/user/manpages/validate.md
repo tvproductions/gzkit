@@ -1114,9 +1114,9 @@ Rule home: `.gzkit/rules/model-selection.md` § Skill frontmatter.
 
 ### `--size-limit-citations`
 
-Fails closed when an instruction surface or gzkit source states a function or
-module size limit as a number instead of citing the threshold table (GHI #1366;
-a `gz validate` scope since GHI #1370). Runs in the **default** `gz check`
+Fails closed when a live surface states a function or module size limit as a
+number instead of citing the threshold table (GHI #1366; a `gz validate` scope
+since GHI #1370, widened by GHI #1367). Runs in the **default** `gz check`
 scope, so the flag is for scoping a single run.
 
 Function and module size are the `lizard_nloc` and `lizard_file_nloc` bands of
@@ -1124,36 +1124,49 @@ Function and module size are the `lizard_nloc` and `lizard_file_nloc` bands of
 numbers, skills, a persona and docstrings kept restating them as the rule, and
 nothing noticed.
 
-**Scope** — Markdown under `.gzkit/skills/`, `.gzkit/rules/`,
-`.gzkit/personas/`, `.gzkit/agents/`, `.gzkit/templates/` and `docs/user/`,
-which may state no size limit as a number; and Python under `src/gzkit/`, which
-may state one only as dated history, on a line that also says "then" ("the cap
-then in force"). The threshold authority itself is not read. Class size is out
-of scope, because `pythonic.md` owns that limit, and so is a measured size ("this
-87-line function"), which states no limit. A root absent from gzkit's own tree is
-a finding, so a renamed directory cannot shrink the fence; in an adopter project
-an absent root is skipped.
+**Scope** — Markdown and JSONL under `.gzkit/skills/`, `.gzkit/rules/`,
+`.gzkit/personas/`, `.gzkit/agents/`, `.gzkit/templates/`, `.gzkit/chores/`,
+`.gzkit/corpus/`, `docs/user/` and `docs/governance/`, plus `AGENTS.md` and
+`CLAUDE.md`; and the strings and comments of Python under `src/gzkit/`. Each file
+is read sentence by sentence with whitespace collapsed, so a phrase wrapped across
+lines is still seen, and a code span is also read alone. Not read: the threshold
+authority, dated records (a path part carrying an ISO date, the `harbor-` records,
+`rule-version-history.md` and the "Not canon" alignment map), chore proofs and
+archives, and the pool ADRs, which drain into the requirements catalog (operator
+ruling on #1367). Class size is out of scope, because `pythonic.md` owns that
+limit, and so is a measured size ("this 87-line function"), which states no limit.
+A root absent from gzkit's own tree is a finding, so a renamed directory cannot
+shrink the fence; in an adopter project an absent root is skipped.
+
+**Dated history** passes only when its sentence carries an anchored form: "then in
+force", "then in" a path to `pythonic.md`, "at the time", "until" a commit hash, or
+an ISO date followed by "census". A bare "then" is not history.
 
 #### What fails closed
 
 | Shape | Example |
 |-------|---------|
-| Subject, comparison, number | "functions exceeding *N* lines", "modules >*N* LOC" |
-| Subject, then a numbered limit | "modules under the *N*-line cap" |
-| Numbered limit naming the subject | "the *N*-line module cap" |
+| Subject, comparison, number and unit | "functions exceeding *N* lines", "no function longer than *N* lines", "modules past *N* lines" |
+| Subject, comparison, bare number | "functions >*N*, modules >*M*", "file length ≤ *N*" |
+| Subject, then a numbered limit | "modules under the *N*-line cap", "functions: *N* lines max", "*N* lines or fewer" |
+| Numbered limit naming the subject | "the *N*-line module cap", "a *N* LOC module", "max module size *N* lines" |
 
-The patterns read one line at a time; #1367 tracks the phrasings and roots they
-miss.
+Numbers count as digits or spelled out ("fifty"). A span naming output, a log, a
+diff or a stream, or a unit followed by "of", states no size limit. It is a
+phrasing fence: a limit worded outside these shapes passes, and the module
+docstring of `gzkit.governance.trust_audits.size_limit_citations` lists what it
+does not judge.
 
 #### Exit codes
 
 | Code | Meaning | Recovery |
 |------|---------|----------|
 | 0 | No surface restates a size limit | — |
-| 1 | A surface states a size limit as a number | Cite the `lizard_nloc` / `lizard_file_nloc` bands of the threshold table (or, in source, date the line), then re-run `uv run gz validate --size-limit-citations` |
+| 1 | A surface states a size limit as a number | Cite the `lizard_nloc` / `lizard_file_nloc` bands of the threshold table (or, in a dated record, anchor the history), then re-run `uv run gz validate --size-limit-citations` |
 
-Measured, not transcribed: a planted module-size limit stated as a number in a
-temporary project's `.gzkit/skills/` exits **1** with `path:line` attribution,
+Measured, not transcribed: a planted module-size limit stated as a number, wrapped
+across two lines, in a temporary project's `.gzkit/skills/` exits **1** with
+`path:line` attribution (2026-11-28),
 and the clean project exits **0**. Under an open Maintenance Hangar the finding
 is reported advisory and the run exits 0.
 
@@ -3904,7 +3917,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--waiver-ratchet` | opt-in | Every waiver, grandfather or baseline surface that gates a `gz check` step carries exactly one honesty mechanism (ADR-0.0.73 / OBPI-0.0.73-09) |
 | `--wheel-path-literals` | yes | Wheel-shipped instruction text names no path only its authoring environment can resolve (GHI #900) |
 | `--model-class-only` | yes | Rule, skill and agent canon name Claude models by class, never by a versioned ID (GHI #1284) |
-| `--size-limit-citations` | yes | Instruction surfaces and source cite the threshold table for function and module size, never a number (GHI #1366, #1370) |
+| `--size-limit-citations` | yes | Live surfaces cite the threshold table for function and module size, never a number (GHI #1366, #1370, #1367) |
 | `--dependency-currency-citations` | yes | A live surface cites the dependency-currency chore, never a dependency age as a grade (GHI #1368, #1370) |
 | `--tidy-verdict-citations` | yes | No live sentence says gz tidy's exit status ignores its findings (GHI #1373, #1370) |
 | `--moved-fact-citations` | yes | No live sentence restates a fact the 2026-09-17 AGENTS.md rewrite moved or dropped (GHI #1374, #1370) |

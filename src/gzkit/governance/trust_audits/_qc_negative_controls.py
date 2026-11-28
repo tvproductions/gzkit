@@ -1899,12 +1899,15 @@ def _build_canon_relative_links() -> Path:
 
 
 def _build_size_limit_citations() -> Path:
-    """Plant a restated size limit in each root, with two decoys that must pass.
+    """Plant a restated size limit in each root and root file, with decoys that must pass.
 
-    Each file sits directly under its root, so the entrypoint can name the root
-    each finding came from. The roots are written literally, not read from the
-    audit. The decoys are a dated-history line in source and the threshold
-    authority, which names its own numbers (GHI #1370).
+    Each plant sits directly under its root (a chore one level down), so the
+    entrypoint can name the root each finding came from. The roots are written
+    literally, not read from the audit. The plants vary the phrasing, and the
+    governance one wraps across lines, so a scope that lost a shape or read line
+    by line misses one. The decoys are anchored history, a conditional "then" that
+    must still fire, a dated record, a `harbor-` record, a chore proof, a pool ADR
+    (not read, by operator ruling on #1367) and the threshold authority (GHI #1367).
 
     Returns:
         The fixture project root.
@@ -1912,27 +1915,33 @@ def _build_size_limit_citations() -> Path:
     """
     # The numbers are filled in at run time: this module is source the scope reads,
     # and a literal limit here would be a finding against gzkit itself.
-    function_lines, module_lines = 50, 600
-    function_limit = f"Keep functions under {function_lines} lines.\n"
+    fn, mod = 50, 600
+    phrasings = {
+        ".gzkit/skills/x.md": f"Keep functions under {fn} lines.\n",
+        ".gzkit/rules/x.md": f"No function longer than {fn} lines.\n",
+        ".gzkit/personas/x.md": f"Split any module past {mod} lines.\n",
+        ".gzkit/agents/x.md": f"Filter to functions >{fn}, modules >{mod}.\n",
+        ".gzkit/templates/x.md": f"Max function length: {fn} lines.\n",
+        ".gzkit/chores/x/CHORE.md": f"Keep each function to {fn} lines or fewer.\n",
+        ".gzkit/corpus/x.jsonl": f'{{"text": "Keep modules below {mod} lines."}}\n',
+        "docs/user/x.md": f"A {mod} LOC module is the ceiling.\n",
+        "docs/governance/x.md": f"Keep modules under the\n{mod}-line cap.\n",
+        "src/gzkit/x.py": f'"""If a module is over {mod} lines then split it."""\n',
+        "AGENTS.md": f"The {mod}-line module cap applies.\n",
+        "CLAUDE.md": f"Maximum module size {mod} lines.\n",
+    }
     root = _mkroot("size-limit-citations")
-    for rel in (
-        ".gzkit/skills",
-        ".gzkit/rules",
-        ".gzkit/personas",
-        ".gzkit/agents",
-        ".gzkit/templates",
-        "docs/user",
-    ):
-        _write(root / rel / "x.md", function_limit)
-    _write(
-        root / "src" / "gzkit" / "x.py",
-        f'"""Keep modules under the {module_lines}-line cap."""\n',
-    )
-    _write(
-        root / "src" / "gzkit" / "y.py",
-        '"""Split to stay under the 600-line module cap then in force."""\n',
-    )
-    _write(root / ".gzkit" / "rules" / "complexity-thresholds.md", function_limit)
+    for rel, body in phrasings.items():
+        _write(root / rel, body)
+    decoy = f"Keep functions under {fn} lines.\n"
+    _write(root / "src/gzkit/y.py", f'"""Split under the {mod}-line module cap then in force."""\n')
+    dated = f"This module was {mod + 1} lines (over {mod} lines at the time).\n"
+    _write(root / ".gzkit/rules/y.md", dated)
+    _write(root / "docs/governance/x-2026-01-01.md", decoy)
+    _write(root / "docs/governance/harbor-x.md", decoy)
+    _write(root / ".gzkit/chores/x/proofs/p.md", decoy)
+    _write(root / "docs/design/adr/pool/ADR-pool.x.md", decoy)
+    _write(root / ".gzkit/rules/complexity-thresholds.md", decoy)
     return root
 
 

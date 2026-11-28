@@ -6,9 +6,9 @@ paths:
 
 # Pythonic Standards (Idiomatic Code Contract)
 
-<!-- rule-version: 0.8.1 -->
+<!-- rule-version: 0.8.2 -->
 
-> **Rule version:** `0.8.1` — the help-path carve-out states what its guard witnesses: `gzkit.commands.common` alone (GHI #1411 review); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
+> **Rule version:** `0.8.2` — § Size Limits names the witness of "Cite the table": `gz validate --size-limit-citations` (GHI #1367); prior banners in [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
 
 ## Core Principles
 
@@ -29,6 +29,10 @@ paths:
 `lizard_file_nloc` bands of `.gzkit/rules/complexity-thresholds.json`, read through `complexity-thresholds.md`.
 **Classes <=300 lines** stays the one size limit this rule owns, because the table carries no class metric
 (operator, 2026-11-13, RP-7 held ruling H2: *"A: Cite the table"*). Cite the table, never a number copied from it.
+**(Witnessed by `gz validate --size-limit-citations`, in every `gz check`: it refuses a function or module size
+stated as a number in the skills, rules, personas, agents, templates, chores, the AGENTS corpus, `AGENTS.md`,
+`CLAUDE.md`, `docs/user`, non-dated `docs/governance` and `src/gzkit`, and admits dated history only in an anchored form such as "then in
+force". The shapes it judges are listed in its module docstring; scorecard row 20a. GHI #1366, #1367.)**
 
 | Limit | Enforced by | Status |
 |---|---|---|

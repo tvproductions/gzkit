@@ -99,10 +99,10 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     # table, allowlist or marker admits one; the roots it reads and the ID pattern
     # are fixed code properties that define what a violation is. GHI #1284.
     "model-class-only": EXEMPTS_NONE,
-    # Scans instruction surfaces and source for a size limit stated as a number.
-    # No waiver table, allowlist or marker admits one: the roots, the patterns and
-    # the dated-history form ("then") are fixed code properties that define what a
-    # violation is, and the authority file is the scope's subject. GHI #1370.
+    # Scans the live surfaces for a size limit stated as a number. No waiver table,
+    # allowlist or marker admits one: the roots, the dated-record skips, the patterns
+    # and the anchored history forms are fixed code properties that define what a
+    # violation is, and the authority file is the scope's subject. GHI #1370, #1367.
     "size-limit-citations": EXEMPTS_NONE,
     # A prose fence: no waiver table, allowlist or marker admits a finding; the roots,
     # the patterns and the dated-record exclusions are fixed code properties that

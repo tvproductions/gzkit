@@ -676,14 +676,14 @@
     {
       "claim_id": "size-limit-citations",
       "guard": "gzkit.governance.trust_audits.size_limit_citations:audit_size_limit_citations",
-      "failing_test": "tests.governance.test_audit_size_limit_citations.SizeLimitCitationsTests.test_a_limit_on_each_instruction_surface_is_flagged",
+      "failing_test": "tests.governance.test_audit_size_limit_citations.AuditTests.test_a_limit_on_each_root_and_root_file_is_flagged",
       "mutation": {
-        "find": "        for path in live_files(project_root, INSTRUCTION_ROOTS, suffixes=(\".md\",))\n",
-        "replace": "        for path in live_files(project_root, (), suffixes=(\".md\",))\n",
-        "label": "no instruction surface is ever read"
+        "find": "    for path in paths:\n",
+        "replace": "    for path in []:\n",
+        "label": "no live file is ever read"
       },
-      "binding_sha256": "66cfa6bfad97a3874bdb77607b758c5e7d5e5924910d4eb7a54190dc7636b45c",
-      "authority": "GHI #1370 (operator ruling 2026-11-28, verbatim: \"A\")",
+      "binding_sha256": "e116e362aef66cb3152b471bd409831745ab11b895e01bb9bb0675c76c46504f",
+      "authority": "GHI #1370 (operator ruling 2026-11-28, verbatim: \"A\"); widened by GHI #1367",
       "proposed_by": "claude-code session 2026-11-28"
     },
     {

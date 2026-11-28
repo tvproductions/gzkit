@@ -667,8 +667,8 @@ def _ep_model_class_only(root: Path) -> list[ValidationError]:
     return errors
 
 
-#: The roots the size-limit control plants, spelled here rather than read from the
-#: audit, so a scope that dropped one fails the control (GHI #1370).
+#: The roots and root files the size-limit control plants, spelled here rather than
+#: read from the audit, so a scope that dropped one fails the control (GHI #1370, #1367).
 _SIZE_LIMIT_ROOTS = frozenset(
     {
         ".gzkit/skills",
@@ -676,8 +676,13 @@ _SIZE_LIMIT_ROOTS = frozenset(
         ".gzkit/personas",
         ".gzkit/agents",
         ".gzkit/templates",
+        ".gzkit/chores/x",
+        ".gzkit/corpus",
         "docs/user",
+        "docs/governance",
         "src/gzkit",
+        "AGENTS.md",
+        "CLAUDE.md",
     }
 )
 
@@ -685,9 +690,10 @@ _SIZE_LIMIT_ROOTS = frozenset(
 def _ep_size_limit_citations(root: Path) -> list[ValidationError]:
     """Return the findings only when every planted root fires and no decoy does.
 
-    Each root holds one restated limit; the decoys are a dated-history line in
-    source and the threshold authority itself. A scope that dropped a root, lost
-    the history allowance or read the authority reports no catch (GHI #1370).
+    Each root holds one restated limit in its own phrasing; the decoys are anchored
+    history, dated records, a chore proof, a pool ADR and the threshold authority. A
+    scope that dropped a root or a phrasing, read line by line, loosened or lost the
+    history allowance, or read a decoy reports no catch (GHI #1370, #1367).
 
     Returns:
         Every finding when exactly the planted roots fired, otherwise nothing.
@@ -698,7 +704,8 @@ def _ep_size_limit_citations(root: Path) -> list[ValidationError]:
     )
 
     errors = audit_size_limit_citations(root)
-    caught = {e.artifact.rsplit("/", 1)[0] for e in errors}
+    files = {e.artifact.rsplit(":", 1)[0] for e in errors}
+    caught = {rel.rsplit("/", 1)[0] if "/" in rel else rel for rel in files}
     if caught != _SIZE_LIMIT_ROOTS or len(errors) != len(_SIZE_LIMIT_ROOTS):
         return []
     return errors

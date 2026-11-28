@@ -423,6 +423,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `pythonic.md`
 
+### Changed 2026-11-28 at version `0.8.2` (GHI #1367)
+
+Prior `0.8.1` banner, verbatim: *"the help-path carve-out states what its guard witnesses: `gzkit.commands.common` alone (GHI #1411 review)"*. Superseded when § Size Limits named the witness of "Cite the table, never a number copied from it": `gz validate --size-limit-citations`, widened under GHI #1367 to more phrasings, the governance docs, chores and the AGENTS corpus, with dated history admitted only in an anchored form. Scorecard row 20a scores the clause.
+
 ### Changed 2026-11-27 at version `0.8.1` (GHI #1411 review)
 
 Prior `0.8.0` banner, verbatim: *"§ Imports names a third lazy-import carve-out, help-path deferral, which reconciles it with `cli.md`'s help-path rule (prompt-audit M46, operator, 2026-11-25: *"Third carve-out (Recommended)"*; GHI #1411)"*. Superseded the same day: 0.8.0 said the carve-out was "witnessed by `tests/cli/test_help_path_imports.py`", but that guard forbids only `gzkit.commands.common` (`_FORBIDDEN_AT_IMPORT_TIME`), so the rule now says so.

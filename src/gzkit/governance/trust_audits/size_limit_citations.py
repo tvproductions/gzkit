@@ -3,132 +3,256 @@
 `.gzkit/rules/pythonic.md` § Size Limits: function and module size are the
 `lizard_nloc` and `lizard_file_nloc` bands of `.gzkit/rules/complexity-thresholds.json`,
 "Cite the table, never a number copied from it" (operator, 2026-11-13, RP-7 H2).
-When the table moved off the old 50/600 numbers, the skills, a persona, a pool ADR
-and twenty-seven docstrings kept restating them as the rule. This scope refuses a
-restated number. The instruction surfaces may state no function or module size as a
-number. Source may, but only as dated history: a line that also says "then", as in
-"the 600-line cap then in force". Classes stay out of scope, because `pythonic.md`
-owns that one number itself, and so does a measured size ("this 87-line function"),
-which states no limit.
+When the table moved off the old numbers, the skills, a persona, a pool ADR and
+twenty-seven docstrings kept restating them as the rule. This scope refuses a
+restated number on every live surface it reads.
+
+It reads prose, not code: a Markdown or JSONL file is split into blocks (paragraphs,
+list items, table rows, headings), a Python file into its strings and comment runs,
+and each block into sentences with whitespace collapsed, so a phrase wrapped across
+lines is still seen. A code span is also read alone, so a quoted bound followed by a
+word ("`Modules <=N` while") is still seen. A sentence states a size limit when it
+names a function, method, module or file (an instruction file's character budget is
+another subject) and gives it a number, in any of these shapes:
+
+- a comparison, then the number and a line unit: over, under, exceeding, above,
+  beyond, past, below, within, about, longer or more than, a symbol, "length:";
+- a comparison right after the subject, then a bare number ("functions >N, modules >M");
+- the number and unit, then a limit word (cap, limit, ceiling, budget, guidance,
+  threshold, max) or "or fewer";
+- the number and unit before the subject and a limit word, or after "a", "any",
+  "no", "each" or "every";
+- "max function length: N lines" and its kin.
+
+Numbers count as digits or spelled out ("fifty", "six hundred"). A span naming
+output, a log, a diff or a stream, or a unit followed by "of" ("N lines of log
+output"), states no size limit. Classes stay out of scope, because `pythonic.md`
+owns that one number itself, and so does a measured size ("this 87-line function").
+
+Dated history passes only in an anchored form inside the same sentence: "then in
+force", "then in" a path to `pythonic.md`, "at the time", "until" a commit hash, or
+an ISO date followed by "census". A bare "then" is not history, so a conditional
+("if ... then split it") is refused (#1367 F3). Dated records stay as written and are
+not read: any path part carrying an ISO date, the `harbor-` records and the two
+governance records the #1366 re-review placed in its boundary, chore proofs and
+archives.
+
+The pool ADRs are not read, by operator ruling on #1367 (2026-11-28, verbatim: "the
+pool adr will be phased out and drained into the requirements catalog/backlog, why
+bother? so much of what we are doing now is related to what we are trying to achieve
+in the dry dock").
+
+What it does not judge: a limit phrased with no number, a shape outside the list
+above, a sentence split by an f-string placeholder, or a sentence a placeholder
+expression would complete. Reword such a sentence to cite the table rather than
+widen the fence.
 
 It began as the unit test `tests/policy/test_size_limits_cite_the_table.py`, which
 the tautology audit classed as a content echo; under the operator's ruling on #1370
-("A") it is this scope. The patterns and the "then" allowance are carried unchanged;
-the known gaps in both are #1367's. One change is deliberate: files are decoded with
-``errors="replace"`` where the test decoded strictly, so one non-UTF-8 file cannot
-crash the scope (the #1309 class); the patterns are ASCII, so no limit is hidden.
+("A") it is this scope, and #1367 widened its phrasings, roots and history allowance.
 """
 
+import io
 import re
+import tokenize
 from typing import TYPE_CHECKING
 
 from gzkit.core.validation_rules import ValidationError
 from gzkit.governance.trust_audits.prose_fence import live_files, missing_roots
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
     from pathlib import Path
 
 _TYPE = "size_limit_citations"
 _PREFIX = "[size-limit-citations]"
 _SCOPE = "size-limit-citations"
 
-INSTRUCTION_ROOTS = (
+ROOTS = (
     ".gzkit/skills",
     ".gzkit/rules",
     ".gzkit/personas",
     ".gzkit/agents",
     ".gzkit/templates",
+    ".gzkit/chores",
+    ".gzkit/corpus",
     "docs/user",
+    "docs/governance",
+    "src/gzkit",
 )
-SOURCE_ROOT = "src/gzkit"
+ROOT_FILES = ("AGENTS.md", "CLAUDE.md")
+SUFFIXES = (".md", ".py", ".jsonl")
+SKIPPED_PARTS = ("proofs", "archive")
+#: A path part naming a dated record: an ISO date, or a drydock `harbor-` record.
+DATED_RECORD = re.compile(r"\d{4}-\d{2}-\d{2}|^harbor-")
+#: Dated records with no date in their name, from the #1366 re-review's boundary.
+DATED_RECORD_FILES = (
+    "docs/governance/rule-version-history.md",
+    "docs/governance/rules-tools-audits-refactors-alignment.md",
+)
 #: The authority itself names its bands' numbers.
 _AUTHORITY = "complexity-thresholds"
 
+_SPELLED = (
+    r"(?:(?:one|two|three|four|five|six|seven|eight|nine)[- ]hundred"
+    r"|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred)"
+)
+_NUM = rf"(?:\d+(?:,\d{{3}})*(?!,?\d)|{_SPELLED})"
 _UNIT = r"(?:lines?|LOC|NLOC|SLOC)"
-_NUM = r"(?:\d+|fifty|sixty|hundred)"
-_SUBJECT = r"\b(?:functions?|modules?|methods?)\b"
-_LIMIT = r"(?:cap|limit|ceiling|budget|guidance)"
+_SIZE = rf"{_NUM}[- ]?{_UNIT}\b(?!\s+of\b)"
+_SUBJECT = r"\b(?:functions?|modules?|methods?|(?<!instruction )files?)\b"
+_LIMIT = r"(?:cap|limit|ceiling|budget|guidance|threshold|max(?:imum)?)"
 _COMPARE = (
-    r"(?:>|>=|≥|<=|≤|<|\bover\b|\bexceed\w*|\bunder\b|\bmax(?:imum)?\b"
-    r"|\bat most\b|\bup to\b|\bfits in\b)"
+    r"(?:>=?|≥|<=?|≤|~|\bover\b|\bexceed\w*|\bunder\b|\bmax(?:imum)?\b|\bat most\b"
+    r"|\bup to\b|\bfits? in\b|\b(?:longer|shorter|larger|bigger|more|fewer|less) than\b"
+    r"|\babove\b|\bbeyond\b|\bpast\b|\bbelow\b|\bwithin\b|\babout\b|\baround\b"
+    r"|\broughly\b|\b(?:length|size|limit|cap|ceiling)\s*:)"
 )
-PATTERNS = (
-    # "functions exceeding N lines", "modules >N LOC", "a function over N lines"
-    re.compile(rf"{_SUBJECT}[^.\n|]{{0,40}}?{_COMPARE}\s*{_NUM}[- ]?{_UNIT}\b", re.IGNORECASE),
-    # "modules under the N-line cap"
-    re.compile(
-        rf"{_SUBJECT}[^.\n|]{{0,40}}?\b{_NUM}[- ]{_UNIT}\s+(?:\w+\s+)?{_LIMIT}\b", re.IGNORECASE
-    ),
-    # "the N-line module cap", "N-line function cap"
-    re.compile(rf"\b{_NUM}[- ]{_UNIT}\s+{_SUBJECT}\s+(?:size\s+)?{_LIMIT}\b", re.IGNORECASE),
+#: A bare number is a size only when no noun follows it ("over 5 parameters" is not).
+_BARE_END = r"(?=\s*(?:[,;:)|]|\.(?=\s|$)|$|\band\b|\bor\b))"
+_GAP = r"[^.;|]{0,40}?"
+PATTERNS = tuple(
+    re.compile(pattern, re.IGNORECASE)
+    for pattern in (
+        rf"{_SUBJECT}{_GAP}{_COMPARE}\s*{_SIZE}",
+        rf"{_SUBJECT}\s*(?:(?:length|size|bod(?:y|ies))\s*)?{_COMPARE}\s*{_NUM}{_BARE_END}",
+        rf"{_SUBJECT}{_GAP}\b{_NUM}[- ]?{_UNIT}\s+(?:\w+\s+)?{_LIMIT}\b",
+        rf"{_SUBJECT}{_GAP}\b{_NUM}[- ]?{_UNIT}\s+or\s+(?:fewer|less|under|below)\b",
+        rf"\b{_NUM}[- ]?{_UNIT}\s+{_SUBJECT}\s+(?:(?:size|length)\s+)?{_LIMIT}\b",
+        rf"\b(?:an?|any|no|each|every)\s+{_NUM}[- ]?{_UNIT}\s+{_SUBJECT}",
+        rf"{_COMPARE}\s+{_SUBJECT}\s+(?:size|length)\s*:?\s*{_SIZE}",
+    )
 )
-HISTORY = re.compile(r"\bthen\b", re.IGNORECASE)
+_NOT_SIZE = re.compile(r"\b(?:output|logs?|stdout|stderr|diffs?)\b", re.IGNORECASE)
+HISTORY = re.compile(
+    r"\bthen in force\b|\bthen in \S*pythonic\.md\b|\bat the time\b|\b\d{4}-\d{2}-\d{2} census\b"
+    r"|\buntil [0-9a-f]{7,40}\b",
+    re.IGNORECASE,
+)
+_CODE_SPAN = re.compile(r"`+([^`]+)`+")
+_BLOCK = re.compile(r"\n\s*\n|\n(?=\s*(?:[-*+]|\d+\.|\||#)\s)")
+_SENTENCE = re.compile(r"[.;!?]\s+|\|")
+_STRING_TOKENS = frozenset(
+    getattr(tokenize, name)
+    for name in ("STRING", "FSTRING_MIDDLE", "TSTRING_MIDDLE")
+    if hasattr(tokenize, name)
+)
 
-_INSTRUCTION_RECOVERY = (
+_RECOVERY = (
     "states a function or module size limit as a number. `.gzkit/rules/pythonic.md` "
     "§ Size Limits: cite the lizard_nloc / lizard_file_nloc bands of "
     ".gzkit/rules/complexity-thresholds.json, never a number copied from it (GHI #1366). "
-    "Replace the number with the citation, then re-run `uv run gz validate --{scope}`."
-)
-_SOURCE_RECOVERY = (
-    "states a function or module size limit as a number. Source may state one only as "
-    'dated history ("the 600-line cap then in force"); otherwise cite the lizard_nloc / '
-    "lizard_file_nloc bands of .gzkit/rules/complexity-thresholds.json "
-    "(`.gzkit/rules/pythonic.md` § Size Limits, GHI #1366). Date the line or cite the "
-    "table, then re-run `uv run gz validate --{scope}`."
+    'A dated record keeps one only in an anchored form ("then in force", "at the time"; '
+    "GHI #1367). Cite the table or date the sentence, then re-run "
+    "`uv run gz validate --{scope}`."
 )
 
 
-def states_size_limit(line: str) -> bool:
-    """Return whether *line* states a function or module size limit as a number."""
-    return any(pattern.search(line) for pattern in PATTERNS)
+def _sentences(block: str) -> list[str]:
+    flat = re.sub(r"\s+", " ", block.replace("*", ""))
+    return [s.strip() for s in _SENTENCE.split(flat) if s.strip()]
 
 
-def _scan(
-    paths: list[Path], project_root: Path, *, history_allowed: bool, recovery: str
-) -> list[ValidationError]:
-    errors: list[ValidationError] = []
-    for path in paths:
-        rel = path.relative_to(project_root).as_posix()
-        text = path.read_text(encoding="utf-8", errors="replace")
-        for number, line in enumerate(text.splitlines(), 1):
-            if not states_size_limit(line):
-                continue
-            if history_allowed and HISTORY.search(line):
-                continue
-            errors.append(
-                ValidationError(
-                    type=_TYPE,
-                    artifact=f"{rel}:{number}",
-                    message=f"{_PREFIX} {rel}:{number} {recovery.format(scope=_SCOPE)}",
-                )
-            )
-    return errors
+def states_size_limit(text: str) -> bool:
+    """Return whether any sentence of *text* states a function or module size as a number."""
+    return any(_limit_in(sentence) for sentence in _sentences(text))
+
+
+def _limit_in(sentence: str) -> bool:
+    """Return whether *sentence*, or a code span in it read alone, states a size limit."""
+    phrases = (sentence.replace("`", ""), *_CODE_SPAN.findall(sentence))
+    for phrase in phrases:
+        for pattern in PATTERNS:
+            match = pattern.search(phrase)
+            if match and not _NOT_SIZE.search(match.group(0)):
+                return True
+    return False
+
+
+def _markdown_blocks(text: str) -> Iterator[tuple[int, str]]:
+    start = 0
+    for match in _BLOCK.finditer(text):
+        yield text.count("\n", 0, start) + 1, text[start : match.start()]
+        start = match.end()
+    yield text.count("\n", 0, start) + 1, text[start:]
+
+
+def _python_blocks(text: str) -> Iterator[tuple[int, str]]:
+    """Yield each string and each run of comment lines, with the line it starts on."""
+    try:
+        tokens = list(tokenize.generate_tokens(io.StringIO(text).readline))
+    except tokenize.TokenError, SyntaxError:
+        yield from _markdown_blocks(text)
+        return
+    comments: list[str] = []
+    first = 0
+    for token in tokens:
+        if token.type == tokenize.COMMENT:
+            if not comments:
+                first = token.start[0]
+            comments.append(token.string.lstrip("#"))
+            continue
+        if token.type in {tokenize.NL, tokenize.NEWLINE} and comments:
+            continue
+        if comments:
+            yield first, "\n".join(comments)
+            comments = []
+        if token.type in _STRING_TOKENS:
+            yield token.start[0], token.string
+    if comments:
+        yield first, "\n".join(comments)
+
+
+def size_limit_sentences(text: str, *, python: bool = False) -> list[tuple[int, str]]:
+    """Return (line, sentence) for each sentence of *text* stating a size limit undated."""
+    blocks = _python_blocks(text) if python else _markdown_blocks(text)
+    return [
+        (line, sentence)
+        for line, block in blocks
+        for sentence in _sentences(block)
+        if _limit_in(sentence) and not HISTORY.search(sentence.replace("`", ""))
+    ]
+
+
+def _paths(project_root: Path) -> list[Path]:
+    return [
+        path
+        for path in live_files(
+            project_root,
+            ROOTS,
+            suffixes=SUFFIXES,
+            root_files=ROOT_FILES,
+            skip_parts=SKIPPED_PARTS,
+            exclude=DATED_RECORD_FILES,
+            skip_part_matching=DATED_RECORD,
+        )
+        if _AUTHORITY not in path.name
+    ]
 
 
 def audit_size_limit_citations(project_root: Path) -> list[ValidationError]:
     """Fail closed on a function or module size limit restated as a number.
 
     Returns:
-        One finding per offending line, plus one per declared root absent from
+        One finding per offending sentence, plus one per declared root absent from
         gzkit's own tree.
 
     """
     errors = missing_roots(
-        project_root,
-        (*INSTRUCTION_ROOTS, SOURCE_ROOT),
-        error_type=_TYPE,
-        prefix=_PREFIX,
-        scope=_SCOPE,
+        project_root, (*ROOTS, *ROOT_FILES), error_type=_TYPE, prefix=_PREFIX, scope=_SCOPE
     )
-    instruction = [
-        path
-        for path in live_files(project_root, INSTRUCTION_ROOTS, suffixes=(".md",))
-        if _AUTHORITY not in path.name
-    ]
-    errors.extend(
-        _scan(instruction, project_root, history_allowed=False, recovery=_INSTRUCTION_RECOVERY)
-    )
-    source = live_files(project_root, (SOURCE_ROOT,), suffixes=(".py",))
-    errors.extend(_scan(source, project_root, history_allowed=True, recovery=_SOURCE_RECOVERY))
+    paths = _paths(project_root)
+    for path in paths:
+        rel = path.relative_to(project_root).as_posix()
+        text = path.read_text(encoding="utf-8", errors="replace")
+        errors.extend(
+            ValidationError(
+                type=_TYPE,
+                artifact=f"{rel}:{line}",
+                message=(
+                    f"{_PREFIX} {rel}:{line}: {sentence[:200]!r} {_RECOVERY.format(scope=_SCOPE)}"
+                ),
+            )
+            for line, sentence in size_limit_sentences(text, python=path.suffix == ".py")
+        )
     return errors
