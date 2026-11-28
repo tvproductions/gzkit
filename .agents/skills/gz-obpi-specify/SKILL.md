@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-14
 metadata:
-  skill-version: "1.10.7"
+  skill-version: "1.10.8"
 model: opus
 ---
 

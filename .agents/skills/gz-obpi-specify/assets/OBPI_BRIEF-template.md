@@ -426,10 +426,8 @@ If the plan is questioned or modified, update it and re-present.
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Registry entry: `data/data_sources.json::{key}` (if dataset-related)
-- [ ] Config setting: `config/settings.json::{path}` (if config-related)
+- [ ] Config setting: `.gzkit.json::{key}` or `.gzkit/manifest.json::{key}` (if config-related)
 - [ ] Config schema: `src/gzkit/schemas/manifest.json` (if schema change needed)
-- [ ] Calendar definition: `config/calendars.json::{calendar}` (if period-related)
 
 **Existing Code (understand current state):**
 
