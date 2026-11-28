@@ -191,6 +191,7 @@
       "coverage-40pct/CHORE.md",
       "coverage-40pct/README.md",
       "coverage-40pct/acceptance.json",
+      "coverage-40pct/check_coverage_floor.py",
       "cross-platform-test-cleanup/CHORE.md",
       "cross-platform-test-cleanup/README.md",
       "cross-platform-test-cleanup/acceptance.json",

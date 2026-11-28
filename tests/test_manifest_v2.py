@@ -273,3 +273,34 @@ class TestManifestVendorsBlock(unittest.TestCase):
             errors = validate_manifest(path)
 
         self.assertEqual(errors, [])
+
+
+class TestAuthoredThresholdsSurviveRegeneration(unittest.TestCase):
+    """An authored ``thresholds`` value survives ``generate_manifest`` (GHI #1415).
+
+    ``thresholds.coverage_floor`` is the coverage floor's one authority. If a
+    sync rebuilt the block from defaults, an edited floor would revert to the
+    scaffolder's value and the declared one would govern nothing.
+    """
+
+    def _regenerate(self, existing: dict[str, Any] | None) -> dict[str, Any]:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            config = GzkitConfig()
+            if existing is not None:
+                path = root / config.paths.manifest
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(json.dumps(existing), encoding="utf-8")
+            return generate_manifest(root, config)
+
+    def test_an_authored_coverage_floor_is_kept(self) -> None:
+        manifest = self._regenerate({"thresholds": {"coverage_floor": 75.0}})
+        self.assertEqual(manifest["thresholds"]["coverage_floor"], 75.0)
+
+    def test_undeclared_thresholds_keep_their_defaults(self) -> None:
+        manifest = self._regenerate({"thresholds": {"coverage_floor": 75.0}})
+        self.assertEqual(manifest["thresholds"]["eval_regression_delta"], 0.05)
+
+    def test_a_fresh_project_gets_the_default_floor(self) -> None:
+        manifest = self._regenerate(None)
+        self.assertEqual(manifest["thresholds"]["coverage_floor"], 40.0)

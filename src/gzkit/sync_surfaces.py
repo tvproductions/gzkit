@@ -194,8 +194,10 @@ def generate_manifest(
         },
     }
 
-    # Preserve authored blocks not represented in the template — currently
-    # just `rules.unscoped_allowlist` (ADR-0.0.20). Read-only merge.
+    # Preserve authored blocks not represented in the template: `rules`
+    # (`rules.unscoped_allowlist`, ADR-0.0.20), and the authored `thresholds`
+    # values over the defaults above, since `thresholds.coverage_floor` is the
+    # coverage floor's one authority (GHI #1415). Read-only merge.
     existing_path = project_root / config.paths.manifest
     if existing_path.exists():
         try:
@@ -206,6 +208,9 @@ def generate_manifest(
             rules_block = existing.get("rules")
             if isinstance(rules_block, dict):
                 manifest["rules"] = rules_block
+            thresholds_block = existing.get("thresholds")
+            if isinstance(thresholds_block, dict):
+                manifest["thresholds"] = {**manifest["thresholds"], **thresholds_block}
 
     return manifest
 

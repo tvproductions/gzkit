@@ -207,6 +207,7 @@ class TestCoverageFloorReadFromManifest(unittest.TestCase):
             ):
                 result = runner.invoke(main, ["obpi", "audit", "OBPI-0.0.99-01", "--json"])
             data = json.loads(result.output)
+        self.last_evidence = data["evidence"]
         coverage = [c for c in data["criteria_evaluated"] if c["criterion"].startswith("Coverage")]
         self.assertEqual(len(coverage), 1, msg=data["criteria_evaluated"])
         return coverage[0]
@@ -215,6 +216,10 @@ class TestCoverageFloorReadFromManifest(unittest.TestCase):
         criterion = self._coverage_criterion(floor=75.0, measured=50.0)
         self.assertEqual(criterion["result"], "FAIL")
         self.assertIn("75", criterion["criterion"])
+
+    def test_the_ledger_evidence_records_the_floor_applied(self) -> None:
+        self._coverage_criterion(floor=75.0, measured=50.0)
+        self.assertEqual(self.last_evidence["coverage_threshold"], 75.0)
 
     def test_coverage_at_the_manifest_floor_passes(self) -> None:
         criterion = self._coverage_criterion(floor=40.0, measured=50.0)

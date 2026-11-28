@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from gzkit.commands.common import console
+from gzkit.commands.common import GzCliError, console, load_manifest
 from gzkit.core.models import OBPI_SHORT_ID_BODY
 from gzkit.executables import resolve_argv, resolve_executable
 from gzkit.governance.brief_path_validity import extract_allowed_paths
@@ -17,13 +17,11 @@ from gzkit.lock_manager import adr_id_from_obpi
 
 def obpi_audit_cmd(obpi_id: str | None, adr_id: str | None, as_json: bool) -> None:
     """Gather evidence for OBPI brief and append audit entry to ledger."""
-    from gzkit.commands.common import ensure_initialized, get_project_root, load_manifest
+    from gzkit.commands.common import ensure_initialized, get_project_root
 
     ensure_initialized()
     project_root = get_project_root()
-    # The floor's one authority is the manifest (GHI #1415), read once here and
-    # passed down as a value.
-    coverage_floor = float(load_manifest(project_root)["thresholds"]["coverage_floor"])
+    coverage_floor = _coverage_floor(project_root)
 
     if adr_id not in {None, ""} and obpi_id in {None, ""}:
         _audit_all_for_adr(project_root, adr_id, as_json, coverage_floor)
@@ -51,6 +49,28 @@ def obpi_audit_cmd(obpi_id: str | None, adr_id: str | None, as_json: bool) -> No
 
     if any(c["result"] == "FAIL" for c in result.get("criteria_evaluated", [])):
         sys.exit(1)
+
+
+def _coverage_floor(project_root: Path) -> float:
+    """Return the manifest's ``thresholds.coverage_floor``, the floor's one authority.
+
+    Read once at the command entry and passed down as a value (GHI #1415).
+
+    Returns:
+        The declared floor, in percent.
+
+    Raises:
+        GzCliError: The manifest declares no ``thresholds.coverage_floor``.
+
+    """
+    try:
+        return float(load_manifest(project_root)["thresholds"]["coverage_floor"])
+    except KeyError as exc:
+        msg = (
+            "The manifest declares no thresholds.coverage_floor. "
+            "Run 'uv run gz agent sync control-surfaces' to restore it."
+        )
+        raise GzCliError(msg) from exc
 
 
 def _audit_all_for_adr(
@@ -114,6 +134,7 @@ def _audit_single(project_root: Path, obpi_id: str, coverage_floor: float) -> di
         coverage_pct=coverage_pct,
         covers_tags=covers_tags,
         criteria=criteria,
+        coverage_floor=coverage_floor,
     )
 
     if adr_dir:
@@ -169,6 +190,7 @@ def _build_entry(
     coverage_pct: float | None,
     covers_tags: list[str],
     criteria: list[dict[str, str]],
+    coverage_floor: float,
 ) -> dict[str, Any]:
     """Build the audit ledger entry dict."""
     return {
@@ -184,7 +206,7 @@ def _build_entry(
             "tests_passed": tests_passed,
             "test_count": test_count,
             "coverage_percent": coverage_pct,
-            "coverage_threshold": 40,
+            "coverage_threshold": coverage_floor,
             "covers_tags": covers_tags,
         },
         "criteria_evaluated": criteria,
