@@ -14,7 +14,9 @@ which states no limit.
 It began as the unit test `tests/policy/test_size_limits_cite_the_table.py`, which
 the tautology audit classed as a content echo; under the operator's ruling on #1370
 ("A") it is this scope. The patterns and the "then" allowance are carried unchanged;
-the known gaps in both are #1367's.
+the known gaps in both are #1367's. One change is deliberate: files are decoded with
+``errors="replace"`` where the test decoded strictly, so one non-UTF-8 file cannot
+crash the scope (the #1309 class); the patterns are ASCII, so no limit is hidden.
 """
 
 import re

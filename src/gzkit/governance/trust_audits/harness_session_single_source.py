@@ -18,6 +18,9 @@ of canon this scope already read on gzkit's tree.
 It began as the unit test `tests/policy/test_harness_session_single_source.py`, which
 the tautology audit classed as a content echo; under the operator's ruling on #1370
 ("A") it is this scope, with its roots, file patterns and literal pattern unchanged.
+One change is deliberate: files are decoded with ``errors="replace"`` where the test
+decoded strictly, so one non-UTF-8 file cannot crash the scope (the #1309 class); the
+names are ASCII, so no literal is hidden.
 """
 
 import re
