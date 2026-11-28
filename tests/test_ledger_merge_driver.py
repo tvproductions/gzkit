@@ -220,6 +220,18 @@ class TestEnsureMergeAttributes(unittest.TestCase):
             for path in _ROUTED_FILES:
                 self.assertEqual(self._merge_attribute(root, path), MERGE_DRIVER_NAME, path)
 
+    def test_a_byte_order_mark_does_not_hide_the_first_route(self) -> None:
+        """A BOM before the first line is not part of that line's pattern."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / ".gitattributes").write_bytes(
+                b"\xef\xbb\xbf.gzkit/ledger.jsonl merge=gzkit-jsonl\n"
+            )
+
+            planned = ensure_jsonl_merge_attributes(root, dry_run=True)
+
+            self.assertNotIn(".gzkit/ledger.jsonl", planned)
+
     def test_anchored_pattern_counts_as_the_same_route(self) -> None:
         """`/.gzkit/ledger.jsonl` and `.gzkit/ledger.jsonl` name one file at the root."""
         with tempfile.TemporaryDirectory() as td:

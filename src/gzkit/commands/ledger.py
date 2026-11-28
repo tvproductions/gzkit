@@ -65,7 +65,7 @@ def ensure_jsonl_merge_attributes(project_root: Path, *, dry_run: bool = False) 
     path = project_root / ".gitattributes"
     existing = path.read_bytes() if path.is_file() else b""
     # Decoding only reads the patterns; the write below appends and never re-encodes.
-    lines = existing.decode("utf-8", errors="replace").removeprefix("﻿").splitlines()
+    lines = existing.decode("utf-8", errors="replace").removeprefix("\ufeff").splitlines()
     missing = [
         pattern
         for pattern in JSONL_MERGE_PATTERNS
