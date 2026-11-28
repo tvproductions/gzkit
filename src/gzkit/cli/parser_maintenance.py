@@ -1038,7 +1038,7 @@ def _register_quality_parsers(
         "--surface-fidelity",
         dest="check_surface_fidelity",
         action="store_true",
-        help="Composite: run all four surface-fidelity invariants (ADR-0.0.33-05).",
+        help="Composite: run the three live surface-fidelity invariants (ADR-0.0.33).",
     )
     p_validate.add_argument(
         "--vendor-manifest",

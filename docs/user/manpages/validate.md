@@ -911,11 +911,12 @@ $ echo $?
 
 ### `--surface-fidelity`
 
-Composite scope: runs all four surface-fidelity invariants in declared order
-(`bullet_retention` → `surface_weight` → `pointer_integrity` →
-`scenario_reachability`) and aggregates their `ValidationError` lists. The
-exit code is the worst of the four — if any constituent exits 3, the composite
-exits 3. No masking.
+Composite scope: runs the three live surface-fidelity invariants in declared
+order (`bullet_retention` → `surface_weight` → `pointer_integrity`) and
+aggregates their `ValidationError` lists. Invariant 4 (`scenario_reachability`)
+was retired 2026-07-25 (ADR-0.0.33 § Amendment (2026-07-25)). The exit code is
+the worst of the three — if any constituent exits 3, the composite exits 3. No
+masking.
 
 **When to use:** Run after editing `AGENTS.md`, `CLAUDE.md`, or any file in
 `.claude/rules/**` to verify the full fidelity doctrine in one pass. Also
@@ -951,7 +952,7 @@ Validated: surface_fidelity
 
 | Code | Meaning | Recovery |
 |------|---------|----------|
-| 0 | All four invariants clean | — |
+| 0 | All three live invariants clean | — |
 | 1 | Non-policy-breach errors (e.g. pointer_anchors) | Fix unresolved lift pointers |
 | 3 | Policy breach (bullet_retention or surface_weight violations) | Fix the flagged bullet or waive the surface weight per ADR-0.0.33 |
 
@@ -3405,7 +3406,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--distribution` | opt-in | T0 static distribution audit: ON\_DISK\_NOT\_INCLUDED / BASELINE\_NOT\_ON\_DISK / ON\_DISK\_NOT\_BASELINE drift classes (ADR-0.0.32-07) |
 | `--receipt-shape` | opt-in | Fail-closed on post-cutoff `obpi_receipt_emitted` events with deprecated shapes (optional attestation, unprefixed completion, agent: attestor); pre-cutoff receipts can be waivered via `data/historical_self_close_waivers.json` (ADR-0.0.36, OBPI-0.0.36-03) |
 | `--bullet-retention` | opt-in | Tier-scoped retention for every Mechanical/Promotable bullet in advisory-rules-audit.md: invariant-tier verbatim in per-turn surface; compressible-tier witnessed by a valid advisor-QC receipt + attestation (ADR-0.0.33-01; tier-scoped amendment OBPI-0.0.37-25) |
-| `--surface-fidelity` | opt-in | Composite: run all four surface-fidelity invariants in declared order; exit code is worst-of-four (ADR-0.0.33-05) |
+| `--surface-fidelity` | opt-in | Composite: run the three live surface-fidelity invariants in declared order; exit code is the worst of the three (ADR-0.0.33-05) |
 | `--req-kind-discipline` | opt-in | Fail closed (exit 3) on OBPI briefs with mixed-state [kind] tags or per-kind proof-citation gaps (ADR-0.0.59-02) |
 | `--status-writer-coverage` | opt-in | Fail closed (exit 3) when a function under `src/gzkit/**` writes a frontmatter `status:` key without consulting the single invariant monitor and without a registered reason; also refuses inert register entries (ADR-0.31.0 Decision item 4, GHI #669) |
 | `--transcribed-adr-counts` | opt-in | Fail closed (exit 3) when a surface declared live in `data/transcribed_count_surfaces.json` states an ADR's OBPI count as a number; dated records opt out by section or inline marker (GHI #768) |

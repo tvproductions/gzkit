@@ -119,7 +119,7 @@ refuse pushes on a repository it merely could not read.
 
 Runs the per-change quality checks: linting with Ruff, format check, static type checking with ty, the unit tests the change touches, the smoke tier, skill audit, parity check, readiness audit, CLI documentation audit and surface-fidelity validation. `--full` adds the whole unit tier, a strict `mkdocs build --strict` docs build (skipped when the project ships no `mkdocs.yml`), Behave scenarios, the guard-canary sweep and the preflight scan for stale pipeline markers and orphan plan-audit receipts. After all blocking checks complete, runs advisory drift detection using the same engine as `gz drift`.
 
-The `Surface fidelity` step runs `gz validate --surface-fidelity` to verify all four surface-fidelity invariants (ADR-0.0.33-05).
+The `Surface fidelity` step runs `gz validate --surface-fidelity` to verify the three live surface-fidelity invariants (ADR-0.0.33-05; Invariant 4 was retired 2026-07-25).
 
 The `Lock-exchange coupling` step runs `gz validate --lock-exchange-coupling` to
 enforce the token-block discipline: every `obpi_lock_released` event in the
