@@ -221,6 +221,19 @@ class TestCoverageFloorReadFromManifest(unittest.TestCase):
         self._coverage_criterion(floor=75.0, measured=50.0)
         self.assertEqual(self.last_evidence["coverage_threshold"], 75.0)
 
+    def test_an_undeclared_floor_is_a_config_error_not_a_default(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            _seed_adr_with_brief()
+            manifest_file = Path(GzkitConfig.load(Path(".gzkit.json")).paths.manifest)
+            manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
+            del manifest["thresholds"]["coverage_floor"]
+            manifest_file.write_text(json.dumps(manifest), encoding="utf-8")
+            result = runner.invoke(main, ["obpi", "audit", "OBPI-0.0.99-01", "--json"])
+        self.assertEqual(result.exit_code, 1, msg=result.output)
+        self.assertIn("thresholds.coverage_floor", result.output)
+
     def test_coverage_at_the_manifest_floor_passes(self) -> None:
         criterion = self._coverage_criterion(floor=40.0, measured=50.0)
         self.assertEqual(criterion["result"], "PASS")
