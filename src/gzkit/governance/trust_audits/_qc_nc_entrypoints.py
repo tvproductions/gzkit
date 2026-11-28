@@ -896,6 +896,34 @@ def _ep_campaign_credit_citations(root: Path) -> list[ValidationError]:
     return errors
 
 
+#: The roots the harness-session control plants, spelled here rather than read from
+#: the audit, so a scope that dropped one fails the control (GHI #1370).
+_HARNESS_PLANTS = frozenset(
+    {"src/gzkit", "scripts", ".gzkit/skills", ".gzkit/chores", ".gzkit/hooks", ".claude/hooks"}
+)
+
+
+def _ep_harness_session_single_source(root: Path) -> list[ValidationError]:
+    """Return the findings only when every planted root fires and no decoy does.
+
+    The decoys are the home module, a Markdown file and a ``__pycache__`` copy; a
+    scope that dropped a root or read a decoy reports no catch (GHI #1370).
+
+    Returns:
+        Every finding when exactly the planted roots fired, otherwise nothing.
+
+    """
+    from gzkit.governance.trust_audits.harness_session_single_source import (  # noqa: PLC0415
+        audit_harness_session_single_source,
+    )
+
+    errors = audit_harness_session_single_source(root)
+    caught = {e.artifact.split(":")[0].rsplit("/", 1)[0] for e in errors}
+    if caught != _HARNESS_PLANTS or len(errors) != len(_HARNESS_PLANTS):
+        return []
+    return errors
+
+
 def _ep_validate_default_scopes(root: Path) -> list[ValidationError]:
     """Run the whole default `gz validate` tier, as the bare invocation does."""
     from gzkit.commands.validate_cmd import _collect_errors  # noqa: PLC0415

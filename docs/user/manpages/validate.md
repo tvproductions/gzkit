@@ -13,7 +13,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--model-class-only] [--size-limit-citations]
             [--dependency-currency-citations] [--tidy-verdict-citations]
             [--moved-fact-citations] [--agents-md-numbering-citations]
-            [--campaign-credit-citations]
+            [--campaign-credit-citations] [--harness-session-single-source]
             [--hexagon-dependencies] [--hexagon-tests]
             [--changelog]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
@@ -1416,6 +1416,54 @@ uv run gz validate --campaign-credit-citations --json
 ```
 
 Rule home: `gz-obpi-pipeline` (campaign work selection).
+
+### `--harness-session-single-source`
+
+Fails closed when gzkit's own source holds a quoted harness identity or session
+variable outside `gzkit.lock_manager`, the one place they are read (GHI #1360; a
+`gz validate` scope since GHI #1370). Runs in the **default** `gz check` scope,
+so the flag is for scoping a single run.
+
+GHI #484 corrected Claude Code's session variable in `lock_manager` while three
+hooks kept their own copy of the read, with the wrong variable, so every row
+they wrote carried no session. A second copy is the failure, so the scope
+refuses one.
+
+**Scope** — gzkit's own tree only: Python and Jinja templates under
+`src/gzkit/`, Python under `scripts/`, `.gzkit/skills/`, `.gzkit/chores/` and
+`.claude/hooks/`, and every file under `.gzkit/hooks/` (the extensionless git
+hooks), skipping Markdown and `__pycache__`. `src/gzkit/lock_manager.py` and the
+scope's own module, which must name what it refuses, are the homes. In an
+adopter project the scope reads nothing: its code may read the harness
+variables however it likes. A root or home absent from gzkit's tree is a
+finding.
+
+#### What fails closed
+
+A line holding a quoted name of a harness identity or session variable, in any
+read form (`getenv`, a wrapped `environ.get`, `in`, `setdefault`, `pop`, an
+alias, a rendered template string). A name assembled at run time is not caught.
+
+#### Exit codes
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | The harness variables are read only in their home | — |
+| 1 | A file holds a quoted harness variable outside it | Read them through `gzkit.lock_manager` (`resolve_agent`, `harness_session_id`), then re-run `uv run gz validate --harness-session-single-source` |
+
+Measured, not transcribed: in a temporary gzkit-shaped tree, a planted read in
+`scripts/` exits **1** and the clean tree exits **0**; the same read in an
+adopter-shaped tree exits **0**. Under an open Maintenance Hangar the finding is
+reported advisory and the run exits 0.
+
+#### Examples
+
+```bash
+uv run gz validate --harness-session-single-source
+uv run gz validate --harness-session-single-source --json
+```
+
+Rule home: `src/gzkit/lock_manager.py` (`resolve_agent`, `harness_session_id`).
 
 ### `--hexagon-dependencies`
 
@@ -3765,6 +3813,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--moved-fact-citations` | yes | No live sentence restates a fact the 2026-09-17 AGENTS.md rewrite moved or dropped (GHI #1374, #1370) |
 | `--agents-md-numbering-citations` | yes | No live surface cites AGENTS.md numbering the 2026-09-17 rewrite dropped (GHI #1375, #1370) |
 | `--campaign-credit-citations` | yes | No live surface credits root AGENTS.md with naming or ruling the campaign (GHI #1376, #1370) |
+| `--harness-session-single-source` | yes | gzkit's source reads the harness identity and session variables only in lock_manager (GHI #1360, #1370) |
 | `--hexagon-dependencies` | yes | The package holds to the hexagon's dependency rules read from the package map; today's findings in a shrink-only baseline (RP-15 tranche 6) |
 | `--hexagon-tests` | yes | Every test module covering a hexagon region holds to fakes only, given/when/then labels and `@covers`; today's findings in a shrink-only baseline (RP-7) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |

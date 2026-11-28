@@ -750,6 +750,19 @@
       "binding_sha256": "2a153625dc7539491514a55df506b716afe79a79dd23c636520a23ad227e6ec4",
       "authority": "GHI #1370 (operator ruling 2026-11-28, verbatim: \"A\")",
       "proposed_by": "claude-code session 2026-11-28"
+    },
+    {
+      "claim_id": "harness-session-single-source",
+      "guard": "gzkit.governance.trust_audits.harness_session_single_source:audit_harness_session_single_source",
+      "failing_test": "tests.governance.test_audit_harness_session_single_source.HarnessSessionSingleSourceTests.test_the_fence_sees_every_literal_read_form",
+      "mutation": {
+        "find": "            if _LITERAL.search(line)\n",
+        "replace": "            if False\n",
+        "label": "no line is ever judged a read"
+      },
+      "binding_sha256": "d64b6be4a86a51665d9b7144ed8f045b0e2a7bcb3d1fa41f2041fda5cc6e3f5d",
+      "authority": "GHI #1370 (operator ruling 2026-11-28, verbatim: \"A\")",
+      "proposed_by": "claude-code session 2026-11-28"
     }
   ]
 }

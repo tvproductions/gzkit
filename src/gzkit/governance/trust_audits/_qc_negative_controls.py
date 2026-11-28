@@ -50,6 +50,7 @@ from ._qc_nc_entrypoints import (
     _ep_catalog_repair_reqs,
     _ep_catalog_work_packages,
     _ep_dependency_currency_citations,
+    _ep_harness_session_single_source,
     _ep_hexagon_dependencies,
     _ep_hexagon_dependencies_admits_baselined,
     _ep_hexagon_tests,
@@ -1809,6 +1810,35 @@ def _build_campaign_credit_citations() -> Path:
     return root
 
 
+def _build_harness_session_single_source() -> Path:
+    """Plant a quoted harness variable in each root of a gzkit-shaped tree, with decoys.
+
+    The tree carries ``src/gzkit/__init__.py`` and both homes, because the scope reads
+    only gzkit's own tree. The decoys are the home module, a Markdown file and a
+    ``__pycache__`` copy, all of which must stay silent (GHI #1370).
+
+    Returns:
+        The fixture project root.
+
+    """
+    # The name is assembled at run time: this module is source the scope reads.
+    head, tail = "CLAUDE", "SESSION_ID"
+    read = f'os.getenv("{head}_{tail}")\n'
+    root = _mkroot("harness-session-single-source")
+    _write(root / "src" / "gzkit" / "__init__.py", "")
+    _write(root / "src" / "gzkit" / "lock_manager.py", read)
+    _write(
+        root / "src" / "gzkit" / "governance" / "trust_audits" / "harness_session_single_source.py",
+        read,
+    )
+    for rel in ("src/gzkit", "scripts", ".gzkit/skills", ".gzkit/chores", ".claude/hooks"):
+        _write(root / rel / "x.py", read)
+    _write(root / ".gzkit" / "hooks" / "pre-commit", read)
+    _write(root / "src" / "gzkit" / "notes.md", read)
+    _write(root / "scripts" / "__pycache__" / "x.py", read)
+    return root
+
+
 def _build_size_limit_citations() -> Path:
     """Plant a restated size limit in each root, with two decoys that must pass.
 
@@ -3076,6 +3106,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_campaign_credit_citations,
         _ep_campaign_credit_citations,
         "credits AGENTS.md with naming or ruling the campaign",
+    ),
+    (
+        "harness-session-single-source",
+        _build_harness_session_single_source,
+        _ep_harness_session_single_source,
+        "holds a quoted harness identity or session variable",
     ),
     (
         "size-limit-citations",
