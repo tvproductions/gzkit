@@ -423,6 +423,10 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 ## `pythonic.md`
 
+### Changed 2026-11-28 at version `0.8.3` (GHI #1367 review)
+
+Prior `0.8.2` banner, verbatim: *"§ Size Limits names the witness of "Cite the table": `gz validate --size-limit-citations` (GHI #1367)"*. Superseded the same day, when the issue's independent review found the witness's phrasing list passing natural wordings: the witness now judges by proximity and also reads `README.md`, and § Size Limits says so.
+
 ### Changed 2026-11-28 at version `0.8.2` (GHI #1367)
 
 Prior `0.8.1` banner, verbatim: *"the help-path carve-out states what its guard witnesses: `gzkit.commands.common` alone (GHI #1411 review)"*. Superseded when § Size Limits named the witness of "Cite the table, never a number copied from it": `gz validate --size-limit-citations`, widened under GHI #1367 to more phrasings, the governance docs, chores and the AGENTS corpus, with dated history admitted only in an anchored form. Scorecard row 20a scores the clause.

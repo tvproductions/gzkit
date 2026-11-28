@@ -1126,36 +1126,42 @@ nothing noticed.
 
 **Scope** — Markdown and JSONL under `.gzkit/skills/`, `.gzkit/rules/`,
 `.gzkit/personas/`, `.gzkit/agents/`, `.gzkit/templates/`, `.gzkit/chores/`,
-`.gzkit/corpus/`, `docs/user/` and `docs/governance/`, plus `AGENTS.md` and
-`CLAUDE.md`; and the strings and comments of Python under `src/gzkit/`. Each file
-is read sentence by sentence with whitespace collapsed, so a phrase wrapped across
-lines is still seen, and a code span is also read alone. Not read: the threshold
-authority, dated records (a path part carrying an ISO date, the `harbor-` records,
-`rule-version-history.md` and the "Not canon" alignment map), chore proofs and
-archives, and the pool ADRs, which drain into the requirements catalog (operator
-ruling on #1367). Class size is out of scope, because `pythonic.md` owns that
-limit, and so is a measured size ("this 87-line function"), which states no limit.
-A root absent from gzkit's own tree is a finding, so a renamed directory cannot
-shrink the fence; in an adopter project an absent root is skipped.
+`.gzkit/corpus/`, `docs/user/` and `docs/governance/`, plus `AGENTS.md`,
+`CLAUDE.md` and `README.md`; and the strings and comments of Python under
+`src/gzkit/`. Each file is read sentence by sentence with whitespace collapsed, so a
+phrase wrapped across lines is still seen; underscore emphasis is dropped and a code
+span is also read alone. Not read: the threshold authority, dated records (a path
+part carrying an ISO date, the `harbor-` records, `rule-version-history.md` and the
+"Not canon" alignment map), chore proofs and archives, and the pool ADRs, which drain
+into the requirements catalog (operator ruling on #1367). Class size is out of scope,
+because `pythonic.md` owns that limit. A root absent from gzkit's own tree is a
+finding, so a renamed directory cannot shrink the fence; in an adopter project an
+absent root is skipped.
 
 **Dated history** passes only when its sentence carries an anchored form: "then in
-force", "then in" a path to `pythonic.md`, "at the time", "until" a commit hash, or
-an ISO date followed by "census". A bare "then" is not history.
+force", "then in" a path to `pythonic.md`, "at the time" (not "at the time of"),
+"until" a commit hash, or an ISO date followed by "census". A bare "then" is not
+history.
 
 #### What fails closed
 
+The test is proximity inside one clause, not a list of phrasings: a list kept
+missing natural wordings (#1367 review).
+
 | Shape | Example |
 |-------|---------|
-| Subject, comparison, number and unit | "functions exceeding *N* lines", "no function longer than *N* lines", "modules past *N* lines" |
-| Subject, comparison, bare number | "functions >*N*, modules >*M*", "file length ≤ *N*" |
-| Subject, then a numbered limit | "modules under the *N*-line cap", "functions: *N* lines max", "*N* lines or fewer" |
-| Numbered limit naming the subject | "the *N*-line module cap", "a *N* LOC module", "max module size *N* lines" |
+| A function, method or module, then a number and a line unit within sixty characters | "keep functions to *N* lines", "the module size limit is *N* lines", "*N* lines of code" |
+| A number and a line unit, then one of them within twenty characters | "the *N*-line module cap", "a *N* LOC module", "*N* lines per function" |
+| One of them or a file, directly followed by a symbol and a number | "functions >*N* get split", "file length ≤ *N*" |
+| One of them or a file, directly followed by a comparison word and a number | "files over *N* lines", "modules >*N*, functions >*M*" |
 
-Numbers count as digits or spelled out ("fifty"). A span naming output, a log, a
-diff or a stream, or a unit followed by "of", states no size limit. It is a
-phrasing fence: a limit worded outside these shapes passes, and the module
-docstring of `gzkit.governance.trust_audits.size_limit_citations` lists what it
-does not judge.
+Numbers count as digits or spelled out ("fifty"). Not a limit: output, log, diff
+and stream counts ("*N* lines of log output"); one measured unit introduced by
+"this", "that", "these", "those", "its" or "their" ("this 87-line function"), unless
+a comparison or limit word makes it a bound; a change's size counted in files
+("*N* lines across *M* files"). A general measurement ("the module is about *N*
+lines") is refused like a limit: cite its source or date it. A subject and size
+further apart than the windows, or split across table cells, pass.
 
 #### Exit codes
 

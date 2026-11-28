@@ -88,6 +88,42 @@ PRE_FIX_WRAPPED_DOCSTRINGS = {
 }
 
 
+#: The #1367 review's counterexamples (B1 to B4, N1, N4): limits a phrasing list missed.
+REVIEW_COUNTEREXAMPLES = (
+    "Keep functions to 50 lines.",
+    "Keep modules to 600 lines.",
+    "Keep functions under 50 lines of code.",
+    "No function should exceed 50 lines of code.",
+    "The module size limit is 600 lines.",
+    "The function cap is 50 lines.",
+    "Modules are capped at 600 lines.",
+    "Limit functions to 50 lines.",
+    "Functions should be 50 lines at most.",
+    "Split any function that reaches 50 lines.",
+    "Functions >50 get split.",
+    "modules >600 should be broken up.",
+    "pythonic.md carries Modules <=600 while the table is the authority.",
+    "Truncate module output over 50 lines, and keep modules under 600 lines.",
+    "Keep _functions_ over 50 lines out.",
+    "Aim for 50 lines per function.",
+)
+
+#: Live sentences a proximity test must not refuse: one measured unit, a change's
+#: size counted in files, and shell redirection (measured on the tree, 2026-11-28).
+LIVE_NON_LIMITS = (
+    '"This 87-line function has three responsibility boundaries" is actionable',
+    "This function was the cleanest thing to move: 83 lines, one caller.",
+    "Phase 2 routes to direct fix (≤30 lines, 2 files: the brief and the WBS row).",
+    "adds two new unit tests — roughly 80 lines across 3 files",
+    "The 80-line / 3-file count is a routing fact recorded in the commit body.",
+    "Run `uv run gz tidy > <file> 2>&1` and read the file.",
+    "wc -l # 13 over 300 lines git ls-files",
+    "the defect-fix routing thresholds (≤10 lines / ≤2 files)",
+    "| Module >5s total | `setUp` runs expensive ops per test |",
+    "it failed `cli/parser_governance.py` (1010 SLOC) — a module the corpus does not block",
+)
+
+
 class PhrasingTests(unittest.TestCase):
     """The fence refuses the phrasings a model writes and admits what states no limit."""
 
@@ -95,6 +131,19 @@ class PhrasingTests(unittest.TestCase):
         for text in F1_PHRASINGS:
             with self.subTest(text=text):
                 self.assertTrue(_undated(text))
+
+    def test_every_review_counterexample_is_a_limit(self) -> None:
+        for text in REVIEW_COUNTEREXAMPLES:
+            with self.subTest(text=text):
+                self.assertTrue(_undated(text))
+
+    def test_live_measurements_and_change_sizes_pass(self) -> None:
+        for text in LIVE_NON_LIMITS:
+            with self.subTest(text=text):
+                self.assertFalse(_undated(text))
+
+    def test_a_bound_on_one_named_unit_is_still_a_limit(self) -> None:
+        self.assertTrue(_undated("Keeping these out holds that module under the 600-line ceiling."))
 
     def test_every_pre_fix_site_is_refused(self) -> None:
         for site, text in PRE_FIX_SITES.items():
@@ -141,13 +190,21 @@ class HistoryTests(unittest.TestCase):
                 "Held apart under the 600-line module size limit then in\n"
                 "``.gzkit/rules/pythonic.md``."
             ),
-            "This module is 735 lines (over 600 lines at the time)",
+            "The module was 735 lines (over 600 lines at the time)",
             "modules exceeding 600 lines: 51 (2026-08-16 census)",
             "pythonic.md carried `Modules <=600` (until 227ed3386, 2026-11-13) while",
         ):
             with self.subTest(text=text):
                 self.assertTrue(states_size_limit(text))
                 self.assertFalse(_undated(text))
+
+    def test_history_anchors_carry_a_date_or_a_commit(self) -> None:
+        for text in (
+            "At the time of writing, keep functions under 50 lines.",
+            "Keep functions under 50 lines until 1234567 is merged.",
+        ):
+            with self.subTest(text=text):
+                self.assertTrue(_undated(text))
 
     def test_a_bare_then_is_not_history(self) -> None:
         for text in (

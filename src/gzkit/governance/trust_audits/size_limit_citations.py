@@ -10,24 +10,33 @@ restated number on every live surface it reads.
 It reads prose, not code: a Markdown or JSONL file is split into blocks (paragraphs,
 list items, table rows, headings), a Python file into its strings and comment runs,
 and each block into sentences with whitespace collapsed, so a phrase wrapped across
-lines is still seen. A code span is also read alone, so a quoted bound followed by a
-word ("`Modules <=N` while") is still seen. A sentence states a size limit when it
-names a function, method, module or file (an instruction file's character budget is
-another subject) and gives it a number, in any of these shapes:
+lines is still seen. Underscore emphasis is dropped, and a code span is also read
+alone, so a quoted bound followed by a word ("`Modules <=N` while") is still seen.
 
-- a comparison, then the number and a line unit: over, under, exceeding, above,
-  beyond, past, below, within, about, longer or more than, a symbol, "length:";
-- a comparison right after the subject, then a bare number ("functions >N, modules >M");
-- the number and unit, then a limit word (cap, limit, ceiling, budget, guidance,
-  threshold, max) or "or fewer";
-- the number and unit before the subject and a limit word, or after "a", "any",
-  "no", "each" or "every";
-- "max function length: N lines" and its kin.
+The test is proximity, not a phrasing list (#1367 review: an enumerated list kept
+missing natural wordings). A sentence states a size limit when, inside one clause:
 
-Numbers count as digits or spelled out ("fifty", "six hundred"). A span naming
-output, a log, a diff or a stream, or a unit followed by "of" ("N lines of log
-output"), states no size limit. Classes stay out of scope, because `pythonic.md`
-owns that one number itself, and so does a measured size ("this 87-line function").
+- a function, method or module is followed within sixty characters by a number and a
+  line unit ("keep functions to N lines", "the module size limit is N lines",
+  "split any function that reaches N lines of code");
+- a number and a line unit are followed within twenty characters, no bracket or dash
+  between, by one of them ("the N-line module cap", "a N LOC module", "N lines per
+  function");
+- one of them, or a file, is followed directly (after an optional "length", "size" or
+  "body") by a symbol and a number ("functions >N get split", "file length <= N"), or
+  by a comparison word and a number that ends the phrase or carries a unit ("files
+  over N lines").
+
+A file is a subject only in that last, adjacent form, because "N lines across M
+files" counts a change, not a limit. Numbers count as digits or spelled out
+("fifty", "six hundred"). Not a limit: a span naming output, a log, a diff or a
+stream, or a unit counting one ("N lines of log output"); a size introduced by
+"this", "that", "these", "those", "its" or "their", or a subject introduced by
+"this", "that", "these" or "those", which name one measured unit ("this 87-line
+function"), unless a comparison or limit word makes the number a bound ("keeps that
+module under the N-line ceiling"). Classes stay out of scope, because `pythonic.md` owns
+that one number itself. A general measurement ("the module is about N lines") is
+refused like a limit; cite the measurement's source or date it.
 
 Dated history passes only in an anchored form inside the same sentence: "then in
 force", "then in" a path to `pythonic.md`, "at the time", "until" a commit hash, or
@@ -42,10 +51,10 @@ pool adr will be phased out and drained into the requirements catalog/backlog, w
 bother? so much of what we are doing now is related to what we are trying to achieve
 in the dry dock").
 
-What it does not judge: a limit phrased with no number, a shape outside the list
-above, a sentence split by an f-string placeholder, or a sentence a placeholder
-expression would complete. Reword such a sentence to cite the table rather than
-widen the fence.
+What it does not judge: a limit phrased with no number, a subject and size further
+apart than the windows above or split across table cells, a sentence split by an
+f-string placeholder, or a sentence a placeholder expression would complete. Reword
+such a sentence to cite the table rather than widen the fence.
 
 It began as the unit test `tests/policy/test_size_limits_cite_the_table.py`, which
 the tautology audit classed as a content echo; under the operator's ruling on #1370
@@ -80,7 +89,7 @@ ROOTS = (
     "docs/governance",
     "src/gzkit",
 )
-ROOT_FILES = ("AGENTS.md", "CLAUDE.md")
+ROOT_FILES = ("AGENTS.md", "CLAUDE.md", "README.md")
 SUFFIXES = (".md", ".py", ".jsonl")
 SKIPPED_PARTS = ("proofs", "archive")
 #: A path part naming a dated record: an ISO date, or a drydock `harbor-` record.
@@ -99,36 +108,51 @@ _SPELLED = (
 )
 _NUM = rf"(?:\d+(?:,\d{{3}})*(?!,?\d)|{_SPELLED})"
 _UNIT = r"(?:lines?|LOC|NLOC|SLOC)"
-_SIZE = rf"{_NUM}[- ]?{_UNIT}\b(?!\s+of\b)"
-_SUBJECT = r"\b(?:functions?|modules?|methods?|(?<!instruction )files?)\b"
-_LIMIT = r"(?:cap|limit|ceiling|budget|guidance|threshold|max(?:imum)?)"
+_SIZE = rf"\b{_NUM}[- ]?{_UNIT}\b"
+_SUBJECT = r"\b(?:functions?|modules?|methods?)\b"
+_ADJACENT_SUBJECT = r"(?:\b(?:functions?|modules?|methods?)|(?<![<\w-])(?<!instruction )files?)\b"
 _COMPARE = (
-    r"(?:>=?|≥|<=?|≤|~|\bover\b|\bexceed\w*|\bunder\b|\bmax(?:imum)?\b|\bat most\b"
-    r"|\bup to\b|\bfits? in\b|\b(?:longer|shorter|larger|bigger|more|fewer|less) than\b"
+    r"(?:\bover\b|\bexceed\w*|\bunder\b|\bmax(?:imum)?\b|\bat most\b|\bup to\b"
+    r"|\bfits? in\b|\b(?:longer|shorter|larger|bigger|more|fewer|less) than\b"
     r"|\babove\b|\bbeyond\b|\bpast\b|\bbelow\b|\bwithin\b|\babout\b|\baround\b"
-    r"|\broughly\b|\b(?:length|size|limit|cap|ceiling)\s*:)"
+    r"|\broughly\b|~|\b(?:length|size|limit|cap|ceiling)\s*:)"
 )
-#: A bare number is a size only when no noun follows it ("over 5 parameters" is not).
+_SYMBOL = r"(?:>=?|≥|<=?|≤)"
+#: A bare number after a comparison word is a size only when the phrase ends there
+#: ("over 5 parameters" is not); after a symbol any word may follow ("> N get split").
 _BARE_END = r"(?=\s*(?:[,;:)|]|\.(?=\s|$)|$|\band\b|\bor\b))"
-_GAP = r"[^.;|]{0,40}?"
+_HEAD = rf"{_ADJACENT_SUBJECT}\s*(?:(?:length|size|bod(?:y|ies))\s*)?"
 PATTERNS = tuple(
     re.compile(pattern, re.IGNORECASE)
     for pattern in (
-        rf"{_SUBJECT}{_GAP}{_COMPARE}\s*{_SIZE}",
-        rf"{_SUBJECT}\s*(?:(?:length|size|bod(?:y|ies))\s*)?{_COMPARE}\s*{_NUM}{_BARE_END}",
-        rf"{_SUBJECT}{_GAP}\b{_NUM}[- ]?{_UNIT}\s+(?:\w+\s+)?{_LIMIT}\b",
-        rf"{_SUBJECT}{_GAP}\b{_NUM}[- ]?{_UNIT}\s+or\s+(?:fewer|less|under|below)\b",
-        rf"\b{_NUM}[- ]?{_UNIT}\s+{_SUBJECT}\s+(?:(?:size|length)\s+)?{_LIMIT}\b",
-        rf"\b(?:an?|any|no|each|every)\s+{_NUM}[- ]?{_UNIT}\s+{_SUBJECT}",
-        rf"{_COMPARE}\s+{_SUBJECT}\s+(?:size|length)\s*:?\s*{_SIZE}",
+        rf"{_SUBJECT}[^.;|]{{0,60}}?{_SIZE}",
+        rf"{_SIZE}[^.;|()\u2014\u2013]{{0,20}}?{_SUBJECT}",
+        rf"{_HEAD}{_SYMBOL}\s*{_NUM}\b(?![>&%])",
+        rf"{_HEAD}{_COMPARE}\s*(?:{_SIZE}|{_NUM}{_BARE_END})",
     )
 )
 _NOT_SIZE = re.compile(r"\b(?:output|logs?|stdout|stderr|diffs?)\b", re.IGNORECASE)
-HISTORY = re.compile(
-    r"\bthen in force\b|\bthen in \S*pythonic\.md\b|\bat the time\b|\b\d{4}-\d{2}-\d{2} census\b"
-    r"|\buntil [0-9a-f]{7,40}\b",
+#: "N lines of log output": the unit counts something that is not code.
+_OF_NOT_SIZE = re.compile(
+    r"\s+of\s+(?:\w+\s+){0,2}(?:output|logs?|stdout|stderr|diffs?)\b", re.IGNORECASE
+)
+#: A word that makes a measured unit's number a bound ("that module under the N cap").
+_BOUND = re.compile(
+    rf"{_COMPARE}|{_SYMBOL}|\b(?:cap|limit|ceiling|budget|guidance|threshold)\b", re.IGNORECASE
+)
+_MEASURED = re.compile(
+    rf"\b(?:this|that|these|those|its|their)\s+{_NUM}[- ]?{_UNIT}\b"
+    rf"|\b(?:this|that|these|those)\s+{_SUBJECT}",
     re.IGNORECASE,
 )
+#: How far before a match a demonstrative may sit and still name the measured unit.
+_LEAD = 12
+HISTORY = re.compile(
+    r"\bthen in force\b|\bthen in \S*pythonic\.md\b|\bat the time\b(?!\s+of\b)"
+    r"|\b\d{4}-\d{2}-\d{2} census\b|(?-i:\buntil (?=[0-9a-f]*[a-f])[0-9a-f]{7,40}\b)",
+    re.IGNORECASE,
+)
+_EMPHASIS = re.compile(r"(?<!\w)_+|_+(?!\w)")
 _CODE_SPAN = re.compile(r"`+([^`]+)`+")
 _BLOCK = re.compile(r"\n\s*\n|\n(?=\s*(?:[-*+]|\d+\.|\||#)\s)")
 _SENTENCE = re.compile(r"[.;!?]\s+|\|")
@@ -160,13 +184,22 @@ def states_size_limit(text: str) -> bool:
 
 def _limit_in(sentence: str) -> bool:
     """Return whether *sentence*, or a code span in it read alone, states a size limit."""
-    phrases = (sentence.replace("`", ""), *_CODE_SPAN.findall(sentence))
+    text = _EMPHASIS.sub("", sentence)
+    phrases = (text.replace("`", ""), *_CODE_SPAN.findall(text))
     return any(
-        not _NOT_SIZE.search(match.group(0))
+        _states_limit(phrase, match)
         for phrase in phrases
         for pattern in PATTERNS
-        if (match := pattern.search(phrase))
+        for match in pattern.finditer(phrase)
     )
+
+
+def _states_limit(phrase: str, match: re.Match[str]) -> bool:
+    """Return whether *match* names a limit, not output or one measured unit."""
+    if _NOT_SIZE.search(match.group(0)) or _OF_NOT_SIZE.match(phrase, match.end()):
+        return False
+    lead = phrase[max(0, match.start() - _LEAD) : match.end()]
+    return not _MEASURED.search(lead) or bool(_BOUND.search(match.group(0)))
 
 
 def _markdown_blocks(text: str) -> Iterator[tuple[int, str]]:
