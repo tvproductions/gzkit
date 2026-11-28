@@ -7,7 +7,7 @@ owner: gzkit-governance
 last_reviewed: 2026-10-17
 gz_command: init
 metadata:
-  skill-version: "6.4.2"
+  skill-version: "6.4.3"
 model: sonnet
 ---
 
@@ -38,7 +38,9 @@ current directory; it never searches upward for a project.
   missing and never overwrites: skeleton, `design/` directories, `.gitignore`,
   pre-commit config, new canonical skills, rules, personas, templates and
   chores, the chores registry merge (`--yes` accepts its prompt), the
-  manifest, and `authorship.attestor_handle` when `--attestor-handle` is given.
+  manifest, `authorship.attestor_handle` when `--attestor-handle` is given, and
+  the JSONL merge routing in `.gitattributes` plus, in a git worktree, the
+  `gzkit-jsonl` driver when either is missing.
   Then it syncs the control surfaces, listing only files the sync changes; an
   already-synced tree runs no sync and appends no ledger row. In a git
   worktree with a pre-commit config, every repair re-runs `pre-commit install`

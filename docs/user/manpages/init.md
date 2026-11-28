@@ -123,6 +123,7 @@ Running `gz init` on an already-initialized project enters **repair mode**:
 - Re-syncs control surfaces, listing each file the sync changes; a tree already in sync is left untouched
 - Refuses to sync when canonical skills fail the sync preflight: it reports what it already repaired, then exits 1 with the blockers and leaves every mirror unchanged. `gz init --force` runs the same preflight, because it re-copies the wheel's skills but keeps local ones (GHI #1100)
 - With `--attestor-handle`, sets `authorship.attestor_handle` in `.gzkit.json` and changes no other key (listed like every other repair write)
+- Appends any missing JSONL merge-routing line to `.gitattributes` and, in a git worktree, registers the `gzkit-jsonl` driver when local config lacks it, so a project initialized before GHI #1363 gets both
 - Does not overwrite existing files, except that in a git worktree with a pre-commit config it re-runs `pre-commit install` and rewrites gzkit's `post-commit.legacy` recorder on every run, so repair always reports those two lines
 - Does not require `--force`
 
@@ -435,7 +436,7 @@ See: /user/skills/ in the docs or run gz skill list.
 ```
 
 That record predates GHI #1363. Since then the merge-driver line is preceded by
-the routing line, observed 2026-11-28 with `gz init --no-skeleton` in a git
+the routing line, observed 2026-11-27 with `gz init --no-skeleton` in a git
 repository whose `.gitattributes` held only `* text=auto eol=lf`; a second run
 prints neither line:
 

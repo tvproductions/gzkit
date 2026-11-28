@@ -37,6 +37,7 @@ from gzkit.commands.ledger import (
     MERGE_DRIVER_NAME,
     ensure_jsonl_merge_attributes,
     ensure_jsonl_merge_driver,
+    jsonl_merge_driver_missing,
 )
 from gzkit.commands.register import (
     grandfathered_foundation_ids,
@@ -839,10 +840,12 @@ def _jsonl_merge_statuses(project_root: Path, *, dry_run: bool = False) -> list[
     if patterns:
         verb = "Would route" if dry_run else "Routed"
         statuses.append(f"{verb} {', '.join(patterns)} to '{MERGE_DRIVER_NAME}' in .gitattributes")
+    driver = f"git merge driver '{MERGE_DRIVER_NAME}' for append-only JSONL"
     if dry_run:
-        return statuses
-    if ensure_jsonl_merge_driver(project_root):
-        statuses.append(f"Registered git merge driver '{MERGE_DRIVER_NAME}' for append-only JSONL")
+        if jsonl_merge_driver_missing(project_root):
+            statuses.append(f"Would register {driver}")
+    elif ensure_jsonl_merge_driver(project_root):
+        statuses.append(f"Registered {driver}")
     return statuses
 
 

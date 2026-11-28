@@ -31,9 +31,22 @@ JSONL_MERGE_PATTERNS = (
 
 
 def _routes_to_driver(line: str, pattern: str) -> bool:
-    """Whether one `.gitattributes` line routes `pattern` to the driver."""
+    """Whether one `.gitattributes` line routes `pattern` to the driver.
+
+    A pattern containing a slash is matched from the repository root, so a
+    leading `/` names the same file. The match is textual: a later line that
+    overrides this one is the adopter's rule and stands.
+
+    Returns:
+        True when the line's pattern is `pattern` and it sets `merge=gzkit-jsonl`.
+
+    """
     fields = line.split()
-    return bool(fields) and fields[0] == pattern and f"merge={MERGE_DRIVER_NAME}" in fields[1:]
+    return (
+        bool(fields)
+        and fields[0].removeprefix("/") == pattern
+        and f"merge={MERGE_DRIVER_NAME}" in fields[1:]
+    )
 
 
 def ensure_jsonl_merge_attributes(project_root: Path, *, dry_run: bool = False) -> list[str]:
@@ -41,26 +54,49 @@ def ensure_jsonl_merge_attributes(project_root: Path, *, dry_run: bool = False) 
 
     The driver registered in local config does nothing until a `.gitattributes`
     line routes a file to it, and an adopter's repository carries no such line
-    of gzkit's. Each missing routing line is appended; an existing line is never
-    rewritten, so the adopter's own rules stand, and a second call adds nothing.
+    of gzkit's. Each missing routing line is appended; the existing bytes are
+    never rewritten or re-encoded, so the adopter's own rules stand, and a second
+    call adds nothing.
 
     Returns:
         The patterns whose routing line this call added, or would add on a dry run.
 
     """
     path = project_root / ".gitattributes"
-    text = path.read_text(encoding="utf-8") if path.is_file() else ""
-    lines = text.splitlines()
+    existing = path.read_bytes() if path.is_file() else b""
+    # Decoding only reads the patterns; the write below appends and never re-encodes.
+    lines = existing.decode("utf-8", errors="replace").removeprefix("﻿").splitlines()
     missing = [
         pattern
         for pattern in JSONL_MERGE_PATTERNS
         if not any(_routes_to_driver(line, pattern) for line in lines)
     ]
     if missing and not dry_run:
-        prefix = text if not text or text.endswith("\n") else text + "\n"
-        added = "".join(f"{pattern} merge={MERGE_DRIVER_NAME}\n" for pattern in missing)
-        path.write_text(prefix + added, encoding="utf-8")
+        newline = b"\r\n" if b"\r\n" in existing else b"\n"
+        separator = newline if existing and not existing.endswith(b"\n") else b""
+        added = b"".join(
+            f"{pattern} merge={MERGE_DRIVER_NAME}".encode() + newline for pattern in missing
+        )
+        with path.open("ab") as handle:
+            handle.write(separator + added)
     return missing
+
+
+def jsonl_merge_driver_missing(project_root: Path) -> bool:
+    """Whether a git worktree here lacks the driver command, read without writing.
+
+    Returns:
+        True inside a git worktree whose local config lacks the driver command;
+        False when it is configured or `project_root` is not a git worktree.
+
+    """
+    rc_tree, inside, _err = git_cmd(project_root, "rev-parse", "--is-inside-work-tree")
+    if rc_tree != 0 or inside.strip() != "true":
+        return False
+    rc_read, existing, _err = git_cmd(
+        project_root, "config", "--get", f"merge.{MERGE_DRIVER_NAME}.driver"
+    )
+    return rc_read != 0 or existing.strip() != _DRIVER_COMMAND
 
 
 def ensure_jsonl_merge_driver(project_root: Path) -> bool:

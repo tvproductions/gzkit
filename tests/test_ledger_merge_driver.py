@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from gzkit.commands.init_cmd import _jsonl_merge_statuses
 from gzkit.commands.ledger import (
     JSONL_MERGE_PATTERNS,
     MERGE_DRIVER_NAME,
@@ -203,14 +204,85 @@ class TestEnsureMergeAttributes(unittest.TestCase):
             self.assertEqual(planned, list(JSONL_MERGE_PATTERNS))
             self.assertFalse((root / ".gitattributes").exists())
 
-    def test_gzkits_own_attributes_route_every_pattern_it_ships(self) -> None:
+    def test_existing_bytes_are_kept_exactly(self) -> None:
+        """Appending never re-encodes: a BOM, CRLF and non-UTF-8 bytes survive."""
+        adopter = b"\xef\xbb\xbf* text=auto\r\n# caf\xe9\r\n*.png binary"
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            self._init_repo(root)
+            attributes = root / ".gitattributes"
+            attributes.write_bytes(adopter)
+
+            added = ensure_jsonl_merge_attributes(root)
+
+            self.assertEqual(added, list(JSONL_MERGE_PATTERNS))
+            self.assertTrue(attributes.read_bytes().startswith(adopter), attributes.read_bytes())
+            for path in _ROUTED_FILES:
+                self.assertEqual(self._merge_attribute(root, path), MERGE_DRIVER_NAME, path)
+
+    def test_anchored_pattern_counts_as_the_same_route(self) -> None:
+        """`/.gzkit/ledger.jsonl` and `.gzkit/ledger.jsonl` name one file at the root."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / ".gitattributes").write_text(
+                "/.gzkit/ledger.jsonl merge=gzkit-jsonl\n", encoding="utf-8"
+            )
+
+            planned = ensure_jsonl_merge_attributes(root, dry_run=True)
+
+            self.assertNotIn(".gzkit/ledger.jsonl", planned)
+
+    def test_gzkits_own_attributes_route_exactly_the_shipped_set(self) -> None:
         """The repository and the wheel name one set; neither may drift from the other."""
         repo_root = Path(__file__).resolve().parents[1]
-        with tempfile.TemporaryDirectory() as td:
-            copy = Path(td) / ".gitattributes"
-            copy.write_bytes((repo_root / ".gitattributes").read_bytes())
+        text = (repo_root / ".gitattributes").read_text(encoding="utf-8")
+        routed = {
+            line.split()[0]
+            for line in text.splitlines()
+            if line.split() and f"merge={MERGE_DRIVER_NAME}" in line.split()[1:]
+        }
 
-            self.assertEqual(ensure_jsonl_merge_attributes(Path(td), dry_run=True), [])
+        self.assertEqual(routed, set(JSONL_MERGE_PATTERNS))
+
+
+class TestJsonlMergeStatuses(unittest.TestCase):
+    """`gz init` announces both halves on a dry run and writes neither (GHI #1363)."""
+
+    def _git(self, root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(  # noqa: S603 — argv this test builds, list form
+            ["git", *args],
+            cwd=root,
+            check=False,
+            capture_output=True,
+            text=True,
+            errors="replace",
+            env=_isolated_git_env(),
+        )
+
+    def test_dry_run_announces_the_driver_and_registers_nothing(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            self._git(root, "init", "-q")
+
+            planned = _jsonl_merge_statuses(root, dry_run=True)
+
+            self.assertEqual(len(planned), 2, planned)
+            self.assertIn(MERGE_DRIVER_NAME, planned[1])
+            self.assertFalse((root / ".gitattributes").exists())
+            key = f"merge.{MERGE_DRIVER_NAME}.driver"
+            self.assertNotEqual(self._git(root, "config", "--get", key).returncode, 0)
+
+            written = _jsonl_merge_statuses(root)
+
+            self.assertEqual(len(written), len(planned), written)
+            self.assertEqual(_jsonl_merge_statuses(root, dry_run=True), [])
+
+    def test_dry_run_outside_a_repository_announces_only_the_routing(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            planned = _jsonl_merge_statuses(Path(td), dry_run=True)
+
+            self.assertEqual(len(planned), 1, planned)
+            self.assertIn(".gitattributes", planned[0])
 
 
 if __name__ == "__main__":
