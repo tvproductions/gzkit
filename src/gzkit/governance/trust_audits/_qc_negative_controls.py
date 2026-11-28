@@ -56,6 +56,7 @@ from ._qc_nc_entrypoints import (
     _ep_size_limit_citations,
     _ep_supply_chain_audit,
     _ep_supply_chain_audit_admits_ignored,
+    _ep_tidy_verdict_citations,
 )
 
 if TYPE_CHECKING:
@@ -1657,6 +1658,45 @@ def _build_dependency_currency_citations() -> Path:
     return root
 
 
+def _build_tidy_verdict_citations() -> Path:
+    """Plant a stale tidy-status claim in each root and root file, with four decoys.
+
+    The decoys are the two dated-record trees, a chore proof and the contract stated
+    with "only when", all of which must stay silent (GHI #1370).
+
+    Returns:
+        The fixture project root.
+
+    """
+    # The zero is filled in at run time: this module is source the scope reads.
+    zero = 0
+    stale = f"Tidy exits {zero} whatever it reports.\n"
+    contract = f"gz tidy exits {zero} only when no breach section has a finding.\n"
+    root = _mkroot("tidy-verdict-citations")
+    for rel in (
+        ".gzkit/skills",
+        ".gzkit/rules",
+        ".gzkit/personas",
+        ".gzkit/agents",
+        ".gzkit/templates",
+        ".gzkit/chores",
+        ".gzkit/corpus",
+        "docs",
+        "src/gzkit",
+        "data",
+        "scripts",
+        "features",
+    ):
+        _write(root / rel / "x.md", stale)
+    for rel in ("AGENTS.md", "CLAUDE.md", "README.md"):
+        _write(root / rel, stale)
+    _write(root / "docs" / "rnd" / "r.md", stale)
+    _write(root / "docs" / "releases" / "v.md", stale)
+    _write(root / ".gzkit" / "chores" / "c" / "proofs" / "p.md", stale)
+    _write(root / "docs" / "contract.md", contract)
+    return root
+
+
 def _build_size_limit_citations() -> Path:
     """Plant a restated size limit in each root, with two decoys that must pass.
 
@@ -2900,6 +2940,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_dependency_currency_citations,
         _ep_dependency_currency_citations,
         "states a dependency age as a currency grade",
+    ),
+    (
+        "tidy-verdict-citations",
+        _build_tidy_verdict_citations,
+        _ep_tidy_verdict_citations,
+        "says gz tidy's exit status ignores its findings",
     ),
     (
         "size-limit-citations",

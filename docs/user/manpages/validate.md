@@ -11,7 +11,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--requirements] [--commit-trailers]
             [--taxonomy] [--chores-layout] [--distribution] [--wheel-path-literals]
             [--model-class-only] [--size-limit-citations]
-            [--dependency-currency-citations]
+            [--dependency-currency-citations] [--tidy-verdict-citations]
             [--hexagon-dependencies] [--hexagon-tests]
             [--changelog]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
@@ -1214,6 +1214,55 @@ uv run gz validate --dependency-currency-citations --json
 ```
 
 Rule home: `.gzkit/chores/dependency-currency/CHORE.md`.
+
+### `--tidy-verdict-citations`
+
+Fails closed when a live sentence says `gz tidy`'s exit status ignores its
+findings (GHI #1373; a `gz validate` scope since GHI #1370). Runs in the
+**default** `gz check` scope, so the flag is for scoping a single run.
+
+Since GHI #1124, `gz tidy` exits 3 when a breach section has a finding and 0
+only when none has. The fix left two rows in the gz-tidy skill stating the old
+behavior as the corrective reality, and nothing noticed.
+
+**Scope** — the same roots, root files and suffixes as
+`--dependency-currency-citations`. Dated records are not read: `docs/rnd/`,
+`docs/releases/`, any `proofs/` or `archive/` directory. A root absent from
+gzkit's own tree is a finding; in an adopter project it is skipped.
+
+#### What fails closed
+
+Within a sentence that names tidy, narrowed by operator ruling (2026-11-26) to
+the shapes it judges reliably:
+
+- a zero exit paired with "whatever", "regardless", "no matter" or "always";
+- a zero exit "with", "when", "on", "despite" or "if" findings or breaches;
+- findings or breaches, then "but", "yet" or "still" just before a zero exit;
+- an exit code or status said to mean nothing, or to be ignored or distrusted.
+
+A clause stating the contract with "only when" or "only if" is admitted. Not
+judged: wording without a literal 0, and a claim whose "tidy" sits in an
+earlier sentence. The full list of known gaps is recorded on GHI #1370.
+
+#### Exit codes
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | No live sentence misstates tidy's verdict | — |
+| 1 | A sentence says tidy's exit status ignores its findings | State the contract (exit 3 on a breach, 0 only when none has a finding), then re-run `uv run gz validate --tidy-verdict-citations` |
+
+Measured, not transcribed: a planted stale claim in a temporary project's
+`docs/` exits **1**, and the clean project exits **0**. Under an open
+Maintenance Hangar the finding is reported advisory and the run exits 0.
+
+#### Examples
+
+```bash
+uv run gz validate --tidy-verdict-citations
+uv run gz validate --tidy-verdict-citations --json
+```
+
+Rule home: `.gzkit/skills/gz-tidy/SKILL.md` § Overview.
 
 ### `--hexagon-dependencies`
 
@@ -3559,6 +3608,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--model-class-only` | yes | Rule, skill and agent canon name Claude models by class, never by a versioned ID (GHI #1284) |
 | `--size-limit-citations` | yes | Instruction surfaces and source cite the threshold table for function and module size, never a number (GHI #1366, #1370) |
 | `--dependency-currency-citations` | yes | A live surface cites the dependency-currency chore, never a dependency age as a grade (GHI #1368, #1370) |
+| `--tidy-verdict-citations` | yes | No live sentence says gz tidy's exit status ignores its findings (GHI #1373, #1370) |
 | `--hexagon-dependencies` | yes | The package holds to the hexagon's dependency rules read from the package map; today's findings in a shrink-only baseline (RP-15 tranche 6) |
 | `--hexagon-tests` | yes | Every test module covering a hexagon region holds to fakes only, given/when/then labels and `@covers`; today's findings in a shrink-only baseline (RP-7) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |

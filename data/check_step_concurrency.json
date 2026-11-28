@@ -318,6 +318,10 @@
       "class": "read_only",
       "measured_seconds": 0.5
     },
+    "Tidy verdict citations": {
+      "class": "read_only",
+      "measured_seconds": 0.9
+    },
     "Dependency currency citations": {
       "class": "read_only",
       "measured_seconds": 0.9

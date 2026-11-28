@@ -698,6 +698,19 @@
       "binding_sha256": "1a2649522fbbe42271b88528b29e3460532a66e66af9314839aebc7b85d51c63",
       "authority": "GHI #1370 (operator ruling 2026-11-28, verbatim: \"A\")",
       "proposed_by": "claude-code session 2026-11-28"
+    },
+    {
+      "claim_id": "tidy-verdict-citations",
+      "guard": "gzkit.governance.trust_audits.tidy_verdict_citations:audit_tidy_verdict_citations",
+      "failing_test": "tests.governance.test_audit_tidy_verdict_citations.TidyVerdictCitationsTests.test_a_stale_claim_on_each_root_and_root_file_is_flagged",
+      "mutation": {
+        "find": "    for path in paths:\n",
+        "replace": "    for path in []:\n",
+        "label": "no live file is ever read"
+      },
+      "binding_sha256": "05f3cb6255b1c4157976b211c0ad267f3ad92663697c2e93fc66cb70ebe918ef",
+      "authority": "GHI #1370 (operator ruling 2026-11-28, verbatim: \"A\")",
+      "proposed_by": "claude-code session 2026-11-28"
     }
   ]
 }

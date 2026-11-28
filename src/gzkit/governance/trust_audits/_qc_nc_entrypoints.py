@@ -749,6 +749,28 @@ def _ep_dependency_currency_citations(root: Path) -> list[ValidationError]:
     return errors
 
 
+def _ep_tidy_verdict_citations(root: Path) -> list[ValidationError]:
+    """Return the findings only when every planted root fires and no decoy does.
+
+    The plants are the dependency-currency control's roots, which the tidy fence
+    reads too; the decoys are the two dated-record trees, a chore proof and a
+    sentence stating the contract (GHI #1370).
+
+    Returns:
+        Every finding when exactly the planted roots fired, otherwise nothing.
+
+    """
+    from gzkit.governance.trust_audits.tidy_verdict_citations import (  # noqa: PLC0415
+        audit_tidy_verdict_citations,
+    )
+
+    errors = audit_tidy_verdict_citations(root)
+    caught = {e.artifact.rsplit("/", 1)[0] for e in errors}
+    if caught != _CURRENCY_PLANTS or len(errors) != len(_CURRENCY_PLANTS):
+        return []
+    return errors
+
+
 def _ep_validate_default_scopes(root: Path) -> list[ValidationError]:
     """Run the whole default `gz validate` tier, as the bare invocation does."""
     from gzkit.commands.validate_cmd import _collect_errors  # noqa: PLC0415

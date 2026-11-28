@@ -106,6 +106,10 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     "size-limit-citations": EXEMPTS_NONE,
     # A prose fence: no waiver table, allowlist or marker admits a finding; the roots,
     # the patterns and the dated-record exclusions are fixed code properties that
+    # define what a violation is (GHI #1373, GHI #1370).
+    "tidy-verdict-citations": EXEMPTS_NONE,
+    # A prose fence: no waiver table, allowlist or marker admits a finding; the roots,
+    # the patterns and the dated-record exclusions are fixed code properties that
     # define what a violation is (GHI #1368, GHI #1370).
     "dependency-currency-citations": EXEMPTS_NONE,
     # Measures live briefs against packaged bounds. A project may record a ceiling

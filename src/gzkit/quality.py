@@ -1600,6 +1600,21 @@ def run_size_limit_citations_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --size-limit-citations", cwd=project_root)
 
 
+def run_tidy_verdict_citations_audit(project_root: Path) -> QualityResult:
+    """Run the `--tidy-verdict-citations` prose fence (GHI #1373, a scope since GHI #1370).
+
+    Fails closed on a live sentence saying gz tidy's exit status ignores its findings;
+    since GHI #1124 tidy exits 3 on a breach. Recovery: state that contract, then `uv
+    run gz validate --tidy-verdict-citations`. Wired here explicitly although the scope
+    is default-tier, for the reason `run_wheel_path_literals_audit` records.
+
+    Returns:
+        The result of the scoped `gz validate` run.
+
+    """
+    return run_command("uv run gz validate --tidy-verdict-citations", cwd=project_root)
+
+
 def run_dependency_currency_citations_audit(project_root: Path) -> QualityResult:
     """Run the `--dependency-currency-citations` prose fence (GHI #1368; a scope since #1370).
 

@@ -199,6 +199,7 @@ from gzkit.governance.trust_audits.taxonomy import (
     audit_pool_adr_isolation,
     audit_pool_interview_schema,
 )
+from gzkit.governance.trust_audits.tidy_verdict_citations import audit_tidy_verdict_citations
 from gzkit.governance.trust_audits.transcribed_counts import (
     audit_transcribed_counts,
 )
@@ -306,6 +307,7 @@ __all__ = [
     "audit_subprocess_errors",
     "audit_surface_delivery_witness",
     "audit_test_tiers",
+    "audit_tidy_verdict_citations",
     "audit_transcribed_counts",
     "audit_type_ignores",
     "audit_utf8_prefix",
