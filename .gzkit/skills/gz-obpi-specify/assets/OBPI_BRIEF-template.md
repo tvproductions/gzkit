@@ -52,7 +52,7 @@ Before planning or execution, read:
 
 - `.github/discovery-index.json`
 - the parent ADR for this brief
-- any referenced instructions files
+- any `.gzkit/rules/*.md` file the brief cites
 
 Use the `discovery_checklist` in discovery-index.json to structure your evaluation.
 
