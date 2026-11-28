@@ -1600,6 +1600,22 @@ def run_size_limit_citations_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --size-limit-citations", cwd=project_root)
 
 
+def run_dependency_currency_citations_audit(project_root: Path) -> QualityResult:
+    """Run the `--dependency-currency-citations` prose fence (GHI #1368; a scope since #1370).
+
+    Fails closed on a dependency age stated as a currency grade outside the
+    dependency-currency chore, which owns the grading. Recovery: cite the chore,
+    then `uv run gz validate --dependency-currency-citations`. Wired here
+    explicitly although the scope is default-tier, for the reason
+    `run_wheel_path_literals_audit` records.
+
+    Returns:
+        The result of the scoped `gz validate` run.
+
+    """
+    return run_command("uv run gz validate --dependency-currency-citations", cwd=project_root)
+
+
 def run_wheel_path_literals_audit(project_root: Path) -> QualityResult:
     """Run the delivered-instruction resolvability gate over wheel-shipped Markdown.
 

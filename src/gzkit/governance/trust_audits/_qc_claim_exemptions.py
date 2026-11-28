@@ -104,6 +104,10 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     # the dated-history form ("then") are fixed code properties that define what a
     # violation is, and the authority file is the scope's subject. GHI #1370.
     "size-limit-citations": EXEMPTS_NONE,
+    # A prose fence: no waiver table, allowlist or marker admits a finding; the roots,
+    # the patterns and the dated-record exclusions are fixed code properties that
+    # define what a violation is (GHI #1368, GHI #1370).
+    "dependency-currency-citations": EXEMPTS_NONE,
     # Measures live briefs against packaged bounds. A project may record a ceiling
     # for a brief already over a bound, which is an admit path a project controls,
     # so it is exercised by a registered control rather than declared away. The

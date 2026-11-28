@@ -672,6 +672,32 @@
       "authority": "RP-7 change order of 2026-11-12 (gz validate --hexagon-dependencies and --hexagon-tests on the per-change gate); GHI #1154 item 5 (every registered claim binds a reviewed canary)",
       "proposed_by": "claude-code session 2026-11-17",
       "reviewed_by": "g0"
+    },
+    {
+      "claim_id": "size-limit-citations",
+      "guard": "gzkit.governance.trust_audits.size_limit_citations:audit_size_limit_citations",
+      "failing_test": "tests.governance.test_audit_size_limit_citations.SizeLimitCitationsTests.test_a_limit_on_each_instruction_surface_is_flagged",
+      "mutation": {
+        "find": "        for path in live_files(project_root, INSTRUCTION_ROOTS, suffixes=(\".md\",))\n",
+        "replace": "        for path in live_files(project_root, (), suffixes=(\".md\",))\n",
+        "label": "no instruction surface is ever read"
+      },
+      "binding_sha256": "66cfa6bfad97a3874bdb77607b758c5e7d5e5924910d4eb7a54190dc7636b45c",
+      "authority": "GHI #1370 (operator ruling 2026-11-28, verbatim: \"A\")",
+      "proposed_by": "claude-code session 2026-11-28"
+    },
+    {
+      "claim_id": "dependency-currency-citations",
+      "guard": "gzkit.governance.trust_audits.dependency_currency_citations:audit_dependency_currency_citations",
+      "failing_test": "tests.governance.test_audit_dependency_currency_citations.DependencyCurrencyCitationsTests.test_a_grade_on_each_root_and_root_file_is_flagged",
+      "mutation": {
+        "find": "    for path in paths:\n",
+        "replace": "    for path in []:\n",
+        "label": "no live file is ever read"
+      },
+      "binding_sha256": "1a2649522fbbe42271b88528b29e3460532a66e66af9314839aebc7b85d51c63",
+      "authority": "GHI #1370 (operator ruling 2026-11-28, verbatim: \"A\")",
+      "proposed_by": "claude-code session 2026-11-28"
     }
   ]
 }

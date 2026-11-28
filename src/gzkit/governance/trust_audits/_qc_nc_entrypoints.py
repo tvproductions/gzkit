@@ -704,6 +704,51 @@ def _ep_size_limit_citations(root: Path) -> list[ValidationError]:
     return errors
 
 
+#: The roots and root files the dependency-currency control plants, spelled here
+#: rather than read from the audit, so a scope that dropped one fails (GHI #1370).
+_CURRENCY_PLANTS = frozenset(
+    {
+        ".gzkit/skills",
+        ".gzkit/rules",
+        ".gzkit/personas",
+        ".gzkit/agents",
+        ".gzkit/templates",
+        ".gzkit/chores",
+        ".gzkit/corpus",
+        "docs",
+        "src/gzkit",
+        "data",
+        "scripts",
+        "features",
+        "AGENTS.md",
+        "CLAUDE.md",
+        "README.md",
+    }
+)
+
+
+def _ep_dependency_currency_citations(root: Path) -> list[ValidationError]:
+    """Return the findings only when every planted root fires and no decoy does.
+
+    The decoys are the chore stating its own grade, a dated R&D record and a chore
+    proof; a scope that dropped a root, read a record or read the authority reports
+    no catch (GHI #1370).
+
+    Returns:
+        Every finding when exactly the planted roots fired, otherwise nothing.
+
+    """
+    from gzkit.governance.trust_audits.dependency_currency_citations import (  # noqa: PLC0415
+        audit_dependency_currency_citations,
+    )
+
+    errors = audit_dependency_currency_citations(root)
+    caught = {e.artifact.rsplit("/", 1)[0] for e in errors}
+    if caught != _CURRENCY_PLANTS or len(errors) != len(_CURRENCY_PLANTS):
+        return []
+    return errors
+
+
 def _ep_validate_default_scopes(root: Path) -> list[ValidationError]:
     """Run the whole default `gz validate` tier, as the bare invocation does."""
     from gzkit.commands.validate_cmd import _collect_errors  # noqa: PLC0415

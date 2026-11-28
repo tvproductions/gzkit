@@ -104,6 +104,9 @@ from gzkit.governance.trust_audits.cross_platform import (
     audit_subprocess_errors,
     audit_utf8_prefix,
 )
+from gzkit.governance.trust_audits.dependency_currency_citations import (
+    audit_dependency_currency_citations,
+)
 from gzkit.governance.trust_audits.deprecated_verb_prescription import (
     audit_deprecated_verb_prescription,
 )
@@ -255,6 +258,7 @@ __all__ = [
     "audit_codex_delivery_witness",
     "audit_complexity_ceiling",
     "audit_config_registry",
+    "audit_dependency_currency_citations",
     "audit_deprecated_verb_prescription",
     "audit_distribution",
     "audit_doc_code_citations",

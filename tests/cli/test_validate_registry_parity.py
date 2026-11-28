@@ -93,6 +93,10 @@ _POST_SNAPSHOT_DEFAULT_ADDITIONS: tuple[str, ...] = (
     # wheel_path_literals reasoning: the numbers it refuses went stale when the
     # threshold table moved, and a flag-gated fence would be inert exactly there.
     "size_limit_citations",
+    # dependency_currency_citations — a prompt-audit prose fence (GHI #1368),
+    # ported from a unit test under GHI #1370; DEFAULT tier on the
+    # wheel_path_literals reasoning.
+    "dependency_currency_citations",
     # corpus_retirement_witness — a Layer-1 tombstone with no Layer-2 witness
     # (GHI #885, GHI #878). DEFAULT tier deliberately: the class it catches
     # produced seven live instances on `main` while every gate read green, so a

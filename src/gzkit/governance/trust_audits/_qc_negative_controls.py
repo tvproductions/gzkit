@@ -47,6 +47,7 @@ from ._qc_nc_entrypoints import (
     _ep_catalog_orders,
     _ep_catalog_repair_reqs,
     _ep_catalog_work_packages,
+    _ep_dependency_currency_citations,
     _ep_hexagon_dependencies,
     _ep_hexagon_dependencies_admits_baselined,
     _ep_hexagon_tests,
@@ -1617,6 +1618,45 @@ def _build_hexagon_dependencies_baselined() -> Path:
     return root
 
 
+def _build_dependency_currency_citations() -> Path:
+    """Plant a currency grade in each root and root file, with three decoys.
+
+    Each planted file sits directly under its root, so the entrypoint can name the
+    root each finding came from; the roots are written literally. The decoys are
+    the chore's own grade, an R&D record and a chore proof, all of which must stay
+    silent (GHI #1370).
+
+    Returns:
+        The fixture project root.
+
+    """
+    # The age is filled in at run time: this module is source the scope reads.
+    years = 2
+    grade = f"A dependency older than {years} years is stale.\n"
+    root = _mkroot("dependency-currency-citations")
+    for rel in (
+        ".gzkit/skills",
+        ".gzkit/rules",
+        ".gzkit/personas",
+        ".gzkit/agents",
+        ".gzkit/templates",
+        ".gzkit/chores",
+        ".gzkit/corpus",
+        "docs",
+        "src/gzkit",
+        "data",
+        "scripts",
+        "features",
+    ):
+        _write(root / rel / "x.md", grade)
+    for rel in ("AGENTS.md", "CLAUDE.md", "README.md"):
+        _write(root / rel, grade)
+    _write(root / ".gzkit" / "chores" / "dependency-currency" / "CHORE.md", grade)
+    _write(root / "docs" / "rnd" / "r.md", grade)
+    _write(root / ".gzkit" / "chores" / "c" / "proofs" / "p.md", grade)
+    return root
+
+
 def _build_size_limit_citations() -> Path:
     """Plant a restated size limit in each root, with two decoys that must pass.
 
@@ -2854,6 +2894,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_model_class_only,
         _ep_model_class_only,
         "Versioned model ID",
+    ),
+    (
+        "dependency-currency-citations",
+        _build_dependency_currency_citations,
+        _ep_dependency_currency_citations,
+        "states a dependency age as a currency grade",
     ),
     (
         "size-limit-citations",

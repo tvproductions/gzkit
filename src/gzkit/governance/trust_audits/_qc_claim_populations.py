@@ -50,6 +50,9 @@ QC_CLAIM_POPULATIONS: dict[str, Callable[[], Sequence[str]] | str] = {
     # surface declares them; the control writes each literally and passes only when
     # each is caught, so a narrowed scope fails it (GHI #1370).
     "size-limit-citations": POPULATION_NONE,
+    # The fence's roots are its own scope, and no other surface declares them; the
+    # control writes each literally and passes only when each is caught (GHI #1368).
+    "dependency-currency-citations": POPULATION_NONE,
     "doc-code-citations-exempted": POPULATION_NONE,
     # Walks a glob over docs/design/adr/**; the members are whatever briefs exist,
     # never a set another surface declares (GHI #1196).

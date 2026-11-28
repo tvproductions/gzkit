@@ -424,6 +424,12 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         in_other_scopes=True,
         run=lambda r, _f: _ta().audit_size_limit_citations(r),
     ),
+    _ScopeEntry(  # default tier: a fence behind a remembered flag is inert (GHI #900)
+        "dependency_currency_citations",
+        "default",
+        in_other_scopes=True,
+        run=lambda r, _f: _ta().audit_dependency_currency_citations(r),
+    ),
     _ScopeEntry("changelog", "explicit", True, lambda r, _f: _changelog_runner(r)),
     _ScopeEntry(  # CRITICAL: fast static, never demoted in the hangar (operator 2026-10-27)
         "bullet_retention",
@@ -1759,6 +1765,7 @@ def validate(
     frontmatter_explain: str | None = None,
     check_model_class_only: bool = False,
     check_size_limit_citations: bool = False,
+    check_dependency_currency_citations: bool = False,
     check_hexagon_dependencies: bool = False,
     check_hexagon_tests: bool = False,
 ) -> None:
@@ -1855,6 +1862,7 @@ def validate(
         "wheel_path_literals": check_wheel_path_literals,
         "model_class_only": check_model_class_only,
         "size_limit_citations": check_size_limit_citations,
+        "dependency_currency_citations": check_dependency_currency_citations,
         "hexagon_dependencies": check_hexagon_dependencies,
         "hexagon_tests": check_hexagon_tests,
         "changelog": check_changelog,

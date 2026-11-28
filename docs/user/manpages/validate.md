@@ -11,6 +11,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--requirements] [--commit-trailers]
             [--taxonomy] [--chores-layout] [--distribution] [--wheel-path-literals]
             [--model-class-only] [--size-limit-citations]
+            [--dependency-currency-citations]
             [--hexagon-dependencies] [--hexagon-tests]
             [--changelog]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
@@ -1164,6 +1165,55 @@ uv run gz validate --size-limit-citations --json
 ```
 
 Rule home: `.gzkit/rules/pythonic.md` § Size Limits.
+
+### `--dependency-currency-citations`
+
+Fails closed when a live surface states a dependency age as a currency grade,
+which only the dependency-currency chore may state (GHI #1368; a `gz validate`
+scope since GHI #1370). Runs in the **default** `gz check` scope, so the flag
+is for scoping a single run.
+
+`.gzkit/chores/dependency-currency/CHORE.md` owns the grading. A skill once
+restated a grade the chore never held, and nothing noticed.
+
+**Scope** — `.md`, `.py`, `.json`, `.jsonl`, `.toml`, `.feature`, `.yaml` and
+`.yml` files under `.gzkit/skills/`, `.gzkit/rules/`, `.gzkit/personas/`,
+`.gzkit/agents/`, `.gzkit/templates/`, `.gzkit/chores/`, `.gzkit/corpus/`,
+`docs/`, `src/gzkit/`, `data/`, `scripts/` and `features/`, plus the root
+`AGENTS.md`, `CLAUDE.md` and `README.md`. Dated records are not read:
+`docs/rnd/`, any `proofs/` or `archive/` directory. The chore itself is the
+authority and must state its grade; a chore that states none is a finding. The
+STDLIB-FIRST adoption signal ("five-year aging") carries no currency word and
+passes, by operator ruling (2026-11-25). A root absent from gzkit's own tree is a
+finding; in an adopter project it is skipped.
+
+#### What fails closed
+
+A clause naming a dependency (dependency, package, pin, release, analyzer, tool,
+version, upstream), an age (a number of years, months, weeks or days) and a
+currency word (stale, outdated, behind, old, ago, abandoned, not updated). Each
+block is read whole with its whitespace collapsed, so a wrapped phrase is seen;
+a grade split across clauses by a comma is a known limit.
+
+#### Exit codes
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | No surface restates a currency grade | — |
+| 1 | A surface states a dependency age as a grade, or the chore states none | Cite the chore instead of the age (or restore the chore's grade line), then re-run `uv run gz validate --dependency-currency-citations` |
+
+Measured, not transcribed: a planted grade in a temporary project's `docs/`
+exits **1**, and the clean project exits **0**. Under an open Maintenance Hangar
+the finding is reported advisory and the run exits 0.
+
+#### Examples
+
+```bash
+uv run gz validate --dependency-currency-citations
+uv run gz validate --dependency-currency-citations --json
+```
+
+Rule home: `.gzkit/chores/dependency-currency/CHORE.md`.
 
 ### `--hexagon-dependencies`
 
@@ -3508,6 +3558,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--wheel-path-literals` | yes | Wheel-shipped instruction text names no path only its authoring environment can resolve (GHI #900) |
 | `--model-class-only` | yes | Rule, skill and agent canon name Claude models by class, never by a versioned ID (GHI #1284) |
 | `--size-limit-citations` | yes | Instruction surfaces and source cite the threshold table for function and module size, never a number (GHI #1366, #1370) |
+| `--dependency-currency-citations` | yes | A live surface cites the dependency-currency chore, never a dependency age as a grade (GHI #1368, #1370) |
 | `--hexagon-dependencies` | yes | The package holds to the hexagon's dependency rules read from the package map; today's findings in a shrink-only baseline (RP-15 tranche 6) |
 | `--hexagon-tests` | yes | Every test module covering a hexagon region holds to fakes only, given/when/then labels and `@covers`; today's findings in a shrink-only baseline (RP-7) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |
