@@ -3414,8 +3414,11 @@
       "stage2"
      ],
      "cause": null,
-     "delivered_span": "4. Implement each behavior via the **Red-Green-Refactor discipline above**: one\n   minimal test → watch it fail on its assertion for the right reason (not an\n   import error) → simplest code to pass → refactor green. Use `unittest`,\n   `TempDBMixin` for DB, coverage >= 40%. Do not batch all tests then implement.",
-     "reworded": null
+     "delivered_span": "4. Implement each behavior via the **Red-Green-Refactor discipline above**: one\n   minimal test → watch it fail on its assertion for the right reason (not an\n   import error) → simplest code to pass → refactor green. Use `unittest`,\n   `TempDBMixin` for DB, coverage at or above `thresholds.coverage_floor` in\n   `.gzkit/manifest.json`. Do not batch all tests then implement.",
+     "reworded": {
+      "text": "4. Implement each behavior via the **Red-Green-Refactor discipline above**: one\n   minimal test → watch it fail on its assertion for the right reason (not an\n   import error) → simplest code to pass → refactor green. Use `unittest`,\n   `TempDBMixin` for DB, coverage at or above `thresholds.coverage_floor` in\n   `.gzkit/manifest.json`. Do not batch all tests then implement.",
+      "reason": "A ruled correction (GHI #1415; operator 2026-11-27, \"A\"): the coverage floor's one authority is `thresholds.coverage_floor` in the manifest, so the control cites the key, not the number 40. d62efd5d3 edited the rendered stage file instead of this control, which broke the Stage 2 pin; this rewording is that edit made at its source."
+     }
     }
    ],
    "non_control": []

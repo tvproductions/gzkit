@@ -1,4 +1,4 @@
-<!-- Stage 2 procedure, served by the runtime at stage entry (OBPI-0.35.0-17; cut over in OBPI-0.35.0-20). Rendered from data/obpi_pipeline_control_inventory.json by gzkit.governance.pipeline_procedure_render: the stage's own section first, then every block from another section holding a control whose applies_at names this stage. Every control is verbatim from the attested baseline of .gzkit/skills/gz-obpi-pipeline/SKILL.md (072317673, body sha256 fe97fe3139282b0ceec5b11866e97efad11761d8e35a5e4977c84f3d6b388367); passages the inventory classes as rationale are in docs/governance/obpi-pipeline-control-rationale.md under the control they explain, and a control that applies elsewhere is left out of its block here. Reworded, each with its reason in the inventory: I-012, I-015, I-069, S2-062, S2-064, S2-067, S2-074, S2-080, S2-086. Do not edit by hand: tests/governance/test_pipeline_procedure_render.py holds this file to the render. -->
+<!-- Stage 2 procedure, served by the runtime at stage entry (OBPI-0.35.0-17; cut over in OBPI-0.35.0-20). Rendered from data/obpi_pipeline_control_inventory.json by gzkit.governance.pipeline_procedure_render: the stage's own section first, then every block from another section holding a control whose applies_at names this stage. Every control is verbatim from the attested baseline of .gzkit/skills/gz-obpi-pipeline/SKILL.md (072317673, body sha256 fe97fe3139282b0ceec5b11866e97efad11761d8e35a5e4977c84f3d6b388367); passages the inventory classes as rationale are in docs/governance/obpi-pipeline-control-rationale.md under the control they explain, and a control that applies elsewhere is left out of its block here. Reworded, each with its reason in the inventory: I-012, I-015, I-069, S2-062, S2-064, S2-067, S2-074, S2-079, S2-080, S2-086. Do not edit by hand: tests/governance/test_pipeline_procedure_render.py holds this file to the render. -->
 
 # Stage 2: Implement — served procedure
 
@@ -251,7 +251,8 @@ When the run is declared single-driver, Stage 2 runs entirely in the main sessio
 4. Implement each behavior via the **Red-Green-Refactor discipline above**: one
    minimal test → watch it fail on its assertion for the right reason (not an
    import error) → simplest code to pass → refactor green. Use `unittest`,
-   `TempDBMixin` for DB, coverage at or above `thresholds.coverage_floor`. Do not batch all tests then implement.
+   `TempDBMixin` for DB, coverage at or above `thresholds.coverage_floor` in
+   `.gzkit/manifest.json`. Do not batch all tests then implement.
 
 5. Run `uv run gz lint --fix && uv run ruff format .` after code changes
 6. Run `uv run gz test` after implementation
