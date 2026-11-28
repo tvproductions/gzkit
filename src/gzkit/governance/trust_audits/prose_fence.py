@@ -20,6 +20,7 @@ from gzkit.core.validation_rules import ValidationError
 from gzkit.rules import is_framework_tree
 
 if TYPE_CHECKING:
+    import re
     from collections.abc import Iterable
     from pathlib import Path
 
@@ -33,6 +34,7 @@ def live_files(
     skip_parts: Iterable[str] = (),
     skip_under: Iterable[str] = (),
     exclude: Iterable[str] = (),
+    skip_part_matching: re.Pattern[str] | None = None,
 ) -> list[Path]:
     """Return the files under *roots* (and *root_files*) a fence reads, sorted.
 
@@ -46,6 +48,8 @@ def live_files(
         skip_under: Directories, relative to *project_root*, whose files are dated
             records and are not read.
         exclude: Files, relative to *project_root*, not read (the authority).
+        skip_part_matching: A pattern that excludes a file when any component of
+            its relative path matches, such as an ISO date naming a dated record.
 
     Returns:
         Every matching file that exists, in path order.
@@ -68,6 +72,10 @@ def live_files(
         and path not in excluded
         and not any(path.is_relative_to(record) for record in under)
         and not skipped.intersection(path.relative_to(project_root).parts)
+        and not (
+            skip_part_matching is not None
+            and any(skip_part_matching.search(p) for p in path.relative_to(project_root).parts)
+        )
     )
 
 

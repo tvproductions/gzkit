@@ -318,6 +318,10 @@
       "class": "read_only",
       "measured_seconds": 0.5
     },
+    "Campaign credit citations": {
+      "class": "read_only",
+      "measured_seconds": 0.9
+    },
     "AGENTS.md numbering citations": {
       "class": "read_only",
       "measured_seconds": 0.9

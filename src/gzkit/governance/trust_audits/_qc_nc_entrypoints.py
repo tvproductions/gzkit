@@ -852,6 +852,50 @@ def _ep_agents_md_numbering_citations(root: Path) -> list[ValidationError]:
     return errors
 
 
+#: The roots and root files the campaign-credit control plants, spelled here rather
+#: than read from the audit, so a scope that dropped one fails the control (GHI #1370).
+_CAMPAIGN_PLANTS = frozenset(
+    {
+        ".gzkit/skills",
+        ".gzkit/rules",
+        ".gzkit/templates",
+        ".gzkit/agents",
+        ".gzkit/personas",
+        ".gzkit/chores",
+        "src/gzkit",
+        "scripts",
+        "data",
+        "docs/user",
+        "docs/governance",
+        "AGENTS.md",
+        "CLAUDE.md",
+        "README.md",
+    }
+)
+
+
+def _ep_campaign_credit_citations(root: Path) -> list[ValidationError]:
+    """Return the findings only when every planted root fires and no decoy does.
+
+    The decoys are a dated plan, a dated audit directory, the rule version history
+    and a chore proof; a scope that dropped a root or read a record reports no
+    catch (GHI #1370).
+
+    Returns:
+        Every finding when exactly the planted roots fired, otherwise nothing.
+
+    """
+    from gzkit.governance.trust_audits.campaign_credit_citations import (  # noqa: PLC0415
+        audit_campaign_credit_citations,
+    )
+
+    errors = audit_campaign_credit_citations(root)
+    caught = {e.artifact.rsplit("/", 1)[0] for e in errors}
+    if caught != _CAMPAIGN_PLANTS or len(errors) != len(_CAMPAIGN_PLANTS):
+        return []
+    return errors
+
+
 def _ep_validate_default_scopes(root: Path) -> list[ValidationError]:
     """Run the whole default `gz validate` tier, as the bare invocation does."""
     from gzkit.commands.validate_cmd import _collect_errors  # noqa: PLC0415

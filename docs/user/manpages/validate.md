@@ -13,6 +13,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--model-class-only] [--size-limit-citations]
             [--dependency-currency-citations] [--tidy-verdict-citations]
             [--moved-fact-citations] [--agents-md-numbering-citations]
+            [--campaign-credit-citations]
             [--hexagon-dependencies] [--hexagon-tests]
             [--changelog]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
@@ -1366,6 +1367,55 @@ uv run gz validate --agents-md-numbering-citations --json
 ```
 
 Rule home: `.gzkit/rules/skill-authoring.md` § Parsimony 2.
+
+### `--campaign-credit-citations`
+
+Fails closed when a live surface credits root `AGENTS.md` with naming or ruling
+the active campaign (GHI #1376; a `gz validate` scope since GHI #1370). Runs in
+the **default** `gz check` scope, so the flag is for scoping a single run.
+
+The 2026-09-17 rewrite moved the campaign doctrine out of root `AGENTS.md`;
+campaign work selection is carried by `gz-obpi-pipeline`. A skill and a
+governance doc went on crediting the root contract with it.
+
+**Scope** — `.md`, `.py`, `.json`, `.toml`, `.yaml` and `.yml` files under
+`.gzkit/skills/`, `.gzkit/rules/`, `.gzkit/templates/`, `.gzkit/agents/`,
+`.gzkit/personas/`, `.gzkit/chores/`, `src/gzkit/`, `scripts/`, `data/`,
+`docs/user/` and `docs/governance/`, plus the root `AGENTS.md`, `CLAUDE.md` and
+`README.md`. Skipped: any `proofs/` or `archive/` directory, any path whose
+directory or file name holds an ISO date (dated plans, audits and snapshots),
+and `docs/governance/rule-version-history.md`. A piece carrying an ISO date is a
+dated record and is admitted. A root absent from gzkit's own tree is a finding;
+in an adopter project it is skipped.
+
+#### What fails closed
+
+A piece (split at sentence ends, blank lines and the start of a list item or
+table row) that names the campaign, or quotes the phrase by which its plan was
+said to govern each session, together with the root contract's file name or
+the title of its doctrine section. The exact patterns and examples are in
+`tests/governance/test_audit_campaign_credit_citations.py`. A negation is
+refused like a credit, and a credit in other words is not judged.
+
+#### Exit codes
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | No live surface credits the root contract with the campaign | — |
+| 1 | A piece credits it | Cite `gz-obpi-pipeline` or the campaign plan instead, then re-run `uv run gz validate --campaign-credit-citations` |
+
+Measured, not transcribed: a planted credit in a temporary project's
+`docs/user/` exits **1**, and the clean project exits **0**. Under an open
+Maintenance Hangar the finding is reported advisory and the run exits 0.
+
+#### Examples
+
+```bash
+uv run gz validate --campaign-credit-citations
+uv run gz validate --campaign-credit-citations --json
+```
+
+Rule home: `gz-obpi-pipeline` (campaign work selection).
 
 ### `--hexagon-dependencies`
 
@@ -3714,6 +3764,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--tidy-verdict-citations` | yes | No live sentence says gz tidy's exit status ignores its findings (GHI #1373, #1370) |
 | `--moved-fact-citations` | yes | No live sentence restates a fact the 2026-09-17 AGENTS.md rewrite moved or dropped (GHI #1374, #1370) |
 | `--agents-md-numbering-citations` | yes | No live surface cites AGENTS.md numbering the 2026-09-17 rewrite dropped (GHI #1375, #1370) |
+| `--campaign-credit-citations` | yes | No live surface credits root AGENTS.md with naming or ruling the campaign (GHI #1376, #1370) |
 | `--hexagon-dependencies` | yes | The package holds to the hexagon's dependency rules read from the package map; today's findings in a shrink-only baseline (RP-15 tranche 6) |
 | `--hexagon-tests` | yes | Every test module covering a hexagon region holds to fakes only, given/when/then labels and `@covers`; today's findings in a shrink-only baseline (RP-7) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |

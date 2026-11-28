@@ -45,6 +45,7 @@ from ._qc_claim_populations import QC_CLAIM_POPULATIONS
 from ._qc_nc_entrypoints import (
     _ep_agents_md_numbering_citations,
     _ep_astral_discipline_deferred_annotations,
+    _ep_campaign_credit_citations,
     _ep_catalog_orders,
     _ep_catalog_repair_reqs,
     _ep_catalog_work_packages,
@@ -1770,6 +1771,44 @@ def _build_agents_md_numbering_citations() -> Path:
     return root
 
 
+def _build_campaign_credit_citations() -> Path:
+    """Plant a campaign credit to AGENTS.md in each root and root file, with four decoys.
+
+    The decoys are a dated plan, a dated audit directory, the rule version history
+    and a chore proof, all of which must stay silent (GHI #1370).
+
+    Returns:
+        The fixture project root.
+
+    """
+    # The campaign's name is joined at run time: this module is source the scope reads.
+    first, last = "Magna", "Carta"
+    name = f"{first} {last}"
+    stale = f"The active campaign is {name} (`AGENTS.md` § Operator Doctrine) here.\n"
+    root = _mkroot("campaign-credit-citations")
+    for rel in (
+        ".gzkit/skills",
+        ".gzkit/rules",
+        ".gzkit/templates",
+        ".gzkit/agents",
+        ".gzkit/personas",
+        ".gzkit/chores",
+        "src/gzkit",
+        "scripts",
+        "data",
+        "docs/user",
+        "docs/governance",
+    ):
+        _write(root / rel / "x.md", stale)
+    for rel in ("AGENTS.md", "CLAUDE.md", "README.md"):
+        _write(root / rel, stale)
+    _write(root / "docs" / "governance" / "build-to-1.0-campaign-2026-06-10.md", stale)
+    _write(root / "docs" / "governance" / "audit-2026-09-30" / "a.md", stale)
+    _write(root / "docs" / "governance" / "rule-version-history.md", stale)
+    _write(root / ".gzkit" / "chores" / "c" / "proofs" / "p.md", stale)
+    return root
+
+
 def _build_size_limit_citations() -> Path:
     """Plant a restated size limit in each root, with two decoys that must pass.
 
@@ -3031,6 +3070,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_agents_md_numbering_citations,
         _ep_agents_md_numbering_citations,
         "cites AGENTS.md numbering the 2026-09-17 rewrite dropped",
+    ),
+    (
+        "campaign-credit-citations",
+        _build_campaign_credit_citations,
+        _ep_campaign_credit_citations,
+        "credits AGENTS.md with naming or ruling the campaign",
     ),
     (
         "size-limit-citations",

@@ -737,6 +737,19 @@
       "binding_sha256": "a3365f26a20185dfdb56c8ef9e04739c48db479de5a714dc00d2ea697279f35b",
       "authority": "GHI #1370 (operator ruling 2026-11-28, verbatim: \"A\")",
       "proposed_by": "claude-code session 2026-11-28"
+    },
+    {
+      "claim_id": "campaign-credit-citations",
+      "guard": "gzkit.governance.trust_audits.campaign_credit_citations:audit_campaign_credit_citations",
+      "failing_test": "tests.governance.test_audit_campaign_credit_citations.CampaignCreditCitationsTests.test_a_credit_on_each_root_and_root_file_is_flagged",
+      "mutation": {
+        "find": "    for path in paths:\n",
+        "replace": "    for path in []:\n",
+        "label": "no live file is ever read"
+      },
+      "binding_sha256": "2a153625dc7539491514a55df506b716afe79a79dd23c636520a23ad227e6ec4",
+      "authority": "GHI #1370 (operator ruling 2026-11-28, verbatim: \"A\")",
+      "proposed_by": "claude-code session 2026-11-28"
     }
   ]
 }

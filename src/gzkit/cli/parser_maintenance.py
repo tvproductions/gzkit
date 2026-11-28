@@ -998,6 +998,12 @@ def _register_quality_parsers(
         help="Function and module size cite the threshold table, never a number, exit 3.",
     )
     p_validate.add_argument(
+        "--campaign-credit-citations",
+        dest="check_campaign_credit_citations",
+        action="store_true",
+        help="No live surface credits AGENTS.md with naming or ruling the campaign, exit 3.",
+    )
+    p_validate.add_argument(
         "--agents-md-numbering-citations",
         dest="check_agents_md_numbering_citations",
         action="store_true",
@@ -1297,6 +1303,7 @@ def _register_quality_parsers(
             check_wheel_path_literals=a.check_wheel_path_literals,
             check_model_class_only=a.check_model_class_only,
             check_size_limit_citations=a.check_size_limit_citations,
+            check_campaign_credit_citations=a.check_campaign_credit_citations,
             check_agents_md_numbering_citations=a.check_agents_md_numbering_citations,
             check_moved_fact_citations=a.check_moved_fact_citations,
             check_tidy_verdict_citations=a.check_tidy_verdict_citations,
