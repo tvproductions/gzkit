@@ -5,7 +5,7 @@ description: Use to create or resume a session handoff document.
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "7.10.0"
+  skill-version: "7.10.1"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
@@ -16,7 +16,7 @@ last_reviewed: 2026-11-28
 model: opus
 ---
 
-# gz-session-handoff (v7.10.0)
+# gz-session-handoff (v7.10.1)
 
 ## Purpose
 
@@ -324,7 +324,7 @@ The RESUME workflow discovers, loads, validates, and reports on existing handoff
 
 9. **Report** the result, then **stop and await operator authorization** (do not begin executing). Lead with the position, as the operator asked (2026-11-28: *"current tactical|operational|strategic position"*):
    - **The computed position**, as `gz handoff resume` prints it, each fact with its source. Relay these numbers as printed; never restate them from memory
-   - **The picture**, tactical, operational, strategic, each claim tagged like any other; a handoff with none says so. Where the session has the drydock board artifact, offer to review it with the operator
+   - **The picture**, tactical, operational, strategic, each claim tagged like any other; a handoff with none says so. Where the operator keeps a status board (the handoff names its link), re-read its facts from the record, republish it, and review it with the operator
    - File path of the resumed handoff
    - Staleness classification and re-verification depth applied
    - **Each presented claim tagged VERIFIED / STALE / UNVERIFIABLE** with its Layer-2 receipt; STALE claims and the advised steps they void called out explicitly
