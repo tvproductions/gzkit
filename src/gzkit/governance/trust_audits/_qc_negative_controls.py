@@ -57,6 +57,7 @@ from ._qc_nc_entrypoints import (
     _ep_hexagon_tests_admits_baselined,
     _ep_model_class_only,
     _ep_moved_fact_citations,
+    _ep_related_skill_citations,
     _ep_size_limit_citations,
     _ep_supply_chain_audit,
     _ep_supply_chain_audit_admits_ignored,
@@ -1839,6 +1840,34 @@ def _build_harness_session_single_source() -> Path:
     return root
 
 
+def _build_related_skill_citations() -> Path:
+    """Plant a Related Skills entry naming a retired skill in each root, with decoys.
+
+    A live skill and a retired one make the catalog. The decoys are a skill whose entry
+    names the live skill, and a skill that mentions the retired name outside its
+    Related Skills section; both must stay silent (GHI #1370).
+
+    Returns:
+        The fixture project root.
+
+    """
+
+    def skill(state: str, tail: str = "") -> str:
+        return f"---\nname: x\nlifecycle_state: {state}\n---\n\n# x\n{tail}"
+
+    root = _mkroot("related-skill-citations")
+    _write(root / ".gzkit" / "skills" / "gz-check" / "SKILL.md", skill("active"))
+    _write(root / ".gzkit" / "skills" / "lint" / "SKILL.md", skill("retired"))
+    stale = skill("active", "\n## Related Skills\n\n- `lint`\n")
+    _write(root / ".gzkit" / "skills" / "a" / "SKILL.md", stale)
+    _write(root / "src" / "gzkit" / "templates" / "skills" / "b" / "SKILL.md", stale)
+    live = skill("active", "\n## Related Skills\n\n- `gz-check`\n")
+    _write(root / ".gzkit" / "skills" / "c" / "SKILL.md", live)
+    outside = skill("active", "\n## Steps\n\n- `lint` was retired\n")
+    _write(root / ".gzkit" / "skills" / "d" / "SKILL.md", outside)
+    return root
+
+
 def _build_size_limit_citations() -> Path:
     """Plant a restated size limit in each root, with two decoys that must pass.
 
@@ -3112,6 +3141,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_harness_session_single_source,
         _ep_harness_session_single_source,
         "holds a quoted harness identity or session variable",
+    ),
+    (
+        "related-skill-citations",
+        _build_related_skill_citations,
+        _ep_related_skill_citations,
+        "which is not a live skill",
     ),
     (
         "size-limit-citations",

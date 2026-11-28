@@ -1600,6 +1600,21 @@ def run_size_limit_citations_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --size-limit-citations", cwd=project_root)
 
 
+def run_related_skill_citations_audit(project_root: Path) -> QualityResult:
+    """Run the `--related-skill-citations` prose fence (GHI #1381, a scope since GHI #1370).
+
+    Fails closed on a Related Skills entry that names no live skill, or a line it cannot
+    read. Recovery: name the live successor, then
+    `uv run gz validate --related-skill-citations`. Wired here explicitly although the
+    scope is default-tier, for the reason `run_wheel_path_literals_audit` records.
+
+    Returns:
+        The result of the scoped `gz validate` run.
+
+    """
+    return run_command("uv run gz validate --related-skill-citations", cwd=project_root)
+
+
 def run_harness_session_single_source_audit(project_root: Path) -> QualityResult:
     """Run the `--harness-session-single-source` prose fence (GHI #1360, a scope since GHI #1370).
 

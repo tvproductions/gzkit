@@ -51,6 +51,9 @@ QC_CLAIM_POPULATIONS: dict[str, Callable[[], Sequence[str]] | str] = {
     # each is caught, so a narrowed scope fails it (GHI #1370).
     "size-limit-citations": POPULATION_NONE,
     # The fence's roots are its own scope, and no other surface declares them; the
+    # control writes each literally and passes only when each is caught (GHI #1381).
+    "related-skill-citations": POPULATION_NONE,
+    # The fence's roots are its own scope, and no other surface declares them; the
     # control writes each literally and passes only when each is caught (GHI #1360).
     "harness-session-single-source": POPULATION_NONE,
     # The fence's roots are its own scope, and no other surface declares them; the

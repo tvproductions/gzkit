@@ -318,6 +318,10 @@
       "class": "read_only",
       "measured_seconds": 0.5
     },
+    "Related skill citations": {
+      "class": "read_only",
+      "measured_seconds": 0.9
+    },
     "Harness session single source": {
       "class": "read_only",
       "measured_seconds": 0.9

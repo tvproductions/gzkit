@@ -14,6 +14,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--dependency-currency-citations] [--tidy-verdict-citations]
             [--moved-fact-citations] [--agents-md-numbering-citations]
             [--campaign-credit-citations] [--harness-session-single-source]
+            [--related-skill-citations]
             [--hexagon-dependencies] [--hexagon-tests]
             [--changelog]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
@@ -1464,6 +1465,53 @@ uv run gz validate --harness-session-single-source --json
 ```
 
 Rule home: `src/gzkit/lock_manager.py` (`resolve_agent`, `harness_session_id`).
+
+### `--related-skill-citations`
+
+Fails closed when a skill's `## Related Skills` section names a skill that is
+not live, or holds a line the scope cannot read (GHI #1381; a `gz validate`
+scope since GHI #1370). Runs in the **default** `gz check` scope, so the flag
+is for scoping a single run.
+
+The `lint`, `test` and `format` skills were retired into `gz-check`, yet
+`git-sync` kept listing all three, in canon and in the template `gz init`
+delivers. Nothing resolved a related-skill name, so a retirement left its
+consumers pointing at nothing.
+
+**Scope** — the `## Related Skills` section (any letter case) of every
+`SKILL.md` under `.gzkit/skills/` and `src/gzkit/templates/skills/`. A name is
+live when `gz skill list` would list it: a skill directory under the configured
+skills path whose `lifecycle_state` is not `retired`. The vendor mirrors and
+`src/gzkit/skills/` copy canon and are not read again. A root absent from
+gzkit's own tree is a finding; in an adopter project it is skipped.
+
+#### What fails closed
+
+- A skill-shaped name (opening a `-` or `*` list item, or in a table row's
+  first cell, where `/` may join several) that is not a live skill.
+- Any other non-blank line in the section, apart from a table's header row and
+  separator: an entry shape the scope does not know fails rather than passing
+  unchecked.
+
+#### Exit codes
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every Related Skills entry names a live skill | — |
+| 1 | An entry names no live skill, or a line cannot be read | Name the live successor, or reshape the line as a list item or table row, then re-run `uv run gz validate --related-skill-citations` |
+
+Measured, not transcribed: a planted entry naming an absent skill in a temporary
+project exits **1**, and the same project naming a live skill exits **0**. Under
+an open Maintenance Hangar the finding is reported advisory and the run exits 0.
+
+#### Examples
+
+```bash
+uv run gz validate --related-skill-citations
+uv run gz validate --related-skill-citations --json
+```
+
+Rule home: `.gzkit/rules/skill-authoring.md`.
 
 ### `--hexagon-dependencies`
 
@@ -3814,6 +3862,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--agents-md-numbering-citations` | yes | No live surface cites AGENTS.md numbering the 2026-09-17 rewrite dropped (GHI #1375, #1370) |
 | `--campaign-credit-citations` | yes | No live surface credits root AGENTS.md with naming or ruling the campaign (GHI #1376, #1370) |
 | `--harness-session-single-source` | yes | gzkit's source reads the harness identity and session variables only in lock_manager (GHI #1360, #1370) |
+| `--related-skill-citations` | yes | Every skill a Related Skills section names is a live skill (GHI #1381, #1370) |
 | `--hexagon-dependencies` | yes | The package holds to the hexagon's dependency rules read from the package map; today's findings in a shrink-only baseline (RP-15 tranche 6) |
 | `--hexagon-tests` | yes | Every test module covering a hexagon region holds to fakes only, given/when/then labels and `@covers`; today's findings in a shrink-only baseline (RP-7) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |

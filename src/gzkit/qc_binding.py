@@ -142,6 +142,7 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "Wheel path literals": ("audit", "src/", "bound", "python_function"),
     "Model class only": ("audit", ".gzkit/", "bound", "python_function"),
     "Size limit citations": ("audit", ".gzkit/", "bound", "python_function"),
+    "Related skill citations": ("audit", ".gzkit/", "bound", "python_function"),
     "Harness session single source": ("audit", ".gzkit/", "bound", "python_function"),
     "Campaign credit citations": ("audit", ".gzkit/", "bound", "python_function"),
     "AGENTS.md numbering citations": ("audit", ".gzkit/", "bound", "python_function"),

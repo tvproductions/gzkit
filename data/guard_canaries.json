@@ -763,6 +763,19 @@
       "binding_sha256": "d64b6be4a86a51665d9b7144ed8f045b0e2a7bcb3d1fa41f2041fda5cc6e3f5d",
       "authority": "GHI #1370 (operator ruling 2026-11-28, verbatim: \"A\")",
       "proposed_by": "claude-code session 2026-11-28"
+    },
+    {
+      "claim_id": "related-skill-citations",
+      "guard": "gzkit.governance.trust_audits.related_skill_citations:audit_related_skill_citations",
+      "failing_test": "tests.governance.test_audit_related_skill_citations.RelatedSkillCitationsTests.test_a_retired_or_absent_name_in_each_root_is_flagged",
+      "mutation": {
+        "find": "    for rel in ROOTS:\n",
+        "replace": "    for rel in ():\n",
+        "label": "no skill root is ever read"
+      },
+      "binding_sha256": "077d721d1b285eb334b40b8756cdf44f855b5ab8265cefa174a4675fcc9108ca",
+      "authority": "GHI #1370 (operator ruling 2026-11-28, verbatim: \"A\")",
+      "proposed_by": "claude-code session 2026-11-28"
     }
   ]
 }
