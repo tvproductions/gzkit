@@ -1230,8 +1230,9 @@ behavior as the corrective reality, and nothing noticed.
 
 **Scope** — the same roots, root files and suffixes as
 `--dependency-currency-citations`. Dated records are not read: `docs/rnd/`,
-`docs/releases/`, any `proofs/` or `archive/` directory. A root absent from
-gzkit's own tree is a finding; in an adopter project it is skipped.
+`docs/releases/`, any `proofs/` or `archive/` directory. A root, or either
+dated-record directory, absent from gzkit's own tree is a finding, as the old
+fence's root check required; in an adopter project it is skipped.
 
 #### What fails closed
 

@@ -39,7 +39,8 @@ also holds "only when" or "only if". It refuses some true sentences that pair a 
 with "regardless" or "whatever" about something other than findings, such as the
 count of ADRs pending attestation; reword such a sentence rather
 than widen the fence. Dated records stay as written: `docs/rnd/`, `docs/releases/`,
-chore proofs and archives are not read.
+chore proofs and archives are not read. On gzkit's tree a missing root or dated-record
+directory is a finding, as the old fence's root check required of both.
 """
 
 import re
