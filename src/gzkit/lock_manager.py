@@ -150,8 +150,8 @@ def harness_session_id() -> str | None:
     Claude Code exports ``CLAUDE_CODE_SESSION_ID``; ``CLAUDE_SESSION_ID`` is the
     older name, read second. This is the one place gzkit reads either (GHI #484,
     GHI #1360): every hook and resolver calls it, so a renamed variable is
-    corrected once. ``tests/policy/test_harness_session_single_source.py`` holds
-    that fence.
+    corrected once. ``gz validate --harness-session-single-source`` holds that
+    fence (GHI #1370).
 
     Returns:
         The first non-empty of the two variables, else ``None``.

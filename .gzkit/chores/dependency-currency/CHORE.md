@@ -3,6 +3,10 @@
 **Lane:** Lite
 **Slug:** `dependency-currency`
 
+> **Version 2.1.3 (2026-11-28, GHI #1370):** the stale-or-abandoned criterion
+> names `gz validate --dependency-currency-citations`, the scope that replaced
+> the unit-test fence, as what refuses a restated grade.
+>
 > **Version 2.1.2 (2026-11-26, GHI #1369):** the criteria section names the
 > gates' callers without naming a command `acceptance.json` does not run.
 >
@@ -130,8 +134,8 @@ curl -s https://pypi.org/pypi/<name>/json | uv run python -c "import json,sys; d
   *abandoned* only on evidence (an archived repository, a maintainer's
   notice), never on age alone. Record which, with the evidence. This chore is
   the grading's one home: other surfaces cite it, and
-  `tests/policy/test_dependency_currency_cites_the_chore.py` refuses an age
-  restated as a currency grade anywhere else (GHI #1368).
+  `uv run gz validate --dependency-currency-citations` refuses an age
+  restated as a currency grade anywhere else (GHI #1368, #1370).
 - **Parser support.** The tool must parse the `requires-python` floor's
   syntax. `uv run gz validate --complexity-ceiling` refusing a function as
   unmeasured is the observed signal; record any, and never lower a ceiling to
