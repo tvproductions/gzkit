@@ -38,5 +38,9 @@ attestation.
 ```bash
 uv run gz handoff list --adr ADR-0.0.65
 uv run gz handoff resume --adr ADR-0.0.65
-uv run gz handoff create --adr ADR-0.0.65 --slug my-work --agent g0 --decisions "Chose X over Y"
+uv run gz handoff create --adr ADR-0.0.65 --slug my-work --agent g0 \
+  --summary "Landed X" --context "Y constrains Z" --decisions "- [agent-chose] Chose X over Y" \
+  --next-steps "1. Review W" --pending "None" --verification "uv run gz check" \
+  --evidence "The commit" --tactical "Landed X" --operational "W is next" \
+  --strategic "1.0 waits on nothing here"
 ```

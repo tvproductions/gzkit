@@ -34,12 +34,14 @@ from gzkit.handoff_rulings import (
 )
 from gzkit.handoff_selection import selection_rank
 from gzkit.handoff_validation import (
+    PICTURE_SECTION,
     PROSPECTIVE_SECTIONS,
     REQUIRED_SECTIONS,
     SETTLED_SECTION,
     HandoffValidationError,
     continues_from_refs,
     parse_frontmatter,
+    parse_picture,
     validate_handoff_document,
 )
 
@@ -286,6 +288,11 @@ class ResumeResult(BaseModel):
     chain_truncated: bool = False
     decisions: list[Decision] = []
     settled: list[str] = []
+    # The handoff's frontmatter timestamp, so a reader can bound "since this handoff".
+    timestamp: str = ""
+    # The author's three levels of picture, in reading order; empty for a handoff
+    # written before the picture existed (SPEC-session-handoff-picture § 3).
+    picture: dict[str, str] = {}
 
     @computed_field
     @property
@@ -362,19 +369,21 @@ def _timestamp_sort_key(raw: str) -> datetime:
 def _render_document(frontmatter: dict[str, object], sections: dict[str, str]) -> str:
     r"""Render frontmatter + the seven required sections into a Markdown doc.
 
-    Missing sections render as an empty heading. The optional ``Settled Rulings``
-    section is emitted only when it carries entries, so a handoff with no settled
-    ruling gains no hollow heading. Written with explicit ``\n`` newlines so the
-    committed artifact is LF on every platform.
+    Missing sections render as an empty heading. The optional ``The Picture``
+    section leads the document and ``Settled Rulings`` closes it; each is emitted
+    only when it carries text, so a handoff without one gains no hollow heading.
+    Written with explicit ``\n`` newlines so the committed artifact is LF on every
+    platform.
 
     Returns:
         The Markdown document text, ending in exactly one newline.
 
     """
     parts = ["---\n", yaml.safe_dump(frontmatter, sort_keys=False), "---\n\n"]
-    for section in (*REQUIRED_SECTIONS, SETTLED_SECTION):
+    # The picture leads: it is the part written to the operator (SPEC § 3).
+    for section in (PICTURE_SECTION, *REQUIRED_SECTIONS, SETTLED_SECTION):
         content = sections.get(section, "").strip()
-        if section == SETTLED_SECTION and not content:
+        if section in {PICTURE_SECTION, SETTLED_SECTION} and not content:
             continue
         parts.append(f"## {section}\n\n")
         if content:
@@ -1434,4 +1443,6 @@ def resume_handoff(
         # until the next authoring pass folds them in. Unioned so resuming either
         # shape reports the same settled set.
         settled=dedup_rulings([*read_rulings(base_path), *settled_rulings(content)]),
+        timestamp=newest.timestamp,
+        picture=parse_picture(content),
     )

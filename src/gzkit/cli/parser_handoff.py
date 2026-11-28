@@ -208,7 +208,9 @@ def register_handoff_parsers(commands: argparse._SubParsersAction[StableArgument
             "Author a handoff document. The document is validated before it is "
             "written; on any violation nothing is written and the verb exits 1. "
             "All seven required sections must be populated: an unsupplied "
-            "section is a refusal, not an empty heading (GHI #692)."
+            "section is a refusal, not an empty heading (GHI #692). Mode CREATE "
+            "also needs the picture written to the operator: --tactical, "
+            "--operational and --strategic."
         ),
         epilog=build_epilog(
             [
@@ -216,7 +218,8 @@ def register_handoff_parsers(commands: argparse._SubParsersAction[StableArgument
                 '--summary "Landed X" --context "Y constrains Z" '
                 '--decisions "Chose X over Y" --next-steps "1. Review W" '
                 '--pending "GHI #123 open" --verification "uv run gz check" '
-                '--evidence "`src/gzkit/x.py`"',
+                '--evidence "`src/gzkit/x.py`" --tactical "Landed X" '
+                '--operational "Order Y is next" --strategic "1.0 waits on Z"',
             ]
         ),
     )
@@ -270,6 +273,17 @@ def register_handoff_parsers(commands: argparse._SubParsersAction[StableArgument
         metavar="RULING",
         help="Seat a late settled ruling (repeatable); unions with carried entries",
     )
+    for level, question in (
+        ("tactical", "what are we doing now, and what is next"),
+        ("operational", "how is the work sequenced, and what is in the way"),
+        ("strategic", "what are we building, and why this way"),
+    ):
+        p_create.add_argument(
+            f"--{level}",
+            action="append",
+            default=None,
+            help=f"The Picture, {level}: {question}",
+        )
     p_create.add_argument(
         "--mode",
         choices=("CREATE", "RESUME", "CHECKPOINT"),
@@ -295,6 +309,9 @@ def register_handoff_parsers(commands: argparse._SubParsersAction[StableArgument
             continues_from=a.continues_from,
             session_id=a.session_id,
             mode=a.mode,
+            tactical=_joined(a.tactical),
+            operational=_joined(a.operational),
+            strategic=_joined(a.strategic),
             as_json=a.as_json,
         )
     )

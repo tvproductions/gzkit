@@ -1,7 +1,13 @@
 # SPEC: The Session Handoff Picture
 
 **Date:** 2026-10-31
-**Status:** Accepted 2026-10-31 (operator, verbatim: *"Accept it"*). Nothing here is built.
+**Status:** Accepted 2026-10-31 (operator, verbatim: *"Accept it"*). Piece 2, the picture, built
+2026-11-28 on the operator's word (*"build it now so every resume shows the position - this should cut
+down on vibe coding."*), with computed position facts beside it (*"Both (Recommended)"*) and the levels
+read tactical, operational, strategic (*"left to right: tactical | operational | strategic"*), which
+amends § 3's table order. Piece 1 is built in part: the skill's picture steps, its `model: opus` and
+its compression into `docs/governance/session-handoff-rationale.md`; § 6's sync order and § 5's boundary
+rule are not. Pieces 3 and 4 are not built.
 **Strengthens:** `gz-session-handoff`, in place
 **Holder:** a session-and-handoff outcome in family `SES` (legend letter H), from the handback
 **Discharges when built:** the two due-by-a-named-event lines under RO-0 in

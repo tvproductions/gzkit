@@ -64,13 +64,71 @@ gz handoff resume [--adr ADR] [--json]
 
 ---
 
+## Position and picture
+
+The human report leads with two blocks, so the operator reads where things stand
+before what to do next (operator, 2026-11-28: *"build it now so every resume shows
+the position - this should cut down on vibe coding."*):
+
+1. **The position, computed from the record** (`gzkit.mx.position`). Each fact
+   names where it was read: whether the vessel is out of service and since when
+   (`.gzkit/mx.json`); open and blocking discrepancy lines in the ledger and in the
+   open contract's § List of discrepancies; the contract's last passage-log entry;
+   and how many commits since the handoff name a repair order. A fact that cannot
+   be read says so, with its cause. The states of the repair orders are not
+   computed, because they live only in prose.
+2. **The picture**, the handoff author's tactical, operational and strategic
+   levels, in that order (see `gz handoff create` § The picture). It is Layer-1
+   narrative, so its claims are verified like any other. A handoff written before
+   the picture existed says it has none.
+
+Observed in this repository on 2026-11-28, during the drydock:
+
+```
+position (computed from the record):
+  Out of service since: 2026-10-20 (38 days), at the drydock level
+    from .gzkit/mx.json opened_at and level
+  Ledger discrepancy lines: 0 blocking, 0 open
+    from .gzkit/ledger.jsonl, discrepancy_recorded and discrepancy_cleared
+  Contract discrepancy lines: 16 blocking, 69 open
+    from docs/governance/harbor-pilotage-candidate-2026-10-15.md § List of
+discrepancies, lines recorded before RP-12 O9
+  Passage log, last entry: 2026-11-19
+    from docs/governance/harbor-pilotage-candidate-2026-10-15.md § Passage log
+  Commits since this handoff: 0 of 12 name a repair order or the drydock
+    from git log --since=2026-11-28T09:20:52Z, subjects matching RP-n, RO-n or
+drydock
+picture (the handoff's author): none; this handoff predates the picture
+```
+
+In a project with no hangar open, after a handoff carrying a picture:
+
+```
+position (computed from the record):
+  Out of service: no (the hangar marker reads absent)
+    from .gzkit/mx.json, through gzkit.mx.marker.condition
+picture (the handoff's author), Layer 1, so verify its claims:
+  Tactical:
+    Landed the section flags; the tests pass.
+  Operational:
+    The adapter work is done; review is next.
+  Strategic:
+    Handoffs carry continuity for 1.0.
+```
+
+The `--json` form carries the picture as `picture` and the handoff's `timestamp`;
+the computed position is a property of the tree, not of the document, so it is in
+the human report only.
+
+---
+
 ## Example
 
 ```bash
 uv run gz handoff resume --adr ADR-0.0.65
 ```
 
-Observed output:
+Observed output (before 2026-11-28, so without the position and picture blocks):
 
 ```
 resume — .gzkit/handoffs/20260724T114926Z-ghi-tier-3closed-3deferred.md

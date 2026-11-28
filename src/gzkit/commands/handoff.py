@@ -34,10 +34,15 @@ from gzkit.handoff_api import (
 )
 from gzkit.handoff_rulings import read_rulings
 from gzkit.handoff_validation import (
+    PICTURE_LEVELS,
+    PICTURE_SECTION,
     SETTLED_SECTION,
     HandoffValidationError,
     continues_from_refs,
+    render_picture,
 )
+from gzkit.mx.git_commits import CommitsUnreadableError, git_log
+from gzkit.mx.position import PositionFact, commit_position, drydock_position
 from gzkit.remote_divergence import (
     RemoteDivergence,
     behind_origin_caveat,
@@ -106,8 +111,42 @@ def _render_step_references(step: NextStep) -> None:
     console.print(f"       refs: {rendered}")
 
 
-def _render_resume(result: ResumeResult, divergence: RemoteDivergence | None = None) -> None:
-    """Human-readable resume report — path, staleness, and EVERY next step.
+def _render_position(position: list[PositionFact]) -> None:
+    """Render the computed position first, each fact with where it was read.
+
+    The operator reads this before the author's picture, so the narrative sits
+    beside numbers it cannot change (operator, 2026-11-28: "this should cut down
+    on vibe coding").
+    """
+    if not position:
+        return
+    console.print("position (computed from the record):")
+    for fact in position:
+        console.print(f"  {escape(fact.label)}: {escape(fact.value)}")
+        console.print(f"    from {escape(fact.source)}")
+
+
+def _render_picture(result: ResumeResult) -> None:
+    """Render the author's three levels, tactical first, or say the handoff has none."""
+    if not result.picture:
+        console.print("picture (the handoff's author): none; this handoff predates the picture")
+        return
+    console.print("picture (the handoff's author), Layer 1, so verify its claims:")
+    for level, text in result.picture.items():
+        console.print(f"  {level}:")
+        for line in text.splitlines():
+            console.print(f"    {escape(line)}")
+
+
+def _render_resume(
+    result: ResumeResult,
+    divergence: RemoteDivergence | None = None,
+    position: list[PositionFact] | None = None,
+) -> None:
+    """Human-readable resume report — position, picture, path, staleness, EVERY next step.
+
+    The computed position and the author's picture lead (SPEC-session-handoff-picture
+    § 3, delivery): the operator reads where things stand before what to do next.
 
     All authored steps are rendered, not just the head: surfacing one is what
     let items 2-N fall out of the advisory channel and be re-adjudicated as
@@ -128,6 +167,8 @@ def _render_resume(result: ResumeResult, divergence: RemoteDivergence | None = N
     precondition (step is void) or provenance (step still stands) is the reader's
     call, and no available signal decides it.
     """
+    _render_position(position or [])
+    _render_picture(result)
     console.print(f"resume — {result.path}")
     if divergence is not None and divergence.is_behind:
         console.print(f"  {behind_origin_caveat(divergence.behind)}")
@@ -327,7 +368,30 @@ def handoff_resume_cmd(
         # inside an artifact projection. Machine consumers read the tree.
         print(json.dumps(result.model_dump(), indent=2))  # noqa: T201
         return
-    _render_resume(result, probe_remote_divergence(root))
+    _render_resume(result, probe_remote_divergence(root), _position(root, result))
+
+
+def _position(root: Path, result: ResumeResult) -> list[PositionFact]:
+    """Compute the position for a resume: the out-of-service facts, then the commits since.
+
+    Returns:
+        The facts in reading order; a commit fact naming why git could not be read.
+
+    """
+    facts = drydock_position(root, now=datetime.now(UTC))
+    if not result.timestamp:
+        return facts
+    try:
+        subjects = [row[1] for row in git_log(root, [f"--since={result.timestamp}"], ("%s",))]
+    except CommitsUnreadableError as exc:
+        facts.append(
+            PositionFact(
+                label="Commits since this handoff", value=f"unreadable: {exc}", source="git log"
+            )
+        )
+        return facts
+    facts.append(commit_position(subjects, since=result.timestamp))
+    return facts
 
 
 def _current_branch(base_path: Path) -> str:
@@ -363,10 +427,18 @@ def handoff_create_cmd(
     session_id: str | None = None,
     settled: list[str] | None = None,
     mode: str = "CREATE",
+    tactical: str | None = None,
+    operational: str | None = None,
+    strategic: str | None = None,
     as_json: bool = False,
     base_path: Path = Path(),
 ) -> None:
     """Write a handoff through the fail-closed gate (REQ-0.0.65-03-03).
+
+    ``tactical``, ``operational`` and ``strategic`` are the picture written to the
+    operator (SPEC-session-handoff-picture § 3). Mode ``CREATE`` refuses without all
+    three, and any mode refuses a partial picture; the check sits at this verb so the
+    mechanical writers, which author no picture, are untouched.
 
     Builds all seven required sections from their flags and routes them through
     :func:`create_handoff`. On a validation refusal NOTHING is written and the
@@ -406,6 +478,11 @@ def handoff_create_cmd(
     # predecessor carried, so passing --settled never drops booked history.
     if settled is not None and len(settled) > 0:
         sections[SETTLED_SECTION] = "\n".join(f"- {entry}" for entry in settled)
+    picture = _picture_or_refuse(
+        mode, {"Tactical": tactical, "Operational": operational, "Strategic": strategic}
+    )
+    if picture:
+        sections[PICTURE_SECTION] = render_picture(picture)
     _warn_on_silent_chain_root(adr=adr, continues_from=continues_from, base_path=base_path)
     try:
         path = create_handoff(
@@ -429,6 +506,33 @@ def handoff_create_cmd(
         print(json.dumps({"path": path.as_posix()}))  # noqa: T201
         return
     console.print(path.as_posix())
+
+
+def _picture_or_refuse(mode: str, given: dict[str, str | None]) -> dict[str, str]:
+    """Return the supplied picture, or refuse one that is missing or partial.
+
+    Returns:
+        The levels with text, in reading order; empty when none was given outside CREATE.
+
+    Raises:
+        SystemExit: code 1, when CREATE lacks a level or any mode has some but not all.
+
+    """
+    picture = {level: text for level, text in given.items() if text is not None and text.strip()}
+    missing = [level for level in PICTURE_LEVELS if level not in picture]
+    # All three, or none outside CREATE (CHECKPOINT and RESUME may carry one and need not).
+    if not missing or (not picture and mode != "CREATE"):
+        return picture
+    flags = ", ".join(f"--{level.lower()}" for level in missing)
+    console.print(
+        f"[red]Refusing to write handoff:[/red] the picture lacks {escape(flags)}. "
+        "A CREATE handoff carries all three levels, tactical, operational and strategic, "
+        "and no handoff carries part of one (docs/design/briefs/"
+        "SPEC-session-handoff-picture.md § 3). Write each level in plain language for the "
+        "operator, then re-run `uv run gz handoff create` with all three flags.",
+        style="red",
+    )
+    raise SystemExit(1)
 
 
 def _warn_on_silent_chain_root(

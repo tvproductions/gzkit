@@ -5,18 +5,18 @@ description: Use to create or resume a session handoff document.
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "7.9.5"
+  skill-version: "7.10.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-11-22
-model: sonnet
+last_reviewed: 2026-11-28
+model: opus
 ---
 
-# gz-session-handoff (v7.9.2)
+# gz-session-handoff (v7.10.0)
 
 ## Purpose
 
@@ -45,10 +45,11 @@ handoff authoring API. Authoring routes through the fail-closed
 
 ```bash
 uv run gz handoff list --adr ADR-<X.Y.Z>       # list handoffs newest-first (read-only)
-uv run gz handoff resume --adr ADR-<X.Y.Z>     # newest handoff + staleness + first next step (read-only)
+uv run gz handoff resume --adr ADR-<X.Y.Z>     # computed position, picture, staleness, steps (read-only)
 uv run gz handoff create [--adr ADR-<X.Y.Z>] --slug <slug> --agent <id> \
   --summary "<text>" --context "<text>" --decisions "<text>" --next-steps "<text>" \
-  --pending "<text>" --verification "<text>" --evidence "<text>"
+  --pending "<text>" --verification "<text>" --evidence "<text>" \
+  --tactical "<text>" --operational "<text>" --strategic "<text>"
 uv run gz handoff decide --handoff <path> --session-id <id> --decision proceed --operator-text "<operator's exact words>"
 uv run gz handoff rulings [--limit N] [--search TEXT]  # the settled-ruling corpus (read-only, GHI #838)
 uv run gz handoff archive --older-than 30d --dry-run  # preview move-not-delete retention (read-only)
@@ -57,7 +58,8 @@ uv run gz handoff archive --older-than 30d            # move handoffs older than
 
 `create` is fail-closed and requires **all seven** sections populated — each has
 its own flag, and an unsupplied section is a refusal, not an empty heading
-(GHI #692). `decide` books the operator's transit decision on a resumed handoff
+(GHI #692). Mode `CREATE` also requires the picture, all three levels; any mode
+refuses a partial one (§ CREATE step 4a). `decide` books the operator's transit decision on a resumed handoff
 to Layer 2 (GHI #574, #757). It **gates nothing** — the PreToolUse resume gate
 was retired 2026-08-15 (see § Operator Authorization) and no tool call is
 refused for want of a ruling. The record is provenance: what the operator said,
@@ -222,14 +224,24 @@ The CREATE workflow writes a new handoff document when an agent is pausing work.
    **(Advisory — telling a reworded restatement from a distinct ruling needs
    ruling identity, which is Movement D's `ruling_issued` event.)**
 
-5. **Run `gz handoff create`** with all seven section flags (§ CLI surface). It validates before writing:
+4a. **Write the picture to the operator** (`docs/design/briefs/SPEC-session-handoff-picture.md` § 3), in plain language, in the order the operator reads it (operator, 2026-11-28, verbatim: *"left to right: tactical | operational | strategic"*). Each level says where we stand, what changed, and what is next or at risk; a level that did not move says so in one line and names the handoff that last described it.
+
+   | Flag | The question it answers | Scope guide |
+   |---|---|---|
+   | `--tactical` | What are we doing now, and what is next? | this session |
+   | `--operational` | How is the work sequenced, and what is in the way? | the next release, loosely; the repair orders while out of service |
+   | `--strategic` | What are we building, and why this way? | the next major release, 1.0 today |
+
+   Read the computed position first (`uv run gz handoff resume` prints it), so the picture never contradicts it. Mode `CREATE` refuses without all three; `CHECKPOINT` may carry one and need not.
+
+5. **Run `gz handoff create`** with all seven section flags and, for `CREATE`, the three picture flags (§ CLI surface). It validates before writing:
    - Parse frontmatter and validate with `HandoffFrontmatter` model
    - No placeholder markers (TBD, TODO, FIXME, ...) in the body
    - No secrets (passwords, API keys, tokens, private keys)
    - All 7 required sections present and populated
    - All file paths referenced in Evidence / Artifacts exist on disk
 
-6. **Report** the result:
+6. **Report** the result, leading with the picture as written:
    - File path where the handoff was written
    - Validation result (pass or list of errors)
    - First item from "Immediate Next Steps" (for quick resumption context)
@@ -310,7 +322,9 @@ The RESUME workflow discovers, loads, validates, and reports on existing handoff
 
 8. **Extract the next steps** from the "Immediate Next Steps" section — `resume_handoff` returns `ResumeResult.steps`, one entry per authored step (with its references), and `next_steps` / `first_next_step` as derived text projections. An enumeration collapsed onto one line still yields one entry per step.
 
-9. **Report** the result, then **stop and await operator authorization** (do not begin executing):
+9. **Report** the result, then **stop and await operator authorization** (do not begin executing). Lead with the position, as the operator asked (2026-11-28: *"current tactical|operational|strategic position"*):
+   - **The computed position**, as `gz handoff resume` prints it, each fact with its source. Relay these numbers as printed; never restate them from memory
+   - **The picture**, tactical, operational, strategic, each claim tagged like any other; a handoff with none says so. Where the session has the drydock board artifact, offer to review it with the operator
    - File path of the resumed handoff
    - Staleness classification and re-verification depth applied
    - **Each presented claim tagged VERIFIED / STALE / UNVERIFIABLE** with its Layer-2 receipt; STALE claims and the advised steps they void called out explicitly
@@ -321,34 +335,11 @@ The RESUME workflow discovers, loads, validates, and reports on existing handoff
 ### Operator Authorization — ADVISORY, NOT MECHANIZED
 
 **A resume is presented to the operator, who rules.** The agent presents the
-advised next steps and current state, then waits. This is the
-human-as-final-witness doctrine applied to session resumption: the agent
-advises, the operator rules, the agent notes variance and stops.
-
-**Nothing enforces this any more, by operator ruling.** The obligation is on the
-agent's professionalism and on the § Claim Verification Gate below — not on a
-hook.
-
-**The gate is RETIRED (operator ruling 2026-08-15).** It bound mechanically from
-2026-07-16 as `.claude/hooks/handoff-resume-gate.py`, a PreToolUse refusal on an
-unruled handoff. Both arms are now gone — `Bash` on 2026-08-14 (*"why is the
-handoff gate so picky? it is a reminder of what we were doing and what to do
-next, not a nanny"*), `Write|Edit|NotebookEdit` on 2026-08-15 (*"the handoff
-should be an advisor, not a gate-keeping nanny"*). The hook, its generator
-template, and both negative controls (`-bash`, `-write`) are deleted; a control
-asserting enforcement that no longer happens is worse than no control.
-
-Why the whole arm: GHI #574, which authorized the gate, quoted the remedy it was
-meant to apply — *"place the human at a mechanical gate, **not at every
-keystroke**"* — and it shipped as a hook on every mutating call. Entry/exit
-authorization is TRANSIT's subject (the airlock, ADR-0.33.0); a handoff is a
-synthetic memory refresh, which has no natural blast radius, so "what should
-reading a reminder prevent?" never had a principled answer. Measured lifetime:
-**9 lifts, 1 block** over the single day refusal-recording existed, against 13
-admission-breadth corrections in 29 days.
-
-What still binds is named in § Trust Model rather than hidden: Gate 5 human
-attestation, the pre-commit hook, and the pre-push `gz check`.
+position, the picture and the advised steps, then waits: the agent advises, the
+operator rules, the agent notes variance and stops. Nothing enforces this; the
+resume gate was retired by operator ruling on 2026-08-15, and its history is in
+`docs/governance/session-handoff-rationale.md`. What still
+binds is named in § Trust Model: Gate 5, the pre-commit hook and the pre-push `gz check`.
 
 **Booking the ruling.** When the operator rules, record their VERBATIM words:
 
@@ -357,37 +348,19 @@ uv run gz handoff decide --handoff <path> --session-id <id> \
   --decision proceed --operator-text "<their exact words>"
 ```
 
-**This is an acknowledge-and-decide transit, NOT an attestation (GHI #757).**
-ADR-0.0.33 § Alternatives rejects that conflation by name — completion
-attestation is reserved for claims about completed planned work, and spending
-that register on an every-transit gate cheapens the sacred word. The grammar is
-borrowed from the airlock's `Decision`; the records stay this layer's own.
+It is an acknowledge-and-decide transit, NOT an attestation (GHI #757).
 
 | Decision | Meaning |
 |---|---|
 | `proceed` | work the advised steps |
 | `pause` / `hold` / `revert` | do not |
 
-**No decision lifts anything now — there is no gate.** The token records what the
-operator ruled. Book the `hold` anyway: the predecessor shape was a consent
-boolean, so an operator who looked and ruled *not yet* left no record at all, and
-that silence is what the decision grammar exists to end. Add
-`--set-aside "<step>"` for any advised step the ruling declines: that is the
-clearance-amendment record (*"ATC keeps a record of all clearances issued and
-all amendments."*).
-
-A ruling given in conversation and never booked leaves no Layer-2 record of what
-the operator decided. Nothing refuses you for that now; the loss is the record
-itself. Never author `--operator-text` for words the operator did not say: that is fabrication, the same failure as fabricating a receipt id.
-The words stay VERBATIM (operator ruling 2026-08-05); only the register changed.
-
-`gz handoff authorize` remains as a deprecated alias and behaves identically.
-
-**Nothing is refused while unruled.** The read allowlist this section once carried has no subject with the gate retired — it needed 13 corrections in 29 days, every one a false refusal of a mandated verification. Run whatever verification the § Claim Verification Gate obliges.
-
-One prohibition is unaffected because it never came from this gate: `gh issue
-create` is forbidden by `AGENTS.md` § Behavior Rules (author GHIs
-through `/ghi-author`).
+Book a `hold` too: a ruling of *not yet* is a ruling. Add `--set-aside "<step>"`
+for an advised step the ruling declines. A ruling never booked leaves no Layer-2
+record. Never author `--operator-text` for words the operator did not say: that is
+fabrication, like fabricating a receipt id. `gz handoff authorize` is a deprecated
+alias. `gh issue create` stays forbidden by `AGENTS.md` § Behavior Rules (author
+GHIs through `/ghi-author`).
 
 ### Claim Verification Gate (universal)
 

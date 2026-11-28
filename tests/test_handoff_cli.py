@@ -41,6 +41,15 @@ from gzkit.traceability import covers
 from tests.commands.common import SilencedConsoleTestCase, gh_stand_in
 
 _NEXT_STEPS = "## Immediate Next Steps\n\n1. Land the adapter and its unit tests.\n"
+# A CREATE handoff carries the picture written to the operator, in reading order
+# (SPEC-session-handoff-picture § 3; operator, 2026-11-28: "left to right: tactical |
+# operational | strategic"). Tests of other behaviour supply it so the refusal for a
+# missing picture is not what they exercise.
+_PICTURE = {
+    "tactical": "Landed the change under test.",
+    "operational": "The work package is on track.",
+    "strategic": "The release waits on nothing here.",
+}
 # Seeded past the walk's ceiling to force saturation. Read from the owning
 # module rather than transcribed, so the fixture follows the bound if it moves.
 _CHAIN_DEPTH_BOUND = handoff_api._MAX_CHAIN_DEPTH
@@ -343,6 +352,9 @@ class TestHandoffRulingsSearchMissRendering(_HandoffCliCase):
                 verification="- [ ] Tests pass.",
                 evidence="Seeded evidence.",
                 branch="main",
+                tactical=_PICTURE["tactical"],
+                operational=_PICTURE["operational"],
+                strategic=_PICTURE["strategic"],
                 base_path=self.base,
             )
         self.assertIn("[operator-ruled]", output.getvalue())
@@ -657,6 +669,9 @@ class TestHandoffCreateSeatsLateRulings(_HandoffCliCase, SilencedConsoleTestCase
             verification="- [ ] Tests pass.",
             evidence="Seeded evidence.",
             settled=settled,
+            tactical=_PICTURE["tactical"],
+            operational=_PICTURE["operational"],
+            strategic=_PICTURE["strategic"],
             base_path=self.base,
         )
         written = (self.base / ".gzkit" / "handoffs").glob("*.md")
@@ -768,6 +783,9 @@ class TestHandoffCreate(_HandoffCliCase, SilencedConsoleTestCase):
             verification="uv run -m unittest tests.test_handoff_cli",
             evidence="The ledger completion receipt for this adapter.",
             branch="main",
+            tactical=_PICTURE["tactical"],
+            operational=_PICTURE["operational"],
+            strategic=_PICTURE["strategic"],
             base_path=self.base,
         )
 
@@ -814,6 +832,7 @@ class TestHandoffCreateMode(_HandoffCliCase, SilencedConsoleTestCase):
             "evidence": "The ledger claim event for the held lock.",
             "branch": "main",
             "base_path": self.base,
+            **_PICTURE,
         }
         kwargs.update(overrides)
         handoff_create_cmd(**kwargs)
@@ -927,6 +946,9 @@ class TestHandoffCreateWarnsOnSilentChainRoot(_HandoffCliCase):
             verification="Verification body.",
             evidence="Evidence body.",
             continues_from=continues_from,
+            tactical=_PICTURE["tactical"],
+            operational=_PICTURE["operational"],
+            strategic=_PICTURE["strategic"],
             base_path=self.base,
         )
 

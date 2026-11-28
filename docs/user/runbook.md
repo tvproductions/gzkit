@@ -911,7 +911,10 @@ the fail-closed validation gate (ADR-0.0.65):
 uv run gz handoff list --adr ADR-0.5.0-skill-lifecycle-governance
 uv run gz handoff resume --adr ADR-0.5.0-skill-lifecycle-governance
 uv run gz handoff rulings --search "attest"   # what has already been ruled on
-uv run gz handoff create --adr ADR-0.5.0-skill-lifecycle-governance --slug session-wrap --agent g0 --decisions "Completed OBPI-0.5.0-05; next is ADR closeout."
+uv run gz handoff create --adr ADR-0.5.0-skill-lifecycle-governance --slug session-wrap --agent g0 \
+  --summary "<state>" --context "<constraints>" --decisions "- [agent-chose] <choice>" \
+  --next-steps "1. <action>" --pending "<open loops>" --verification "<checks>" \
+  --evidence "<artifacts>" --tactical "<now>" --operational "<sequence>" --strategic "<aim>"
 ```
 
 A failure recorded once is an insight, not a rule (maxim 13). Before proposing

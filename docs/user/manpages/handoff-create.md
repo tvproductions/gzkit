@@ -32,6 +32,7 @@ despite having passed the gate.
 gz handoff create --slug SLUG --agent AGENT --decisions TEXT [--adr ADR]
                   [--summary TEXT] [--context TEXT] [--next-steps TEXT]
                   [--pending TEXT] [--verification TEXT] [--evidence TEXT]
+                  [--tactical TEXT] [--operational TEXT] [--strategic TEXT]
                   [--branch BRANCH] [--obpi OBPI]
                   [--continues-from REF] ... [--session-id ID]
                   [--mode {CREATE,RESUME,CHECKPOINT}] [--json]
@@ -51,6 +52,9 @@ gz handoff create --slug SLUG --agent AGENT --decisions TEXT [--adr ADR]
 | `--pending TEXT` | `Pending Work / Open Loops` section body. |
 | `--verification TEXT` | `Verification Checklist` section body. |
 | `--evidence TEXT` | `Evidence / Artifacts` section body. Backtick-quoted paths must exist in committed state. |
+| `--tactical TEXT` | The picture, tactical: what are we doing now, and what is next? See § The picture. |
+| `--operational TEXT` | The picture, operational: how is the work sequenced, and what is in the way? |
+| `--strategic TEXT` | The picture, strategic: what are we building, and why this way? |
 | `--branch BRANCH` | Branch name (default: current git branch). |
 | `--obpi OBPI` | OBPI id this handoff scopes to. |
 | `--continues-from REF` | Prior handoff reference (chain link). **Repeatable** — repeat it to collapse a forked chain, and the successor inherits the settled rulings of *every* named ancestor, deduplicated (GHI #790). A single ref is written to frontmatter as a scalar, so existing documents keep their shape; the list form appears only on a genuine merge. Omitting it in a directory that already holds handoffs makes this handoff a chain root inheriting **zero** settled rulings — the command warns and names the newest candidate (GHI #717). |
@@ -61,6 +65,9 @@ gz handoff create --slug SLUG --agent AGENT --decisions TEXT [--adr ADR]
 Only `--decisions` is argparse-required; the other six section flags are enforced
 by the validation gate, so their absence is a refusal with every empty section
 named at once rather than one error at a time.
+
+Mode `CREATE` also refuses without all three picture flags, and every mode refuses
+a picture with one or two levels; this check runs at the verb, before the gate.
 
 Every section flag is **repeatable**: each occurrence adds one line to its section,
 in the order given, so `--decisions "- [operator-ruled] …" --decisions "- [agent-chose] …"`
@@ -227,33 +234,71 @@ rendered projection).
 
 ---
 
+## The picture
+
+A `CREATE` handoff carries `## The Picture`, written to the operator in plain
+language, in the order the operator reads it (operator, 2026-11-28: *"left to
+right: tactical | operational | strategic"*). The section leads the document, and
+`gz handoff resume` prints it after the computed position. Each level answers one
+question; its horizon is a scope guide (`docs/design/briefs/SPEC-session-handoff-picture.md` § 3):
+
+| Level | The question it answers | Scope guide |
+|---|---|---|
+| Tactical | What are we doing now, and what is next? | this session |
+| Operational | How is the work sequenced, and what is in the way? | the next release, loosely |
+| Strategic | What are we building, and why this way? | the next major release |
+
+`CHECKPOINT` and `RESUME` may carry a picture and need not. The mechanical
+writers, the session-exit bookmark and the token block's exchange records, author
+none. The check witnesses presence only: whether a picture reads well is the
+operator's judgment.
+
+---
+
 ## Example
 
-All seven sections supplied — the document is written under the canonical store:
+All seven sections and the picture supplied — the document is written under the
+canonical store:
 
 ```bash
-uv run gz handoff create --adr ADR-0.0.65 --slug my-work --agent g0 \
+uv run gz handoff create --slug my-work --agent g0 \
   --summary "Landed the create-side section flags." \
   --context "The gate refuses empty sections as of GHI #692." \
-  --decisions "Chose the adapter approach over re-implementing handoff logic." \
+  --decisions "- [agent-chose] Chose the adapter approach." \
   --next-steps "1. Run uv run gz check." \
   --pending "None." \
   --verification "uv run gz check" \
-  --evidence "The ledger completion receipt."
+  --evidence "The ledger completion receipt." \
+  --tactical "Landed the section flags; the tests pass." \
+  --operational "The adapter work is done; review is next." \
+  --strategic "Handoffs carry continuity for 1.0."
 ```
 
-Observed output:
+Observed output (2026-11-28):
 
 ```
-.gzkit/handoffs/20260717T003013Z-my-work.md
+.gzkit/handoffs/20261128T113817Z-my-work.md
+```
+
+Omitting the picture in mode `CREATE` is refused before the gate, and nothing is
+written:
+
+```
+Refusing to write handoff: the picture lacks --tactical, --operational,
+--strategic. A CREATE handoff carries all three levels, tactical, operational
+and strategic, and no handoff carries part of one
+(docs/design/briefs/SPEC-session-handoff-picture.md § 3). Write each level in
+plain language for the operator, then re-run `uv run gz handoff create` with all
+three flags.
 ```
 
 Omitting the six non-required section flags is fail-closed — nothing is written,
 the verb exits 1, and every empty section is named at once:
 
 ```bash
-uv run gz handoff create --adr ADR-0.0.65 --slug my-work --agent g0 \
-  --decisions "Chose the adapter approach."
+uv run gz handoff create --slug hollow --agent g0 \
+  --decisions "- [agent-chose] Chose the adapter approach." \
+  --tactical t --operational o --strategic s
 ```
 
 ```
@@ -267,7 +312,8 @@ required section: Evidence / Artifacts
 A malformed frontmatter value is refused the same way:
 
 ```bash
-uv run gz handoff create --adr ADR-BOGUS --slug x --agent g0 --decisions "d"
+uv run gz handoff create --adr ADR-BOGUS --slug x --agent g0 --decisions "d" \
+  --tactical t --operational o --strategic s
 ```
 
 ```

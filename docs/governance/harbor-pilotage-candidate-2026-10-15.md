@@ -1154,6 +1154,26 @@ From the R&D run [`repair-work-organization`](../rnd/repair-work-organization.md
   safe mode cannot demote it, and session orientation names undelivered hooks). Insight record
   `2026-11-19T23:31:08.707196+00:00`.
 
+## Rulings of 2026-11-28
+
+- **The three-level brief is built now, not after the handback.** The 2026-10-31 ruling sequenced
+  its build after the handback, as the `SES` outcome (§ Rulings of 2026-10-31). Operator, verbatim:
+  *"build it now so every resume shows the position - this should cut down on vibe coding."*, and
+  before it *"I asked for this as a part of every handoff resume and still dont have it: current
+  tactical|operational|strategic position."* (insight record `2026-11-28T10:59:16.534985+00:00`, scope
+  `gz-session-handoff`). The later word governs; the specification's piece 2, the picture, lands in
+  the drydock, and pieces 3 and 4 (the session log, the exit signal) keep the 2026-10-31 sequencing.
+- **Both an authored picture and computed facts.** Put to the operator, three choices; ruled by
+  selection: *"Both (Recommended)"*. `gz handoff resume` and session orientation lead with facts
+  computed from the record (`gzkit.mx.position`), each naming its source, and then the author's picture.
+- **The picture reads tactical, operational, strategic.** Operator, verbatim: *"left to right:
+  tactical | operational | strategic"*. It orders the handoff's section, the flags and every rendering.
+- **The size-limit fence holds over its disclosed shapes (GHI #1367).** After two reviews returned
+  NOT CONFIRMED, put to the operator, three choices; ruled by selection: *"Disclosed shapes
+  (Recommended)"*. The pool ADRs are not among its roots, operator verbatim: *"the pool adr will be
+  phased out and drained into the requirements catalog/backlog, why bother? so much of what we are
+  doing now is related to what we are trying to achieve in the dry dock"*.
+
 ## Superseded on 2026-10-30 (record, not binding)
 
 § The general arrangement as it stood before the redraw of 2026-10-30, kept verbatim (operator,
@@ -1642,7 +1662,10 @@ Each line is `open` until the restoration contractor clears it with the alarms o
 
 - `cleared` **blocks return to service** — CI's first `full-strength-report` (run 41185099883, `b519951fa`, 2026-10-31) shows the demoted `tautological test audit` red with 7 findings: `tests/complexity/test_citation.py`, `tests/governance/test_skill_self_close_drift.py`, `tests/mx/test_alarms.py` (2), `tests/policy/test_executable_resolution.py`, `tests/test_plan_command.py` (2). The exit re-run would refuse on them. Authority: operator, 2026-10-26, *"report only, decide within #1273"*. Cleared 2026-10-31 by `759d1355e`: `full-strength-report` passed on run 41188802273, at `31c956d33`.
 
-- `open` **due by a named event** — no strategic, operational and tactical brief is produced at the
+- `open` **due by a named event** — *Built 2026-11-28 (§ Rulings of 2026-11-28): `gz handoff create`
+  requires the picture for mode CREATE, and `gz handoff resume` and orientation lead with the computed
+  position. The line stays open until the operator finds the picture reads well on the first real
+  handoffs, the specification's acceptance row 10.* No strategic, operational and tactical brief is produced at the
   major state changes, the entry and exit edges of § The processes and their edges (insight
   `2026-10-29T08:00:30Z`, scope `handoff-picture`). Holder: a session-and-handoff outcome in family
   H (corrected 2026-10-30 from the agent's misstated M; the legend puts handoffs in H), handed over

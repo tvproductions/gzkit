@@ -97,6 +97,17 @@ REQUIRED_SECTIONS = (
 #: must remember to fill — which is the failure mode GHI #696 documents.
 SETTLED_SECTION = "Settled Rulings"
 
+#: The section written to the operator: three levels of picture, one subsection
+#: each (`docs/design/briefs/SPEC-session-handoff-picture.md` § 3, accepted
+#: 2026-10-31). Not in ``REQUIRED_SECTIONS``, for ``SETTLED_SECTION``'s reason:
+#: the existing corpus would fail. `gz handoff create` requires it for mode CREATE
+#: at the verb, so the mechanical writers, which author no picture, are untouched.
+PICTURE_SECTION = "The Picture"
+
+#: The picture's levels in the order the operator reads them (operator,
+#: 2026-11-28, verbatim: "left to right: tactical | operational | strategic").
+PICTURE_LEVELS = ("Tactical", "Operational", "Strategic")
+
 #: The sections whose citations assert LIVE work, and the only ones an authoring
 #: liveness check may annotate. Sections are typed by tense: these two are
 #: prospective — they name what a future session should pull — so a closed GHI
@@ -337,6 +348,44 @@ def validate_no_secrets(content: str) -> list[str]:
     for match in _SECRET_RE.finditer(content):
         violations.append(f"Potential secret found: {match.group(0).strip()!r}")
     return violations
+
+
+def render_picture(levels: dict[str, str]) -> str:
+    """Render the picture's body: one ``###`` subsection per level, in reading order.
+
+    Returns:
+        The body of ``## The Picture``, without its heading.
+
+    """
+    return "\n\n".join(
+        f"### {level}\n\n{levels[level].strip()}" for level in PICTURE_LEVELS if level in levels
+    )
+
+
+def parse_picture(content: str) -> dict[str, str]:
+    """Read the picture's levels from a handoff, in reading order.
+
+    A ``###`` heading names a level and its body runs to the next ``###`` or
+    ``##`` heading. A handoff with no picture, the corpus before 2026-11-28, reads
+    as an empty mapping.
+
+    Returns:
+        Each level the document carries, mapped to its text.
+
+    """
+    section = re.search(rf"^##\s+{re.escape(PICTURE_SECTION)}\s*$", content, re.MULTILINE)
+    if section is None:
+        return {}
+    rest = content[section.end() :]
+    end = re.search(r"^##\s", rest, re.MULTILINE)
+    body = rest[: end.start()] if end else rest
+    found: dict[str, str] = {}
+    for match in re.finditer(
+        r"^###\s+(.+?)\s*$\n(.*?)(?=^###\s|\Z)", body, re.MULTILINE | re.DOTALL
+    ):
+        if match.group(1) in PICTURE_LEVELS:
+            found[match.group(1)] = match.group(2).strip()
+    return {level: found[level] for level in PICTURE_LEVELS if level in found}
 
 
 def validate_sections_present(content: str) -> list[str]:

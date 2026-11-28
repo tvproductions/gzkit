@@ -44,11 +44,16 @@ _ADR_REF_RE = re.compile(r"\bADR-\d+\.\d+\.\d+\b")
 CAMPAIGN_ADR_REF_LIMIT = 3
 ADR_STATUS_TIMEOUT_SEC = 15
 # Commits named individually in the account before it summarizes the remainder.
-# Ten keeps the section readable on a busy delta; the count above it is always
-# the true total, and the overflow is stated rather than dropped.
-ACCOUNT_COMMIT_LIMIT = 10
+# The count above it is always the true total, and the overflow is stated rather
+# than dropped. Three since 2026-11-28 (was ten): the orientation was over its
+# budget, and the position block it gained that day carries the drydock's state,
+# so the subjects `git log` already gives were the cut (AGENTS.md § Behavior Rules,
+# compress before growth).
+ACCOUNT_COMMIT_LIMIT = 3
 
 SECTION_HEADINGS: tuple[str, ...] = (
+    # CONDITIONAL — emitted only when gzkit imports and the position reads a fact.
+    "Position (computed from the record)",
     "Active campaign — Magna Carta",
     "Git remote state",
     # CONDITIONAL — emitted only when a declared hook is not installed (GHI #1330).
@@ -1264,6 +1269,43 @@ def _render_unreviewed_canaries(lines: list[str], payload: object) -> None:
     lines.append("")
 
 
+def collect_position(repo_root: Path, now: datetime) -> list[dict[str, str]] | None:
+    """Return the out-of-service position, each fact read from the record.
+
+    The operator asked that every resume show the position (2026-11-28, verbatim:
+    "build it now so every resume shows the position - this should cut down on vibe
+    coding."). The facts are `gzkit.mx.position`'s, read rather than re-derived;
+    `uv run gz handoff resume` prints each with its source. Guarded end-to-end: any
+    failure returns ``None`` so the boot hook never crashes.
+
+    Returns:
+        One ``{label, value}`` per fact; None when gzkit cannot be imported or read.
+
+    """
+    try:
+        from gzkit.mx.position import drydock_position  # noqa: PLC0415 -- optional dependency: the boot hook degrades without gzkit
+
+        return [
+            {"label": fact.label, "value": fact.value}
+            for fact in drydock_position(repo_root, now=now)
+        ]
+    except Exception:
+        return None
+
+
+def _render_position(lines: list[str], payload: object) -> None:
+    """Lead with the computed position; render nothing when it could not be read."""
+    if not isinstance(payload, list) or not payload:
+        return
+    lines.append("## Position (computed from the record)")
+    lines.extend(f"- {fact.get('label', '?')}: {fact.get('value', '')}" for fact in payload)
+    source_note = (
+        "- Each fact's source: `uv run gz handoff resume`, which leads with this position "
+        "and the handoff's picture."
+    )
+    lines.extend((source_note, ""))
+
+
 def collect_mx_hangar(repo_root: Path, now: datetime) -> dict[str, Any] | None:
     """Book any hangar lease that has expired, then return what the hardening guards found.
 
@@ -1413,6 +1455,7 @@ def collect_state(repo_root: Path, now: datetime) -> dict[str, Any]:
         "unreviewed_canaries": collect_unreviewed_canaries(repo_root),
         "mx_hangar": collect_mx_hangar(repo_root, now),
         "hook_delivery": collect_hook_delivery(repo_root),
+        "position": collect_position(repo_root, now),
     }
 
 
@@ -1484,6 +1527,8 @@ def render(state: dict[str, Any], now: datetime) -> str:
         f"# gzkit session orientation — generated {now.isoformat(timespec='seconds')}",
         "",
     ]
+
+    _render_position(lines, state.get("position"))
 
     lines.append("## Active campaign — Magna Carta")
     lines.extend(_render_campaign(state.get("campaign")))

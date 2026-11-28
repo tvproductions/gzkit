@@ -24,7 +24,8 @@ Decide only at a boundary. Mid-phase, continue or split the rest into subagents.
    disturbed.
 2. **[Commit and sync](commit-and-sync.md)** — land the work.
 3. **`gz-session-handoff`** — `uv run gz handoff create` writes the handoff:
-   current state, decisions with their attribution, next steps, open loops.
+   current state, decisions with their attribution, next steps, open loops, and
+   the picture written to the operator: tactical, operational, strategic.
    Use mode `CHECKPOINT` to bookmark mid-flight without concluding.
 
 ## Branches

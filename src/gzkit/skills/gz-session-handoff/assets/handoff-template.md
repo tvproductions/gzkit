@@ -36,6 +36,27 @@ Barreling into execution from this document is the exact failure this handoff
 exists to prevent. The plan is the destination; operator authorization is the
 ignition.
 
+## The Picture
+
+<!-- Written to the operator, in plain language, in the order the operator reads it:
+     tactical, operational, strategic (SPEC-session-handoff-picture § 3). Each level says
+     where we stand, what changed, and what is next or at risk. `gz handoff create`
+     renders this from --tactical, --operational and --strategic; mode CREATE needs all
+     three. Read the computed position (`gz handoff resume`) first so the picture never
+     contradicts it. -->
+
+### Tactical
+
+<!-- What are we doing now, and what is next? This session. -->
+
+### Operational
+
+<!-- How is the work sequenced, and what is in the way? The next release, loosely. -->
+
+### Strategic
+
+<!-- What are we building, and why this way? The next major release. -->
+
 ## Current State Summary
 
 <!-- Describe the current state of work: what has been done, what phase the work is in,
