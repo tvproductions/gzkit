@@ -251,7 +251,7 @@ When the run is declared single-driver, Stage 2 runs entirely in the main sessio
 4. Implement each behavior via the **Red-Green-Refactor discipline above**: one
    minimal test → watch it fail on its assertion for the right reason (not an
    import error) → simplest code to pass → refactor green. Use `unittest`,
-   `TempDBMixin` for DB, coverage >= 40%. Do not batch all tests then implement.
+   `TempDBMixin` for DB, coverage at or above `thresholds.coverage_floor`. Do not batch all tests then implement.
 
 5. Run `uv run gz lint --fix && uv run ruff format .` after code changes
 6. Run `uv run gz test` after implementation

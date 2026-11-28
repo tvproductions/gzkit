@@ -5,7 +5,7 @@ description: Use for an ADR's Gate-5 audit; provides the audit templates and pro
 category: adr-audit
 compatibility: GovZero v6 framework; provides audit procedure for COMPLETED→VALIDATED ADR transition
 metadata:
-  skill-version: "6.15.3"
+  skill-version: "6.15.4"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -344,7 +344,7 @@ report success to the operator until the report command confirms the change.
 **COMPLETED (Phase 1):**
 
 - [ ] All features shipped
-- [ ] Unit tests pass, coverage ≥40%
+- [ ] Unit tests pass, coverage at or above `thresholds.coverage_floor`
 - [ ] Docs complete, mkdocs builds clean
 - [ ] Linting/formatting/type checks pass
 

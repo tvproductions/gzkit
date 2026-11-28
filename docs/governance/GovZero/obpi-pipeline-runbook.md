@@ -126,7 +126,7 @@ not met.
 1. Load plan steps from approved plan file
 2. Create task list from plan steps
 3. Implement each step within brief allowlist
-4. Write tests (unittest, coverage ≥ 40%)
+4. Write tests (unittest, coverage at or above `thresholds.coverage_floor`)
 5. Run `uv run gz lint --fix && uv run ruff format .` after code changes
 6. Run `uv run gz test` to verify
 
@@ -373,7 +373,7 @@ Allowed paths: {allowlist from brief}
 
 ### Rules
 - Stay within allowed paths
-- Write tests for new code (unittest, coverage ≥ 40%)
+- Write tests for new code (unittest, coverage at or above `thresholds.coverage_floor`)
 - Run ruff check/format after changes
 - Run unittest after implementation
 - If blocked, STOP and report — do not work around

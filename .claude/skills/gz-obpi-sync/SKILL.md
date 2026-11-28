@@ -5,7 +5,7 @@ description: Use to reconcile OBPI briefs and the ADR table against the ledger a
 category: obpi-pipeline
 compatibility: GovZero v6 framework with OBPI briefs
 metadata:
-  skill-version: "3.4.1"
+  skill-version: "3.4.2"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   skill-type: "orchestrator"
@@ -61,7 +61,7 @@ These thoughts mean STOP — you are about to skip evidence-backed verification:
 | "I'll update the ADR table manually instead" | Manual table updates bypass the ledger. `gz obpi sync` derives the row from it. |
 | "One brief is still in progress, I'll reconcile the rest later" | Partial reconciliation creates inconsistent snapshots. Run for the full ADR. |
 | "The audit log already has entries from a previous audit" | Stale entries do not reflect current evidence. Each reconciliation writes fresh ones. |
-| "Coverage is close to 40%, I'll round up" | The threshold is fail-closed. 39.9% is FAIL, not "close enough." |
+| "Coverage is just under the floor, I'll round up" | The threshold, `thresholds.coverage_floor`, is fail-closed in `gz obpi audit`. A tenth under it is FAIL, not "close enough." |
 
 ### Red Flags
 
@@ -239,7 +239,7 @@ When this skill is invoked, the agent MUST:
 |-------|--------|
 | Brief not found | Skip, report as missing (see Phantom OBPI remediation) |
 | Tests fail | Log failure; report, change nothing |
-| Coverage < 40% | Log gap; report, change nothing |
+| Coverage under `thresholds.coverage_floor` | Log gap; report, change nothing |
 | `gz obpi sync` exits non-zero | Stop on that OBPI, report its blockers verbatim |
 
 ---
@@ -248,7 +248,7 @@ When this skill is invoked, the agent MUST:
 
 | Lane | Criteria to Verify |
 |------|-------------------|
-| **Lite** | Tests pass, coverage ≥40% |
+| **Lite** | Tests pass, coverage at or above `thresholds.coverage_floor` |
 | **Heavy** | Lite + BDD scenarios + docs/manpage updated |
 
 Read the lane from the brief's `lane:` frontmatter. Gate 5 attestation applies

@@ -29,7 +29,7 @@
 | Gate | Applies | Artifact |
 |------|---------|----------|
 | Gate 1 (ADR) | All | Intent document with problem/decision/consequences |
-| Gate 2 (TDD) | All | Red-Green-Refactor cycle followed, tests derived from brief, coverage >=40% |
+| Gate 2 (TDD) | All | Red-Green-Refactor cycle followed, tests derived from brief, coverage at or above `thresholds.coverage_floor` |
 | Gate 3 (Docs) | Heavy only | Markdown lint clean, mkdocs build passes |
 | Gate 4 (BDD) | Heavy only | Behave scenarios pass (CLI/API/schema contracts) |
 | Gate 5 (Attestation) | All | Human directly observes and attests (universal, ADR-0.0.36) |

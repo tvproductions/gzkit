@@ -43,7 +43,7 @@ Audit is a reconciliation mechanism, not an authority mechanism.
 
 **Purpose:** Verify implementation correctness through automated tests.
 
-**Artifact:** Passing unit tests with coverage floor (≥40%).
+**Artifact:** Passing unit tests at or above the coverage floor (`thresholds.coverage_floor` in `.gzkit/manifest.json`).
 
 **Applies to:** All work (Lite and Heavy lanes).
 

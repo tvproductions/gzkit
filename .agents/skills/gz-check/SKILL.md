@@ -8,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-10-17
 model: haiku
 metadata:
-  skill-version: "1.7.5"
+  skill-version: "1.7.6"
 ---
 
 # gz check
@@ -117,7 +117,7 @@ These thoughts mean STOP — you are about to skip the gate that catches drift:
 | "Hook errors at session start are cosmetic" | The Claude surface check is part of `gz check` precisely because hook errors mean an agent is operating against stale governance. Resolve before attestation. |
 | "The mirrors look fine, skip the surface check" | Canon/derived drift is silent until it isn't. The mirror parity check is cheap; the bug it prevents is expensive. |
 | "I'll run the individual commands instead of `gz check`" | Individual commands skip the Claude surface check and the deterministic ordering. Use them for iterative fix-up, not for pre-merge or pre-attestation. |
-| "Coverage is close to 40% — round up" | The coverage floor is fail-closed at 40.00%. Rounding rationalizes a regression. |
+| "Coverage is just under the floor — round up" | The floor is `thresholds.coverage_floor` in `.gzkit/manifest.json`. Rounding rationalizes a regression. |
 | "PyMarkdown warnings are noise" | PyMarkdown is part of `gz lint` because docs are first-class deliverables under the Gate 5 Runbook-Code Covenant. Fix or document the exception. |
 
 ## Red Flags
@@ -127,7 +127,7 @@ These thoughts mean STOP — you are about to skip the gate that catches drift:
 - Citing a plain `gz check` pass as evidence that the whole unit tier passed
 - Hook errors in session-start output that were never resolved
 - `.claude/skills/` divergent from `.gzkit/skills/` (sync not run)
-- Coverage dropped below 40% but the brief was marked complete
+- Coverage dropped below `thresholds.coverage_floor` but the brief was marked complete
 - Releasing or closing out an ADR without `gz check --full`
 
 ## References

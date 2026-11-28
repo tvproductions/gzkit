@@ -1,12 +1,12 @@
-# Coverage >=40% Baseline
+# Coverage Floor Baseline
 
-Maintain >=40% line coverage floor through periodic audits.
+Maintain line coverage at or above `thresholds.coverage_floor` in `.gzkit/manifest.json` through periodic audits.
 
 ## Quick Start
 
 ```bash
 uv run unittest-parallel -t . -s tests --buffer --coverage --coverage-source src/gzkit
-uv run coverage report --fail-under=40
+uv run python .gzkit/chores/coverage-40pct/check_coverage_floor.py
 ```
 
 ## Lane

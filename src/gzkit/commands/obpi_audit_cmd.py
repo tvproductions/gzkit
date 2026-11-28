@@ -17,13 +17,16 @@ from gzkit.lock_manager import adr_id_from_obpi
 
 def obpi_audit_cmd(obpi_id: str | None, adr_id: str | None, as_json: bool) -> None:
     """Gather evidence for OBPI brief and append audit entry to ledger."""
-    from gzkit.commands.common import ensure_initialized, get_project_root
+    from gzkit.commands.common import ensure_initialized, get_project_root, load_manifest
 
     ensure_initialized()
     project_root = get_project_root()
+    # The floor's one authority is the manifest (GHI #1415), read once here and
+    # passed down as a value.
+    coverage_floor = float(load_manifest(project_root)["thresholds"]["coverage_floor"])
 
     if adr_id not in {None, ""} and obpi_id in {None, ""}:
-        _audit_all_for_adr(project_root, adr_id, as_json)
+        _audit_all_for_adr(project_root, adr_id, as_json, coverage_floor)
         return
 
     if obpi_id in {None, ""}:
@@ -39,7 +42,7 @@ def obpi_audit_cmd(obpi_id: str | None, adr_id: str | None, as_json: bool) -> No
                 if obpi_id in prior:
                     _print_prior_state({obpi_id: prior[obpi_id]}, project_root)
 
-    result = _audit_single(project_root, obpi_id)
+    result = _audit_single(project_root, obpi_id, coverage_floor)
 
     if as_json:
         print(json.dumps(result, indent=2))
@@ -50,7 +53,9 @@ def obpi_audit_cmd(obpi_id: str | None, adr_id: str | None, as_json: bool) -> No
         sys.exit(1)
 
 
-def _audit_all_for_adr(project_root: Path, adr_id: str, as_json: bool) -> None:
+def _audit_all_for_adr(
+    project_root: Path, adr_id: str, as_json: bool, coverage_floor: float
+) -> None:
     """Audit all OBPI briefs for an ADR."""
     adr_dir = _find_adr_dir(project_root, adr_id)
     if not adr_dir:
@@ -70,7 +75,7 @@ def _audit_all_for_adr(project_root: Path, adr_id: str, as_json: bool) -> None:
     for brief in sorted(obpis_dir.glob("OBPI-*.md")):
         oid = _extract_obpi_id(brief)
         if oid not in {None, ""}:
-            results.append(_audit_single(project_root, oid))
+            results.append(_audit_single(project_root, oid, coverage_floor))
 
     if as_json:
         print(json.dumps({"adr_id": adr_id, "audits": results}, indent=2))
@@ -80,7 +85,7 @@ def _audit_all_for_adr(project_root: Path, adr_id: str, as_json: bool) -> None:
             console.print("")
 
 
-def _audit_single(project_root: Path, obpi_id: str) -> dict[str, Any]:
+def _audit_single(project_root: Path, obpi_id: str, coverage_floor: float) -> dict[str, Any]:
     """Audit a single OBPI and append ledger entry."""
     adr_id = _derive_adr_id(obpi_id)
     adr_dir = _find_adr_dir(project_root, adr_id) if adr_id not in {None, ""} else None
@@ -96,7 +101,7 @@ def _audit_single(project_root: Path, obpi_id: str) -> dict[str, Any]:
     coverage_pct = _measure_coverage(project_root, tests_found, _brief_src_paths(brief_path))
     covers_tags = _find_covers_tags(project_root, adr_id or "")
 
-    criteria = _build_criteria(tests_found, tests_passed, test_count, coverage_pct)
+    criteria = _build_criteria(tests_found, tests_passed, test_count, coverage_pct, coverage_floor)
 
     entry = _build_entry(
         obpi_id,
@@ -122,8 +127,9 @@ def _build_criteria(
     tests_passed: bool,
     test_count: int,
     coverage_pct: float | None,
+    coverage_floor: float,
 ) -> list[dict[str, str]]:
-    """Build the criteria evaluation list."""
+    """Build the criteria evaluation list against the manifest's ``coverage_floor``."""
     criteria: list[dict[str, str]] = []
     criteria.append(
         {
@@ -141,8 +147,10 @@ def _build_criteria(
     )
     criteria.append(
         {
-            "criterion": "Coverage >= 40%",
-            "result": "PASS" if coverage_pct is not None and coverage_pct >= 40.0 else "FAIL",
+            "criterion": f"Coverage >= {coverage_floor:g}%",
+            "result": "PASS"
+            if coverage_pct is not None and coverage_pct >= coverage_floor
+            else "FAIL",
             "evidence": f"{coverage_pct:.1f}%" if coverage_pct is not None else "not measured",
         }
     )

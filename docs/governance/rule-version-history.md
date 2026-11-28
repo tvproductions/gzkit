@@ -1144,6 +1144,12 @@ The version banner as it stood, lifted verbatim to keep the per-turn banner to i
 
 > **Rule version:** `0.27.1` — § Two runners cites the scope declaration where it now ships, inside the package at `src/gzkit/check_step_scopes.json`, so every project that installs gzkit runs the same per-change gate (GHI #1192). Binding rules unchanged. Rationale: [Tests — Rationale](tests-rationale.md); history: [Rule Version History](rule-version-history.md#testsmd).
 
+### Lifted 2026-11-27 at version `0.29.2` (rule now at `0.29.3`)
+
+The version banner as it stood, lifted with its link rebased to this page (GHI #1415):
+
+> **Rule version:** `0.29.2` — the direct-fix steps no longer open with the fix() precedent check, a criterion the operator dropped from defect-fix routing on 2026-09-17 (GHI #1374); version narrative in [Rule Version History](rule-version-history.md#testsmd).
+
 ## `token-block-discipline.md`
 
 ### `0.10.4` (2026-11-25)

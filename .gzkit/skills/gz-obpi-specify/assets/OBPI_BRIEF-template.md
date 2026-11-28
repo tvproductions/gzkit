@@ -191,7 +191,7 @@ When gates are passing, emit this shape:
   uv run gz test
   # Output: Ran {N} tests in X.XXs — OK
 
-- ✓ Coverage: {X%} ≥ 40% minimum
+- ✓ Coverage: {X%} at or above `thresholds.coverage_floor`
   Use repository-native proof when coverage is part of the contract.
 
 **Code Quality:**
@@ -476,7 +476,7 @@ Item-specific gates and commands (if any) are listed below.
 - [ ] **Gate 1 (ADR):** ✓ Intent recorded in brief
 - [ ] **Gate 2 (TDD):** ✓ RGR cycle followed, tests derived from brief (N tests, 0 failures)
 - [ ] **Code Quality:** ✓ Lint, format, type checks clean
-- [ ] **Coverage:** ✓ Coverage ≥40% maintained
+- [ ] **Coverage:** ✓ Coverage at or above `thresholds.coverage_floor` maintained
 - [ ] **Human Attestation:** ✓ Brief-level human attestation received — required for every OBPI completion regardless of lane/kind (ADR-0.0.36)
 - [ ] **OBPI Completion:** Record evidence in brief with gate status and test output
 
@@ -733,7 +733,7 @@ If an example cannot be tested or a BDD scenario cannot be implemented immediate
 #### Gates 1-4: Implementation
 
 - [ ] Gate 1 (ADR): Intent recorded in brief
-- [ ] Gate 2 (TDD): RGR cycle followed, tests derived from brief, coverage ≥40%
+- [ ] Gate 2 (TDD): RGR cycle followed, tests derived from brief, coverage at or above `thresholds.coverage_floor`
 - [ ] Gate 3 (Docs): Markdown lint clean, mkdocs build clean
 - [ ] Gate 4 (BDD): All BDD scenarios pass
 - [ ] Code Quality: Lint, format clean

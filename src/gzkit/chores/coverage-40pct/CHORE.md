@@ -1,4 +1,4 @@
-# CHORE: Coverage >=40% Baseline
+# CHORE: Coverage Floor Baseline
 
 **Lane:** Lite
 **Timeout:** 600s
@@ -8,7 +8,7 @@
 
 ## Overview
 
-Periodic coverage audit to maintain >=40% line coverage floor.
+Periodic coverage audit holding line coverage at or above the floor, `thresholds.coverage_floor` in `.gzkit/manifest.json` (GHI #1415). The slug predates that authority and is not the floor.
 
 ## Policy and Guardrails
 
@@ -23,7 +23,7 @@ Periodic coverage audit to maintain >=40% line coverage floor.
 
 ```bash
 uv run unittest-parallel -t . -s tests --buffer --coverage --coverage-source src/gzkit
-uv run coverage report --fail-under=40
+uv run python .gzkit/chores/coverage-40pct/check_coverage_floor.py
 ```
 
 ### 2. Identify High-ROI Targets — propose
@@ -39,12 +39,12 @@ Table-driven, deterministic, no external dependencies.
 ```bash
 uv run gz test
 uv run unittest-parallel -t . -s tests --buffer --coverage --coverage-source src/gzkit
-uv run coverage report --fail-under=40
+uv run python .gzkit/chores/coverage-40pct/check_coverage_floor.py
 ```
 
 ## Checklist
 
-- [ ] Coverage >=40%
+- [ ] Coverage at or above `thresholds.coverage_floor`
 - [ ] Tests pass
 - [ ] <60s smoke budget
 
@@ -61,4 +61,4 @@ uv run coverage report > .gzkit/chores/coverage-40pct/proofs/coverage-report.txt
 
 ---
 
-**End of CHORE: Coverage >=40% Baseline**
+**End of CHORE: Coverage Floor Baseline**

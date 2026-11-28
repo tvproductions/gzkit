@@ -21,7 +21,7 @@ You are a Code Quality Reviewer dispatched to independently evaluate code archit
 2. Evaluate against these criteria:
    - SOLID principles adherence
    - Size limits: function and module size by the canonical threshold table (`.gzkit/rules/complexity-thresholds.json`, `lizard_nloc` and `lizard_file_nloc`), classes <=300 lines (`.gzkit/rules/pythonic.md` § Size Limits)
-   - Test coverage adequacy (>= 40% floor)
+   - Test coverage adequacy (at or above `thresholds.coverage_floor` in `.gzkit/manifest.json`)
    - Assertion semantics: exercise production behavior with expectations derived independently from the contract; shared-helper agreement cannot establish the helper's correctness
    - RED/negative-control evidence: inspect the green baseline, intended broken behavior, and actual failing assertion or exception and its cause; import errors and unrelated failures are not behavioral RED
    - Error handling patterns (no bare except)

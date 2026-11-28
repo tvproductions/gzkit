@@ -11,6 +11,8 @@ from pathlib import Path
 from unittest import mock
 
 from gzkit.cli import main
+from gzkit.commands import obpi_audit_cmd
+from gzkit.config import GzkitConfig
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner, _quick_init
 
@@ -182,8 +184,42 @@ class TestCoverageScopedToBriefUnit(unittest.TestCase):
         )
 
 
-if __name__ == "__main__":
-    unittest.main()
+class TestCoverageFloorReadFromManifest(unittest.TestCase):
+    """The coverage criterion applies ``thresholds.coverage_floor`` (GHI #1415).
+
+    The manifest key is the floor's one authority (operator ruling 2026-11-27);
+    a literal in the command would make the declared value govern nothing.
+    """
+
+    def _coverage_criterion(self, floor: float, measured: float) -> dict[str, str]:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            _seed_adr_with_brief()
+            manifest_file = Path(GzkitConfig.load(Path(".gzkit.json")).paths.manifest)
+            manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
+            manifest["thresholds"]["coverage_floor"] = floor
+            manifest_file.write_text(json.dumps(manifest), encoding="utf-8")
+            with (
+                mock.patch.object(obpi_audit_cmd, "_find_tests", return_value=[Path("t.py")]),
+                mock.patch.object(obpi_audit_cmd, "_run_tests", return_value=(True, 1)),
+                mock.patch.object(obpi_audit_cmd, "_measure_coverage", return_value=measured),
+            ):
+                result = runner.invoke(main, ["obpi", "audit", "OBPI-0.0.99-01", "--json"])
+            data = json.loads(result.output)
+        coverage = [c for c in data["criteria_evaluated"] if c["criterion"].startswith("Coverage")]
+        self.assertEqual(len(coverage), 1, msg=data["criteria_evaluated"])
+        return coverage[0]
+
+    def test_a_raised_manifest_floor_fails_coverage_the_literal_would_pass(self) -> None:
+        criterion = self._coverage_criterion(floor=75.0, measured=50.0)
+        self.assertEqual(criterion["result"], "FAIL")
+        self.assertIn("75", criterion["criterion"])
+
+    def test_coverage_at_the_manifest_floor_passes(self) -> None:
+        criterion = self._coverage_criterion(floor=40.0, measured=50.0)
+        self.assertEqual(criterion["result"], "PASS")
+        self.assertEqual(criterion["criterion"], "Coverage >= 40%")
 
 
 class TestDeriveAdrIdFromSlugBearingObpi(unittest.TestCase):

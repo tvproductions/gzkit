@@ -142,8 +142,8 @@
     },
     {
       "slug": "coverage-40pct",
-      "title": "Coverage >=40% Baseline",
-      "version": "1.2.0",
+      "title": "Coverage Floor Baseline",
+      "version": "1.3.0",
       "path": ".gzkit/chores/coverage-40pct",
       "lane": "lite",
       "timeoutSeconds": 600,

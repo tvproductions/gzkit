@@ -15,7 +15,7 @@ Runs deterministic evidence checks:
 
 - Test file discovery via @covers tags and OBPI references
 - Test execution
-- Coverage measurement (40% threshold), scoped to the brief's `Allowed Paths`
+- Coverage measurement against `thresholds.coverage_floor` in `.gzkit/manifest.json`, scoped to the brief's `Allowed Paths`
   `src/` entries — i.e. how much of *the code this OBPI delivered* is exercised
   by the OBPI's own tests, not the whole `src/` tree
 - Appends structured entry to `{ADR-dir}/logs/obpi-audit.jsonl`

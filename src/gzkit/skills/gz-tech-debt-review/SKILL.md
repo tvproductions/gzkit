@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-11-21
 metadata:
-  skill-version: "1.4.11"
+  skill-version: "1.4.12"
 model: sonnet
 ---
 
@@ -89,7 +89,7 @@ read.
 | `lint` | `uv run gz lint` | Ruff findings outside `data/ruff_baseline.json`, and the rows that baseline still holds (the debt itself) |
 | `types` | `uv run ty check .` | Unresolved type errors, suppressed-but-still-firing `# type: ignore[code]` (the GHI #197 class) |
 | `pythonic` | `gz-pythonic-pattern-detect` candidates report | Java-shaped Python (Strategy classes, Singletons, Visitor ladders) |
-| `tests` | coverage report + `gz validate --requirements` + `gz validate --behave-req-tags` | <40% coverage, **BEHAVIOR** REQs without `@covers`, heavy OBPIs without `@REQ-*` BDD tags. SUPPORT and STRUCTURAL-FENCE REQs carry no `@covers` test by proof channel (ADR-0.0.59) — never report their absence as debt |
+| `tests` | coverage report + `gz validate --requirements` + `gz validate --behave-req-tags` | coverage under `thresholds.coverage_floor`, **BEHAVIOR** REQs without `@covers`, heavy OBPIs without `@REQ-*` BDD tags. SUPPORT and STRUCTURAL-FENCE REQs carry no `@covers` test by proof channel (ADR-0.0.59) — never report their absence as debt |
 | `test-shape` | `uv run gz test-shape --json` | Tautological content-echo operations with proposed disposition; output/render assertions whose `# output-contract:` carve-out is undeclared. Advisory — the fail-closed growth gate is `gz validate --tautological-test-audit` (GHI #571) |
 | `dead-code` | ruff `F401`/`F841`, `vulture` if available, grep for unreferenced exports | Unused imports, unreferenced symbols, orphan modules |
 | `cli-drift` | `uv run gz cli audit`, `gz validate --cli-alignment` | Unregistered verbs in docs, undocumented verbs in code |

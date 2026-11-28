@@ -12,8 +12,15 @@
     },
     {
       "type": "exitCodeEquals",
-      "command": "uv run coverage report --fail-under=40",
-      "expected": 0
+      "command": "uv run python .gzkit/chores/coverage-40pct/check_coverage_floor.py --self-test",
+      "expected": 0,
+      "description": "the floor gate has teeth: a raised manifest floor fails, an undeclared one is an error"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run python .gzkit/chores/coverage-40pct/check_coverage_floor.py",
+      "expected": 0,
+      "description": "measured coverage is at or above .gzkit/manifest.json thresholds.coverage_floor"
     }
   ]
 }
