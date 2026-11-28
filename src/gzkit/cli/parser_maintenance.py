@@ -992,6 +992,12 @@ def _register_quality_parsers(
         help="Canon names models by class, never a versioned ID, exit 3 (GHI #1284).",
     )
     p_validate.add_argument(
+        "--size-limit-citations",
+        dest="check_size_limit_citations",
+        action="store_true",
+        help="Function and module size cite the threshold table, never a number, exit 3.",
+    )
+    p_validate.add_argument(
         "--changelog",
         dest="check_changelog",
         action="store_true",
@@ -1266,6 +1272,7 @@ def _register_quality_parsers(
             check_distribution_regenerate=a.check_distribution_regenerate,
             check_wheel_path_literals=a.check_wheel_path_literals,
             check_model_class_only=a.check_model_class_only,
+            check_size_limit_citations=a.check_size_limit_citations,
             check_hexagon_dependencies=a.check_hexagon_dependencies,
             check_hexagon_tests=a.check_hexagon_tests,
             check_changelog=a.check_changelog,

@@ -141,6 +141,7 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     # but the catch/no-catch decision is gzkit Python, not an external tool.
     "Wheel path literals": ("audit", "src/", "bound", "python_function"),
     "Model class only": ("audit", ".gzkit/", "bound", "python_function"),
+    "Size limit citations": ("audit", ".gzkit/", "bound", "python_function"),
     "Doc code citations": ("audit", "docs/", "bound", "python_function"),
     "Brief structure": ("audit", "docs/", "bound", "python_function"),
     "Brief size": ("audit", "docs/", "bound", "python_function"),

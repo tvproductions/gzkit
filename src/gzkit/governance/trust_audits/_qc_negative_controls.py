@@ -52,6 +52,7 @@ from ._qc_nc_entrypoints import (
     _ep_hexagon_tests,
     _ep_hexagon_tests_admits_baselined,
     _ep_model_class_only,
+    _ep_size_limit_citations,
     _ep_supply_chain_audit,
     _ep_supply_chain_audit_admits_ignored,
 )
@@ -1616,6 +1617,44 @@ def _build_hexagon_dependencies_baselined() -> Path:
     return root
 
 
+def _build_size_limit_citations() -> Path:
+    """Plant a restated size limit in each root, with two decoys that must pass.
+
+    Each file sits directly under its root, so the entrypoint can name the root
+    each finding came from. The roots are written literally, not read from the
+    audit. The decoys are a dated-history line in source and the threshold
+    authority, which names its own numbers (GHI #1370).
+
+    Returns:
+        The fixture project root.
+
+    """
+    # The numbers are filled in at run time: this module is source the scope reads,
+    # and a literal limit here would be a finding against gzkit itself.
+    function_lines, module_lines = 50, 600
+    function_limit = f"Keep functions under {function_lines} lines.\n"
+    root = _mkroot("size-limit-citations")
+    for rel in (
+        ".gzkit/skills",
+        ".gzkit/rules",
+        ".gzkit/personas",
+        ".gzkit/agents",
+        ".gzkit/templates",
+        "docs/user",
+    ):
+        _write(root / rel / "x.md", function_limit)
+    _write(
+        root / "src" / "gzkit" / "x.py",
+        f'"""Keep modules under the {module_lines}-line cap."""\n',
+    )
+    _write(
+        root / "src" / "gzkit" / "y.py",
+        '"""Split to stay under the 600-line module cap then in force."""\n',
+    )
+    _write(root / ".gzkit" / "rules" / "complexity-thresholds.md", function_limit)
+    return root
+
+
 def _build_wheel_path_literals() -> Path:
     """Plant a wheel-shipped skill doc naming a path rooted in one user's home.
 
@@ -2815,6 +2854,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_model_class_only,
         _ep_model_class_only,
         "Versioned model ID",
+    ),
+    (
+        "size-limit-citations",
+        _build_size_limit_citations,
+        _ep_size_limit_citations,
+        "states a function or module size limit",
     ),
     (
         "hexagon-dependencies",

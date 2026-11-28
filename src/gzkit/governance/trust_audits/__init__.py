@@ -181,6 +181,7 @@ from gzkit.governance.trust_audits.sensitivity import (
 )
 from gzkit.governance.trust_audits.session_green_gate import audit_session_green_gate
 from gzkit.governance.trust_audits.setpoint_coherence import validate_setpoint_coherence
+from gzkit.governance.trust_audits.size_limit_citations import audit_size_limit_citations
 from gzkit.governance.trust_audits.status_writer_coverage import (
     audit_status_writer_coverage,
 )
@@ -294,6 +295,7 @@ __all__ = [
     "audit_router_tables",
     "audit_sensitivity_binding",
     "audit_session_green_gate",
+    "audit_size_limit_citations",
     "audit_skill_alignment",
     "audit_skill_code_citations",
     "audit_status_writer_coverage",

@@ -10,7 +10,8 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--interviews] [--decomposition]
             [--requirements] [--commit-trailers]
             [--taxonomy] [--chores-layout] [--distribution] [--wheel-path-literals]
-            [--model-class-only] [--hexagon-dependencies] [--hexagon-tests]
+            [--model-class-only] [--size-limit-citations]
+            [--hexagon-dependencies] [--hexagon-tests]
             [--changelog]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
             [--surface-fidelity]
@@ -1106,6 +1107,63 @@ uv run gz validate --model-class-only --json
 ```
 
 Rule home: `.gzkit/rules/model-selection.md` § Skill frontmatter.
+
+### `--size-limit-citations`
+
+Fails closed when an instruction surface or gzkit source states a function or
+module size limit as a number instead of citing the threshold table (GHI #1366;
+a `gz validate` scope since GHI #1370). Runs in the **default** `gz check`
+scope, so the flag is for scoping a single run.
+
+Function and module size are the `lizard_nloc` and `lizard_file_nloc` bands of
+`.gzkit/rules/complexity-thresholds.json`. When the table moved off the old
+numbers, skills, a persona and docstrings kept restating them as the rule, and
+nothing noticed.
+
+**Scope** — Markdown under `.gzkit/skills/`, `.gzkit/rules/`,
+`.gzkit/personas/`, `.gzkit/agents/`, `.gzkit/templates/` and `docs/user/`,
+which may state no size limit as a number; and Python under `src/gzkit/`, which
+may state one only as dated history, on a line that also says "then" ("the cap
+then in force"). The threshold authority itself is not read. Class size is out
+of scope, because `pythonic.md` owns that limit, and so is a measured size ("this
+87-line function"), which states no limit. A root absent from gzkit's own tree is
+a finding, so a renamed directory cannot shrink the fence; in an adopter project
+an absent root is skipped.
+
+#### What fails closed
+
+| Shape | Example |
+|-------|---------|
+| Subject, comparison, number | "functions exceeding *N* lines", "modules >*N* LOC" |
+| Subject, then a numbered limit | "modules under the *N*-line cap" |
+| Numbered limit naming the subject | "the *N*-line module cap" |
+
+The patterns read one line at a time; #1367 tracks the phrasings and roots they
+miss.
+
+#### Exit codes
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | No surface restates a size limit | — |
+| 1 | A surface states a size limit as a number | Cite the `lizard_nloc` / `lizard_file_nloc` bands of the threshold table (or, in source, date the line), then re-run `uv run gz validate --size-limit-citations` |
+
+Measured, not transcribed: a planted module-size limit stated as a number in a
+temporary project's `.gzkit/skills/` exits **1** with `path:line` attribution,
+and the clean project exits **0**. Under an open Maintenance Hangar the finding
+is reported advisory and the run exits 0.
+
+#### Examples
+
+```bash
+# Scope a run to this check alone
+uv run gz validate --size-limit-citations
+
+# Machine-readable output
+uv run gz validate --size-limit-citations --json
+```
+
+Rule home: `.gzkit/rules/pythonic.md` § Size Limits.
 
 ### `--hexagon-dependencies`
 
@@ -3449,6 +3507,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--waiver-ratchet` | opt-in | Every waiver, grandfather or baseline surface that gates a `gz check` step carries exactly one honesty mechanism (ADR-0.0.73 / OBPI-0.0.73-09) |
 | `--wheel-path-literals` | yes | Wheel-shipped instruction text names no path only its authoring environment can resolve (GHI #900) |
 | `--model-class-only` | yes | Rule, skill and agent canon name Claude models by class, never by a versioned ID (GHI #1284) |
+| `--size-limit-citations` | yes | Instruction surfaces and source cite the threshold table for function and module size, never a number (GHI #1366, #1370) |
 | `--hexagon-dependencies` | yes | The package holds to the hexagon's dependency rules read from the package map; today's findings in a shrink-only baseline (RP-15 tranche 6) |
 | `--hexagon-tests` | yes | Every test module covering a hexagon region holds to fakes only, given/when/then labels and `@covers`; today's findings in a shrink-only baseline (RP-7) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |

@@ -667,6 +667,43 @@ def _ep_model_class_only(root: Path) -> list[ValidationError]:
     return errors
 
 
+#: The roots the size-limit control plants, spelled here rather than read from the
+#: audit, so a scope that dropped one fails the control (GHI #1370).
+_SIZE_LIMIT_ROOTS = frozenset(
+    {
+        ".gzkit/skills",
+        ".gzkit/rules",
+        ".gzkit/personas",
+        ".gzkit/agents",
+        ".gzkit/templates",
+        "docs/user",
+        "src/gzkit",
+    }
+)
+
+
+def _ep_size_limit_citations(root: Path) -> list[ValidationError]:
+    """Return the findings only when every planted root fires and no decoy does.
+
+    Each root holds one restated limit; the decoys are a dated-history line in
+    source and the threshold authority itself. A scope that dropped a root, lost
+    the history allowance or read the authority reports no catch (GHI #1370).
+
+    Returns:
+        Every finding when exactly the planted roots fired, otherwise nothing.
+
+    """
+    from gzkit.governance.trust_audits.size_limit_citations import (  # noqa: PLC0415
+        audit_size_limit_citations,
+    )
+
+    errors = audit_size_limit_citations(root)
+    caught = {e.artifact.rsplit("/", 1)[0] for e in errors}
+    if caught != _SIZE_LIMIT_ROOTS or len(errors) != len(_SIZE_LIMIT_ROOTS):
+        return []
+    return errors
+
+
 def _ep_validate_default_scopes(root: Path) -> list[ValidationError]:
     """Run the whole default `gz validate` tier, as the bare invocation does."""
     from gzkit.commands.validate_cmd import _collect_errors  # noqa: PLC0415

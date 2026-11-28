@@ -314,6 +314,10 @@
       "class": "read_only",
       "measured_seconds": 0.29
     },
+    "Size limit citations": {
+      "class": "read_only",
+      "measured_seconds": 0.5
+    },
     "tautological test audit": {
       "class": "read_only",
       "measured_seconds": 1.81

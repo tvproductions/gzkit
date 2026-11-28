@@ -44,6 +44,7 @@
     "lock_exchange_coupling",
     "manifest",
     "model_class_only",
+    "size_limit_citations",
     "mx_hardening",
     "id_seam",
     "astral_discipline",

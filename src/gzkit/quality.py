@@ -1583,6 +1583,23 @@ def run_model_class_only_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --model-class-only", cwd=project_root)
 
 
+def run_size_limit_citations_audit(project_root: Path) -> QualityResult:
+    """Run the size-limit citation fence over instruction surfaces and source (GHI #1370).
+
+    Fails closed on a function or module size limit restated as a number, which
+    goes stale whenever the threshold table moves (GHI #1366). Wired here
+    explicitly although the scope is default-tier, for the reason
+    `run_wheel_path_literals_audit` records. Recovery: cite the lizard_nloc /
+    lizard_file_nloc bands of `.gzkit/rules/complexity-thresholds.json`, then
+    `uv run gz validate --size-limit-citations`.
+
+    Returns:
+        The result of the scoped `gz validate` run.
+
+    """
+    return run_command("uv run gz validate --size-limit-citations", cwd=project_root)
+
+
 def run_wheel_path_literals_audit(project_root: Path) -> QualityResult:
     """Run the delivered-instruction resolvability gate over wheel-shipped Markdown.
 

@@ -99,6 +99,11 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     # table, allowlist or marker admits one; the roots it reads and the ID pattern
     # are fixed code properties that define what a violation is. GHI #1284.
     "model-class-only": EXEMPTS_NONE,
+    # Scans instruction surfaces and source for a size limit stated as a number.
+    # No waiver table, allowlist or marker admits one: the roots, the patterns and
+    # the dated-history form ("then") are fixed code properties that define what a
+    # violation is, and the authority file is the scope's subject. GHI #1370.
+    "size-limit-citations": EXEMPTS_NONE,
     # Measures live briefs against packaged bounds. A project may record a ceiling
     # for a brief already over a bound, which is an admit path a project controls,
     # so it is exercised by a registered control rather than declared away. The
