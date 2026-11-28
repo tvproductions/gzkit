@@ -1,4 +1,4 @@
-# Copilot Briefs (GovZero v6)
+# OBPI Briefs (GovZero v6)
 Status: Active
 Last reviewed: 2026-02-04
 
@@ -85,9 +85,9 @@ and ensures implementations don't violate established contracts.
 
 This brief template defers to the canonical repo policies (GovZero v6):
 
-- `.github/copilot-instructions.md` — repo-wide agent guidance and rituals
-- `.github/instructions/governance_core.instructions.md` — canonical governance policy
-- `.github/instructions/*.instructions.md` — scoped guardrails (tests, CLI, warehouse, cross-platform)
+- `AGENTS.md` — repo-wide agent contract and rituals
+- `docs/governance/GovZero/command-doctrine.md` — the constitution every gate traces to
+- `.gzkit/rules/*.md` — scoped guardrails (tests, CLI, cross-platform)
 
 > SemVer ADR workflow
 > Each brief implements or updates exactly one ADR-{semver} checklist item.
@@ -109,7 +109,7 @@ This brief template defers to the canonical repo policies (GovZero v6):
 
 ## Agent Mode (All Lanes)
 
-This brief is read and acted upon by AI agents (Copilot, Claude, Codex). Agents operate under these constraints:
+This brief is read and acted upon by AI agents (each vendor enabled in `.gzkit.json` § `vendors`). Agents operate under these constraints:
 
 **Role & Authority:**
 
@@ -235,7 +235,7 @@ Use clear sectioning and ordering to reduce ambiguity:
 Use Markdown headings for structure and XML tags to delimit examples and
 context blocks.
 
-## ✴️ COPILOT BRIEF — LITE (OBPI DEFAULT)
+## ✴️ OBPI BRIEF — LITE (OBPI DEFAULT)
 
 ### TITLE (Lite)
 
@@ -417,9 +417,8 @@ If the plan is questioned or modified, update it and re-present.
 **Governance (read once, cache):**
 
 - [ ] `.github/discovery-index.json` — repo structure and verification commands
-- [ ] `.github/copilot-instructions.md` — repo-wide rules
 - [ ] `AGENTS.md` — agent operating contract
-- [ ] `.github/instructions/{relevant}.instructions.md` — domain-specific rules (if applicable)
+- [ ] `.gzkit/rules/{relevant}.md` — domain-specific rules (if applicable)
 
 **Context:**
 
@@ -555,7 +554,7 @@ statuses require full ADR folder structure in `adr-X.Y.x/`.
 
 ---
 
-## 🛡️ COPILOT BRIEF — HEAVY (EXTERNAL CONTRACT)
+## 🛡️ OBPI BRIEF — HEAVY (EXTERNAL CONTRACT)
 
 ### TITLE (Heavy)
 
@@ -712,9 +711,8 @@ If an example cannot be tested or a BDD scenario cannot be implemented immediate
 **Governance (read once, cache):**
 
 - [ ] `.github/discovery-index.json` — repo structure and verification commands
-- [ ] `.github/copilot-instructions.md` — repo-wide rules
 - [ ] `AGENTS.md` — agent operating contract
-- [ ] `.github/instructions/{relevant}.instructions.md` — domain-specific rules
+- [ ] `.gzkit/rules/{relevant}.md` — domain-specific rules
 
 **Context:**
 

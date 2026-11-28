@@ -187,7 +187,7 @@ This reference is implemented in `gzkit` through runtime and governance surfaces
 
 - `uv run gz readiness audit` for four-discipline/five-primitive scoring.
 - `docs/governance/governance_runbook.md` for readiness-driven remediation workflow.
-- `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, and `.github/discovery-index.json` as core context/constraint surfaces.
+- `AGENTS.md`, `CLAUDE.md`, and `.github/discovery-index.json` as core context/constraint surfaces.
 - OBPI templates and brief workflows for self-contained problem statements, acceptance criteria, and decomposition.
 - Gate evidence (`gz check`, `gz implement`, `gz gates`, `gz closeout`, `gz attest`) for evaluation design and human authority boundaries.
 
