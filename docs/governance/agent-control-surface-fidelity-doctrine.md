@@ -38,30 +38,36 @@ The doctrine does not introduce a new philosophical claim. It names what the ups
 This doctrine is invariant across implementation eras (per ADR-0.0.34 — Agent Control Surface Rendering Substrate):
 
 - **Era 1 — hand-authored:** hand-authored + partial-templated static files. Validators grep against rendered output and the limited canonical sources that exist. Still the method for `CLAUDE.md`, `.gzkit/rules/**` and the nested AGENTS.md they fan out to (#921), and for root AGENTS.md on its bootstrap path before a first committed rendition, where a template is parsed into a content model and rendered through `src/gzkit/content/render/pipeline.py`.
-- **Era 2 — substrate landed (in part):** corpus composition: `gz content compose` (`src/gzkit/content/composer.py`) joins the corpus entries into a candidate rendition, which is committed and played back. Validators check the delivered surface against its corpus (`gz validate --invariant-coherence` byte-compares AGENTS.md with its rendition playback); tests are sharper. Landed for root AGENTS.md (`.gzkit/corpus/AGENTS.md.jsonl`); not yet for `CLAUDE.md` or the rules.
+- **Era 2 — substrate landed (in part):** corpus composition: `gz content compose` (`src/gzkit/content/composer.py`) builds a candidate rendition, in generated mode by joining the corpus entries and in explicit mode by staging an agent-compressed candidate checked against the invariant floor; the candidate is committed and played back. Validators check the delivered surface against its corpus (`gz validate --invariant-coherence` byte-compares AGENTS.md with its rendition playback); tests are sharper. Landed for root AGENTS.md (`.gzkit/corpus/AGENTS.md.jsonl`); not yet for `CLAUDE.md` or the rules.
 - **Era 3 — progressive disclosure:** scenario-aware retrieval composes per-turn surface on demand. Validators check the per-scenario render; canonical bullet-retention claims become bullet-reachability-from-scenario claims.
 
 **Current state (a record of 2026-11-27, operator ruling "A", GHI #1416): Era 2 in part**, as above. The live population is `.gzkit/corpus/` and `sync_surfaces.py`, never this line.
 
 In every era, the agent reads a static document. What changes is composition method. **The doctrine's invariants survive transitions; validators evolve to test the active composition method.** Errors in the rendered output become feedback to whatever composition method is active.
 
-## The four invariants
+## The invariants
+
+Three are live. **Invariant 4 was retired on 2026-07-25** (§ Invariant 4 below).
 
 ### Invariant 1 — Bullet retention
 
-Every bullet on the canonical advisory scorecard (`docs/governance/advisory-rules-audit.md`) classified Mechanical or Promotable MUST be present, verbatim, in the per-turn agent control surface (or, for a surface where Era 2 has landed, in the canonical Pydantic content model that renders it).
+Every bullet on the canonical advisory scorecard (`docs/governance/advisory-rules-audit.md`) classified Mechanical or Promotable MUST be retained in the per-turn agent control surface. Retention is tier-scoped (ADR-0.0.33 § Amendment (2026-06-03), OBPI-0.0.37-25): the invariant preserved is that no binding information is lost, not that every byte is identical.
 
-**Mechanical check (Era 1):**
+**Mechanical check:**
 
 ```bash
 uv run gz validate --bullet-retention
 ```
 
-Reads the advisory scorecard for Mechanical/Promotable rows; asserts each bullet's substring presence in the union of `AGENTS.md` + `CLAUDE.md` + `.claude/rules/**`. Exit 3 on any missing bullet.
+Reads the advisory scorecard for Mechanical/Promotable rows, then checks each by its corpus tier (`src/gzkit/governance/trust_audits/bullet_retention.py`):
 
-**Mechanical check (Era 2):**
+- **Invariant tier**, and any bullet that maps to no corpus entry: the bullet's normalized text MUST appear verbatim in the union of `AGENTS.md` + `CLAUDE.md` + `.claude/rules/**`.
+- **Compressible tier**: retention is satisfied by a valid advisor-QC information-retention witness for the entry's committed rendition, the latest `rendition_advisor_verdict` ledger event, whose `arb-step-judge-*` receipt exists with `exit_status == 0`.
+- A row attributed to a `SKILL.md` or an ADR file is checked against that file.
 
-Diff canonical Pydantic content models against the advisory scorecard; assert every Mechanical/Promotable bullet is registered as a `Bullet` instance in some `AgentContract.pillars[*].bullets` (or equivalent per surface).
+Exit 3 on any retention violation.
+
+> **Amendment (2026-11-27, GHI #1417):** this section described an Era-1 substring check and an Era-2 `AgentContract.pillars[*].bullets` model diff. Neither is the check that runs; the tier-scoped check above replaced them.
 
 ### Invariant 2 — Surface weight regression
 
@@ -97,21 +103,17 @@ uv run gz validate --pointer-anchors
 
 Parses every `> See [...]` blockquote pointer in `AGENTS.md` + `CLAUDE.md` + `.claude/rules/**`; resolves each to its destination file and anchor; asserts the anchor exists. Reverse-checks: every `<!-- lifted-from: -->` comment in `docs/governance/**` has a matching back-pointer at the origin. Exit 3 on any unresolved pointer.
 
-### Invariant 4 — Loading-scenario reachability
+### Invariant 4 — Loading-scenario reachability (RETIRED 2026-07-25)
 
-Every Mechanical/Promotable bullet MUST be reachable from at least one declared loading scenario. No bullet may be present in a canonical source but unreachable by any scenario's loading rules.
+> **Amendment (2026-11-27, GHI #1417):** Invariant 4 was retired by operator ruling on 2026-07-25 (#716; `ab7bbd6b3`; ADR-0.0.33 § Amendment (2026-07-25)). Its validator, the `gz validate --scenario-reachability` flag and their tests were removed; the loading-scenarios registry it awaited was never built. The text below is struck through in place, as ADR-0.0.33 did, and prescribes nothing; its command block is removed because the command no longer exists.
 
-A loading scenario is the (vendor harness × operator moment) tuple that the harness honors when deciding what to load. Today these are implicit in `paths:` frontmatter (Claude Code) and equivalent vendor-specific scoping. The substrate doctrine (ADR-0.0.34) commits to making them explicit as a registry; this doctrine commits to validating reachability against that registry.
+~~Every Mechanical/Promotable bullet MUST be reachable from at least one declared loading scenario. No bullet may be present in a canonical source but unreachable by any scenario's loading rules.~~
 
-**Mechanical check (Era 2 onward):**
+~~A loading scenario is the (vendor harness × operator moment) tuple that the harness honors when deciding what to load. Today these are implicit in `paths:` frontmatter (Claude Code) and equivalent vendor-specific scoping. The substrate doctrine (ADR-0.0.34) commits to making them explicit as a registry; this doctrine commits to validating reachability against that registry.~~
 
-```bash
-uv run gz validate --scenario-reachability
-```
+~~Reads `data/agent-control-surface-scenarios.json` (the loading-scenarios registry); asserts every Mechanical/Promotable bullet is reachable from at least one scenario's loading rules; warns on bullets reachable from zero scenarios (orphans). Exit 3 on any orphan with no waiver.~~
 
-Reads `data/agent-control-surface-scenarios.json` (the loading-scenarios registry); asserts every Mechanical/Promotable bullet is reachable from at least one scenario's loading rules; warns on bullets reachable from zero scenarios (orphans). Exit 3 on any orphan with no waiver.
-
-**Era-1 fallback:** since the registry does not yet exist as a canonical artifact, this validator runs in advisory mode (warning only) until ADR-0.0.34 substrate work lands the registry.
+~~**Era-1 fallback:** since the registry does not yet exist as a canonical artifact, this validator runs in advisory mode (warning only) until ADR-0.0.34 substrate work lands the registry.~~
 
 ## Levers and constraints
 
@@ -130,17 +132,16 @@ The doctrine works the levers gzkit owns to shape outcomes within constraints gz
 Validators wire up under both composite and narrow `gz validate` scopes, matching gzkit's existing pattern:
 
 ```bash
-# Composite — runs all four invariants
+# Composite — runs the three live invariants
 uv run gz validate --surface-fidelity
 
 # Narrow — granular CI signal
 uv run gz validate --bullet-retention
 uv run gz validate --surface-weight
 uv run gz validate --pointer-anchors
-uv run gz validate --scenario-reachability
 ```
 
-`gz check` includes `--surface-fidelity` in its default pipeline. Pre-commit hooks include the cheap structural checks (bullet retention + weight + pointer anchors); scenario reachability is CI-only until the registry lands.
+`gz check` includes `--surface-fidelity` in its default pipeline. Pre-commit hooks include the cheap structural checks (bullet retention + weight + pointer anchors).
 
 ## Test surface
 
@@ -149,7 +150,7 @@ Tests live under `tests/governance/` per the per-rule-file naming pattern:
 - `tests/governance/test_bullet_retention.py` — REQ-derived assertions per `.gzkit/rules/tests.md` § Tests assert semantics, not strings. Asserts each Mechanical/Promotable bullet is present in the per-turn surface; named per the eval-awareness corollary (no `assert_audit_passes`-shaped names).
 - `tests/governance/test_surface_weight.py` — asserts current per-turn line count is within band; exercises waiver-entry validation; pins the snapshot file's schema.
 - `tests/governance/test_pointer_integrity.py` — parses pointers; resolves anchors; pins the `<!-- lifted-from: -->` comment shape.
-- `tests/governance/test_scenario_reachability.py` — Era-2-onward; asserts bullet-to-scenario reachability against the registry.
+- ~~`tests/governance/test_scenario_reachability.py` — Era-2-onward; asserts bullet-to-scenario reachability against the registry.~~ Removed with Invariant 4 (#716).
 
 Tests run as part of `gz test`; `gz check` includes the validator pipeline; pre-commit fires the cheap subset.
 
@@ -193,6 +194,6 @@ GHI #327 — instructions-files-diet pass surfaced the empirical question: "how 
 
 ## Behavioral test layer (deferred follow-up)
 
-The four invariants are *structural* — they answer "did the rule survive the edit?" The complementary *behavioral* test layer answers "does the agent comply with the rule when the surface is loaded?" That layer requires a golden-dataset of (input, expected behavior) pairs and LLM-as-judge or assertion-based grading; it is materially more expensive and less deterministic. The behavioral layer is acknowledged here as the second tier of fidelity testing; its design lives under a separate follow-up GHI to be authored when the structural layer is operating.
+The invariants are *structural* — they answer "did the rule survive the edit?" The complementary *behavioral* test layer answers "does the agent comply with the rule when the surface is loaded?" That layer requires a golden-dataset of (input, expected behavior) pairs and LLM-as-judge or assertion-based grading; it is materially more expensive and less deterministic. The behavioral layer is acknowledged here as the second tier of fidelity testing; its design lives under a separate follow-up GHI to be authored when the structural layer is operating.
 
 Structural-without-behavioral is not full fidelity. Behavioral-without-structural is testing against a corpus that may have already silently lost rules. The mature stack runs both. This doctrine commits to the structural layer; the behavioral layer is named, deferred, and tracked.
