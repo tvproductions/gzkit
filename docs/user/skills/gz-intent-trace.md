@@ -6,7 +6,7 @@ Trace a sampled set of ADRs from declared intent to shipped surface, and route e
 
 ## Purpose
 
-`/gz-intent-trace` answers one question per ADR: **does the shipped surface fulfil its original declared intent?** Every `no` is a *correction* routed under the owning ADR — never a fresh pool ADR, never new-design ceremony, and never an "enhancement". That routing is operator canon: discovering that more is needed to fulfil the intent of a feature is a correction, not an enhancement.
+`/gz-intent-trace` answers one question per ADR: **does the shipped surface fulfil its original declared intent?** Every `no` is a *correction* routed under the owning ADR — never a fresh pool ADR, never new-design ceremony, and never an "enhancement". That routing is operator canon: discovering that more is needed to fulfill the intent of a feature is a correction, not an enhancement.
 
 Distinct from `/gz-adr-audit`, which asks whether an ADR's evidence chain supports closeout. This skill asks whether the thing that shipped does what was decided.
 
