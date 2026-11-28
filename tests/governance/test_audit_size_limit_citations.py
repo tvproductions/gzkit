@@ -186,6 +186,18 @@ class AuditTests(unittest.TestCase):
         )
         self.assertEqual(artifacts, ["src/gzkit/a.py:1", "src/gzkit/a.py:4"])
 
+    def test_a_comment_run_is_one_block_so_a_wrapped_limit_is_seen(self) -> None:
+        artifacts = self._artifacts(
+            {"src/gzkit/a.py": "x = 1\n# Keep modules under\n# 600 lines.\ny = 2\n"}
+        )
+        self.assertEqual(artifacts, ["src/gzkit/a.py:2"])
+
+    def test_source_that_does_not_tokenize_is_still_read(self) -> None:
+        artifacts = self._artifacts(
+            {"src/gzkit/a.py": 'x = (\n"""Keep modules under the 600-line cap.\n'}
+        )
+        self.assertEqual(artifacts, ["src/gzkit/a.py:1"])
+
     def test_dated_records_proofs_and_pool_adrs_are_not_read(self) -> None:
         limit = "Keep functions under 50 lines.\n"
         artifacts = self._artifacts(
@@ -212,6 +224,7 @@ class AuditTests(unittest.TestCase):
         self.assertEqual(on_adopter, [])
 
     def test_message_names_the_rule_and_the_recovery_command(self) -> None:
+        # output-contract: guardrail-feedback-prose — what failed, why, the governed next step
         with tempfile.TemporaryDirectory() as tmp:
             root = _tree(Path(tmp), {".gzkit/skills/s/SKILL.md": "modules >600 LOC\n"})
             (error,) = audit_size_limit_citations(root)
@@ -219,6 +232,7 @@ class AuditTests(unittest.TestCase):
         self.assertIn("modules >600 LOC", error.message)
         self.assertIn("pythonic.md", error.message)
         self.assertIn("complexity-thresholds.json", error.message)
+        self.assertIn('"then in force"', error.message)
         self.assertIn("uv run gz validate --size-limit-citations", error.message)
 
 

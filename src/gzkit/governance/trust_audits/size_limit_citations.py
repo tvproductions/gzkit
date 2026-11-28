@@ -161,12 +161,12 @@ def states_size_limit(text: str) -> bool:
 def _limit_in(sentence: str) -> bool:
     """Return whether *sentence*, or a code span in it read alone, states a size limit."""
     phrases = (sentence.replace("`", ""), *_CODE_SPAN.findall(sentence))
-    for phrase in phrases:
-        for pattern in PATTERNS:
-            match = pattern.search(phrase)
-            if match and not _NOT_SIZE.search(match.group(0)):
-                return True
-    return False
+    return any(
+        not _NOT_SIZE.search(match.group(0))
+        for phrase in phrases
+        for pattern in PATTERNS
+        if (match := pattern.search(phrase))
+    )
 
 
 def _markdown_blocks(text: str) -> Iterator[tuple[int, str]]:
@@ -178,7 +178,15 @@ def _markdown_blocks(text: str) -> Iterator[tuple[int, str]]:
 
 
 def _python_blocks(text: str) -> Iterator[tuple[int, str]]:
-    """Yield each string and each run of comment lines, with the line it starts on."""
+    """Yield each string and each run of comment lines, with the line it starts on.
+
+    The stream always ends in ENDMARKER, which flushes a comment run left open at the
+    end of the file. Source that does not tokenize is read as Markdown blocks instead.
+
+    Yields:
+        (line, block) for each string token and each comment run.
+
+    """
     try:
         tokens = list(tokenize.generate_tokens(io.StringIO(text).readline))
     except tokenize.TokenError, SyntaxError:
@@ -199,8 +207,6 @@ def _python_blocks(text: str) -> Iterator[tuple[int, str]]:
             comments = []
         if token.type in _STRING_TOKENS:
             yield token.start[0], token.string
-    if comments:
-        yield first, "\n".join(comments)
 
 
 def size_limit_sentences(text: str, *, python: bool = False) -> list[tuple[int, str]]:
