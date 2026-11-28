@@ -310,6 +310,7 @@ class AuditTests(unittest.TestCase):
         self.assertIn("pythonic.md", error.message)
         self.assertIn("complexity-thresholds.json", error.message)
         self.assertIn('"then in force"', error.message)
+        self.assertIn('"(... at the time)"', error.message)
         self.assertIn("uv run gz validate --size-limit-citations", error.message)
 
 
