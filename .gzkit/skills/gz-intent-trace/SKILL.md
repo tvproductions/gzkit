@@ -22,7 +22,7 @@ Every `no` is a **correction routed under the owning ADR** — never a fresh poo
 ADR, never new-design ceremony, and never an "enhancement". That routing is
 operator canon, verbatim:
 
-> *"discovering that more is needed to fulfil the intent of a feature is not an
+> *"discovering that more is needed to fulfill the intent of a feature is not an
 > enhancement, it is a correction."*
 
 Enhancement means the surface works as designed and could merely be tighter.

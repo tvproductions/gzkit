@@ -70,7 +70,7 @@ Operator canon (`AGENTS.md`, verbatim) declares synthetic memory vital:
 
 **This ADR does not contest that.** It records that the current implementation
 does not fulfil it, which under operator doctrine is a **correction**, not an
-enhancement: *"discovering that more is needed to fulfil the intent of a feature
+enhancement: *"discovering that more is needed to fulfill the intent of a feature
 is not an enhancement, it is a correction."*
 
 ## Decision
