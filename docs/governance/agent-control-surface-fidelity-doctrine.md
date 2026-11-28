@@ -37,8 +37,10 @@ The doctrine does not introduce a new philosophical claim. It names what the ups
 
 This doctrine is invariant across implementation eras (per ADR-0.0.34 — Agent Control Surface Rendering Substrate):
 
-- **Era 1 — today:** hand-authored + partial-templated static files. Validators grep against rendered output and the limited canonical sources that exist (`.gzkit/corpus/AGENTS.md.jsonl`, `.gzkit/rules/**`).
-- **Era 2 — substrate landed:** Pydantic content models + Jinja2 templates render the full surface. Validators diff canonical models against rendered output; tests are sharper.
+- **Era 1 — hand-authored:** hand-authored + partial-templated static files. Validators grep against rendered output and the limited canonical sources that exist. Still the method for `CLAUDE.md`, `.gzkit/rules/**` and the nested AGENTS.md they fan out to (#921).
+- **Era 2 — substrate landed (in part):** corpus-backed Pydantic content models, rendered through the Jinja2 pipeline (`src/gzkit/content/render/pipeline.py`) and played back from a committed rendition. Validators diff canonical models against rendered output; tests are sharper. Landed for root AGENTS.md (`.gzkit/corpus/AGENTS.md.jsonl`); not yet for `CLAUDE.md` or the rules.
+
+**Current state (a record of 2026-11-27, operator ruling "A", GHI #1416): Era 2 in part**, as above. The live population is `.gzkit/corpus/` and `sync_surfaces.py`, never this line.
 - **Era 3 — progressive disclosure:** scenario-aware retrieval composes per-turn surface on demand. Validators check the per-scenario render; canonical bullet-retention claims become bullet-reachability-from-scenario claims.
 
 In every era, the agent reads a static document. What changes is composition method. **The doctrine's invariants survive transitions; validators evolve to test the active composition method.** Errors in the rendered output become feedback to whatever composition method is active.
@@ -47,7 +49,7 @@ In every era, the agent reads a static document. What changes is composition met
 
 ### Invariant 1 — Bullet retention
 
-Every bullet on the canonical advisory scorecard (`docs/governance/advisory-rules-audit.md`) classified Mechanical or Promotable MUST be present, verbatim, in the per-turn agent control surface (or — once Era 2 lands — in the canonical Pydantic content model that renders the surface).
+Every bullet on the canonical advisory scorecard (`docs/governance/advisory-rules-audit.md`) classified Mechanical or Promotable MUST be present, verbatim, in the per-turn agent control surface (or, for a surface where Era 2 has landed, in the canonical Pydantic content model that renders it).
 
 **Mechanical check (Era 1):**
 

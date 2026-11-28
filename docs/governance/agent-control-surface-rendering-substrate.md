@@ -285,9 +285,11 @@ The doctrine governs the *output's fidelity to its declared invariants*, not the
 
 | Era | Composition method | What changes | What does not change |
 |---|---|---|---|
-| **Era 1 — today** | Hand-authored static files (mostly) + partial templating (`src/gzkit/templates/agents.md` → AGENTS.md via naive substitution) | — | Validators check rendered output against canonical models (where models exist) |
-| **Era 2 — substrate landed** | Corpus composition/playback for agents/claude and rules; canonical-file sync for skills | Composition becomes principled within its declared population | Validators check each delivered surface against its own canonical source |
+| **Era 1 — hand-authored** | Hand-authored static files + partial templating. Still the method for `CLAUDE.md` (rendered from the `claude` template), `.gzkit/rules/**` and the nested AGENTS.md they fan out to (#921); for root AGENTS.md, only the bootstrap path before a first committed rendition (`.gzkit/templates/agents.md`, else the packaged template) | — | Validators check rendered output against canonical models (where models exist) |
+| **Era 2 — substrate landed (in part)** | Corpus composition/playback for agents/claude and rules; canonical-file sync for skills. Landed for root AGENTS.md, played back from its committed rendition of `.gzkit/corpus/AGENTS.md.jsonl`; not yet for `CLAUDE.md` or the rules | Composition becomes principled within its declared population | Validators check each delivered surface against its own canonical source |
 | **Era 3 — progressive disclosure** | Scenario-aware retrieval selects applicable canonical content | Loading scenarios become first-class; surface size becomes per-scenario | Retrieval does not expand corpus construction to skills; source and delivery fidelity still bind |
+
+**Current state (a record of 2026-11-27, operator ruling "A", GHI #1416): Era 2 in part.** Root AGENTS.md is corpus playback; `CLAUDE.md` and the rules remain Era 1. The live population is `.gzkit/corpus/` and `sync_surfaces.py`, never this line.
 
 In every era, the agent reads a static document. What changes is *how the document is composed*. **Errors of what is printed become feedback for the CMS process (the composition pipeline) regardless of which era's pipeline is active.** The doctrine's invariants survive the transitions; the validators evolve to test the active composition method.
 

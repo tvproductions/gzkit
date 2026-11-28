@@ -338,9 +338,10 @@ def _persona_surface_allowed_paths(checklist_lower: str) -> list[str]:
     if not _matches_any(checklist_lower, ("agents.md", "persona section", "template")):
         return []
     return [
-        "- `AGENTS.md` — primary context-frame contract",
-        "- `src/gzkit/templates/agents.md` — generated AGENTS template source",
-        "- `src/gzkit/templates/adr.md` — ADR template surface for future context frames",
+        "- `AGENTS.md` — primary context-frame contract, played back from its corpus",
+        "- `.gzkit/corpus/AGENTS.md.jsonl` — AGENTS.md canon (GHI #1416)",
+        "- `.gzkit/templates/agents.md` — AGENTS bootstrap template, used before a first rendition",
+        "- `.gzkit/templates/adr.md` — ADR template surface for future context frames",
         "- `src/gzkit/sync_surfaces.py` — AGENTS regeneration surface",
     ]
 

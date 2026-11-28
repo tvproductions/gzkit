@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 
 from gzkit.cli import main
-from gzkit.commands.specify_cmd import _extract_backticked_paths
+from gzkit.commands.specify_cmd import _extract_backticked_paths, _persona_surface_allowed_paths
 from gzkit.governance.brief_structure import BriefStructure, parse_brief
 from tests.commands.common import CliRunner, _quick_init
 
@@ -32,6 +32,26 @@ class TestExtractBacktickedPathsLineRangeNormalization(unittest.TestCase):
     def test_plain_path_without_suffix_unchanged(self) -> None:
         text = "`src/gzkit/commands/plan.py` is the scaffolder."
         self.assertEqual(_extract_backticked_paths(text), ["src/gzkit/commands/plan.py"])
+
+
+class TestPersonaSurfaceSuggestionsNameCanon(unittest.TestCase):
+    """GHI #1416: suggested Allowed Paths name canon, never a package copy.
+
+    Root AGENTS.md is played back from its corpus, and template canon lives
+    under ``.gzkit/templates/`` (#1410); ``src/gzkit/templates/`` is the
+    generated package copy, which an edit would lose at the next sync.
+    """
+
+    def _paths(self) -> list[str]:
+        lines = _persona_surface_allowed_paths("update the agents.md persona section")
+        return [line.split("`")[1] for line in lines]
+
+    def test_no_suggested_path_is_a_package_template_copy(self) -> None:
+        for path in self._paths():
+            self.assertFalse(path.startswith("src/gzkit/templates/"), msg=path)
+
+    def test_the_agents_corpus_is_suggested(self) -> None:
+        self.assertIn(".gzkit/corpus/AGENTS.md.jsonl", self._paths())
 
 
 class TestSpecifyCommand(unittest.TestCase):
