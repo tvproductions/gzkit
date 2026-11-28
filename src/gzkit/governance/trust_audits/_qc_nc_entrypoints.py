@@ -771,6 +771,46 @@ def _ep_tidy_verdict_citations(root: Path) -> list[ValidationError]:
     return errors
 
 
+#: The roots and root files the moved-fact control plants, spelled here rather than
+#: read from the audit, so a scope that dropped one fails the control (GHI #1370).
+_MOVED_FACT_PLANTS = frozenset(
+    {
+        ".gzkit/skills",
+        ".gzkit/rules",
+        ".gzkit/templates",
+        ".gzkit/agents",
+        ".gzkit/personas",
+        "src/gzkit",
+        "docs/user",
+        "AGENTS.md",
+        "CLAUDE.md",
+        "README.md",
+    }
+)
+
+
+def _ep_moved_fact_citations(root: Path) -> list[ValidationError]:
+    """Return the findings only when every planted root fires and no decoy does.
+
+    The decoys are a dated lineage line, a chore proof, the governance routing doc
+    and a `.j2` template; a scope that dropped a root, lost the dated admission or
+    read a record reports no catch (GHI #1370).
+
+    Returns:
+        Every finding when exactly the planted roots fired, otherwise nothing.
+
+    """
+    from gzkit.governance.trust_audits.moved_fact_citations import (  # noqa: PLC0415
+        audit_moved_fact_citations,
+    )
+
+    errors = audit_moved_fact_citations(root)
+    caught = {e.artifact.rsplit("/", 1)[0] for e in errors}
+    if caught != _MOVED_FACT_PLANTS or len(errors) != len(_MOVED_FACT_PLANTS):
+        return []
+    return errors
+
+
 def _ep_validate_default_scopes(root: Path) -> list[ValidationError]:
     """Run the whole default `gz validate` tier, as the bare invocation does."""
     from gzkit.commands.validate_cmd import _collect_errors  # noqa: PLC0415

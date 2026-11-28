@@ -151,6 +151,7 @@ from gzkit.governance.trust_audits.lock_exchange_coupling import (
 )
 from gzkit.governance.trust_audits.model_class import audit_model_class_only
 from gzkit.governance.trust_audits.models import audit_pydantic_models
+from gzkit.governance.trust_audits.moved_fact_citations import audit_moved_fact_citations
 from gzkit.governance.trust_audits.mx_hardening import (
     audit_mx_hardening,
 )
@@ -282,6 +283,7 @@ __all__ = [
     "audit_line_endings",
     "audit_manpage_alignment",
     "audit_model_class_only",
+    "audit_moved_fact_citations",
     "audit_mx_hardening",
     "audit_obpi_lifecycle_coherence",
     "audit_okf_conformance",

@@ -711,6 +711,19 @@
       "binding_sha256": "05f3cb6255b1c4157976b211c0ad267f3ad92663697c2e93fc66cb70ebe918ef",
       "authority": "GHI #1370 (operator ruling 2026-11-28, verbatim: \"A\")",
       "proposed_by": "claude-code session 2026-11-28"
+    },
+    {
+      "claim_id": "moved-fact-citations",
+      "guard": "gzkit.governance.trust_audits.moved_fact_citations:audit_moved_fact_citations",
+      "failing_test": "tests.governance.test_audit_moved_fact_citations.MovedFactCitationsTests.test_a_restatement_on_each_root_and_root_file_is_flagged",
+      "mutation": {
+        "find": "    for path in paths:\n",
+        "replace": "    for path in []:\n",
+        "label": "no live file is ever read"
+      },
+      "binding_sha256": "735c01757c8866d698033998bc0bd70df9d920820129f5b25e67a945994cdf87",
+      "authority": "GHI #1370 (operator ruling 2026-11-28, verbatim: \"A\")",
+      "proposed_by": "claude-code session 2026-11-28"
     }
   ]
 }

@@ -53,6 +53,7 @@ from ._qc_nc_entrypoints import (
     _ep_hexagon_tests,
     _ep_hexagon_tests_admits_baselined,
     _ep_model_class_only,
+    _ep_moved_fact_citations,
     _ep_size_limit_citations,
     _ep_supply_chain_audit,
     _ep_supply_chain_audit_admits_ignored,
@@ -1658,6 +1659,42 @@ def _build_dependency_currency_citations() -> Path:
     return root
 
 
+def _build_moved_fact_citations() -> Path:
+    """Plant a dropped-criterion restatement in each root and root file, with four decoys.
+
+    Each planted file sits directly under its root and the roots are written
+    literally. The decoys are a dated lineage line, a chore proof, the governance
+    routing doc (not read) and a `.j2` template (not read), all of which must stay
+    silent (GHI #1370).
+
+    Returns:
+        The fixture project root.
+
+    """
+    # The window is filled in at run time: this module is source the scope reads.
+    days = 60
+    stale = f"Direct-fix: precedent check (git log --since='{days} days ago') first.\n"
+    dated = f"On 2026-04-23 the precedent window was {days} days.\n"
+    root = _mkroot("moved-fact-citations")
+    for rel in (
+        ".gzkit/skills",
+        ".gzkit/rules",
+        ".gzkit/templates",
+        ".gzkit/agents",
+        ".gzkit/personas",
+        "src/gzkit",
+        "docs/user",
+    ):
+        _write(root / rel / "x.md", stale)
+    for rel in ("AGENTS.md", "CLAUDE.md", "README.md"):
+        _write(root / rel, stale)
+    _write(root / "docs" / "user" / "lineage" / "l.md", dated)
+    _write(root / ".gzkit" / "skills" / "s" / "proofs" / "p.md", stale)
+    _write(root / "docs" / "governance" / "defect-fix-routing.md", stale)
+    _write(root / ".gzkit" / "templates" / "t.j2", stale)
+    return root
+
+
 def _build_tidy_verdict_citations() -> Path:
     """Plant a stale tidy-status claim in each root and root file, with four decoys.
 
@@ -2940,6 +2977,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_dependency_currency_citations,
         _ep_dependency_currency_citations,
         "states a dependency age as a currency grade",
+    ),
+    (
+        "moved-fact-citations",
+        _build_moved_fact_citations,
+        _ep_moved_fact_citations,
+        "restates a fact the 2026-09-17 AGENTS.md rewrite moved or dropped",
     ),
     (
         "tidy-verdict-citations",

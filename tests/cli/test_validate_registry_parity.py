@@ -93,6 +93,10 @@ _POST_SNAPSHOT_DEFAULT_ADDITIONS: tuple[str, ...] = (
     # wheel_path_literals reasoning: the numbers it refuses went stale when the
     # threshold table moved, and a flag-gated fence would be inert exactly there.
     "size_limit_citations",
+    # moved_fact_citations — a prompt-audit prose fence (GHI #1374), ported
+    # from a unit test under GHI #1370; DEFAULT tier on the
+    # wheel_path_literals reasoning.
+    "moved_fact_citations",
     # tidy_verdict_citations — a prompt-audit prose fence (GHI #1373), ported
     # from a unit test under GHI #1370; DEFAULT tier on the
     # wheel_path_literals reasoning.

@@ -318,6 +318,10 @@
       "class": "read_only",
       "measured_seconds": 0.5
     },
+    "Moved fact citations": {
+      "class": "read_only",
+      "measured_seconds": 0.7
+    },
     "Tidy verdict citations": {
       "class": "read_only",
       "measured_seconds": 0.9

@@ -12,6 +12,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--taxonomy] [--chores-layout] [--distribution] [--wheel-path-literals]
             [--model-class-only] [--size-limit-citations]
             [--dependency-currency-citations] [--tidy-verdict-citations]
+            [--moved-fact-citations]
             [--hexagon-dependencies] [--hexagon-tests]
             [--changelog]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
@@ -1263,6 +1264,55 @@ uv run gz validate --tidy-verdict-citations --json
 ```
 
 Rule home: `.gzkit/skills/gz-tidy/SKILL.md` § Overview.
+
+### `--moved-fact-citations`
+
+Fails closed when a live sentence restates one of two facts the 2026-09-17
+rewrite of root `AGENTS.md` moved or dropped (GHI #1374; a `gz validate` scope
+since GHI #1370). Runs in the **default** `gz check` scope, so the flag is for
+scoping a single run.
+
+The rewrite moved the canonical receipt invocations into the `gz-arb` skill,
+and by operator ruling dropped the count of recent `fix()` commits from
+defect-fix routing as a criterion. Consumers kept restating both.
+
+**Scope** — `.md`, `.py`, `.json`, `.toml`, `.yaml` and `.yml` files under
+`.gzkit/skills/`, `.gzkit/rules/`, `.gzkit/templates/`, `.gzkit/agents/`,
+`.gzkit/personas/`, `src/gzkit/` and `docs/user/`, plus the root `AGENTS.md`,
+`CLAUDE.md` and `README.md`, skipping any `proofs/` or `archive/` directory.
+`docs/governance/` is not read: it mixes live doctrine with dated records, so
+the consumers repaired there are held by review only. A sentence carrying an ISO
+date is a dated record and is admitted. A root absent from gzkit's own tree is a
+finding; in an adopter project it is skipped.
+
+#### What fails closed
+
+A sentence (split at sentence ends, blank lines and the start of a list item or
+table row) that names the dropped routing criterion with its commit-count
+threshold or day window, or that places the moved invocations or the em-dash
+pattern in the attestation section without naming `gz-arb`. A restatement in
+other words, or one split across sentences, is not judged.
+
+#### Exit codes
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | No live sentence restates a moved or dropped fact | — |
+| 1 | A sentence restates one | Point at `gz-arb` or the routing facts instead, then re-run `uv run gz validate --moved-fact-citations` |
+
+Measured, not transcribed: a planted restatement of the dropped criterion in a
+temporary project's `docs/user/` exits **1**, and the clean project exits **0**.
+Under an open Maintenance Hangar the finding is reported advisory and the run
+exits 0.
+
+#### Examples
+
+```bash
+uv run gz validate --moved-fact-citations
+uv run gz validate --moved-fact-citations --json
+```
+
+Rule home: `docs/governance/defect-fix-routing.md` and the `gz-arb` skill.
 
 ### `--hexagon-dependencies`
 
@@ -3609,6 +3659,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--size-limit-citations` | yes | Instruction surfaces and source cite the threshold table for function and module size, never a number (GHI #1366, #1370) |
 | `--dependency-currency-citations` | yes | A live surface cites the dependency-currency chore, never a dependency age as a grade (GHI #1368, #1370) |
 | `--tidy-verdict-citations` | yes | No live sentence says gz tidy's exit status ignores its findings (GHI #1373, #1370) |
+| `--moved-fact-citations` | yes | No live sentence restates a fact the 2026-09-17 AGENTS.md rewrite moved or dropped (GHI #1374, #1370) |
 | `--hexagon-dependencies` | yes | The package holds to the hexagon's dependency rules read from the package map; today's findings in a shrink-only baseline (RP-15 tranche 6) |
 | `--hexagon-tests` | yes | Every test module covering a hexagon region holds to fakes only, given/when/then labels and `@covers`; today's findings in a shrink-only baseline (RP-7) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |

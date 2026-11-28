@@ -998,6 +998,12 @@ def _register_quality_parsers(
         help="Function and module size cite the threshold table, never a number, exit 3.",
     )
     p_validate.add_argument(
+        "--moved-fact-citations",
+        dest="check_moved_fact_citations",
+        action="store_true",
+        help="No live surface restates a fact the AGENTS.md rewrite moved or dropped, exit 3.",
+    )
+    p_validate.add_argument(
         "--tidy-verdict-citations",
         dest="check_tidy_verdict_citations",
         action="store_true",
@@ -1285,6 +1291,7 @@ def _register_quality_parsers(
             check_wheel_path_literals=a.check_wheel_path_literals,
             check_model_class_only=a.check_model_class_only,
             check_size_limit_citations=a.check_size_limit_citations,
+            check_moved_fact_citations=a.check_moved_fact_citations,
             check_tidy_verdict_citations=a.check_tidy_verdict_citations,
             check_dependency_currency_citations=a.check_dependency_currency_citations,
             check_hexagon_dependencies=a.check_hexagon_dependencies,
