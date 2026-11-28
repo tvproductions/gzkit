@@ -425,6 +425,12 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         run=lambda r, _f: _ta().audit_size_limit_citations(r),
     ),
     _ScopeEntry(  # default tier: a fence behind a remembered flag is inert (GHI #900)
+        "canon_relative_links",
+        "default",
+        in_other_scopes=True,
+        run=lambda r, _f: _ta().audit_canon_relative_links(r),
+    ),
+    _ScopeEntry(  # default tier: a fence behind a remembered flag is inert (GHI #900)
         "related_skill_citations",
         "default",
         in_other_scopes=True,
@@ -1801,6 +1807,7 @@ def validate(
     frontmatter_explain: str | None = None,
     check_model_class_only: bool = False,
     check_size_limit_citations: bool = False,
+    check_canon_relative_links: bool = False,
     check_related_skill_citations: bool = False,
     check_harness_session_single_source: bool = False,
     check_campaign_credit_citations: bool = False,
@@ -1904,6 +1911,7 @@ def validate(
         "wheel_path_literals": check_wheel_path_literals,
         "model_class_only": check_model_class_only,
         "size_limit_citations": check_size_limit_citations,
+        "canon_relative_links": check_canon_relative_links,
         "related_skill_citations": check_related_skill_citations,
         "harness_session_single_source": check_harness_session_single_source,
         "campaign_credit_citations": check_campaign_credit_citations,

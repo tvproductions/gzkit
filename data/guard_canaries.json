@@ -776,6 +776,19 @@
       "binding_sha256": "077d721d1b285eb334b40b8756cdf44f855b5ab8265cefa174a4675fcc9108ca",
       "authority": "GHI #1370 (operator ruling 2026-11-28, verbatim: \"A\")",
       "proposed_by": "claude-code session 2026-11-28"
+    },
+    {
+      "claim_id": "canon-relative-links",
+      "guard": "gzkit.governance.trust_audits.canon_relative_links:audit_canon_relative_links",
+      "failing_test": "tests.governance.test_audit_canon_relative_links.CanonRelativeLinksTests.test_a_short_link_in_each_root_is_flagged",
+      "mutation": {
+        "find": "    for path in paths:\n",
+        "replace": "    for path in []:\n",
+        "label": "no canon file is ever read"
+      },
+      "binding_sha256": "2d344808bc13a9e4e303eac0bf790e5580e7ce2550011b5e5f47640ffec433b9",
+      "authority": "GHI #1370 (operator ruling 2026-11-28, verbatim: \"A\")",
+      "proposed_by": "claude-code session 2026-11-28"
     }
   ]
 }

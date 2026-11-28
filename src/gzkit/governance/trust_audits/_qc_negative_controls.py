@@ -46,6 +46,7 @@ from ._qc_nc_entrypoints import (
     _ep_agents_md_numbering_citations,
     _ep_astral_discipline_deferred_annotations,
     _ep_campaign_credit_citations,
+    _ep_canon_relative_links,
     _ep_catalog_orders,
     _ep_catalog_repair_reqs,
     _ep_catalog_work_packages,
@@ -1868,6 +1869,35 @@ def _build_related_skill_citations() -> Path:
     return root
 
 
+def _build_canon_relative_links() -> Path:
+    """Plant a link one level short in each canon root of a gzkit-shaped tree, with decoys.
+
+    The tree carries ``src/gzkit/__init__.py``, because the scope reads only gzkit's own
+    tree. The decoys are a link that resolves, a generated ``AGENTS.md`` and a chore
+    proof, all of which must stay silent (GHI #1370).
+
+    Returns:
+        The fixture project root.
+
+    """
+    short = "[guide](../../docs/guide/x.md)\n"
+    root = _mkroot("canon-relative-links")
+    _write(root / "src" / "gzkit" / "__init__.py", "")
+    _write(root / "docs" / "guide" / "x.md", "")
+    for rel in (
+        ".gzkit/skills",
+        ".gzkit/rules",
+        ".gzkit/chores",
+        ".gzkit/personas",
+        ".gzkit/agents",
+    ):
+        _write(root / rel / "n" / "x.md", short)
+    _write(root / ".gzkit" / "skills" / "ok" / "SKILL.md", "[m](../../../docs/guide/x.md)\n")
+    _write(root / ".gzkit" / "skills" / "n" / "AGENTS.md", short)
+    _write(root / ".gzkit" / "chores" / "c" / "proofs" / "p.md", short)
+    return root
+
+
 def _build_size_limit_citations() -> Path:
     """Plant a restated size limit in each root, with two decoys that must pass.
 
@@ -3147,6 +3177,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_related_skill_citations,
         _ep_related_skill_citations,
         "which is not a live skill",
+    ),
+    (
+        "canon-relative-links",
+        _build_canon_relative_links,
+        _ep_canon_relative_links,
+        "which does not resolve from the linking file's directory",
     ),
     (
         "size-limit-citations",

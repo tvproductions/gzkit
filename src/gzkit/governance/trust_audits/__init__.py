@@ -66,6 +66,7 @@ from gzkit.governance.trust_audits.briefs import (
 )
 from gzkit.governance.trust_audits.bullet_retention import validate_bullet_retention
 from gzkit.governance.trust_audits.campaign_credit_citations import audit_campaign_credit_citations
+from gzkit.governance.trust_audits.canon_relative_links import audit_canon_relative_links
 from gzkit.governance.trust_audits.catalog import (
     audit_catalog,
 )
@@ -260,6 +261,7 @@ __all__ = [
     "audit_brief_headings",
     "audit_brief_size",
     "audit_campaign_credit_citations",
+    "audit_canon_relative_links",
     "audit_catalog",
     "audit_chore_metadata_authority",
     "audit_chore_rung_conformance",

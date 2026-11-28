@@ -953,6 +953,34 @@ def _ep_related_skill_citations(root: Path) -> list[ValidationError]:
     return errors
 
 
+#: The roots the canon-link control plants, spelled here rather than read from the
+#: audit, so a scope that dropped one fails the control (GHI #1370).
+_CANON_LINK_PLANTS = frozenset(
+    {".gzkit/skills", ".gzkit/rules", ".gzkit/chores", ".gzkit/personas", ".gzkit/agents"}
+)
+
+
+def _ep_canon_relative_links(root: Path) -> list[ValidationError]:
+    """Return the findings only when every planted root fires once and no decoy does.
+
+    The decoys are a link that resolves, a generated ``AGENTS.md`` and a chore
+    proof; a scope that dropped a root or read a decoy reports no catch (GHI #1370).
+
+    Returns:
+        Every finding when exactly the planted roots fired, otherwise nothing.
+
+    """
+    from gzkit.governance.trust_audits.canon_relative_links import (  # noqa: PLC0415
+        audit_canon_relative_links,
+    )
+
+    errors = audit_canon_relative_links(root)
+    caught = {"/".join(e.artifact.split("/")[:2]) for e in errors}
+    if caught != _CANON_LINK_PLANTS or len(errors) != len(_CANON_LINK_PLANTS):
+        return []
+    return errors
+
+
 def _ep_validate_default_scopes(root: Path) -> list[ValidationError]:
     """Run the whole default `gz validate` tier, as the bare invocation does."""
     from gzkit.commands.validate_cmd import _collect_errors  # noqa: PLC0415

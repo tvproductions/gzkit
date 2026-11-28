@@ -14,7 +14,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--dependency-currency-citations] [--tidy-verdict-citations]
             [--moved-fact-citations] [--agents-md-numbering-citations]
             [--campaign-credit-citations] [--harness-session-single-source]
-            [--related-skill-citations]
+            [--related-skill-citations] [--canon-relative-links]
             [--hexagon-dependencies] [--hexagon-tests]
             [--changelog]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
@@ -1509,6 +1509,54 @@ an open Maintenance Hangar the finding is reported advisory and the run exits 0.
 ```bash
 uv run gz validate --related-skill-citations
 uv run gz validate --related-skill-citations --json
+```
+
+Rule home: `.gzkit/rules/skill-authoring.md`.
+
+### `--canon-relative-links`
+
+Fails closed when a relative link in a canonical skill, rule, chore, persona or
+agent file does not resolve from the linking file's directory (GHI #1379; a
+`gz validate` scope since GHI #1370). Runs in the **default** `gz check` scope,
+so the flag is for scoping a single run.
+
+Three skill links were written one level short (`../../docs/…` from
+`.gzkit/skills/<name>/SKILL.md`, which lands in `.gzkit/`), and nothing
+resolved skill links: the pointer-integrity check reads blockquote pointers
+only, and the docs build does not build skills.
+
+**Scope** — gzkit's own tree only: every `.md` file under `.gzkit/skills/`,
+`.gzkit/rules/`, `.gzkit/chores/`, `.gzkit/personas/` and `.gzkit/agents/`,
+skipping any `proofs/` or `archive/` directory and every generated `AGENTS.md`
+(tracked under #1380). In an adopter project the scope reads nothing: delivered
+canon links to `docs/` paths an adopter never has, which is #1138's defect. A
+root absent from gzkit's tree is a finding.
+
+#### What fails closed
+
+An inline `[text](target)` outside fenced code and inline code spans, whose
+target has no URL scheme and does not start with `#` or `<`, and whose path
+(before any `#`) does not exist relative to the linking file. Anchors, titled
+links, angle-bracket targets, reference-style links and HTML links are not
+checked.
+
+#### Exit codes
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every relative link in canon resolves | — |
+| 1 | A link does not resolve | Correct the path (from `.gzkit/skills/<name>/` the repo root is `../../../`), then re-run `uv run gz validate --canon-relative-links` |
+
+Measured, not transcribed: in a temporary gzkit-shaped tree, a link one level
+short exits **1** and the corrected link exits **0**; the short link in an
+adopter-shaped tree exits **0**. Under an open Maintenance Hangar the finding is
+reported advisory and the run exits 0.
+
+#### Examples
+
+```bash
+uv run gz validate --canon-relative-links
+uv run gz validate --canon-relative-links --json
 ```
 
 Rule home: `.gzkit/rules/skill-authoring.md`.
@@ -3863,6 +3911,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--campaign-credit-citations` | yes | No live surface credits root AGENTS.md with naming or ruling the campaign (GHI #1376, #1370) |
 | `--harness-session-single-source` | yes | gzkit's source reads the harness identity and session variables only in lock_manager (GHI #1360, #1370) |
 | `--related-skill-citations` | yes | Every skill a Related Skills section names is a live skill (GHI #1381, #1370) |
+| `--canon-relative-links` | yes | Every relative link in canonical skills, rules, chores, personas and agents resolves (GHI #1379, #1370) |
 | `--hexagon-dependencies` | yes | The package holds to the hexagon's dependency rules read from the package map; today's findings in a shrink-only baseline (RP-15 tranche 6) |
 | `--hexagon-tests` | yes | Every test module covering a hexagon region holds to fakes only, given/when/then labels and `@covers`; today's findings in a shrink-only baseline (RP-7) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |

@@ -998,6 +998,12 @@ def _register_quality_parsers(
         help="Function and module size cite the threshold table, never a number, exit 3.",
     )
     p_validate.add_argument(
+        "--canon-relative-links",
+        dest="check_canon_relative_links",
+        action="store_true",
+        help="Every relative link in canonical skills, rules and chores resolves, exit 3.",
+    )
+    p_validate.add_argument(
         "--related-skill-citations",
         dest="check_related_skill_citations",
         action="store_true",
@@ -1315,6 +1321,7 @@ def _register_quality_parsers(
             check_wheel_path_literals=a.check_wheel_path_literals,
             check_model_class_only=a.check_model_class_only,
             check_size_limit_citations=a.check_size_limit_citations,
+            check_canon_relative_links=a.check_canon_relative_links,
             check_related_skill_citations=a.check_related_skill_citations,
             check_harness_session_single_source=a.check_harness_session_single_source,
             check_campaign_credit_citations=a.check_campaign_credit_citations,

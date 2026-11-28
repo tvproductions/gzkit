@@ -1600,6 +1600,21 @@ def run_size_limit_citations_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --size-limit-citations", cwd=project_root)
 
 
+def run_canon_relative_links_audit(project_root: Path) -> QualityResult:
+    """Run the `--canon-relative-links` prose fence (GHI #1379, a scope since GHI #1370).
+
+    Fails closed on a relative link in canon that does not resolve from the linking
+    file's directory. Recovery: correct the path, then `uv run gz validate
+    --canon-relative-links`. Wired here explicitly although the scope is default-tier,
+    for the reason `run_wheel_path_literals_audit` records.
+
+    Returns:
+        The result of the scoped `gz validate` run.
+
+    """
+    return run_command("uv run gz validate --canon-relative-links", cwd=project_root)
+
+
 def run_related_skill_citations_audit(project_root: Path) -> QualityResult:
     """Run the `--related-skill-citations` prose fence (GHI #1381, a scope since GHI #1370).
 
