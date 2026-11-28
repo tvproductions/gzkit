@@ -12,8 +12,8 @@ from gzkit.rules import (
     _convert_apply_to_paths,
     _extract_body_after_frontmatter,
     _is_framework_internal_path,
-    _is_framework_tree,
     _parse_instruction_frontmatter,
+    is_framework_tree,
 )
 from gzkit.validate import ValidationError
 
@@ -79,7 +79,7 @@ def audit_instruction_reachability(project_root: Path) -> list[ValidationError]:
 
     # Derived from the root PASSED IN, never an ambient one (the discipline
     # `_ruff_format_dir` learned under GHI #909).
-    strict = _is_framework_tree(project_root)
+    strict = is_framework_tree(project_root)
 
     for src_file in sorted(instructions_dir.iterdir()):
         if not src_file.name.endswith(".instructions.md"):

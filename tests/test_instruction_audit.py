@@ -31,7 +31,7 @@ def _instruction_file(apply_to: str, body: str, *, exclude_agent: str | None = N
 def _framework_tree(root: Path) -> Path:
     """Mark ``root`` as the gzkit repo itself rather than a project using it.
 
-    ``_is_framework_tree`` keys on the package source being present, so a test
+    ``is_framework_tree`` keys on the package source being present, so a test
     that wants the strict every-pattern-must-match reading has to say so out
     loud. A bare temp directory is an ADOPTER tree; asserting framework
     semantics against one is how a reachability test goes green because the

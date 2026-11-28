@@ -16,7 +16,7 @@ from gzkit.instruction_audit import (
     audit_generated_surface_drift,
     audit_instruction_reachability,
 )
-from gzkit.rules import _is_framework_tree
+from gzkit.rules import is_framework_tree
 
 # ---------------------------------------------------------------------------
 # Models
@@ -321,7 +321,7 @@ def _check_workflow_docs_positive(project_root: Path) -> EvalResult:
     # adopter discovers them upstream, not by reproducing gzkit's docs layout in
     # their own repo, so asserting the surface there measures whether they have
     # copied this project rather than whether they are ready (GHI #913).
-    if not _is_framework_tree(project_root):
+    if not is_framework_tree(project_root):
         return EvalResult(
             case_id="workflow-docs-positive",
             passed=True,

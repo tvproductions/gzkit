@@ -10,7 +10,7 @@ from rich.markup import escape
 
 from gzkit.commands.common import console, get_project_root
 from gzkit.doc_coverage.manifest import MANIFEST_PATH, MANPAGE_DIR, MANPAGE_INDEX
-from gzkit.rules import _is_framework_tree
+from gzkit.rules import is_framework_tree
 
 if TYPE_CHECKING:
     from gzkit.doc_coverage.models import CoverageReport
@@ -184,7 +184,7 @@ def cli_audit_cmd(as_json: bool) -> None:
     # matters -- the same discriminator GHI #912 established (GHI #913).
     manifest_rel = MANIFEST_PATH.as_posix()
     if not (project_root / MANIFEST_PATH).is_file():
-        if not _is_framework_tree(project_root):
+        if not is_framework_tree(project_root):
             if as_json:
                 print(json.dumps({"valid": True, "issues": [], "skipped": manifest_rel}, indent=2))  # noqa: T201
             else:

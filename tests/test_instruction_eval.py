@@ -25,7 +25,7 @@ def _instruction_file(apply_to: str, body: str, *, exclude_agent: str | None = N
 def _framework_tree(root: Path) -> Path:
     """Mark ``root`` as the gzkit repo itself rather than a project using it.
 
-    ``_is_framework_tree`` keys on the package source being present. A bare temp
+    ``is_framework_tree`` keys on the package source being present. A bare temp
     directory is an ADOPTER tree, so a test asserting that gzkit's own docs
     surface is required has to say which tree it means (GHI #913).
 

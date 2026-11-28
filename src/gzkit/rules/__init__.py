@@ -965,7 +965,7 @@ def _is_framework_internal_path(path: str) -> bool:
     return path.startswith(_FRAMEWORK_INTERNAL_PREFIXES)
 
 
-def _is_framework_tree(project_root: Path | None) -> bool:
+def is_framework_tree(project_root: Path | None) -> bool:
     """Return whether ``project_root`` IS gzkit rather than a project using it.
 
     Keyed on the package source being present in the tree, which is true of this
@@ -1013,7 +1013,7 @@ def _scope_rule_for_delivery(
         to the deliverable paths, or None when none survives.
 
     """
-    if _is_framework_tree(project_root):
+    if is_framework_tree(project_root):
         return rule
     deliverable = [p for p in rule.frontmatter.paths if not _is_framework_internal_path(p)]
     if not deliverable:
