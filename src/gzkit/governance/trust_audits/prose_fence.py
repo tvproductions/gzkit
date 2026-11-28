@@ -40,7 +40,8 @@ def live_files(
         project_root: The project whose tree is read.
         roots: Directories, relative to *project_root*, read recursively.
         suffixes: File suffixes read; an empty string reads extensionless files.
-        root_files: Single files, relative to *project_root*, read when present.
+        root_files: Single files, relative to *project_root*, read when present,
+            whatever their suffix: naming one is the choice to read it.
         skip_parts: Path components that exclude a file wherever they occur.
         skip_under: Directories, relative to *project_root*, whose files are dated
             records and are not read.
@@ -59,11 +60,11 @@ def live_files(
         root = project_root / rel
         if root.is_dir():
             found.update(path for path in root.rglob("*") if path.is_file())
-    found.update(project_root / rel for rel in root_files if (project_root / rel).is_file())
+    named = {project_root / rel for rel in root_files if (project_root / rel).is_file()}
     return sorted(
         path
-        for path in found
-        if path.suffix in wanted
+        for path in found | named
+        if (path.suffix in wanted or path in named)
         and path not in excluded
         and not any(path.is_relative_to(record) for record in under)
         and not skipped.intersection(path.relative_to(project_root).parts)

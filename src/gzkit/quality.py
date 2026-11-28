@@ -1600,6 +1600,21 @@ def run_size_limit_citations_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --size-limit-citations", cwd=project_root)
 
 
+def run_agents_md_numbering_citations_audit(project_root: Path) -> QualityResult:
+    """Run the `--agents-md-numbering-citations` prose fence (GHI #1375, a scope since GHI #1370).
+
+    Fails closed on a live citation of AGENTS.md numbering the 2026-09-17 rewrite
+    dropped. Recovery: cite the section and quote the rule, then `uv run gz validate
+    --agents-md-numbering-citations`. Wired here explicitly although the scope is
+    default-tier, for the reason `run_wheel_path_literals_audit` records.
+
+    Returns:
+        The result of the scoped `gz validate` run.
+
+    """
+    return run_command("uv run gz validate --agents-md-numbering-citations", cwd=project_root)
+
+
 def run_moved_fact_citations_audit(project_root: Path) -> QualityResult:
     """Run the `--moved-fact-citations` prose fence (GHI #1374, a scope since GHI #1370).
 

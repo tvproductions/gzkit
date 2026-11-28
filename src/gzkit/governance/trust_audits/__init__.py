@@ -34,6 +34,9 @@ from gzkit.governance.trust_audits.advisor_proof_binding import (
 from gzkit.governance.trust_audits.agents_md_map_conformance import (
     audit_agents_md_map_conformance,
 )
+from gzkit.governance.trust_audits.agents_md_numbering_citations import (
+    audit_agents_md_numbering_citations,
+)
 from gzkit.governance.trust_audits.astral_discipline import audit_astral_discipline
 from gzkit.governance.trust_audits.attestation_receipts import (
     AttestationReceiptEntry,
@@ -241,6 +244,7 @@ __all__ = [
     "audit_adversarial_validation",
     "audit_advisory_scorecard",
     "audit_agents_md_map_conformance",
+    "audit_agents_md_numbering_citations",
     "audit_astral_discipline",
     "audit_attestation_receipts",
     "audit_authorship",

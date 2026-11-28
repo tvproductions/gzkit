@@ -811,6 +811,47 @@ def _ep_moved_fact_citations(root: Path) -> list[ValidationError]:
     return errors
 
 
+#: The roots and root files the numbering control plants, spelled here rather than
+#: read from the audit, so a scope that dropped one fails the control (GHI #1370).
+_NUMBERING_PLANTS = frozenset(
+    {
+        ".gzkit/skills",
+        ".gzkit/rules",
+        ".gzkit/agents",
+        ".gzkit/personas",
+        ".gzkit/chores",
+        "src/gzkit",
+        "docs/user",
+        "AGENTS.md",
+        "CLAUDE.md",
+        "README.md",
+        ".gitattributes",
+    }
+)
+
+
+def _ep_agents_md_numbering_citations(root: Path) -> list[ValidationError]:
+    """Return the findings only when every planted root fires and no decoy does.
+
+    The decoys are a templates tree, a chore proof, the handoff parser read by name
+    and a dated line; a scope that dropped a root or read a decoy reports no catch
+    (GHI #1370).
+
+    Returns:
+        Every finding when exactly the planted roots fired, otherwise nothing.
+
+    """
+    from gzkit.governance.trust_audits.agents_md_numbering_citations import (  # noqa: PLC0415
+        audit_agents_md_numbering_citations,
+    )
+
+    errors = audit_agents_md_numbering_citations(root)
+    caught = {e.artifact.rsplit("/", 1)[0] for e in errors}
+    if caught != _NUMBERING_PLANTS or len(errors) != len(_NUMBERING_PLANTS):
+        return []
+    return errors
+
+
 def _ep_validate_default_scopes(root: Path) -> list[ValidationError]:
     """Run the whole default `gz validate` tier, as the bare invocation does."""
     from gzkit.commands.validate_cmd import _collect_errors  # noqa: PLC0415

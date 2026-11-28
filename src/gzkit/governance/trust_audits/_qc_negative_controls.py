@@ -43,6 +43,7 @@ from ._qc_claim_delegations import QC_CLAIM_DELEGATIONS
 from ._qc_claim_exemptions import QC_CLAIM_EXEMPTS
 from ._qc_claim_populations import QC_CLAIM_POPULATIONS
 from ._qc_nc_entrypoints import (
+    _ep_agents_md_numbering_citations,
     _ep_astral_discipline_deferred_annotations,
     _ep_catalog_orders,
     _ep_catalog_repair_reqs,
@@ -1734,6 +1735,41 @@ def _build_tidy_verdict_citations() -> Path:
     return root
 
 
+def _build_agents_md_numbering_citations() -> Path:
+    """Plant a dropped AGENTS.md number in each root and root file, with four decoys.
+
+    The decoys are a templates tree, a chore proof, `src/gzkit/handoff_api.py`
+    (skipped by name) and a dated line, all of which must stay silent (GHI #1370).
+
+    Returns:
+        The fixture project root.
+
+    """
+    # The rule number is filled in at run time: this module is source the scope reads.
+    rule = 9
+    stale = f"not resolve it unilaterally (Behavior Rule {rule}).\n"
+    root = _mkroot("agents-md-numbering-citations")
+    for rel in (
+        ".gzkit/skills",
+        ".gzkit/rules",
+        ".gzkit/agents",
+        ".gzkit/personas",
+        ".gzkit/chores",
+        "src/gzkit",
+        "docs/user",
+    ):
+        _write(root / rel / "x.md", stale)
+    for rel in ("AGENTS.md", "CLAUDE.md", "README.md", ".gitattributes"):
+        _write(root / rel, stale)
+    _write(root / ".gzkit" / "skills" / "templates" / "t.md", stale)
+    _write(root / ".gzkit" / "chores" / "c" / "proofs" / "p.md", stale)
+    _write(root / "src" / "gzkit" / "handoff_api.py", stale)
+    _write(
+        root / "docs" / "user" / "dated" / "d.md", f"Until 2026-09 it was Behavior Rule {rule}.\n"
+    )
+    return root
+
+
 def _build_size_limit_citations() -> Path:
     """Plant a restated size limit in each root, with two decoys that must pass.
 
@@ -2989,6 +3025,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_tidy_verdict_citations,
         _ep_tidy_verdict_citations,
         "says gz tidy's exit status ignores its findings",
+    ),
+    (
+        "agents-md-numbering-citations",
+        _build_agents_md_numbering_citations,
+        _ep_agents_md_numbering_citations,
+        "cites AGENTS.md numbering the 2026-09-17 rewrite dropped",
     ),
     (
         "size-limit-citations",

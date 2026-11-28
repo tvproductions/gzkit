@@ -12,7 +12,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--taxonomy] [--chores-layout] [--distribution] [--wheel-path-literals]
             [--model-class-only] [--size-limit-citations]
             [--dependency-currency-citations] [--tidy-verdict-citations]
-            [--moved-fact-citations]
+            [--moved-fact-citations] [--agents-md-numbering-citations]
             [--hexagon-dependencies] [--hexagon-tests]
             [--changelog]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
@@ -1313,6 +1313,59 @@ uv run gz validate --moved-fact-citations --json
 ```
 
 Rule home: `docs/governance/defect-fix-routing.md` and the `gz-arb` skill.
+
+### `--agents-md-numbering-citations`
+
+Fails closed when a live surface cites root `AGENTS.md` by numbering its
+2026-09-17 rewrite dropped (GHI #1375; a `gz validate` scope since GHI #1370).
+Runs in the **default** `gz check` scope, so the flag is for scoping a single
+run.
+
+The rewrite rendered § Behavior Rules, § OPERATOR ECONOMY OF EFFORT and the
+anti-vibing claims as unnumbered bullets and kept only three tags on DO IT
+RIGHT. A numbered citation of any other points at nothing; cite the section
+and quote the rule (`.gzkit/rules/skill-authoring.md` § Parsimony 2).
+
+**Scope** — `.md`, `.py`, `.json`, `.toml`, `.yaml` and `.yml` files under
+`.gzkit/skills/`, `.gzkit/rules/`, `.gzkit/agents/`, `.gzkit/personas/`,
+`.gzkit/chores/`, `src/gzkit/` and `docs/user/`, plus the root `AGENTS.md`,
+`CLAUDE.md`, `README.md` and `.gitattributes`. Skipped: any `proofs/`,
+`archive/` or `templates/` directory (the adopter template keeps its own
+numbering), `src/gzkit/handoff_api.py` by name (its parser names the old form
+the handoff corpus still holds), and `docs/governance/`, which mixes live
+doctrine with dated records. A piece carrying a date is a dated record and is
+admitted. A root absent from gzkit's own tree is a finding; in an adopter
+project it is skipped.
+
+#### What fails closed
+
+A piece (split at sentence ends, blank lines and the start of a list item or
+table row) holding one of five shapes: a numbered Behavior Rule; a numbered
+Always or Never heading, unless the piece names `behavior-rules.md`, which keeps
+its own; a numbered Operator Economy item; a numbered operative claim; or a
+dropped DO IT RIGHT tag in a piece naming DO IT RIGHT. The exact patterns and
+examples are in `tests/governance/test_audit_agents_md_numbering_citations.py`.
+
+#### Exit codes
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | No live surface cites dropped numbering | — |
+| 1 | A piece cites a dropped number | Cite the section and quote the rule, then re-run `uv run gz validate --agents-md-numbering-citations` |
+
+Measured, not transcribed: a planted numbered Behavior Rule citation in a
+temporary project's `docs/user/` exits **1**, and the clean project exits
+**0**. Under an open Maintenance Hangar the finding is reported advisory and
+the run exits 0.
+
+#### Examples
+
+```bash
+uv run gz validate --agents-md-numbering-citations
+uv run gz validate --agents-md-numbering-citations --json
+```
+
+Rule home: `.gzkit/rules/skill-authoring.md` § Parsimony 2.
 
 ### `--hexagon-dependencies`
 
@@ -3660,6 +3713,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--dependency-currency-citations` | yes | A live surface cites the dependency-currency chore, never a dependency age as a grade (GHI #1368, #1370) |
 | `--tidy-verdict-citations` | yes | No live sentence says gz tidy's exit status ignores its findings (GHI #1373, #1370) |
 | `--moved-fact-citations` | yes | No live sentence restates a fact the 2026-09-17 AGENTS.md rewrite moved or dropped (GHI #1374, #1370) |
+| `--agents-md-numbering-citations` | yes | No live surface cites AGENTS.md numbering the 2026-09-17 rewrite dropped (GHI #1375, #1370) |
 | `--hexagon-dependencies` | yes | The package holds to the hexagon's dependency rules read from the package map; today's findings in a shrink-only baseline (RP-15 tranche 6) |
 | `--hexagon-tests` | yes | Every test module covering a hexagon region holds to fakes only, given/when/then labels and `@covers`; today's findings in a shrink-only baseline (RP-7) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |
